@@ -232,9 +232,10 @@ Review this diff only against:
 - task $task_id from docs/tasks.md
 
 Execution model:
-- spawn exactly one fresh-context review subagent
-- the review subagent should keep the same execution settings as the parent
-  agent if it is created from the current thread history
+- spawn exactly one newly created fresh-context review subagent for this review
+  pass
+- each review pass must use a new reviewer
+- do not reuse a reviewer from an earlier review pass after follow-up edits
 - the review subagent should review only and must not edit files
 - do not ask the review subagent to propose new product features
 - the orchestrator decides whether follow-up edits are needed
@@ -242,8 +243,8 @@ Execution model:
 - if review requires follow-up edits, set the task state to needs_rework
 - if review returns bounded in-scope findings, the orchestrator should apply one
   follow-up implementation pass immediately without waiting for user input
-- after any follow-up implementation pass, run a second review before marking
-  the task done
+- after any follow-up implementation pass, spawn a new fresh-context reviewer
+  for a second review before marking the task done
 - "ready for re-review" is not done
 - severity alone does not decide done
 - if only low-severity findings remain, mark the task done only if they are
