@@ -18,7 +18,8 @@
   - Gate C — Evals prêtes: pass.
   - Gate D — Tâches prêtes: maintained by this document.
   - Gate E — Implémentation prête à démarrer: pass; next executable product task is `T1.1`, with no blocking question currently recorded for that task.
-- Current execution cursor at project start: `T1.1 — Define fixture manifest schema and fixture directory contract`.
+- A repository-bootstrap task `T0.0` materializes the accepted Node/npm/TypeScript baseline before code-bearing M1 work; it does not change the first product task identified by kickoff readiness.
+- Current execution cursor after kickoff-doc closure: `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`; next executable product task remains `T1.1 — Define fixture manifest schema and fixture directory contract`.
 
 ## Execution principles
 
@@ -105,7 +106,7 @@ Operating-model refs:
 - `operating-model.md` — §19.1 Tâche
 
 Dependencies:
-- None.
+- T0.0.
 
 Implementation scope:
 - Define `manifest.yaml` or equivalent with at least:
@@ -4038,7 +4039,81 @@ Blocks:
 
 ## Process closure tasks
 
-These are process-doc tasks. They are outside the product milestone graph above and exist to close spike results into normative repository state.
+These are process-doc or repository-bootstrap tasks. They are outside the product milestone graph above and exist to close spike results or bootstrap assumptions into normative repository state.
+
+### T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness
+
+Purpose:
+- Materialize the minimal executable repository baseline required to implement and run M1 harness tasks under accepted ADRs.
+- Introduce modern, pinned CLI tooling, project metadata, and Git repo baseline without introducing product behavior or unresolved parser, renderer, or packaging choices.
+
+Contract refs:
+- `contract.md` — §4.1 Determinism
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §2 Contraintes de conception
+- `design.md` — §2.1 Stack and ADRs
+- `design.md` — §10 Testabilité
+- `design.md` — §11 Dépendances et reproductibilité
+- `design.md` — §15 Structure de dépôt indicative
+
+Eval refs:
+- `evals.md` — §4.6 Niveau F — Audit de reproductibilité de release
+- `evals.md` — Gate G — Reproductibilité de release
+
+Operating-model refs:
+- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §16 Politique de dépendances
+- `operating-model.md` — §18 Commit et granularité de changement
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- None.
+
+Implementation scope:
+- Add a minimal `package.json` aligned with `ADR-0001`.
+- Record stable bootstrap metadata required for local execution:
+  - `name`
+  - `private`
+  - `version`
+  - `packageManager`
+  - `engines.node`
+- Record basic repository metadata needed for a modern CLI workspace, including at least:
+  - `description`
+  - `repository`
+- Add a committed `package-lock.json`.
+- Add a minimal `tsconfig.json` compatible with the compile-to-CommonJS `dist/` path selected by `ADR-0001`.
+- Add only the minimum modern, non-prerelease, exact-version dependencies required to compile repo-local TypeScript and run repo-local tests for M1 bootstrap work.
+- Record the exact selected bootstrap dependency versions in the task output and justify any intentional lag from the current stable line at bootstrap time.
+- Add only the minimum bootstrap scripts needed to run build and test commands locally; defer harness-facing script surface to `T1.7`.
+- Add the minimal Git repo baseline required for deterministic local development:
+  - `.gitignore` entries for Node/TypeScript/build and harness-temp artifacts
+  - `.gitattributes` only if needed to stabilize line endings or text treatment for versioned goldens and docs
+- Ensure the bootstrap remains compatible with `ADR-0003` and does not preempt parser-specific, serializer-specific, write-path, or packaging ADR decisions.
+
+Out of scope:
+- Installing or configuring Biome.
+- Adding Markdown, YAML, TypeScript-parser, canonical-serializer, atomic-write, or packaging dependencies before their dedicated ADR closure.
+- Adding published-package metadata such as `bin`, `exports`, `files`, or release publication config.
+- Adding Git hooks, release automation, Git-derived versioning, or any runtime dependency on Git state.
+- Implementing CLI product behavior, fixture semantics, or release CI.
+
+Done when:
+- `package.json`, `package-lock.json`, and `tsconfig.json` exist.
+- `package.json` records the accepted runtime/package-manager baseline, marks the repository private, and contains the agreed bootstrap metadata.
+- All bootstrap dependencies are exact or lock-backed and compatible with the determinism policy.
+- The selected bootstrap dependency versions are listed explicitly in the task result with rationale for any non-latest choice.
+- A minimal local build command succeeds against the bootstrap workspace.
+- A minimal local test command succeeds against the bootstrap workspace.
+- The repository contains the minimal Git baseline files needed for deterministic local development.
+- No parser-selection, packaging, or formatter-install decision has been smuggled into the bootstrap patch.
+
+Suggested verification:
+- Run the bootstrap build command.
+- Run the bootstrap test command.
+- Verify that the committed lockfile is in sync with `package.json`.
+- Confirm that Biome, parser libraries, packaging metadata, and Git-derived runtime behavior were not introduced by the bootstrap patch.
 
 ### T0.1 — Record parser profile ADRs from `S1`
 
