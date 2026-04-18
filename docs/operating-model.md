@@ -720,6 +720,13 @@ Cette taxonomie est unique et normative pour :
 
 Des tags secondaires de triage peuvent être ajoutés pour aider au routage ou au diagnostic, mais ils ne remplacent jamais la classification normative.
 
+Dans une review, chaque finding doit porter :
+
+- exactement une classification primaire issue de cette section ;
+- un statut explicite `bloquant` ou `non bloquant` par rapport à la définition de done de la tâche (§19.1).
+
+Une sévérité de type `high` / `medium` / `low` peut être ajoutée pour aider au triage, mais elle reste non normative et ne remplace ni la classification primaire ni le statut bloquant.
+
 ### 10.1 Violation de contrat
 
 L'implémentation ne satisfait pas `contract.md`.
@@ -930,6 +937,12 @@ Une review de diff doit répondre à ces questions :
 - les erreurs et cas d'échec sont-ils couverts ?
 - les limites connues sont-elles documentées ?
 
+Chaque finding de review doit ensuite être exprimé avec :
+
+- une classification primaire selon la section 10 ;
+- un statut `bloquant` ou `non bloquant` relativement à §19.1 ;
+- éventuellement des tags secondaires de triage.
+
 Une review de diff ne doit pas proposer de nouvelles features.
 
 ## 15. Gestion des fixtures et goldens
@@ -1116,14 +1129,21 @@ Review ce diff uniquement contre la tâche <TASK_ID> et docs/contract.md.
 Ne propose pas de nouvelle feature.
 Ne fais pas de review de style sauf si cela affecte le contrat, les evals ou la maintenabilité immédiate.
 
-Classe chaque finding comme :
+Classe chaque finding avec exactement une classification primaire selon la section 10 :
 - violation de contrat ;
 - ambiguïté de spec ;
 - écart de design ;
 - défaut d'eval ;
 - question produit ;
 - problème d'outillage ;
-- risque non bloquant.
+- découverte hors scope.
+
+Indique séparément pour chaque finding s'il est :
+- bloquant ;
+- non bloquant.
+
+Des tags secondaires de triage peuvent être ajoutés.
+Une sévérité éventuelle (`high` / `medium` / `low`) reste informative uniquement et ne décide jamais à elle seule du done.
 ```
 
 ### 20.4 Analyse d'échec de fixture
