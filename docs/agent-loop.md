@@ -34,7 +34,7 @@ autonomous commit loop.
   - implements locally by default;
   - delegates implementation only when that clearly improves a larger or riskier
     task;
-  - later spawns one fresh-context review subagent.
+  - for each review pass, spawns one new fresh-context review subagent.
 - Implementation subagent:
   - implements one task only;
   - keeps the same execution settings as the parent agent when it inherits the
@@ -45,7 +45,8 @@ autonomous commit loop.
   - reviews only against the target task and normative docs;
   - does not edit files;
   - looks first for scope creep, contract drift, eval weakening, and missing
-    failure coverage.
+    failure coverage;
+  - is not reused after follow-up edits.
 
 Commit is a gate, not a separate role. Commit only after the task satisfies the
 task-level done criteria in `docs/operating-model.md` section 19.1.
@@ -82,7 +83,8 @@ sh scripts/task-loop.sh review T1.1
    - `done`
 7. If review returns `needs_rework` and the findings are bounded and in-scope,
    the orchestrator should do one follow-up implementation pass immediately
-   without waiting for user input, then run a second review.
+   without waiting for user input, then spawn a new fresh-context reviewer for
+   a second review.
 8. Stop instead of auto-correcting when the review exposes:
    - `spec ambiguity`
    - `product question`
