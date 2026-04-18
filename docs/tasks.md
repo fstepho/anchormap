@@ -25,15 +25,16 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it only after task-level done (§19.1) or after an explicit blocked/deviation decision.
-- Current active task: `S3 — Filesystem mutation detection and path behavior report`
+- Current active task: `None recorded`
 - Next executable product task after blocker clearance: `T1.2 — Implement sandbox materialization from fixture input`
-- Last completed task: `T1.1 — Define fixture manifest schema and fixture directory contract`
+- Last completed task: `S3 — Filesystem mutation detection and path behavior report`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
   - `T1.1 — Define fixture manifest schema and fixture directory contract`
+  - `S3 — Filesystem mutation detection and path behavior report`
 - Blocked tasks:
-  - `T1.2` blocked by `S3`
+  - `None recorded`
 - Open deviations:
   - `None recorded`
 
