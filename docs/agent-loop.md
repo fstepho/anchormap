@@ -43,6 +43,8 @@ autonomous commit loop.
   - stops on the first blocking failure.
 - Review subagent:
   - reviews only against the target task and normative docs;
+  - reviews the full cumulative task diff for each review pass, not only the
+    latest follow-up delta;
   - does not edit files;
   - looks first for scope creep, contract drift, eval weakening, and missing
     failure coverage;
@@ -84,7 +86,7 @@ sh scripts/task-loop.sh review T1.1
 7. If review returns `needs_rework` and the findings are bounded and in-scope,
    the orchestrator should do one follow-up implementation pass immediately
    without waiting for user input, then spawn a new fresh-context reviewer for
-   a second review.
+   a second review of the full cumulative task diff.
 8. Stop instead of auto-correcting when the review exposes:
    - `spec ambiguity`
    - `product question`

@@ -4361,12 +4361,16 @@ Return:
 ### Review one diff
 
 ```text
-Review this diff only against:
+Review the full cumulative diff for task T{X.Y} only against:
 - contract.md
 - design.md
 - evals.md
 - operating-model.md
 - task T{X.Y} from tasks.md
+
+For every review pass:
+- inspect the full cumulative task diff from the start of the task, not only the latest follow-up delta;
+- if this is a second or later review pass, pay extra attention to files changed since the previous review while still reviewing the full cumulative task diff.
 
 Classify each finding with exactly one primary classification from operating-model.md §10:
 - contract violation

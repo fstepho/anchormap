@@ -224,7 +224,7 @@ print_review_prompt() {
   cat <<EOF
 You are the orchestrator for review of task $task_id.
 
-Review this diff only against:
+Review the full cumulative diff for task $task_id only against:
 - docs/contract.md
 - docs/design.md
 - docs/evals.md
@@ -236,6 +236,8 @@ Execution model:
   pass
 - each review pass must use a new reviewer
 - do not reuse a reviewer from an earlier review pass after follow-up edits
+- each review pass must inspect the full cumulative task diff from the start of
+  task $task_id, not only the latest follow-up delta
 - the review subagent should review only and must not edit files
 - do not ask the review subagent to propose new product features
 - the orchestrator decides whether follow-up edits are needed
@@ -245,6 +247,8 @@ Execution model:
   follow-up implementation pass immediately without waiting for user input
 - after any follow-up implementation pass, spawn a new fresh-context reviewer
   for a second review before marking the task done
+- on a second or later review pass, pay extra attention to files changed since
+  the previous review, but still review the full cumulative task diff
 - "ready for re-review" is not done
 - severity alone does not decide done
 - if only low-severity findings remain, mark the task done only if they are

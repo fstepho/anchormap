@@ -1124,7 +1124,11 @@ Retour attendu :
 ### 20.3 Review de diff
 
 ```text
-Review ce diff uniquement contre la tâche <TASK_ID> et docs/contract.md.
+Review le diff cumulé complet de la tâche <TASK_ID> uniquement contre la tâche <TASK_ID> et docs/contract.md.
+
+À chaque passe de review :
+- inspecte le diff cumulé complet depuis le début de la tâche, pas seulement le dernier delta de correction ;
+- si c'est une deuxième passe ou plus, accorde une attention supplémentaire aux fichiers modifiés depuis la review précédente tout en re-reviewant le diff cumulé complet.
 
 Ne propose pas de nouvelle feature.
 Ne fais pas de review de style sauf si cela affecte le contrat, les evals ou la maintenabilité immédiate.
