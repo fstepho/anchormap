@@ -4115,6 +4115,57 @@ Suggested verification:
 - Verify that the committed lockfile is in sync with `package.json`.
 - Confirm that Biome, parser libraries, packaging metadata, and Git-derived runtime behavior were not introduced by the bootstrap patch.
 
+### T0.0a — Install pinned Biome baseline for local formatting and linting
+
+Purpose:
+- Materialize the accepted `ADR-0010` formatting/linting baseline as repo-local tooling.
+- Keep the installation deterministic, exact-versioned, and isolated from product runtime and harness semantics.
+
+Contract refs:
+- `contract.md` — §4.1 Determinism
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §2 Contraintes de conception
+- `design.md` — §2.1 Stack and ADRs
+- `design.md` — §11 Dépendances et reproductibilité
+
+Eval refs:
+- `evals.md` — §4.6 Niveau F — Audit de reproductibilité de release
+- `evals.md` — Gate G — Reproductibilité de release
+
+Operating-model refs:
+- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §16 Politique de dépendances
+- `operating-model.md` — §18 Commit et granularité de changement
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T0.0.
+
+Implementation scope:
+- Add exact-version Biome as a development dependency with a committed lockfile update.
+- Add a minimal `biome.json` owned by the repository.
+- Add only the minimum local scripts needed to run format/lint/check over repo-local source and config files.
+- Keep the Biome baseline independent from Git hooks, CI, editor integration, parser decisions, and product runtime behavior.
+
+Out of scope:
+- Reformatting the whole repository opportunistically.
+- Adding Git hooks, CI jobs, editor settings, or release automation.
+- Expanding lint policy beyond a minimal repo-local baseline.
+- Changing any product, harness, parser, serializer, or packaging behavior.
+
+Done when:
+- `package.json` and `package-lock.json` include an exact-version Biome dependency.
+- A minimal `biome.json` exists.
+- Local Biome scripts exist for check and write flows.
+- The Biome check command succeeds on the bounded repo-local targets.
+- No runtime, harness, or contract behavior changes.
+
+Suggested verification:
+- Run the Biome check command.
+- Re-run the local bootstrap test command to confirm no regression.
+
 ### T0.1 — Record parser profile ADRs from `S1`
 
 Purpose:

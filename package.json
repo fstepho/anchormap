@@ -1,0 +1,26 @@
+{
+	"name": "anchormap",
+	"private": true,
+	"version": "0.0.0",
+	"description": "Local deterministic structural traceability CLI for narrow-scope TypeScript repositories.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/fstepho/anchormap.git"
+	},
+	"packageManager": "npm@11.11.1",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check:style": "biome check src package.json tsconfig.json biome.json",
+		"format": "biome format --write src package.json tsconfig.json biome.json",
+		"lint": "biome lint src package.json tsconfig.json biome.json",
+		"test": "npm run build && node --test \"dist/**/*.test.js\""
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.12",
+		"@types/node": "25.6.0",
+		"typescript": "6.0.3"
+	}
+}
