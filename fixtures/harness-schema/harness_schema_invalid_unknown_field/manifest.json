@@ -1,0 +1,18 @@
+{
+	"id": "harness_schema_invalid_unknown_field",
+	"family": "harness-schema",
+	"purpose": "Invalid schema example with an unsupported top-level key.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"unexpected": true
+}

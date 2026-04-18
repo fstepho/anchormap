@@ -1,0 +1,17 @@
+{
+	"id": "harness_schema_failure",
+	"family": "harness-schema",
+	"purpose": "Schema example covering a failing command with empty stdout and no mutation.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	}
+}

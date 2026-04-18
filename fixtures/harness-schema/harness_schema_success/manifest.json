@@ -1,0 +1,22 @@
+{
+	"id": "harness_schema_success",
+	"family": "harness-schema",
+	"purpose": "Schema example covering a valid scan --json success fixture and optional metadata.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["schema", "example"],
+	"groups": ["walking_skeleton"],
+	"fault_injection": {
+		"marker": "demo_only"
+	}
+}
