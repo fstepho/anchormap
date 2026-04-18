@@ -142,6 +142,10 @@ Before coding:
 - identify the relevant design sections
 - identify the relevant fixtures, eval families, or gates
 - state the smallest checks that should fail or pass
+- if this is a process-doc or ADR task and the task block does not name
+  contract/design/eval refs, identify the relevant operating-model and ADR refs
+  instead, classify the change as process maintenance, and bound the files being
+  changed before editing
 
 Execution model:
 - keep docs/tasks.md and the normative docs as the only source of truth
@@ -210,7 +214,8 @@ $task_block
 
 Orchestrator return:
 1. files changed
-2. relevant contract/design/eval refs identified before implementation
+2. relevant contract/design/eval refs identified before implementation, or the
+   relevant operating-model/ADR refs for a process-doc task
 3. smallest checks selected
 4. implementation result
 5. current task state: needs_review or blocked
@@ -303,6 +308,8 @@ Review subagent questions:
 - are failures and edge cases covered?
 - are known limits documented?
 - which findings are blocking vs explicitly non-blocking relative to Gate F?
+- if this is a process-doc or ADR task, which operating-model/ADR refs govern
+  the diff and are the changed files still properly bounded?
 
 Orchestrator return:
 1. review findings ordered by severity
