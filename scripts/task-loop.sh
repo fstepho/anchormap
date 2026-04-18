@@ -79,7 +79,7 @@ Recommended loop for $task_id
    - docs/tasks.md
 2. State the target task, the relevant contract refs, the relevant design refs,
    the relevant eval refs, and the smallest checks that should fail or pass.
-3. Use the orchestrator prompt with:
+3. Use the implementation prompt with:
    sh scripts/task-loop.sh implement $task_id
 4. Run the smallest relevant check early. Stop on the first blocking failure.
 5. If blocked, classify the deviation before changing more code:
@@ -90,9 +90,17 @@ Recommended loop for $task_id
    - product question
    - tooling problem
    - out-of-scope discovery
-6. Use the orchestrator review prompt with:
+6. Use the review prompt with:
    sh scripts/task-loop.sh review $task_id
-7. Commit only if the task satisfies Gate F / task-level done:
+7. Keep the task in exactly one explicit state:
+   - implementing
+   - needs_review
+   - needs_rework
+   - blocked
+   - done
+8. If review returns needs_rework, do another implementation pass and then a
+   second review. Do not mark the task done after implementation alone.
+9. Commit only if the task satisfies Gate F / task-level done:
    - target objective is complete
    - referenced tests and fixtures pass
    - stdout/stderr/exit code/mutation policy is preserved where applicable
@@ -129,14 +137,31 @@ Before coding:
 Execution model:
 - keep docs/tasks.md and the normative docs as the only source of truth
 - do not create a parallel planning system
-- after the initial framing work, spawn exactly one implementation subagent
-- the implementation subagent should keep the same execution settings as the
-  parent agent, including sandbox and approval mode
-- the implementation subagent should work only on task $task_id
+- implementation is local in the main agent by default
+- delegate implementation only if this task is large or risky enough that a
+  bounded subagent materially improves the result
+- if you delegate implementation, spawn at most one implementation subagent
+- a delegated implementation subagent should keep the same execution settings as
+  the parent agent, including sandbox and approval mode
+- a delegated implementation subagent should work only on task $task_id
+- if an implementation subagent is still alive, do not edit files in parallel
+  in the main agent
+- if an implementation subagent times out, either wait again or close it before
+  making local edits
 - do not spawn a reviewer yet
-- do not commit from the implementation subagent
-- if the implementation subagent hits a blocking issue, have it return a single
-  classified deviation before more edits are attempted
+- do not commit from any implementation pass
+- if a delegated implementation subagent hits a blocking issue, have it return a
+  single classified deviation before more edits are attempted
+- set the task state to exactly one of:
+  - implementing
+  - needs_review
+  - needs_rework
+  - blocked
+  - done
+- after an implementation pass, the only valid next states are:
+  - needs_review
+  - blocked
+- do not mark the task done from this prompt
 
 Constraints:
 - Do not modify docs/contract.md.
@@ -155,7 +180,7 @@ Constraints:
   - operating-model.md for production method
 - If a deviation is found, classify it before changing code, fixtures, or docs.
 
-Implementation subagent contract:
+If you delegate implementation, the implementation subagent contract is:
 - implement task $task_id only
 - keep the patch minimal
 - add or update only tests/fixtures required by this task
@@ -176,10 +201,10 @@ $task_block
 
 Orchestrator return:
 1. files changed
-2. relevant contract/design/eval refs identified before delegation
+2. relevant contract/design/eval refs identified before implementation
 3. smallest checks selected
-4. implementation subagent result
-5. current task status: ready_for_review, blocked, or not_done
+4. implementation result
+5. current task state: needs_review or blocked
 EOF
 }
 
@@ -205,6 +230,14 @@ Execution model:
 - do not ask the review subagent to propose new product features
 - the orchestrator decides whether follow-up edits are needed
 - do not commit until the review findings are addressed and Gate F is satisfied
+- if review requires follow-up edits, set the task state to needs_rework
+- after any follow-up implementation pass, run a second review before marking
+  the task done
+- "ready for re-review" is not done
+- the only valid final states from this prompt are:
+  - done
+  - needs_rework
+  - blocked
 
 Task block from docs/tasks.md:
 
@@ -246,8 +279,7 @@ Review subagent questions:
 Orchestrator return:
 1. review findings ordered by severity
 2. any required follow-up edits
-3. whether the task is ready for commit, blocked, or needs another
-   implementation pass
+3. current task state: done, needs_rework, or blocked
 EOF
 }
 

@@ -31,7 +31,9 @@ autonomous commit loop.
 - Agent orchestrator:
   - uses the helper output as the single task-loop entrypoint;
   - frames the task and checks first;
-  - spawns one implementation subagent;
+  - implements locally by default;
+  - delegates implementation only when that clearly improves a larger or riskier
+    task;
   - later spawns one fresh-context review subagent.
 - Implementation subagent:
   - implements one task only;
@@ -72,13 +74,21 @@ sh scripts/task-loop.sh update T1.1
 sh scripts/task-loop.sh review T1.1
 ```
 
-6. Commit only if:
+6. Keep the task in one explicit state:
+   - `implementing`
+   - `needs_review`
+   - `needs_rework`
+   - `blocked`
+   - `done`
+7. If review returns `needs_rework`, do another implementation pass, then a
+   second review. Do not mark the task done after implementation alone.
+8. Commit only if:
    - the target task objective is complete;
    - the referenced tests and fixtures pass;
    - the applicable stdout/stderr/exit code/mutation policy is preserved;
    - no out-of-scope behavior changed;
    - no eval was weakened.
-7. Move to the next task manually. Do not auto-pick from hidden state.
+9. Move to the next task manually. Do not auto-pick from hidden state.
 
 ## Single path
 
@@ -106,6 +116,11 @@ same responsibility split:
 - `docs/tasks.md` says what task to execute.
 - `scripts/task-loop.sh` prints how to execute the bounded loop for that task.
 - The agent performs the work inside the existing documentary hierarchy.
+
+If implementation is delegated, there must still be only one live
+implementation path at a time. The main agent must not edit files in parallel
+with a live implementation subagent. If the delegated pass times out, the main
+agent should either wait again or close the subagent before resuming locally.
 
 ## Helper commands
 
