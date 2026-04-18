@@ -35,6 +35,8 @@ autonomous commit loop.
   - later spawns one fresh-context review subagent.
 - Implementation subagent:
   - implements one task only;
+  - keeps the same execution settings as the parent agent when it inherits the
+    current thread context;
   - runs the smallest relevant check early;
   - stops on the first blocking failure.
 - Review subagent:

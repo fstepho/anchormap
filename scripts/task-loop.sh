@@ -130,6 +130,8 @@ Execution model:
 - keep docs/tasks.md and the normative docs as the only source of truth
 - do not create a parallel planning system
 - after the initial framing work, spawn exactly one implementation subagent
+- the implementation subagent should keep the same execution settings as the
+  parent agent, including sandbox and approval mode
 - the implementation subagent should work only on task $task_id
 - do not spawn a reviewer yet
 - do not commit from the implementation subagent
@@ -197,6 +199,8 @@ Review this diff only against:
 
 Execution model:
 - spawn exactly one fresh-context review subagent
+- the review subagent should keep the same execution settings as the parent
+  agent if it is created from the current thread history
 - the review subagent should review only and must not edit files
 - do not ask the review subagent to propose new product features
 - the orchestrator decides whether follow-up edits are needed
