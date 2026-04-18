@@ -1,0 +1,392 @@
+#!/bin/sh
+
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+TASKS_FILE="$ROOT_DIR/docs/tasks.md"
+
+die() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  sh scripts/task-loop.sh brief T1.1
+  sh scripts/task-loop.sh loop T1.1
+  sh scripts/task-loop.sh implement T1.1
+  sh scripts/task-loop.sh review T1.1
+  sh scripts/task-loop.sh fixture fx01_scan_min_clean T7.2
+  sh scripts/task-loop.sh update T1.1 [T1.2 ...]
+
+Modes:
+  brief      Print the task block from docs/tasks.md.
+  loop       Print the recommended local loop for one task.
+  implement  Print a bounded implementation prompt for one task.
+  review     Print a bounded review prompt for one task.
+  fixture    Print a bounded fixture-failure analysis prompt.
+  update     Print a bounded tasks.md update prompt for a classified deviation.
+
+Notes:
+  - This helper is process-only. It does not pick the next task automatically.
+  - docs/operating-model.md, docs/contract.md, docs/design.md, docs/evals.md,
+    and docs/tasks.md remain the authoritative sources.
+EOF
+}
+
+require_tasks_file() {
+  [ -f "$TASKS_FILE" ] || die "Missing $TASKS_FILE"
+}
+
+extract_task_block() {
+  task_id="$1"
+
+  awk -v id="$task_id" '
+    $0 ~ "^### " id " " {
+      found = 1
+      start = NR
+    }
+    found && NR > start && ($0 ~ "^### " || $0 ~ "^## ") {
+      exit
+    }
+    found {
+      print
+    }
+  ' "$TASKS_FILE"
+}
+
+require_task() {
+  task_id="$1"
+  task_block=$(extract_task_block "$task_id")
+  [ -n "$task_block" ] || die "Task not found in docs/tasks.md: $task_id"
+  printf '%s\n' "$task_block"
+}
+
+print_loop() {
+  task_id="$1"
+  task_block="$2"
+
+  cat <<EOF
+Recommended loop for $task_id
+
+1. Read, in order:
+   - docs/operating-model.md
+   - docs/contract.md
+   - docs/design.md
+   - docs/evals.md
+   - docs/tasks.md
+2. State the target task, the relevant contract refs, the relevant design refs,
+   the relevant eval refs, and the smallest checks that should fail or pass.
+3. Use the orchestrator prompt with:
+   sh scripts/task-loop.sh implement $task_id
+4. Run the smallest relevant check early. Stop on the first blocking failure.
+5. If blocked, classify the deviation before changing more code:
+   - contract violation
+   - spec ambiguity
+   - design gap
+   - eval defect
+   - product question
+   - tooling problem
+   - out-of-scope discovery
+6. Use the orchestrator review prompt with:
+   sh scripts/task-loop.sh review $task_id
+7. Commit only if the task satisfies Gate F / task-level done:
+   - target objective is complete
+   - referenced tests and fixtures pass
+   - stdout/stderr/exit code/mutation policy is preserved where applicable
+   - no out-of-scope behavior changed
+   - no eval was weakened
+
+Task block from docs/tasks.md:
+
+$task_block
+EOF
+}
+
+print_implement_prompt() {
+  task_id="$1"
+  task_block="$2"
+
+  cat <<EOF
+You are the orchestrator for task $task_id.
+
+Required reading order:
+1. docs/operating-model.md
+2. docs/contract.md
+3. docs/design.md
+4. docs/evals.md
+5. docs/tasks.md
+
+Before coding:
+- identify the target task in docs/tasks.md
+- identify the relevant contract sections
+- identify the relevant design sections
+- identify the relevant fixtures, eval families, or gates
+- state the smallest checks that should fail or pass
+
+Execution model:
+- keep docs/tasks.md and the normative docs as the only source of truth
+- do not create a parallel planning system
+- after the initial framing work, spawn exactly one implementation subagent
+- the implementation subagent should work only on task $task_id
+- do not spawn a reviewer yet
+- do not commit from the implementation subagent
+- if the implementation subagent hits a blocking issue, have it return a single
+  classified deviation before more edits are attempted
+
+Constraints:
+- Do not modify docs/contract.md.
+- Do not modify product scope.
+- Do not implement adjacent tasks.
+- Do not add behavior not required by the task.
+- Keep the patch minimal.
+- Add or update only tests/fixtures required by this task.
+- Preserve stdout/stderr/exit code discipline.
+- Preserve mutation policy.
+- Preserve the documentary hierarchy:
+  - contract.md for observable behavior
+  - evals.md for verification gates and fixtures
+  - brief.md for scope
+  - design.md for compatible implementation
+  - operating-model.md for production method
+- If a deviation is found, classify it before changing code, fixtures, or docs.
+
+Implementation subagent contract:
+- implement task $task_id only
+- keep the patch minimal
+- add or update only tests/fixtures required by this task
+- run the smallest relevant check early
+- stop on the first blocking failure
+- return control to the orchestrator with:
+  1. files changed
+  2. behavior implemented
+  3. tests/fixtures run
+  4. risks
+  5. any spec ambiguity encountered
+  6. classification of any deviation using the taxonomy from
+     docs/operating-model.md
+
+Task block from docs/tasks.md:
+
+$task_block
+
+Orchestrator return:
+1. files changed
+2. relevant contract/design/eval refs identified before delegation
+3. smallest checks selected
+4. implementation subagent result
+5. current task status: ready_for_review, blocked, or not_done
+EOF
+}
+
+print_review_prompt() {
+  task_id="$1"
+  task_block="$2"
+
+  cat <<EOF
+You are the orchestrator for review of task $task_id.
+
+Review this diff only against:
+- docs/contract.md
+- docs/design.md
+- docs/evals.md
+- docs/operating-model.md
+- task $task_id from docs/tasks.md
+
+Execution model:
+- spawn exactly one fresh-context review subagent
+- the review subagent should review only and must not edit files
+- do not ask the review subagent to propose new product features
+- the orchestrator decides whether follow-up edits are needed
+- do not commit until the review findings are addressed and Gate F is satisfied
+
+Task block from docs/tasks.md:
+
+$task_block
+
+Classify each finding with exactly one primary classification from
+docs/operating-model.md section 10:
+- contract violation
+- spec ambiguity
+- design gap
+- eval defect
+- product question
+- tooling problem
+- out-of-scope discovery
+
+Optional secondary tags may be added for routing only, for example:
+- eval-gap
+- design-divergence
+- task-scope-creep
+- mutation-policy
+- fixture-golden
+- non-blocking-risk
+
+Do not suggest new product features.
+Do not rewrite the architecture unless the diff violates the contract or task scope.
+Do not request broad refactors unless the current diff prevents the referenced
+task from satisfying its contract/eval obligations.
+
+Review subagent questions:
+- which task is targeted?
+- which contract sections are impacted?
+- which fixtures should pass?
+- did the diff change behavior outside the task?
+- did the diff change output, exit codes, or mutation policy?
+- did the diff weaken an eval?
+- are failures and edge cases covered?
+- are known limits documented?
+
+Orchestrator return:
+1. review findings ordered by severity
+2. any required follow-up edits
+3. whether the task is ready for commit, blocked, or needs another
+   implementation pass
+EOF
+}
+
+print_fixture_prompt() {
+  fixture_id="$1"
+  task_id="$2"
+  task_block="$3"
+
+  cat <<EOF
+Analyze fixture failure $fixture_id for task $task_id.
+
+Inputs:
+- failing output
+- expected golden
+- stderr
+- exit code
+- task block from docs/tasks.md
+- docs/contract.md
+- docs/evals.md
+
+Task block from docs/tasks.md:
+
+$task_block
+
+Classify the failure with exactly one primary classification from
+docs/operating-model.md section 10:
+- contract violation
+- spec ambiguity
+- design gap
+- eval defect
+- product question
+- tooling problem
+- out-of-scope discovery
+
+Optional secondary tags may be added for routing only, for example:
+- implementation-bug
+- fixture-golden
+- mutation-policy
+- test-harness
+- environment
+- read-path
+- render-path
+
+Return:
+1. classification
+2. evidence
+3. smallest corrective action
+4. files likely affected
+5. whether docs/tasks.md needs an update
+EOF
+}
+
+print_update_prompt() {
+  task_ids="$1"
+  task_blocks="$2"
+
+  cat <<EOF
+Update tasks.md only for the classified deviation below.
+
+Inputs:
+- current tasks.md
+- deviation classification from operating-model.md
+- affected contract/design/eval sections
+- affected task IDs: $task_ids
+
+Affected task blocks from docs/tasks.md:
+
+$task_blocks
+
+Constraints:
+- Do not modify docs/contract.md.
+- Do not add product scope.
+- Do not introduce new behavior without contract/eval traceability.
+- Keep existing task IDs stable unless a task must be split.
+- If a task is split, preserve dependency traceability.
+- Spikes must remain separate from production tasks.
+
+Return:
+1. changed task IDs
+2. reason for change
+3. updated dependencies
+4. updated verification references
+5. remaining risks
+EOF
+}
+
+main() {
+  require_tasks_file
+
+  mode="${1:-}"
+  case "$mode" in
+    ""|-h|--help|help)
+      usage
+      exit 0
+      ;;
+    brief|loop|implement|review)
+      [ "${2:-}" ] || die "Missing task id for mode: $mode"
+      task_id="$2"
+      task_block=$(require_task "$task_id")
+      case "$mode" in
+        brief)
+          printf '%s\n' "$task_block"
+          ;;
+        loop)
+          print_loop "$task_id" "$task_block"
+          ;;
+        implement)
+          print_implement_prompt "$task_id" "$task_block"
+          ;;
+        review)
+          print_review_prompt "$task_id" "$task_block"
+          ;;
+      esac
+      ;;
+    fixture)
+      [ "${2:-}" ] || die "Missing fixture id for mode: fixture"
+      [ "${3:-}" ] || die "Missing task id for mode: fixture"
+      fixture_id="$2"
+      task_id="$3"
+      task_block=$(require_task "$task_id")
+      print_fixture_prompt "$fixture_id" "$task_id" "$task_block"
+      ;;
+    update)
+      [ "${2:-}" ] || die "Missing affected task id for mode: update"
+      shift
+      task_ids="$*"
+      task_blocks=
+      for task_id in "$@"; do
+        task_block=$(require_task "$task_id")
+        if [ -n "$task_blocks" ]; then
+          task_blocks="${task_blocks}
+
+$task_block"
+        else
+          task_blocks="$task_block"
+        fi
+      done
+      print_update_prompt "$task_ids" "$task_blocks"
+      ;;
+    *)
+      die "Unknown mode: $mode"
+      ;;
+  esac
+}
+
+main "$@"
