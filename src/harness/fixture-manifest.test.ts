@@ -1,12 +1,5 @@
 import { strict as assert } from "node:assert";
-import {
-	existsSync,
-	mkdirSync,
-	mkdtempSync,
-	rmSync,
-	symlinkSync,
-	writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
@@ -55,10 +48,7 @@ function withTempFixture(
 		if (options?.createRepo !== false) {
 			mkdirSync(resolve(path, "repo"), { recursive: true });
 		}
-		writeFileSync(
-			resolve(path, "manifest.json"),
-			`${JSON.stringify(manifest, null, "\t")}\n`,
-		);
+		writeFileSync(resolve(path, "manifest.json"), `${JSON.stringify(manifest, null, "\t")}\n`);
 		setup?.(path);
 		callback(path);
 	} finally {
@@ -67,9 +57,7 @@ function withTempFixture(
 }
 
 test("loads the minimal success fixture manifest and exposes the directory contract", () => {
-	const loaded = loadFixtureManifest(
-		fixtureDir("harness-schema", "harness_schema_success"),
-	);
+	const loaded = loadFixtureManifest(fixtureDir("harness-schema", "harness_schema_success"));
 
 	assert.equal(loaded.manifest.id, "harness_schema_success");
 	assert.equal(loaded.manifest.family, "harness-schema");
@@ -84,9 +72,7 @@ test("loads the minimal success fixture manifest and exposes the directory contr
 });
 
 test("loads the minimal failure fixture manifest", () => {
-	const loaded = loadFixtureManifest(
-		fixtureDir("harness-schema", "harness_schema_failure"),
-	);
+	const loaded = loadFixtureManifest(fixtureDir("harness-schema", "harness_schema_failure"));
 
 	assert.equal(loaded.manifest.id, "harness_schema_failure");
 	assert.equal(loaded.manifest.exit_code, 2);
@@ -107,19 +93,12 @@ test("rejects a manifest with a missing id", () => {
 		filesystem: { kind: "no_mutation" },
 	};
 
-	assert.throws(
-		() => validateFixtureManifest(manifestWithoutId),
-		/missing required key "id"/i,
-	);
+	assert.throws(() => validateFixtureManifest(manifestWithoutId), /missing required key "id"/i);
 });
 
 test("includes the fixture id when an on-disk manifest is readable JSON but missing id", () => {
 	const rootDir = mkdtempSync(resolve(tmpdir(), "anchormap-fixture-manifest-"));
-	const path = resolve(
-		rootDir,
-		"harness-schema",
-		"harness_schema_missing_id_on_disk",
-	);
+	const path = resolve(rootDir, "harness-schema", "harness_schema_missing_id_on_disk");
 
 	try {
 		mkdirSync(resolve(path, "repo"), { recursive: true });
@@ -145,10 +124,7 @@ test("includes the fixture id when an on-disk manifest is readable JSON but miss
 			() => loadFixtureManifest(path),
 			(error: unknown) => {
 				assert.ok(error instanceof FixtureManifestValidationError);
-				assert.match(
-					error.message,
-					/\[fixture harness_schema_missing_id_on_disk\]/,
-				);
+				assert.match(error.message, /\[fixture harness_schema_missing_id_on_disk\]/);
 				assert.match(error.message, /missing required key "id"/);
 				return true;
 			},
@@ -160,16 +136,10 @@ test("includes the fixture id when an on-disk manifest is readable JSON but miss
 
 test("rejects unknown top-level keys and includes the fixture id when available", () => {
 	assert.throws(
-		() =>
-			loadFixtureManifest(
-				fixtureDir("harness-schema", "harness_schema_invalid_unknown_field"),
-			),
+		() => loadFixtureManifest(fixtureDir("harness-schema", "harness_schema_invalid_unknown_field")),
 		(error: unknown) => {
 			assert.ok(error instanceof Error);
-			assert.match(
-				error.message,
-				/\[fixture harness_schema_invalid_unknown_field\]/,
-			);
+			assert.match(error.message, /\[fixture harness_schema_invalid_unknown_field\]/);
 			assert.match(error.message, /unknown top-level key "unexpected"/);
 			return true;
 		},
@@ -263,10 +233,7 @@ test("rejects `scan --json` success fixtures that expect mutation", () => {
 		(path) => {
 			writeFileSync(resolve(path, "stdout.golden"), '{"schema_version":1}\n');
 			mkdirSync(resolve(path, "expected", "repo"), { recursive: true });
-			writeFileSync(
-				resolve(path, "expected", "repo", "anchormap.yaml"),
-				"version: 1\n",
-			);
+			writeFileSync(resolve(path, "expected", "repo", "anchormap.yaml"), "version: 1\n");
 		},
 	);
 });
@@ -365,10 +332,7 @@ test("rejects fixtures whose required `repo/` tree is a symlink", () => {
 		(path) => {
 			const target = resolve(path, "..", "external-repo");
 			mkdirSync(target, { recursive: true });
-			writeFileSync(
-				resolve(target, "anchor.ts"),
-				'export const value = "x";\n',
-			);
+			writeFileSync(resolve(target, "anchor.ts"), 'export const value = "x";\n');
 			symlinkSync(target, resolve(path, "repo"));
 		},
 		{ createRepo: false },
@@ -576,15 +540,7 @@ test("classifies the CLI subcommand from the command slot, not from argument val
 		validateFixtureManifest({
 			...minimalFailureManifest(),
 			id: "harness_schema_valid_map_seed_named_scan",
-			command: [
-				"node",
-				"dist/cli-stub.js",
-				"map",
-				"--anchor",
-				"FR-001",
-				"--seed",
-				"scan",
-			],
+			command: ["node", "dist/cli-stub.js", "map", "--anchor", "FR-001", "--seed", "scan"],
 			exit_code: 0,
 			stdout: { kind: "ignored" },
 			stderr: { kind: "ignored" },
@@ -593,18 +549,12 @@ test("classifies the CLI subcommand from the command slot, not from argument val
 	);
 });
 
-test('classifies `scan --json` only from the contract flag position', () => {
+test("classifies `scan --json` only from the contract flag position", () => {
 	assert.doesNotThrow(() =>
 		validateFixtureManifest({
 			...minimalFailureManifest(),
 			id: "harness_schema_valid_scan_value_named_json",
-			command: [
-				"node",
-				"dist/cli-stub.js",
-				"scan",
-				"--note",
-				"--json",
-			],
+			command: ["node", "dist/cli-stub.js", "scan", "--note", "--json"],
 			exit_code: 0,
 			stdout: { kind: "ignored" },
 			stderr: { kind: "ignored" },
@@ -629,15 +579,9 @@ test("rejects command arrays that do not declare a supported CLI subcommand in t
 			validateFixtureManifest({
 				...minimalFailureManifest(),
 				id: "harness_schema_invalid_node_wrapper_flags",
-				command: [
-					"node",
-					"--eval",
-					"scan",
-					"dist/cli-stub.js",
-					"status",
-				],
+				command: ["node", "--eval", "scan", "dist/cli-stub.js", "status"],
 			}),
-			/command using "node" must place the CLI script path in argv\[1\] and the subcommand in argv\[2\]/,
+		/command using "node" must place the CLI script path in argv\[1\] and the subcommand in argv\[2\]/,
 	);
 
 	assert.throws(
@@ -711,11 +655,7 @@ test("rejects init/map failure fixtures that expect file mutations", () => {
 
 test("wraps missing manifest.json in a structured fixture validation error", () => {
 	const rootDir = mkdtempSync(resolve(tmpdir(), "anchormap-fixture-manifest-"));
-	const path = resolve(
-		rootDir,
-		"harness-schema",
-		"harness_schema_missing_manifest",
-	);
+	const path = resolve(rootDir, "harness-schema", "harness_schema_missing_manifest");
 
 	try {
 		mkdirSync(resolve(path, "repo"), { recursive: true });
@@ -724,10 +664,7 @@ test("wraps missing manifest.json in a structured fixture validation error", () 
 			() => loadFixtureManifest(path),
 			(error: unknown) => {
 				assert.ok(error instanceof FixtureManifestValidationError);
-				assert.match(
-					error.message,
-					/\[fixture harness_schema_missing_manifest\]/,
-				);
+				assert.match(error.message, /\[fixture harness_schema_missing_manifest\]/);
 				assert.match(error.message, /unable to read manifest:/);
 				assert.match(error.message, /manifest\.json/);
 				return true;
@@ -740,11 +677,7 @@ test("wraps missing manifest.json in a structured fixture validation error", () 
 
 test("wraps invalid manifest.json parse failures with the fixture id when available", () => {
 	const rootDir = mkdtempSync(resolve(tmpdir(), "anchormap-fixture-manifest-"));
-	const path = resolve(
-		rootDir,
-		"harness-schema",
-		"harness_schema_invalid_json_manifest",
-	);
+	const path = resolve(rootDir, "harness-schema", "harness_schema_invalid_json_manifest");
 
 	try {
 		mkdirSync(resolve(path, "repo"), { recursive: true });
@@ -754,10 +687,7 @@ test("wraps invalid manifest.json parse failures with the fixture id when availa
 			() => loadFixtureManifest(path),
 			(error: unknown) => {
 				assert.ok(error instanceof FixtureManifestValidationError);
-				assert.match(
-					error.message,
-					/\[fixture harness_schema_invalid_json_manifest\]/,
-				);
+				assert.match(error.message, /\[fixture harness_schema_invalid_json_manifest\]/);
 				assert.match(error.message, /manifest is not valid JSON:/);
 				return true;
 			},
@@ -768,17 +698,9 @@ test("wraps invalid manifest.json parse failures with the fixture id when availa
 });
 
 test("computes fixture layout paths deterministically", () => {
-	const layout = resolveFixtureLayout(
-		fixtureDir("harness-schema", "harness_schema_success"),
-	);
+	const layout = resolveFixtureLayout(fixtureDir("harness-schema", "harness_schema_success"));
 
-	assert.equal(
-		layout.manifestPath,
-		resolve(layout.fixtureDir, "manifest.json"),
-	);
+	assert.equal(layout.manifestPath, resolve(layout.fixtureDir, "manifest.json"));
 	assert.equal(layout.repoDir, resolve(layout.fixtureDir, "repo"));
-	assert.equal(
-		layout.expectedRepoDir,
-		resolve(layout.fixtureDir, "expected", "repo"),
-	);
+	assert.equal(layout.expectedRepoDir, resolve(layout.fixtureDir, "expected", "repo"));
 });

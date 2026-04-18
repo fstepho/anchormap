@@ -116,10 +116,7 @@ export function resolveFixtureLayout(fixtureDir: string): FixtureLayout {
 		manifestPath: resolve(absoluteFixtureDir, FIXTURE_MANIFEST_FILENAME),
 		repoDir: resolve(absoluteFixtureDir, FIXTURE_REPO_DIRNAME),
 		expectedRepoDir: resolve(absoluteFixtureDir, FIXTURE_EXPECTED_REPO_DIRNAME),
-		stdoutGoldenPath: resolve(
-			absoluteFixtureDir,
-			FIXTURE_STDOUT_GOLDEN_FILENAME,
-		),
+		stdoutGoldenPath: resolve(absoluteFixtureDir, FIXTURE_STDOUT_GOLDEN_FILENAME),
 	};
 }
 
@@ -130,8 +127,7 @@ export function loadFixtureManifest(fixtureDir: string): LoadedFixtureManifest {
 	try {
 		manifestSource = readFileSync(layout.manifestPath, "utf8");
 	} catch (error) {
-		const reason =
-			error instanceof Error ? error.message : "unknown manifest read failure";
+		const reason = error instanceof Error ? error.message : "unknown manifest read failure";
 		fail(`unable to read manifest: ${reason}`, {
 			manifestPath: layout.manifestPath,
 			fixtureId,
@@ -142,8 +138,7 @@ export function loadFixtureManifest(fixtureDir: string): LoadedFixtureManifest {
 	try {
 		parsedManifest = JSON.parse(manifestSource);
 	} catch (error) {
-		const reason =
-			error instanceof Error ? error.message : "unknown JSON parse failure";
+		const reason = error instanceof Error ? error.message : "unknown JSON parse failure";
 		fail(`manifest is not valid JSON: ${reason}`, {
 			manifestPath: layout.manifestPath,
 			fixtureId,
@@ -169,9 +164,7 @@ export function validateFixtureManifest(
 ): FixtureManifest {
 	const manifest = requireObject(rawManifest, "manifest", context);
 	const fixtureId =
-		typeof manifest.id === "string" && manifest.id.length > 0
-			? manifest.id
-			: context.fixtureId;
+		typeof manifest.id === "string" && manifest.id.length > 0 ? manifest.id : context.fixtureId;
 	const manifestContext = { ...context, fixtureId };
 
 	assertOnlyKeys(manifest, TOP_LEVEL_KEYS, "top-level", manifestContext);
@@ -185,23 +178,9 @@ export function validateFixtureManifest(
 		}
 	}
 
-	const id = requireStableId(
-		manifest.id,
-		"id",
-		STABLE_ID_PATTERN,
-		manifestContext,
-	);
-	const family = requireStableId(
-		manifest.family,
-		"family",
-		FAMILY_PATTERN,
-		manifestContext,
-	);
-	const purpose = requireNonEmptyString(
-		manifest.purpose,
-		"purpose",
-		manifestContext,
-	);
+	const id = requireStableId(manifest.id, "id", STABLE_ID_PATTERN, manifestContext);
+	const family = requireStableId(manifest.family, "family", FAMILY_PATTERN, manifestContext);
+	const purpose = requireNonEmptyString(manifest.purpose, "purpose", manifestContext);
 	const command = requireCommand(manifest.command, manifestContext);
 	const cwd = requireRelativePosixPath(manifest.cwd, "cwd", manifestContext, {
 		allowDot: true,
@@ -209,26 +188,15 @@ export function validateFixtureManifest(
 	const exitCode = requireExitCode(manifest.exit_code, manifestContext);
 	const stdout = requireStdoutOracle(manifest.stdout, manifestContext);
 	const stderr = requireStderrOracle(manifest.stderr, manifestContext);
-	const filesystem = requireFilesystemOracle(
-		manifest.filesystem,
-		manifestContext,
-	);
-	const tags = requireOptionalStableList(
-		manifest.tags,
-		"tags",
-		STABLE_ID_PATTERN,
-		manifestContext,
-	);
+	const filesystem = requireFilesystemOracle(manifest.filesystem, manifestContext);
+	const tags = requireOptionalStableList(manifest.tags, "tags", STABLE_ID_PATTERN, manifestContext);
 	const groups = requireOptionalStableList(
 		manifest.groups,
 		"groups",
 		STABLE_ID_PATTERN,
 		manifestContext,
 	);
-	const faultInjection = requireFaultInjectionMarker(
-		manifest.fault_injection,
-		manifestContext,
-	);
+	const faultInjection = requireFaultInjectionMarker(manifest.fault_injection, manifestContext);
 
 	const validatedManifest: FixtureManifest = {
 		id,
@@ -250,10 +218,7 @@ export function validateFixtureManifest(
 	return validatedManifest;
 }
 
-function validateFixtureDirectoryContract(
-	layout: FixtureLayout,
-	manifest: FixtureManifest,
-): void {
+function validateFixtureDirectoryContract(layout: FixtureLayout, manifest: FixtureManifest): void {
 	if (basename(layout.fixtureDir) !== manifest.id) {
 		fail(`fixture directory basename must match manifest id "${manifest.id}"`, {
 			manifestPath: layout.manifestPath,
@@ -262,13 +227,10 @@ function validateFixtureDirectoryContract(
 	}
 
 	if (basename(layout.familyDir) !== manifest.family) {
-		fail(
-			`fixture family directory basename must match manifest family "${manifest.family}"`,
-			{
-				manifestPath: layout.manifestPath,
-				fixtureId: manifest.id,
-			},
-		);
+		fail(`fixture family directory basename must match manifest family "${manifest.family}"`, {
+			manifestPath: layout.manifestPath,
+			fixtureId: manifest.id,
+		});
 	}
 
 	validateFixtureArtifacts(layout, manifest);
@@ -295,20 +257,13 @@ function requireStableId(
 	const parsed = requireNonEmptyString(value, label, context);
 
 	if (!pattern.test(parsed)) {
-		fail(
-			`${label} must match ${pattern.toString()} and remain a stable identifier`,
-			context,
-		);
+		fail(`${label} must match ${pattern.toString()} and remain a stable identifier`, context);
 	}
 
 	return parsed;
 }
 
-function requireNonEmptyString(
-	value: unknown,
-	label: string,
-	context: ValidationContext,
-): string {
+function requireNonEmptyString(value: unknown, label: string, context: ValidationContext): string {
 	if (typeof value !== "string" || value.length === 0) {
 		fail(`${label} must be a non-empty string`, context);
 	}
@@ -321,9 +276,7 @@ function requireCommand(value: unknown, context: ValidationContext): string[] {
 		fail("command must be a non-empty array of strings", context);
 	}
 
-	return value.map((entry, index) =>
-		requireNonEmptyString(entry, `command[${index}]`, context),
-	);
+	return value.map((entry, index) => requireNonEmptyString(entry, `command[${index}]`, context));
 }
 
 function requireExitCode(value: unknown, context: ValidationContext): number {
@@ -342,10 +295,7 @@ function requireExitCode(value: unknown, context: ValidationContext): number {
 	return value;
 }
 
-function validateManifestSemantics(
-	manifest: FixtureManifest,
-	context: ValidationContext,
-): void {
+function validateManifestSemantics(manifest: FixtureManifest, context: ValidationContext): void {
 	const subcommand = detectSubcommand(manifest.command, context);
 
 	if (subcommand === "scan" && hasImmediateScanJsonFlag(manifest.command)) {
@@ -368,10 +318,7 @@ function hasImmediateScanJsonFlag(command: string[]): boolean {
 	return command[scanArgIndex] === "--json";
 }
 
-function validateFixtureArtifacts(
-	layout: FixtureLayout,
-	manifest: FixtureManifest,
-): void {
+function validateFixtureArtifacts(layout: FixtureLayout, manifest: FixtureManifest): void {
 	const context = {
 		manifestPath: layout.manifestPath,
 		fixtureId: manifest.id,
@@ -392,11 +339,7 @@ function validateFixtureArtifacts(
 		return;
 	}
 
-	assertExistingDirectory(
-		layout.expectedRepoDir,
-		FIXTURE_EXPECTED_REPO_DIRNAME,
-		context,
-	);
+	assertExistingDirectory(layout.expectedRepoDir, FIXTURE_EXPECTED_REPO_DIRNAME, context);
 
 	for (const file of manifest.filesystem.files) {
 		assertExistingRegularFile(
@@ -408,30 +351,18 @@ function validateFixtureArtifacts(
 	}
 }
 
-function validateScanJsonSemantics(
-	manifest: FixtureManifest,
-	context: ValidationContext,
-): void {
+function validateScanJsonSemantics(manifest: FixtureManifest, context: ValidationContext): void {
 	if (manifest.exit_code === 0) {
 		if (manifest.stdout.kind !== "golden") {
-			fail(
-				'scan --json success fixtures must use stdout.kind "golden"',
-				context,
-			);
+			fail('scan --json success fixtures must use stdout.kind "golden"', context);
 		}
 
 		if (manifest.stderr.kind !== "empty") {
-			fail(
-				'scan --json success fixtures must use stderr.kind "empty"',
-				context,
-			);
+			fail('scan --json success fixtures must use stderr.kind "empty"', context);
 		}
 
 		if (manifest.filesystem.kind !== "no_mutation") {
-			fail(
-				'scan --json success fixtures must use filesystem.kind "no_mutation"',
-				context,
-			);
+			fail('scan --json success fixtures must use filesystem.kind "no_mutation"', context);
 		}
 
 		return;
@@ -442,43 +373,25 @@ function validateScanJsonSemantics(
 	}
 
 	if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
-		fail(
-			'scan --json failure fixtures may only use stderr.kind "ignored" or "empty"',
-			context,
-		);
+		fail('scan --json failure fixtures may only use stderr.kind "ignored" or "empty"', context);
 	}
 
 	if (manifest.filesystem.kind !== "no_mutation") {
-		fail(
-			'scan --json failure fixtures must use filesystem.kind "no_mutation"',
-			context,
-		);
+		fail('scan --json failure fixtures must use filesystem.kind "no_mutation"', context);
 	}
 }
 
-function validateHumanScanSemantics(
-	manifest: FixtureManifest,
-	context: ValidationContext,
-): void {
+function validateHumanScanSemantics(manifest: FixtureManifest, context: ValidationContext): void {
 	if (manifest.stdout.kind !== "ignored") {
-		fail(
-			'scan fixtures without --json must use stdout.kind "ignored"',
-			context,
-		);
+		fail('scan fixtures without --json must use stdout.kind "ignored"', context);
 	}
 
 	if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
-		fail(
-			'scan fixtures without --json may only use stderr.kind "ignored" or "empty"',
-			context,
-		);
+		fail('scan fixtures without --json may only use stderr.kind "ignored" or "empty"', context);
 	}
 
 	if (manifest.filesystem.kind !== "no_mutation") {
-		fail(
-			'scan fixtures without --json must use filesystem.kind "no_mutation"',
-			context,
-		);
+		fail('scan fixtures without --json must use filesystem.kind "no_mutation"', context);
 	}
 }
 
@@ -502,33 +415,20 @@ function validateHumanWriteCommandSemantics(
 
 	if (manifest.exit_code === 0) {
 		if (manifest.filesystem.kind !== "expected_files") {
-			fail(
-				'init/map success fixtures must use filesystem.kind "expected_files"',
-				context,
-			);
+			fail('init/map success fixtures must use filesystem.kind "expected_files"', context);
 		}
 
 		return;
 	}
 
 	if (manifest.filesystem.kind !== "no_mutation") {
-		fail(
-			'init/map failure fixtures must use filesystem.kind "no_mutation"',
-			context,
-		);
+		fail('init/map failure fixtures must use filesystem.kind "no_mutation"', context);
 	}
 }
 
-function assertExistingDirectory(
-	path: string,
-	label: string,
-	context: ValidationContext,
-): void {
+function assertExistingDirectory(path: string, label: string, context: ValidationContext): void {
 	if (!existsSync(path)) {
-		fail(
-			`fixture directory must contain companion directory "${label}"`,
-			context,
-		);
+		fail(`fixture directory must contain companion directory "${label}"`, context);
 	}
 
 	const stats = lstatSync(path);
@@ -567,10 +467,7 @@ function detectSubcommand(
 ): "init" | "map" | "scan" | undefined {
 	if (command[0] === "node") {
 		if (command.length < 3) {
-			fail(
-				'command using "node" must be ["node", "<script>", "<subcommand>", ...]',
-				context,
-			);
+			fail('command using "node" must be ["node", "<script>", "<subcommand>", ...]', context);
 		}
 
 		if (command[1].startsWith("-")) {
@@ -582,10 +479,7 @@ function detectSubcommand(
 
 		const candidate = command[2];
 		if (!SUPPORTED_SUBCOMMANDS.has(candidate)) {
-			fail(
-				'command must declare a supported CLI subcommand in the command slot',
-				context,
-			);
+			fail("command must declare a supported CLI subcommand in the command slot", context);
 		}
 
 		return candidate as "init" | "map" | "scan";
@@ -599,27 +493,18 @@ function detectSubcommand(
 	}
 
 	if (UNSUPPORTED_WRAPPER_LAUNCHERS.has(command[0])) {
-		fail(
-			`command must use a direct CLI launcher, not wrapper launcher "${command[0]}"`,
-			context,
-		);
+		fail(`command must use a direct CLI launcher, not wrapper launcher "${command[0]}"`, context);
 	}
 
 	const candidate = command[1];
 	if (!SUPPORTED_SUBCOMMANDS.has(candidate)) {
-		fail(
-			'command must declare a supported CLI subcommand in the command slot',
-			context,
-		);
+		fail("command must declare a supported CLI subcommand in the command slot", context);
 	}
 
 	return candidate as "init" | "map" | "scan";
 }
 
-function requireStdoutOracle(
-	value: unknown,
-	context: ValidationContext,
-): StdoutOracle {
+function requireStdoutOracle(value: unknown, context: ValidationContext): StdoutOracle {
 	const stdout = requireObject(value, "stdout", context);
 	const kind = requireNonEmptyString(stdout.kind, "stdout.kind", context);
 
@@ -644,10 +529,7 @@ function requireStdoutOracle(
 	}
 }
 
-function requireStderrOracle(
-	value: unknown,
-	context: ValidationContext,
-): StderrOracle {
+function requireStderrOracle(value: unknown, context: ValidationContext): StderrOracle {
 	const stderr = requireObject(value, "stderr", context);
 	const kind = requireNonEmptyString(stderr.kind, "stderr.kind", context);
 
@@ -675,35 +557,19 @@ function requireStderrOracle(
 	}
 }
 
-function requireFilesystemOracle(
-	value: unknown,
-	context: ValidationContext,
-): FilesystemOracle {
+function requireFilesystemOracle(value: unknown, context: ValidationContext): FilesystemOracle {
 	const filesystem = requireObject(value, "filesystem", context);
-	const kind = requireNonEmptyString(
-		filesystem.kind,
-		"filesystem.kind",
-		context,
-	);
+	const kind = requireNonEmptyString(filesystem.kind, "filesystem.kind", context);
 
 	switch (kind) {
 		case "no_mutation":
 			assertOnlyKeys(filesystem, new Set(["kind"]), "filesystem", context);
 			return { kind: "no_mutation" };
 		case "expected_files":
-			assertOnlyKeys(
-				filesystem,
-				new Set(["kind", "files"]),
-				"filesystem",
-				context,
-			);
+			assertOnlyKeys(filesystem, new Set(["kind", "files"]), "filesystem", context);
 			return {
 				kind: "expected_files",
-				files: requireRelativePathList(
-					filesystem.files,
-					"filesystem.files",
-					context,
-				),
+				files: requireRelativePathList(filesystem.files, "filesystem.files", context),
 			};
 		default:
 			fail(`unsupported filesystem oracle "${kind}"`, context);
@@ -774,12 +640,7 @@ function requireFaultInjectionMarker(
 	}
 
 	const faultInjection = requireObject(value, "fault_injection", context);
-	assertOnlyKeys(
-		faultInjection,
-		new Set(["marker"]),
-		"fault_injection",
-		context,
-	);
+	assertOnlyKeys(faultInjection, new Set(["marker"]), "fault_injection", context);
 
 	return {
 		marker: requireStableId(
