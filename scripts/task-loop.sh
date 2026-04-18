@@ -98,14 +98,23 @@ Recommended loop for $task_id
    - needs_rework
    - blocked
    - done
-8. If review returns needs_rework, do another implementation pass and then a
-   second review. Do not mark the task done after implementation alone.
-9. Commit only if the task satisfies Gate F / task-level done:
+8. If review returns needs_rework and the findings are bounded and in-scope, the
+   orchestrator should do one follow-up implementation pass immediately without
+   waiting for user input, then run a second review. Stop instead for:
+   - spec ambiguity
+   - product question
+   - out-of-scope discovery
+   - any change that would require docs/contract.md
+   - any broader design or task-plan rewrite
+   - a repeated review -> rework loop of the same class twice
+9. Do not mark the task done after implementation alone.
+10. Commit only if the task satisfies Gate F / task-level done:
    - target objective is complete
    - referenced tests and fixtures pass
    - stdout/stderr/exit code/mutation policy is preserved where applicable
    - no out-of-scope behavior changed
    - no eval was weakened
+   - any remaining review findings are explicitly non-blocking
 
 Task block from docs/tasks.md:
 
@@ -231,9 +240,22 @@ Execution model:
 - the orchestrator decides whether follow-up edits are needed
 - do not commit until the review findings are addressed and Gate F is satisfied
 - if review requires follow-up edits, set the task state to needs_rework
+- if review returns bounded in-scope findings, the orchestrator should apply one
+  follow-up implementation pass immediately without waiting for user input
 - after any follow-up implementation pass, run a second review before marking
   the task done
 - "ready for re-review" is not done
+- severity alone does not decide done
+- if only low-severity findings remain, mark the task done only if they are
+  explicitly non-blocking and Gate F is satisfied; otherwise keep the task in
+  needs_rework or blocked
+- stop instead of auto-correcting when review finds:
+  - spec ambiguity
+  - product question
+  - out-of-scope discovery
+  - any change that would require docs/contract.md
+  - any broader design or task-plan rewrite
+  - a repeated review -> rework loop of the same class twice
 - the only valid final states from this prompt are:
   - done
   - needs_rework
@@ -275,11 +297,13 @@ Review subagent questions:
 - did the diff weaken an eval?
 - are failures and edge cases covered?
 - are known limits documented?
+- which findings are blocking vs explicitly non-blocking relative to Gate F?
 
 Orchestrator return:
 1. review findings ordered by severity
 2. any required follow-up edits
-3. current task state: done, needs_rework, or blocked
+3. any findings explicitly accepted as non-blocking
+4. current task state: done, needs_rework, or blocked
 EOF
 }
 

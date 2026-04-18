@@ -80,15 +80,27 @@ sh scripts/task-loop.sh review T1.1
    - `needs_rework`
    - `blocked`
    - `done`
-7. If review returns `needs_rework`, do another implementation pass, then a
-   second review. Do not mark the task done after implementation alone.
-8. Commit only if:
+7. If review returns `needs_rework` and the findings are bounded and in-scope,
+   the orchestrator should do one follow-up implementation pass immediately
+   without waiting for user input, then run a second review.
+8. Stop instead of auto-correcting when the review exposes:
+   - `spec ambiguity`
+   - `product question`
+   - `out-of-scope discovery`
+   - a change that would require `docs/contract.md`
+   - a broader design or task-plan rewrite
+   - the same `review -> rework` loop twice
+9. Do not mark the task done after implementation alone.
+10. Commit only if:
    - the target task objective is complete;
    - the referenced tests and fixtures pass;
    - the applicable stdout/stderr/exit code/mutation policy is preserved;
    - no out-of-scope behavior changed;
-   - no eval was weakened.
-9. Move to the next task manually. Do not auto-pick from hidden state.
+   - no eval was weakened;
+   - any remaining findings are explicitly non-blocking relative to Gate F.
+11. Low severity alone does not justify `done`. A task can finish with only
+    remaining `low` findings if, and only if, they are explicitly non-blocking.
+12. Move to the next task manually. Do not auto-pick from hidden state.
 
 ## Single path
 
