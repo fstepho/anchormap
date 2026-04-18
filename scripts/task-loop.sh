@@ -64,6 +64,30 @@ require_task() {
   printf '%s\n' "$task_block"
 }
 
+extract_execution_state() {
+  awk '
+    $0 == "## Execution State" {
+      found = 1
+      start = NR
+    }
+    found && NR > start && $0 ~ "^## " {
+      exit
+    }
+    found {
+      print
+    }
+  ' "$TASKS_FILE"
+}
+
+read_execution_state() {
+  execution_state=$(extract_execution_state)
+  if [ -n "$execution_state" ]; then
+    printf '%s\n' "$execution_state"
+  else
+    printf '%s\n' "## Execution State" "" "- No live execution state recorded in docs/tasks.md."
+  fi
+}
+
 print_loop() {
   task_id="$1"
   task_block="$2"
@@ -125,6 +149,7 @@ EOF
 print_implement_prompt() {
   task_id="$1"
   task_block="$2"
+  execution_state="$3"
 
   cat <<EOF
 You are the orchestrator for task $task_id.
@@ -135,6 +160,14 @@ Required reading order:
 3. docs/design.md
 4. docs/evals.md
 5. docs/tasks.md
+
+Live execution state from docs/tasks.md:
+
+$execution_state
+
+Use this section to understand current progress, blocked work, and completed
+work. The explicit target task in this prompt remains authoritative; do not
+switch tasks based on the execution state alone.
 
 Before coding:
 - identify the target task in docs/tasks.md
@@ -225,6 +258,7 @@ EOF
 print_review_prompt() {
   task_id="$1"
   task_block="$2"
+  execution_state="$3"
 
   cat <<EOF
 You are the orchestrator for review of task $task_id.
@@ -235,6 +269,14 @@ Review the full cumulative diff for task $task_id only against:
 - docs/evals.md
 - docs/operating-model.md
 - task $task_id from docs/tasks.md
+
+Live execution state from docs/tasks.md:
+
+$execution_state
+
+Use this section to understand current progress, blocked work, and completed
+work. The explicit target task in this prompt remains authoritative; do not
+switch tasks based on the execution state alone.
 
 Execution model:
 - spawn exactly one newly created fresh-context review subagent for this review
@@ -423,10 +465,12 @@ main() {
           print_loop "$task_id" "$task_block"
           ;;
         implement)
-          print_implement_prompt "$task_id" "$task_block"
+          execution_state=$(read_execution_state)
+          print_implement_prompt "$task_id" "$task_block" "$execution_state"
           ;;
         review)
-          print_review_prompt "$task_id" "$task_block"
+          execution_state=$(read_execution_state)
+          print_review_prompt "$task_id" "$task_block" "$execution_state"
           ;;
       esac
       ;;

@@ -19,6 +19,11 @@ Do not start coding until you have identified:
 - the relevant sections of `docs/design.md`;
 - the relevant fixtures, eval families, or gates in `docs/evals.md`.
 
+When present, use `## Execution State` in `docs/tasks.md` as the live execution
+cursor for current task, completed tasks, blocked tasks, and open deviations.
+Use it for orientation only: the explicit task requested by the user or by the
+helper prompt remains authoritative.
+
 If a scope question remains open after that reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
 
 ## Operational Authority
@@ -28,7 +33,7 @@ Use the document hierarchy defined in `docs/operating-model.md`.
 - `docs/contract.md` is authoritative for observable behavior.
 - `docs/evals.md` is authoritative for verification gates, fixtures, and goldens.
 - `docs/design.md` guides implementation as long as it stays compatible with the contract and evals.
-- `docs/tasks.md` defines the one-task execution plan.
+- `docs/tasks.md` defines the one-task execution plan and contains the live execution cursor in `## Execution State`.
 - `docs/operating-model.md` defines the production method, change policy, deviation taxonomy, review protocol, and done definitions.
 - `docs/brief.md` is used only to arbitrate product scope when a scope question remains open after the required reading.
 
@@ -46,6 +51,7 @@ If a change would supersede an accepted ADR, classify the deviation first and th
 
 - Treat each request as a bounded task, ideally a `Tn.m` identifier from `docs/tasks.md`.
 - If a request spans multiple tasks, split it and handle only one task at a time.
+- Use `docs/tasks.md` `## Execution State` to understand repo progress and blockers, but do not auto-pick or switch tasks unless the user explicitly asks.
 - Before any patch, state which task is targeted and which contract, design, and eval sections bound the change.
 - If a request is process-doc maintenance rather than a product task, classify the deviation first and bound the files being changed.
 - Do not modify `docs/contract.md` without explicit instruction.

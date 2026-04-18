@@ -17,9 +17,25 @@
   - Gate B — Contrat prêt: pass.
   - Gate C — Evals prêtes: pass.
   - Gate D — Tâches prêtes: maintained by this document.
-  - Gate E — Implémentation prête à démarrer: pass; next executable product task is `T1.1`, with no blocking question currently recorded for that task.
+  - Gate E — Implémentation prête à démarrer: pass; the live execution cursor is maintained in `## Execution State`.
 - A repository-bootstrap task `T0.0` materializes the accepted Node/npm/TypeScript baseline before code-bearing M1 work; it does not change the first product task identified by kickoff readiness.
-- Current execution cursor after kickoff-doc closure: `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`; next executable product task remains `T1.1 — Define fixture manifest schema and fixture directory contract`.
+- The kickoff snapshot above is historical. Use `## Execution State` as the current operator-maintained execution cursor.
+
+## Execution State
+
+- This section is the live execution cursor for the local task loop.
+- Update it only after task-level done (§19.1) or after an explicit blocked/deviation decision.
+- Current active task: `S3 — Filesystem mutation detection and path behavior report`
+- Next executable product task after blocker clearance: `T1.2 — Implement sandbox materialization from fixture input`
+- Last completed task: `T1.1 — Define fixture manifest schema and fixture directory contract`
+- Completed tasks recorded here:
+  - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
+  - `T0.0a — Install pinned Biome baseline for local formatting and linting`
+  - `T1.1 — Define fixture manifest schema and fixture directory contract`
+- Blocked tasks:
+  - `T1.2` blocked by `S3`
+- Open deviations:
+  - `None recorded`
 
 ## Execution principles
 
