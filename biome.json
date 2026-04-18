@@ -1,1 +1,121 @@
-{}
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"lineWidth": 100
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noConsole": "error",
+				"noDebugger": "error",
+				"noImportCycles": "error"
+			},
+			"nursery": {
+				"noExcessiveLinesPerFile": {
+					"level": "warn",
+					"options": {
+						"maxLines": 800,
+						"skipBlankLines": true
+					}
+				}
+			},
+			"style": {
+				"noDefaultExport": "error",
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"node:http": "AnchorMap must stay offline and deterministic; do not import node:http in src/**.",
+							"http": "AnchorMap must stay offline and deterministic; do not import http in src/**.",
+							"node:https": "AnchorMap must stay offline and deterministic; do not import node:https in src/**.",
+							"https": "AnchorMap must stay offline and deterministic; do not import https in src/**.",
+							"node:http2": "AnchorMap must stay offline and deterministic; do not import node:http2 in src/**.",
+							"http2": "AnchorMap must stay offline and deterministic; do not import http2 in src/**.",
+							"node:net": "AnchorMap must stay offline and deterministic; do not import node:net in src/**.",
+							"net": "AnchorMap must stay offline and deterministic; do not import net in src/**.",
+							"node:tls": "AnchorMap must stay offline and deterministic; do not import node:tls in src/**.",
+							"tls": "AnchorMap must stay offline and deterministic; do not import tls in src/**.",
+							"node:dgram": "AnchorMap must stay offline and deterministic; do not import node:dgram in src/**.",
+							"dgram": "AnchorMap must stay offline and deterministic; do not import dgram in src/**.",
+							"node:dns": "AnchorMap must stay offline and deterministic; do not import node:dns in src/**.",
+							"dns": "AnchorMap must stay offline and deterministic; do not import dns in src/**.",
+							"node:dns/promises": "AnchorMap must stay offline and deterministic; do not import node:dns/promises in src/**.",
+							"dns/promises": "AnchorMap must stay offline and deterministic; do not import dns/promises in src/**.",
+							"undici": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"node-fetch": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"cross-fetch": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"axios": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"got": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"superagent": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**.",
+							"ky": "AnchorMap must stay offline and deterministic; do not import HTTP clients in src/**."
+						},
+						"patterns": [
+							{
+								"group": ["./*", "../*", "../../*", "../../../*", "../../../../*"],
+								"importNamePattern": "default",
+								"message": "Use named imports for local modules in src/** to keep boundaries explicit."
+							}
+						]
+					}
+				}
+			},
+			"correctness": {
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["src/**/*.test.ts", "src/**/__tests__/**"],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noExcessiveLinesPerFile": "off"
+					},
+					"suspicious": {
+						"noConsole": "off",
+						"noImportCycles": "off"
+					},
+					"style": {
+						"noRestrictedImports": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["scripts/**"],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noExcessiveLinesPerFile": "off"
+					},
+					"suspicious": {
+						"noConsole": "off",
+						"noImportCycles": "off"
+					},
+					"style": {
+						"noDefaultExport": "off",
+						"noRestrictedImports": "off"
+					}
+				}
+			}
+		}
+	]
+}
