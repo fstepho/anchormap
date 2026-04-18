@@ -102,9 +102,19 @@ sh scripts/task-loop.sh review T1.1
    - no out-of-scope behavior changed;
    - no eval was weakened;
    - any remaining findings are explicitly non-blocking relative to Gate F.
-11. Low severity alone does not justify `done`. A task can finish with only
+11. After the final review decision, sync `docs/tasks.md` `## Execution State`
+    before commit or handoff:
+    - if the task is `done`, clear or replace `Current active task`, set
+      `Last completed task`, append to `Completed tasks recorded here`, and
+      clear any blocker that depended on this task;
+    - if the task is `blocked`, record the blocker in `Blocked tasks` and keep
+      the task out of `Last completed task`;
+    - if the task is `needs_rework`, keep or restore the task as active and
+      record any explicit deviation in `Open deviations` when applicable;
+    - do not auto-pick the next task while updating the cursor.
+12. Low severity alone does not justify `done`. A task can finish with only
     remaining `low` findings if, and only if, they are explicitly non-blocking.
-12. Move to the next task manually. Do not auto-pick from hidden state.
+13. Move to the next task manually. Do not auto-pick from hidden state.
 
 ## Single path
 

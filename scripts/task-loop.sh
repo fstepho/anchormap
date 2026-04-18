@@ -139,6 +139,14 @@ Recommended loop for $task_id
    - no out-of-scope behavior changed
    - no eval was weakened
    - any remaining review findings are explicitly non-blocking
+11. After the final review decision, sync docs/tasks.md ## Execution State
+    before commit or handoff:
+    - update Current active task
+    - update Last completed task when the task is done
+    - append to Completed tasks recorded here when the task is done
+    - update or clear Blocked tasks as required
+    - update Open deviations when applicable
+12. Do not auto-pick the next task while updating the execution cursor.
 
 Task block from docs/tasks.md:
 
@@ -207,6 +215,8 @@ Execution model:
 - after an implementation pass, the only valid next states are:
   - needs_review
   - blocked
+- if the implementation pass ends in blocked, update docs/tasks.md
+  ## Execution State in the same patch to record the blocker or deviation
 - do not mark the task done from this prompt
 
 Constraints:
@@ -312,6 +322,16 @@ Execution model:
   - done
   - needs_rework
   - blocked
+- after deciding the final state, update docs/tasks.md ## Execution State in
+  the same patch before commit or handoff:
+  - for done: clear or replace Current active task, set Last completed task,
+    append to Completed tasks recorded here, and clear blockers that depended
+    on the task
+  - for needs_rework: keep or restore the task as active and record any
+    explicit deviation in Open deviations when applicable
+  - for blocked: record the blocker in Blocked tasks and do not mark the task
+    as completed
+- do not auto-pick the next task while updating the execution cursor
 
 Task block from docs/tasks.md:
 
@@ -357,7 +377,8 @@ Orchestrator return:
 1. review findings ordered by severity
 2. any required follow-up edits
 3. any findings explicitly accepted as non-blocking
-4. current task state: done, needs_rework, or blocked
+4. execution-state update required in docs/tasks.md
+5. current task state: done, needs_rework, or blocked
 EOF
 }
 
