@@ -605,6 +605,18 @@ Règles :
 - une ADR acceptée est contraignante jusqu'à remplacement explicite ;
 - une implémentation ou un refactor ne doit pas contourner silencieusement une ADR acceptée.
 
+### 8.7 Pré-production : simplifier plutôt que compatibiliser
+
+Tant que le projet n'a ni utilisateurs en production ni release déployée à préserver, la politique par défaut est de **remplacer proprement** plutôt que de conserver de la compatibilité interne.
+
+Règles :
+
+- lorsqu'un design, un refactor ou une convention interne en remplace un autre, l'ancien chemin doit être supprimé, pas maintenu "au cas où" ;
+- ne pas conserver deux chemins d'exécution, deux représentations internes, deux conventions ou deux comportements internes en parallèle sans nécessité explicitement tracée au contrat, aux evals ou à une ADR acceptée ;
+- ne pas accumuler de flags, couches de compatibilité, adaptateurs temporaires, aliases temporaires ou branches mortes pour ménager une migration qui n'existe pas encore ;
+- en pré-production, la compatibilité à préserver est celle du contrat, des evals, des fixtures, des goldens et des ADR, pas celle d'anciens choix internes ;
+- si une coexistence transitoire est strictement nécessaire pour garder un patch petit, vérifiable et réversible, elle doit être explicitement bornée dans le plan de tâche ou le diff de travail et supprimée avant la clôture du jalon concerné.
+
 ## 9. Règles d'utilisation des agents IA
 
 Les agents IA peuvent être utilisés pour produire, vérifier et implémenter le projet, mais uniquement dans des rôles bornés.
