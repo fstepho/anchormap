@@ -5,7 +5,7 @@ description: Review the cumulative diff for a specific task against the normativ
 
 You are the orchestrator for the review pass of the target task.
 
-1. Identify the task ID from the user's request. Accepted forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). If no explicit ID is provided, stop and ask.
+1. Identify the task ID from the user's request. Accepted forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). If the user did not provide one, read `## Execution State` in `docs/tasks.md` and propose the `Current active task` value for confirmation; wait for an explicit "yes" or a different ID before proceeding. If `Current active task` is empty, absent, or ambiguous, stop and ask.
 2. Read, in order:
    - `AGENTS.md`
    - `docs/operating-model.md`
