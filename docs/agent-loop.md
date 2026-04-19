@@ -186,6 +186,20 @@ Print a bounded `tasks.md` update prompt after a classified deviation:
 sh scripts/task-loop.sh update T1.1
 ```
 
+Check `docs/tasks.md` integrity (read-only lint; exit 1 with one
+`validate: <check>: <detail>` line per issue on stderr):
+
+```sh
+sh scripts/task-loop.sh validate
+```
+
+Emit a zsh completion script for task IDs and modes; redirect to a file on
+`$fpath` and let `compinit` pick it up:
+
+```sh
+sh scripts/task-loop.sh completion zsh > ~/.zsh/completions/_task-loop.sh
+```
+
 ## Non-goals
 
 This helper does not:
