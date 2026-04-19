@@ -13,32 +13,29 @@ existing normative documents win.
 
 For one task, end to end:
 
-1. Start an implementation session: `codex` (no profile flag).
+1. Start an implementation session: `codex`.
 2. Use the repo-local skill definition
    `.agents/skills/implement-task/SKILL.md` for `T1.1` (or any `Tn.m` /
    `Sn` ID from `docs/tasks.md`). On agents that expose repo-local skill
    shorthand, the equivalent invocation is `$implement-task T1.1`.
 3. Work until the task is implemented or you hit a blocking deviation, and
-   run the relevant checks in this non-review session (or in a separate
-   non-review validation session) before opening review.
-4. Exit the session. Open a separate review session:
-   `codex --profile review` (read-only sandbox).
+   run the relevant checks in this implementation session before opening
+   review.
+4. Exit the session. Open a separate review session: `codex` (a fresh
+   session).
 5. Use `.agents/skills/review-task/SKILL.md` for the same task. On agents
    that expose repo-local skill shorthand, the equivalent invocation is
    `$review-task T1.1`.
-6. If review returns `needs_rework`, close the review session, run a
-   regular `codex` session to apply the bounded follow-up and produce the
-   missing verification evidence, then open a **fresh**
-   `codex --profile review` for the second review pass.
+6. If review returns `needs_rework`, close the review session, run a fresh
+   `codex` session to apply the bounded follow-up, then open another fresh
+   review session for the second review pass.
 7. Before commit: `sh scripts/lint-tasks.sh` (or `$validate-tasks` inside
    Codex) if `docs/tasks.md` changed, then `npm test`.
 8. Commit only when every condition in step 10 of the Recommended loop
    below is met.
 
-On a fresh checkout, the first `codex --profile review` prompts once to
-trust this project; accept, and trust persists to your
-`~/.codex/config.toml` (user-level). The rest of this file expands the
-rationale, roles, and the detailed per-step protocol.
+The rest of this file expands the rationale, roles, and the detailed
+per-step protocol.
 
 ## Why this exists
 
@@ -89,33 +86,6 @@ their `agents/openai.yaml`: `false` for the four mutating skills
 therefore independent of each agent's default skill-policy, and the
 workflow described here holds on any agent that honors the field.
 
-Under Codex CLI, running the review pass with `codex --profile review`
-enforces a read-only sandbox for the session. The profile is declared in
-`.codex/config.toml` and adds nothing else, so default sessions are
-unaffected.
-
-That read-only profile is intentional: the review session is an inspection
-phase, not the place to run `npm test`, rebuild `dist/`, or execute any
-check that requires filesystem writes. The required checks must be run
-before review in an implementation session or a dedicated non-review
-validation session, and the review consumes that already-produced evidence.
-
-On first use in a given checkout, Codex will prompt once to trust this
-project before loading `.codex/config.toml`. Accept the prompt to enable the
-`review` profile; trust is persisted to your `~/.codex/config.toml`
-(user-level) and does not need to be re-granted for subsequent sessions.
-
-For non-interactive sessions (CI, scripts, automated pipelines) where the
-trust prompt cannot be answered, invoke the equivalent configuration inline
-instead of `--profile review`:
-
-```sh
-codex --config sandbox_mode=read-only --config approval_policy=never
-```
-
-This bypasses project-config loading (so no trust prompt) while still
-enforcing the read-only guarantee.
-
 ## Recommended roles
 
 - Human orchestrator:
@@ -153,15 +123,13 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
 2. Use `.agents/skills/implement-task/SKILL.md` in your agent for the target
    task. If your agent exposes repo-local skill shorthand, the equivalent is
    `$implement-task T1.1`.
-3. Run the smallest relevant check early in a non-review session.
+3. Run the smallest relevant check early in this implementation session.
 4. If blocked, classify the deviation before making more changes. If the
    classification requires a task-plan update, invoke
    `$update-tasks T1.1`.
 5. Use `.agents/skills/review-task/SKILL.md` in a fresh agent session.
-   Under Codex CLI, prefer `codex --profile review` to enforce a read-only
-   sandbox during review. The review session consumes an already-produced
-   diff plus verification evidence; it does not run build/test steps that
-   write to disk.
+   Under Codex CLI, a plain `codex` session is used — the skill forbids
+   source edits by prose and runs the referenced checks itself.
 6. Keep the task in exactly one explicit state:
    - `implementing`
    - `needs_review`
