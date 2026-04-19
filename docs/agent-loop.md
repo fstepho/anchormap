@@ -21,14 +21,17 @@ For one task, end to end:
 3. Work until the task is implemented or you hit a blocking deviation, and
    run the relevant checks in this implementation session before opening
    review.
-4. Exit the session. Open a separate review session: `codex` (a fresh
-   session).
-5. Use `.agents/skills/review-task/SKILL.md` for the same task. On agents
+4. From the same session, spawn a fresh-context review subagent to run
+   `.agents/skills/review-task/SKILL.md` for the same task. On agents
    that expose repo-local skill shorthand, the equivalent invocation is
-   `$review-task T1.1`.
-6. If review returns `needs_rework`, close the review session, run a fresh
-   `codex` session to apply the bounded follow-up, then open another fresh
-   review session for the second review pass.
+   `$review-task T1.1` inside the subagent.
+5. If your agent does not support subagent spawning, fall back to: exit
+   the session and open a fresh `codex` session, then run the skill
+   there.
+6. If review returns `needs_rework`, apply the bounded follow-up in the
+   main session, then spawn a new fresh-context review subagent for the
+   second review pass (fallback: fresh `codex` sessions for both the
+   follow-up and the re-review).
 7. Before commit: `sh scripts/lint-tasks.sh` (or `$validate-tasks` inside
    Codex) if `docs/tasks.md` changed, then `npm test`.
 8. Commit only when every condition in step 10 of the Recommended loop
@@ -127,9 +130,11 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
 4. If blocked, classify the deviation before making more changes. If the
    classification requires a task-plan update, invoke
    `$update-tasks T1.1`.
-5. Use `.agents/skills/review-task/SKILL.md` in a fresh agent session.
-   Under Codex CLI, a plain `codex` session is used — the skill forbids
-   source edits by prose and runs the referenced checks itself.
+5. Run `.agents/skills/review-task/SKILL.md` for the target task. Prefer
+   spawning a fresh-context review subagent from the main session when
+   your agent supports it; fall back to opening a fresh `codex` session
+   otherwise. The skill forbids source edits by prose and runs the
+   referenced checks itself.
 6. Keep the task in exactly one explicit state:
    - `implementing`
    - `needs_review`
