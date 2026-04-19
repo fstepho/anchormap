@@ -1,0 +1,40 @@
+Analyze fixture failure %%FIXTURE_ID%% for task %%TASK_ID%%.
+
+Inputs:
+- failing output
+- expected golden
+- stderr
+- exit code
+- task block from docs/tasks.md
+- docs/contract.md
+- docs/evals.md
+
+Task block from docs/tasks.md:
+
+%%TASK_BLOCK%%
+
+Classify the failure with exactly one primary classification from
+docs/operating-model.md section 10:
+- contract violation
+- spec ambiguity
+- design gap
+- eval defect
+- product question
+- tooling problem
+- out-of-scope discovery
+
+Optional secondary tags may be added for routing only, for example:
+- implementation-bug
+- fixture-golden
+- mutation-policy
+- test-harness
+- environment
+- read-path
+- render-path
+
+Return:
+1. classification
+2. evidence
+3. smallest corrective action
+4. files likely affected
+5. whether docs/tasks.md needs an update
