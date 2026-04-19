@@ -54,6 +54,7 @@ If a change would supersede an accepted ADR, classify the deviation first and th
 - Use `docs/tasks.md` `## Execution State` to understand repo progress and blockers, but do not auto-pick or switch tasks unless the user explicitly asks.
 - Before any patch, state which task is targeted and which contract, design, and eval sections bound the change.
 - If a request is process-doc maintenance rather than a product task, classify the deviation first and bound the files being changed.
+- Separate problem diagnosis from fix direction: recommendations must align with the patch intent and should complete a clean replacement rather than reintroduce fallback or legacy paths without explicit justification.
 - Do not modify `docs/contract.md` without explicit instruction.
 - Do not expand scope, weaken `docs/evals.md`, or introduce observable behavior without explicit traceability to `docs/contract.md` and `docs/evals.md`.
 - Do not use cache, network, Git, clock, or environment as a source of truth.
