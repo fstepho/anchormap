@@ -182,6 +182,11 @@ validate_tasks_file() {
         }
         rest = substr(rest, RSTART + RLENGTH)
       }
+      if (current_label == "Open deviations" && match($0, /^  - /)) {
+        open_dev_count++
+        open_dev_lines[open_dev_count] = $0
+        open_dev_nrs[open_dev_count] = NR
+      }
     }
     END {
       err = 0
@@ -209,6 +214,14 @@ validate_tasks_file() {
             } else {
               printf("validate: execution_state_dangling_ref: %s referenced in \"%s\"\n", id, label) > "/dev/stderr"
             }
+            err = 1
+          }
+        }
+        for (i = 1; i <= open_dev_count; i++) {
+          line = open_dev_lines[i]
+          if (index(line, "None recorded") > 0) continue
+          if (!match(line, /T[0-9]+\.[0-9]+/)) {
+            printf("validate: open_deviation_entry_missing_task_ref: line %d\n", open_dev_nrs[i]) > "/dev/stderr"
             err = 1
           }
         }

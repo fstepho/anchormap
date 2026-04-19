@@ -18,8 +18,8 @@ Affected task blocks from docs/tasks.md:
 
 %%TASK_BLOCKS%%
 
-Classify the deviation with exactly one primary classification from
-docs/operating-model.md section 10:
+If this change is a classified deviation, classify it with exactly one primary
+classification from docs/operating-model.md section 10:
 - contract violation
 - spec ambiguity
 - design gap
@@ -30,6 +30,11 @@ docs/operating-model.md section 10:
 
 Indicate separately whether the deviation is blocking or non-blocking relative
 to Gate F (docs/operating-model.md §19.1) for each affected task.
+
+If this change is a routine task edit under docs/operating-model.md §8.4
+(split, regrouping, dependency update) and not a classified deviation, state
+"no deviation, routine §8.4 task edit" instead of a §10 class, and skip
+return items 6 and 7.
 
 Constraints:
 - Do not modify docs/contract.md.
@@ -47,7 +52,11 @@ Return:
 3. updated dependencies
 4. updated verification references
 5. remaining risks
-6. Open deviations entry to append under ## Execution State, in the shape:
+6. Open deviations entry to append under ## Execution State, placed as an
+   indented bullet (two-space indent) directly under `- Open deviations:`.
+   Replace the `- `None recorded`` placeholder if it is the only existing
+   entry. The entry must contain at least one affected task ID so that
+   `scripts/task-loop.sh validate` does not flag it. Entry shape:
    - `<task_id> — <classification §10> — <blocking|non-blocking> — <short summary> — refs: <contract/design/eval/operating-model refs>`
 7. Execution-state cursor updates required alongside this deviation:
    - Current active task
