@@ -138,9 +138,11 @@ print_fixture_prompt() {
 print_update_prompt() {
   task_ids="$1"
   task_blocks="$2"
+  execution_state="$3"
   render_template update \
     "TASK_IDS=$task_ids" \
-    "TASK_BLOCKS=$task_blocks"
+    "TASK_BLOCKS=$task_blocks" \
+    "EXECUTION_STATE=$execution_state"
 }
 
 validate_tasks_file() {
@@ -299,7 +301,8 @@ $task_block"
           task_blocks="$task_block"
         fi
       done
-      print_update_prompt "$task_ids" "$task_blocks"
+      execution_state=$(read_execution_state)
+      print_update_prompt "$task_ids" "$task_blocks" "$execution_state"
       ;;
     *)
       die "Unknown mode: $mode"
