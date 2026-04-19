@@ -1,0 +1,7 @@
+{
+	"id": "validate_dangling_spike_ref",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: execution_state_dangling_ref: S3 referenced in \"Last completed task\""}
+}

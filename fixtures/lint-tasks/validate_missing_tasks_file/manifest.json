@@ -1,0 +1,7 @@
+{
+	"id": "validate_missing_tasks_file",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: tasks_file_missing: "}
+}

@@ -1,7 +1,0 @@
-{
-	"id": "review_t11_with_state",
-	"args": ["review", "T1.1"],
-	"exit_code": 0,
-	"stdout": {"kind": "golden"},
-	"stderr": {"kind": "empty"}
-}

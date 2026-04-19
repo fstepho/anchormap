@@ -1,0 +1,7 @@
+{
+	"id": "validate_orphan_deviation",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: open_deviation_entry_missing_task_ref: line"}
+}

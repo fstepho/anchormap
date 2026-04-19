@@ -1,7 +1,0 @@
-{
-	"id": "validate_deviation_ok",
-	"args": ["validate"],
-	"exit_code": 0,
-	"stdout": {"kind": "empty"},
-	"stderr": {"kind": "empty"}
-}

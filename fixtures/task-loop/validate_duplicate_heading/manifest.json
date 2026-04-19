@@ -1,7 +1,0 @@
-{
-	"id": "validate_duplicate_heading",
-	"args": ["validate"],
-	"exit_code": 1,
-	"stdout": {"kind": "empty"},
-	"stderr": {"kind": "contains", "value": "validate: heading_duplicate: T1.3"}
-}

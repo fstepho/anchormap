@@ -4,3 +4,8 @@ dist/
 *.tsbuildinfo
 .tmp/
 tmp/
+
+# Track only the Codex project profile config; ignore everything else under .codex/
+!.codex/
+.codex/*
+!.codex/config.toml

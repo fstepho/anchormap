@@ -1,0 +1,7 @@
+{
+	"id": "validate_missing_field",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: execution_state_field_missing: Blocked tasks:"}
+}

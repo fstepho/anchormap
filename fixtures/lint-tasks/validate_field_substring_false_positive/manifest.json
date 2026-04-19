@@ -1,0 +1,7 @@
+{
+	"id": "validate_field_substring_false_positive",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: execution_state_field_missing: Current active task:"}
+}

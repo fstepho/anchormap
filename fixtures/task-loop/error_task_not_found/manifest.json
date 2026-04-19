@@ -1,7 +1,0 @@
-{
-	"id": "error_task_not_found",
-	"args": ["brief", "T9.99"],
-	"exit_code": 1,
-	"stdout": {"kind": "empty"},
-	"stderr": {"kind": "contains", "value": "Task not found"}
-}

@@ -1,0 +1,7 @@
+{
+	"id": "validate_suffixed_id_ok",
+	"args": [],
+	"exit_code": 0,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "empty"}
+}

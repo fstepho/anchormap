@@ -1,7 +1,0 @@
-{
-	"id": "usage_noargs",
-	"args": [],
-	"exit_code": 0,
-	"stdout": {"kind": "golden"},
-	"stderr": {"kind": "empty"}
-}

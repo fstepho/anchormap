@@ -1,0 +1,7 @@
+{
+	"id": "validate_invalid_invocation",
+	"args": ["foo"],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: invalid_invocation: lint-tasks.sh takes no arguments"}
+}

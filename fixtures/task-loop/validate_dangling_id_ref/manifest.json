@@ -1,7 +1,0 @@
-{
-	"id": "validate_dangling_id_ref",
-	"args": ["validate"],
-	"exit_code": 1,
-	"stdout": {"kind": "empty"},
-	"stderr": {"kind": "contains", "value": "validate: execution_state_dangling_ref: T9.99 referenced in \"Current active task\""}
-}

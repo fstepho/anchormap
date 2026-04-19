@@ -1,0 +1,7 @@
+{
+	"id": "validate_empty_task_block",
+	"args": [],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: task_block_empty: T1.1"}
+}
