@@ -1,0 +1,7 @@
+{
+	"id": "completion_zsh",
+	"args": ["completion", "zsh"],
+	"exit_code": 0,
+	"stdout": {"kind": "golden"},
+	"stderr": {"kind": "empty"}
+}

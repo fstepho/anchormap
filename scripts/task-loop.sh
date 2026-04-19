@@ -243,6 +243,18 @@ main() {
     validate)
       validate_tasks_file
       ;;
+    completion)
+      [ "${2:-}" ] || die "Missing shell for mode: completion"
+      shell="$2"
+      case "$shell" in
+        zsh)
+          cat "$TEMPLATES_DIR/completion.zsh.tpl"
+          ;;
+        *)
+          die "Unsupported shell: $shell"
+          ;;
+      esac
+      ;;
     brief|loop|implement|review)
       [ "${2:-}" ] || die "Missing task id for mode: $mode"
       task_id="$2"
