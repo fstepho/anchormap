@@ -1,0 +1,7 @@
+{
+	"id": "validate_missing_execution_state",
+	"args": ["validate"],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "validate: execution_state_missing:"}
+}

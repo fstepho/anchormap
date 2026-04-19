@@ -143,6 +143,94 @@ print_update_prompt() {
     "TASK_BLOCKS=$task_blocks"
 }
 
+validate_tasks_file() {
+  awk '
+    BEGIN {
+      required["Current active task:"] = 1
+      required["Next executable product task"] = 1
+      required["Last completed task:"] = 1
+      required["Completed tasks recorded here:"] = 1
+      required["Blocked tasks:"] = 1
+      required["Open deviations:"] = 1
+    }
+    /^### T[0-9]+\.[0-9]+ / {
+      heading_count[$2]++
+    }
+    $0 == "## Execution State" {
+      in_es = 1
+      es_seen_section = 1
+      next
+    }
+    in_es && /^## / {
+      in_es = 0
+    }
+    in_es {
+      if (match($0, /^- [^:]+:/)) {
+        current_label = substr($0, 3, RLENGTH - 3)
+      }
+      for (label in required) {
+        if (index($0, label) > 0) seen[label] = 1
+      }
+      rest = $0
+      while (match(rest, /T[0-9]+\.[0-9]+/)) {
+        id = substr(rest, RSTART, RLENGTH)
+        if (!(id in refs)) {
+          refs[id] = 1
+          refs_label[id] = current_label
+        }
+        rest = substr(rest, RSTART + RLENGTH)
+      }
+    }
+    END {
+      err = 0
+      for (id in heading_count) {
+        if (heading_count[id] > 1) {
+          printf("validate: heading_duplicate: %s\n", id) > "/dev/stderr"
+          err = 1
+        }
+      }
+      if (!es_seen_section) {
+        print "validate: execution_state_missing:" > "/dev/stderr"
+        err = 1
+      } else {
+        for (label in required) {
+          if (!seen[label]) {
+            printf("validate: execution_state_field_missing: %s\n", label) > "/dev/stderr"
+            err = 1
+          }
+        }
+        for (id in refs) {
+          if (!(id in heading_count)) {
+            label = refs_label[id]
+            if (label == "") {
+              printf("validate: execution_state_dangling_ref: %s\n", id) > "/dev/stderr"
+            } else {
+              printf("validate: execution_state_dangling_ref: %s referenced in \"%s\"\n", id, label) > "/dev/stderr"
+            }
+            err = 1
+          }
+        }
+      }
+      exit err
+    }
+  ' "$TASKS_FILE" || structural_err=$?
+  : "${structural_err:=0}"
+
+  block_err=0
+  for id in $(awk '/^### T[0-9]+\.[0-9]+ /{print $2}' "$TASKS_FILE"); do
+    block=$(extract_task_block "$id")
+    if [ -z "$block" ]; then
+      printf 'validate: task_block_empty: %s\n' "$id" >&2
+      block_err=1
+    fi
+  done
+
+  if [ "$structural_err" -ne 0 ] || [ "$block_err" -ne 0 ]; then
+    return 1
+  fi
+  return 0
+}
+
 main() {
   require_tasks_file
 
@@ -151,6 +239,9 @@ main() {
     ""|-h|--help|help)
       usage
       exit 0
+      ;;
+    validate)
+      validate_tasks_file
       ;;
     brief|loop|implement|review)
       [ "${2:-}" ] || die "Missing task id for mode: $mode"
