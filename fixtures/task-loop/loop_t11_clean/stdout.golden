@@ -1,0 +1,67 @@
+Recommended loop for T1.1
+
+1. Read, in order:
+   - docs/operating-model.md
+   - docs/contract.md
+   - docs/design.md
+   - docs/evals.md
+   - docs/tasks.md
+2. State the target task, the relevant contract refs, the relevant design refs,
+   the relevant eval refs, and the smallest checks that should fail or pass.
+3. Use the implementation prompt with:
+   sh scripts/task-loop.sh implement T1.1
+4. Run the smallest relevant check early. Stop on the first blocking failure.
+5. If blocked, classify the deviation before changing more code:
+   - contract violation
+   - spec ambiguity
+   - design gap
+   - eval defect
+   - product question
+   - tooling problem
+   - out-of-scope discovery
+6. Use the review prompt with:
+   sh scripts/task-loop.sh review T1.1
+7. Keep the task in exactly one explicit state:
+   - implementing
+   - needs_review
+   - needs_rework
+   - blocked
+   - done
+8. If review returns needs_rework and the findings are bounded and in-scope, the
+   orchestrator should do one follow-up implementation pass immediately without
+   waiting for user input, then run a second review. Stop instead for:
+   - spec ambiguity
+   - product question
+   - out-of-scope discovery
+   - any change that would require docs/contract.md
+   - any broader design or task-plan rewrite
+   - a repeated review -> rework loop of the same class twice
+9. Do not mark the task done after implementation alone.
+10. Commit only if the task satisfies Gate F / task-level done:
+   - target objective is complete
+   - referenced tests and fixtures pass
+   - stdout/stderr/exit code/mutation policy is preserved where applicable
+   - no out-of-scope behavior changed
+   - no eval was weakened
+   - any remaining review findings are explicitly non-blocking
+11. After the final review decision, sync docs/tasks.md ## Execution State
+    before commit or handoff:
+    - update Current active task
+    - update Last completed task when the task is done
+    - append to Completed tasks recorded here when the task is done
+    - update or clear Blocked tasks as required
+    - update Open deviations when applicable
+12. Do not auto-pick the next task while updating the execution cursor.
+
+Task block from docs/tasks.md:
+
+### T1.1 — Define fixture manifest schema
+
+Purpose:
+- Define the manifest schema.
+
+Contract refs:
+- §4
+
+Done when:
+- Schema committed.

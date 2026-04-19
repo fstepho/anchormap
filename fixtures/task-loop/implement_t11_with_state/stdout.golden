@@ -1,0 +1,121 @@
+You are the orchestrator for task T1.1.
+
+Required reading order:
+1. docs/operating-model.md
+2. docs/contract.md
+3. docs/design.md
+4. docs/evals.md
+5. docs/tasks.md
+
+Live execution state from docs/tasks.md:
+
+## Execution State
+
+- Current active task: `None recorded`
+- Next executable product task after blocker clearance: `None recorded`
+- Last completed task: `T1.1 — Define fixture manifest schema`
+- Completed tasks recorded here:
+  - `T1.1 — Define fixture manifest schema`
+- Blocked tasks:
+  - `None recorded`
+- Open deviations:
+  - `None recorded`
+
+Use this section to understand current progress, blocked work, and completed
+work. The explicit target task in this prompt remains authoritative; do not
+switch tasks based on the execution state alone.
+
+Before coding:
+- identify the target task in docs/tasks.md
+- identify the relevant contract sections
+- identify the relevant design sections
+- identify the relevant fixtures, eval families, or gates
+- state the smallest checks that should fail or pass
+- if this is a process-doc or ADR task and the task block does not name
+  contract/design/eval refs, identify the relevant operating-model and ADR refs
+  instead, classify the change as process maintenance, and bound the files being
+  changed before editing
+
+Execution model:
+- keep docs/tasks.md and the normative docs as the only source of truth
+- do not create a parallel planning system
+- implementation is local in the main agent by default
+- delegate implementation only if this task is large or risky enough that a
+  bounded subagent materially improves the result
+- if you delegate implementation, spawn at most one implementation subagent
+- a delegated implementation subagent should keep the same execution settings as
+  the parent agent, including sandbox and approval mode
+- a delegated implementation subagent should work only on task T1.1
+- if an implementation subagent is still alive, do not edit files in parallel
+  in the main agent
+- if an implementation subagent times out, either wait again or close it before
+  making local edits
+- do not spawn a reviewer yet
+- do not commit from any implementation pass
+- if a delegated implementation subagent hits a blocking issue, have it return a
+  single classified deviation before more edits are attempted
+- set the task state to exactly one of:
+  - implementing
+  - needs_review
+  - needs_rework
+  - blocked
+  - done
+- after an implementation pass, the only valid next states are:
+  - needs_review
+  - blocked
+- if the implementation pass ends in blocked, update docs/tasks.md
+  ## Execution State in the same patch to record the blocker or deviation
+- do not mark the task done from this prompt
+
+Constraints:
+- Do not modify docs/contract.md.
+- Do not modify product scope.
+- Do not implement adjacent tasks.
+- Do not add behavior not required by the task.
+- Keep the patch minimal.
+- Add or update only tests/fixtures required by this task.
+- Preserve stdout/stderr/exit code discipline.
+- Preserve mutation policy.
+- Preserve the documentary hierarchy:
+  - contract.md for observable behavior
+  - evals.md for verification gates and fixtures
+  - brief.md for scope
+  - design.md for compatible implementation
+  - operating-model.md for production method
+- If a deviation is found, classify it before changing code, fixtures, or docs.
+
+If you delegate implementation, the implementation subagent contract is:
+- implement task T1.1 only
+- keep the patch minimal
+- add or update only tests/fixtures required by this task
+- run the smallest relevant check early
+- stop on the first blocking failure
+- return control to the orchestrator with:
+  1. files changed
+  2. behavior implemented
+  3. tests/fixtures run
+  4. risks
+  5. any spec ambiguity encountered
+  6. classification of any deviation using the taxonomy from
+     docs/operating-model.md
+
+Task block from docs/tasks.md:
+
+### T1.1 — Define fixture manifest schema
+
+Purpose:
+- Define the manifest schema.
+
+Contract refs:
+- §4
+
+Done when:
+- Schema committed.
+
+Orchestrator return:
+1. files changed
+2. relevant contract/design/eval refs identified before implementation, or the
+   relevant operating-model/ADR refs for a process-doc task
+3. smallest checks selected
+4. implementation result
+5. current task state: needs_review or blocked

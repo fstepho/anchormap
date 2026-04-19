@@ -1,0 +1,7 @@
+{
+	"id": "brief_t11_clean",
+	"args": ["brief", "T1.1"],
+	"exit_code": 0,
+	"stdout": {"kind": "golden"},
+	"stderr": {"kind": "empty"}
+}

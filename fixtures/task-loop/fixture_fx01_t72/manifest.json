@@ -1,0 +1,7 @@
+{
+	"id": "fixture_fx01_t72",
+	"args": ["fixture", "fx01_scan_min_clean", "T7.2"],
+	"exit_code": 0,
+	"stdout": {"kind": "golden"},
+	"stderr": {"kind": "empty"}
+}

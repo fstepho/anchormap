@@ -1,0 +1,7 @@
+{
+	"id": "update_t11_t12",
+	"args": ["update", "T1.1", "T1.2"],
+	"exit_code": 0,
+	"stdout": {"kind": "golden"},
+	"stderr": {"kind": "empty"}
+}

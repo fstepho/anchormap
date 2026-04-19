@@ -4,7 +4,7 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
-TASKS_FILE="$ROOT_DIR/docs/tasks.md"
+TASKS_FILE="${TASKS_FILE:-$ROOT_DIR/docs/tasks.md}"
 
 die() {
   printf '%s\n' "$*" >&2

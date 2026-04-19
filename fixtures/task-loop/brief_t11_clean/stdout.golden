@@ -1,0 +1,10 @@
+### T1.1 — Define fixture manifest schema
+
+Purpose:
+- Define the manifest schema.
+
+Contract refs:
+- §4
+
+Done when:
+- Schema committed.

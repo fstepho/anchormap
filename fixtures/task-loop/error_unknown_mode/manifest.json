@@ -1,0 +1,7 @@
+{
+	"id": "error_unknown_mode",
+	"args": ["foo"],
+	"exit_code": 1,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "Unknown mode: foo"}
+}
