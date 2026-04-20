@@ -50,6 +50,79 @@ also work.
 7. Stop instead of iterating when review exposes `spec ambiguity`, `product question`, `out-of-scope discovery`, a required `docs/contract.md` change, or a broader task-plan rewrite.
 8. Mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then sync `docs/tasks.md` through `update-tasks` before commit or handoff.
 
+## Orchestrator Routing
+
+This section is a local routing aid for the recommended loop. It is not a
+normative contract and does not override:
+
+- `docs/operating-model.md`
+- `docs/tasks.md`
+- the skill-specific rules in `.agents/skills/*/SKILL.md`
+
+Use it to route the next action after each skill result, not to redefine the
+skills themselves.
+
+### Routing Table
+
+| Step just completed | Result | Next action |
+|---|---|---|
+| `implement-task` | `needs_review` | Run `review-task` on the full cumulative task-scoped diff in a fresh context. |
+| `implement-task` | `blocked` because `docs/tasks.md` execution state is out of sync | Run `update-tasks` for the routine execution-state sync, then resume from the interrupted step. |
+| `implement-task` | `blocked` with a classified deviation | Run `update-tasks` to record the deviation and task state. If the block is a fixture failure that needs diagnosis, run `diagnose-fixture` next; otherwise stop and hand off. |
+| `review-task` | `done` | Hand off for the human commit or handoff gate. Do not auto-commit. |
+| `review-task` | `needs_rework` | Apply one bounded follow-up, then run a new fresh-context `review-task` pass on the full cumulative diff. |
+| `review-task` | `blocked` | Stop and hand off with the review classification, evidence, and required escalation. |
+| `diagnose-fixture` | classified result returned | Route according to `docs/operating-model.md` §10. Record any required task-state or deviation update through `update-tasks` before resuming implementation. |
+| `update-tasks` | change applied successfully | Resume the interrupted workflow step. |
+| `validate-tasks` | exit `0` | Continue the workflow. |
+| `validate-tasks` | exit non-zero | Fix `docs/tasks.md`, then rerun `validate-tasks` before continuing. |
+
+### Invariants
+
+- `review-task` always runs in a fresh context. Follow the rule from `.agents/skills/review-task/SKILL.md`; do not reuse the implementation session or a previous reviewer session.
+- Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
+- `update-tasks` is the only path that edits `docs/tasks.md`, including routine execution-state syncs and classified deviations.
+- Do not auto-pick the next task. Task selection remains human-directed.
+- Do not auto-commit. A green review pass is necessary for handoff, not sufficient for commit.
+
+### Hard Stops
+
+Stop and hand back to the human coordinator when any of the following is true:
+
+- `review-task` or `diagnose-fixture` classifies the issue as `spec ambiguity`
+- `review-task` or `diagnose-fixture` classifies the issue as `product question`
+- `review-task` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
+- the required fix would need a change to `docs/contract.md`
+- the required fix would need a broader task-plan rewrite rather than a bounded task update
+- the same class of blocking review finding returns after one bounded follow-up
+
+### Human Gates
+
+The coordinator does not decide these alone:
+
+- Task selection: choose the task explicitly from `docs/tasks.md`
+- Escalation handling: resolve any hard stop before resuming the loop
+- Commit or final handoff: after `review-task` returns `done`, sync `docs/tasks.md` as needed, then let the human decide whether to commit or hand off
+
+### Local Stop Labels
+
+When a handoff benefits from a short label, the following local labels are
+recommended:
+
+- `done`
+- `needs_rework_applied`
+- `rework_cap_exceeded`
+- `escalation_spec_ambiguity`
+- `escalation_product_question`
+- `escalation_out_of_scope`
+- `escalation_contract_change`
+- `blocked_execution_state`
+- `human_gate_commit`
+- `human_gate_task_selection`
+
+These labels are shorthand for local coordination only. The normative sources
+remain the workflow state vocabulary and deviation taxonomy defined elsewhere.
+
 ## Minimal Local Commands
 
 For `T1.7` and later harness work, the minimum local command surface is:
