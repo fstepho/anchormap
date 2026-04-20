@@ -200,7 +200,8 @@ test("prefers a built dist CLI carried by the sandbox repo root even when cwd is
 	const manifest: FixtureManifest = {
 		id: "harness_process_sandbox_root_dist_stub",
 		family: "harness-process",
-		purpose: "Fixture process prefers sandbox-root dist entrypoints before project fallback.",
+		purpose:
+			"Fixture process treats supported dist entrypoints as repo-root relative before project fallback.",
 		command: ["node", "dist/cli-stub.js", "scan"],
 		cwd: "subdir",
 		exit_code: 0,
@@ -213,10 +214,14 @@ test("prefers a built dist CLI carried by the sandbox repo root even when cwd is
 		manifest,
 		(fixtureDir) => {
 			mkdirSync(resolve(fixtureDir, "repo", "dist"), { recursive: true });
-			mkdirSync(resolve(fixtureDir, "repo", "subdir"), { recursive: true });
+			mkdirSync(resolve(fixtureDir, "repo", "subdir", "dist"), { recursive: true });
 			writeFileSync(
 				resolve(fixtureDir, "repo", "dist", "cli-stub.js"),
 				'process.stdout.write("sandbox root dist stub\\n");\nprocess.exit(0);\n',
+			);
+			writeFileSync(
+				resolve(fixtureDir, "repo", "subdir", "dist", "cli-stub.js"),
+				'process.stdout.write("shadowed subdir dist stub\\n");\nprocess.exit(0);\n',
 			);
 		},
 		async (fixtureDir) => {

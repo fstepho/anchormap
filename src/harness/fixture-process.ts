@@ -187,23 +187,23 @@ function resolveProjectNodeEntrypoint(
 		return pathValue;
 	}
 
-	const sandboxPath = resolve(sandboxCwd, pathValue);
-	if (existsSync(sandboxPath)) {
-		return sandboxPath;
-	}
+	if (isSupportedProjectEntrypoint(pathValue)) {
+		const sandboxRootPath = resolve(sandboxRoot, pathValue);
+		if (existsSync(sandboxRootPath)) {
+			return sandboxRootPath;
+		}
 
-	if (!isSupportedProjectEntrypoint(pathValue)) {
+		const projectPath = resolve(PROJECT_ROOT, pathValue);
+		if (existsSync(projectPath)) {
+			return projectPath;
+		}
+
 		return pathValue;
 	}
 
-	const sandboxRootPath = resolve(sandboxRoot, pathValue);
-	if (existsSync(sandboxRootPath)) {
-		return sandboxRootPath;
-	}
-
-	const projectPath = resolve(PROJECT_ROOT, pathValue);
-	if (existsSync(projectPath)) {
-		return projectPath;
+	const sandboxPath = resolve(sandboxCwd, pathValue);
+	if (existsSync(sandboxPath)) {
+		return sandboxPath;
 	}
 
 	return pathValue;
