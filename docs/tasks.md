@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `None recorded`
-- Last completed task: `T1.4 — Implement stdout, stderr, and golden comparison oracles`
+- Last completed task: `T1.5 — Implement filesystem mutation oracles`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -36,6 +36,7 @@
   - `T1.2 — Implement sandbox materialization from fixture input`
   - `T1.3 — Execute CLI under test and capture process contract outputs`
   - `T1.4 — Implement stdout, stderr, and golden comparison oracles`
+  - `T1.5 — Implement filesystem mutation oracles`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

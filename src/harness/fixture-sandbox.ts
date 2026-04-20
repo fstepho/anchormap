@@ -54,7 +54,7 @@ export function materializeFixtureSandbox(
 	try {
 		copyFixtureRepoTree(fixture.layout.repoDir, sandboxDir);
 		const cwd = resolveSandboxCwd(sandboxDir, fixture.manifest.cwd);
-		const preRunSnapshot = snapshotFilesystemTree(sandboxDir);
+		const preRunSnapshot = captureFilesystemSnapshot(sandboxDir);
 
 		return {
 			sandboxDir,
@@ -128,7 +128,7 @@ function resolveSandboxCwd(sandboxDir: string, relativeCwd: string): string {
 	return realCwd;
 }
 
-function snapshotFilesystemTree(rootDir: string): FilesystemSnapshotEntry[] {
+export function captureFilesystemSnapshot(rootDir: string): FilesystemSnapshotEntry[] {
 	const snapshot: FilesystemSnapshotEntry[] = [];
 	collectSnapshotEntries(rootDir, rootDir, snapshot);
 	return snapshot.sort((left, right) => compareBinaryUtf8(left.path, right.path));
