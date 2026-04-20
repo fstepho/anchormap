@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { basename, isAbsolute, resolve } from "node:path";
 
 import type { LoadedFixtureManifest } from "./fixture-manifest";
 import type { MaterializedFixtureSandbox } from "./fixture-sandbox";
@@ -52,6 +54,9 @@ export class FixtureProcessTimeoutError extends FixtureProcessError {
 	}
 }
 
+const PROJECT_ROOT = resolve(__dirname, "..", "..");
+const PROJECT_ENTRYPOINTS = new Set(["anchormap.js", "cli-stub.js"]);
+
 export async function executeFixtureCommand(
 	fixture: LoadedFixtureManifest,
 	sandbox: MaterializedFixtureSandbox,
@@ -65,6 +70,7 @@ export async function executeFixtureCommand(
 	}
 
 	const command = [...fixture.manifest.command];
+	const spawnCommand = resolveSpawnCommand(command, sandbox.sandboxDir, sandbox.cwd);
 	const executable = command[0] === "node" ? process.execPath : command[0];
 
 	return await new Promise<FixtureProcessResult>((resolve, reject) => {
@@ -82,7 +88,7 @@ export async function executeFixtureCommand(
 			callback();
 		};
 
-		const child = spawn(executable, command.slice(1), {
+		const child = spawn(executable, spawnCommand.slice(1), {
 			cwd: sandbox.cwd,
 			stdio: ["ignore", "pipe", "pipe"],
 			windowsHide: true,
@@ -154,4 +160,55 @@ export async function executeFixtureCommand(
 			child.kill("SIGKILL");
 		}, options.timeoutMs);
 	});
+}
+
+function resolveSpawnCommand(command: string[], sandboxRoot: string, sandboxCwd: string): string[] {
+	if (command.length === 0) {
+		return command;
+	}
+
+	if (command[0] === "node" && command.length >= 2) {
+		return [
+			command[0],
+			resolveProjectNodeEntrypoint(command[1], sandboxRoot, sandboxCwd),
+			...command.slice(2),
+		];
+	}
+
+	return command;
+}
+
+function resolveProjectNodeEntrypoint(
+	pathValue: string,
+	sandboxRoot: string,
+	sandboxCwd: string,
+): string {
+	if (isAbsolute(pathValue)) {
+		return pathValue;
+	}
+
+	const sandboxPath = resolve(sandboxCwd, pathValue);
+	if (existsSync(sandboxPath)) {
+		return sandboxPath;
+	}
+
+	if (!isSupportedProjectEntrypoint(pathValue)) {
+		return pathValue;
+	}
+
+	const sandboxRootPath = resolve(sandboxRoot, pathValue);
+	if (existsSync(sandboxRootPath)) {
+		return sandboxRootPath;
+	}
+
+	const projectPath = resolve(PROJECT_ROOT, pathValue);
+	if (existsSync(projectPath)) {
+		return projectPath;
+	}
+
+	return pathValue;
+}
+
+function isSupportedProjectEntrypoint(pathValue: string): boolean {
+	return pathValue.startsWith("dist/") && PROJECT_ENTRYPOINTS.has(basename(pathValue));
 }

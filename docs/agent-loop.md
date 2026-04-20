@@ -44,6 +44,29 @@ For one task, end to end:
 9. Commit only when every condition in step 11 of the Recommended loop
    below is met.
 
+## Minimal local commands
+
+For `T1.7` and later harness work, the minimum local command surface is:
+
+- `npm run test:unit`
+- `npm run test:fixtures:all`
+- `npm run test:fixtures -- --fixture <fixture-id>`
+- `npm run test:fixtures -- --family <family>`
+- `npm run check:goldens -- --fixture <fixture-id>`
+
+Notes:
+
+- `npm test` remains the default full unit-test entrypoint and delegates to
+  `npm run test:unit`.
+- the fixture-runner scripts compile first and then execute the built runner
+  from `dist/`, consistent with `docs/adr/0001-runtime-and-package-manager.md`;
+- `npm run test:fixtures:all` scans the runnable fixture corpus under
+  `fixtures/`; intentionally invalid manifest examples belong in repo-local
+  testdata, not in the default runner tree;
+- fixture manifests may point either to the built product CLI when available
+  or to `node dist/cli-stub.js` while product implementation is still in
+  progress.
+
 The rest of this file expands the rationale, roles, and the detailed
 per-step protocol.
 

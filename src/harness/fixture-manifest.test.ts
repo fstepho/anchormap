@@ -15,9 +15,14 @@ import {
 
 const REPO_ROOT = resolve(__dirname, "..", "..");
 const FIXTURES_ROOT = resolve(REPO_ROOT, "fixtures");
+const MANIFEST_TESTDATA_ROOT = resolve(REPO_ROOT, "testdata", "fixture-manifest");
 
 function fixtureDir(family: string, id: string): string {
 	return resolve(FIXTURES_ROOT, family, id);
+}
+
+function manifestTestdataDir(family: string, id: string): string {
+	return resolve(MANIFEST_TESTDATA_ROOT, family, id);
 }
 
 function minimalFailureManifest(): FixtureManifest {
@@ -136,7 +141,10 @@ test("includes the fixture id when an on-disk manifest is readable JSON but miss
 
 test("rejects unknown top-level keys and includes the fixture id when available", () => {
 	assert.throws(
-		() => loadFixtureManifest(fixtureDir("harness-schema", "harness_schema_invalid_unknown_field")),
+		() =>
+			loadFixtureManifest(
+				manifestTestdataDir("harness-schema", "harness_schema_invalid_unknown_field"),
+			),
 		(error: unknown) => {
 			assert.ok(error instanceof Error);
 			assert.match(error.message, /\[fixture harness_schema_invalid_unknown_field\]/);

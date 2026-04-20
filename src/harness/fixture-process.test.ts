@@ -161,3 +161,111 @@ test("reports timeouts as harness failures instead of product exit codes", async
 		},
 	);
 });
+
+test("resolves built dist CLI paths from the project root when the sandbox fixture does not carry them", async () => {
+	const manifest: FixtureManifest = {
+		id: "harness_process_project_dist_stub",
+		family: "harness-process",
+		purpose: "Fixture process project-dist resolution test fixture.",
+		command: ["node", "dist/cli-stub.js", "scan"],
+		cwd: ".",
+		exit_code: 0,
+		stdout: { kind: "ignored" },
+		stderr: { kind: "ignored" },
+		filesystem: { kind: "no_mutation" },
+	};
+
+	await withTempFixture(
+		manifest,
+		() => {},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				const result = await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.deepEqual(result.command, fixture.manifest.command);
+				assert.equal(result.exitCode, 0);
+				assert.deepEqual(result.stdout, Buffer.from("stub scan\n", "utf8"));
+				assert.deepEqual(result.stderr, Buffer.alloc(0));
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
+test("prefers a built dist CLI carried by the sandbox repo root even when cwd is a subdirectory", async () => {
+	const manifest: FixtureManifest = {
+		id: "harness_process_sandbox_root_dist_stub",
+		family: "harness-process",
+		purpose: "Fixture process prefers sandbox-root dist entrypoints before project fallback.",
+		command: ["node", "dist/cli-stub.js", "scan"],
+		cwd: "subdir",
+		exit_code: 0,
+		stdout: { kind: "ignored" },
+		stderr: { kind: "ignored" },
+		filesystem: { kind: "no_mutation" },
+	};
+
+	await withTempFixture(
+		manifest,
+		(fixtureDir) => {
+			mkdirSync(resolve(fixtureDir, "repo", "dist"), { recursive: true });
+			mkdirSync(resolve(fixtureDir, "repo", "subdir"), { recursive: true });
+			writeFileSync(
+				resolve(fixtureDir, "repo", "dist", "cli-stub.js"),
+				'process.stdout.write("sandbox root dist stub\\n");\nprocess.exit(0);\n',
+			);
+		},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				const result = await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.deepEqual(result.command, fixture.manifest.command);
+				assert.equal(result.exitCode, 0);
+				assert.deepEqual(result.stdout, Buffer.from("sandbox root dist stub\n", "utf8"));
+				assert.deepEqual(result.stderr, Buffer.alloc(0));
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
+test("does not fall back to the project root for arbitrary missing relative node scripts", async () => {
+	const manifest: FixtureManifest = {
+		id: "harness_process_missing_relative_script",
+		family: "harness-process",
+		purpose: "Fixture process rejects unrelated project-root script fallback.",
+		command: ["node", "scripts/not-in-sandbox.js", "scan"],
+		cwd: ".",
+		exit_code: 0,
+		stdout: { kind: "ignored" },
+		stderr: { kind: "ignored" },
+		filesystem: { kind: "no_mutation" },
+	};
+
+	await withTempFixture(
+		manifest,
+		() => {},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				const result = await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.equal(result.exitCode !== 0, true);
+				assert.equal(result.stdout.length, 0);
+				assert.match(result.stderr.toString("utf8"), /not[- ]in[- ]sandbox|Cannot find module/i);
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});

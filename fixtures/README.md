@@ -79,3 +79,26 @@ For contract boundary fixtures, `manifest.family` should match the eval family n
 For any fixture listed in `docs/evals.md`, `manifest.id` must equal the published fixture ID exactly, for example `fx01_scan_min_clean`.
 
 The `harness-schema` examples in this directory are schema-contract examples for `T1.1`; they are not product fixtures and do not replace the future `B-*` corpus.
+
+## Local command surface
+
+`T1.7` exposes the stable local harness commands through `package.json`.
+The default `fixtures/` tree is the runnable fixture corpus scanned by the
+fixture runner. Intentionally invalid manifest examples used only by manifest
+validator tests live outside that tree under `testdata/fixture-manifest/`.
+
+- `npm run test:unit` builds the repo and runs the `node:test` suite.
+- `npm run test:fixtures:all` builds the repo and runs the fixture runner over the default `fixtures/` tree.
+- `npm run test:fixtures -- --fixture harness_schema_success` runs a single fixture by ID.
+- `npm run test:fixtures -- --family harness-schema` runs one fixture family.
+- `npm run check:goldens -- --fixture harness_schema_success` runs the exact golden checks through the fixture runner.
+
+Fixture manifests may target either:
+
+- a built project binary such as `node dist/anchormap.js ...` once the real CLI exists;
+- the repository stub binary `node dist/cli-stub.js ...` while the product CLI is still incomplete.
+
+Only those explicit built `dist/` entrypoints are resolved from the project root
+when the sandboxed fixture repo does not contain them. Other relative script
+paths remain sandbox-local and fail normally if the fixture does not provide
+them.

@@ -15,9 +15,13 @@
 		"clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
 		"build": "npm run clean && tsc -p tsconfig.json",
 		"check:style": "biome check src package.json tsconfig.json biome.json",
+		"check:goldens": "npm run test:fixtures --",
 		"format": "biome format --write src package.json tsconfig.json biome.json",
 		"lint": "biome lint src package.json tsconfig.json biome.json",
-		"test": "npm run build && node --test \"dist/**/*.test.js\""
+		"test": "npm run test:unit",
+		"test:fixtures": "npm run build && node dist/harness/fixture-runner.js",
+		"test:fixtures:all": "npm run test:fixtures",
+		"test:unit": "npm run build && node --test \"dist/**/*.test.js\""
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.12",
