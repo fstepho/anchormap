@@ -27,13 +27,14 @@
 - Update it only after task-level done (§19.1) or after an explicit blocked/deviation decision.
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `None recorded`
-- Last completed task: `T1.2 — Implement sandbox materialization from fixture input`
+- Last completed task: `T1.3 — Execute CLI under test and capture process contract outputs`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
   - `T1.1 — Define fixture manifest schema and fixture directory contract`
   - `S3 — Filesystem mutation detection and path behavior report`
   - `T1.2 — Implement sandbox materialization from fixture input`
+  - `T1.3 — Execute CLI under test and capture process contract outputs`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
