@@ -59,6 +59,12 @@ If a change would supersede an accepted ADR, classify the deviation first and th
 - Do not expand scope, weaken `docs/evals.md`, or introduce observable behavior without explicit traceability to `docs/contract.md` and `docs/evals.md`.
 - Do not use cache, network, Git, clock, or environment as a source of truth.
 
+## Orchestration Authority
+
+When driving `docs/agent-loop.md`, spawning a sub-agent for `review-task` is pre-authorized. It is the only way to satisfy invariant I1 (fresh-context review) in a single-session interface, so the instruction "drive `docs/agent-loop.md`" (or any equivalent) stands as the authorization — no additional user confirmation is required for that spawn.
+
+The invariant is non-negotiable: if the tool cannot spawn a sub-agent, stop at the human commit or handoff gate and state that the fresh-context review has not yet run. Never substitute a same-session self-review and never mark the task done on that basis.
+
 ## Fail-Fast Rules
 
 Work in small, verifiable steps.
