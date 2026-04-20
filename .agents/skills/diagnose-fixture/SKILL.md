@@ -6,8 +6,16 @@ description: Classify a specific fixture failure for a specific task using the �
 Analyze the fixture failure for the target task.
 
 1. Identify the fixture ID and the task ID from the user's request. Accepted task ID forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). If either is missing, stop and ask.
-2. Read the task block under `### <TASK_ID> ` in `docs/tasks.md`.
-3. Gather the minimum observability surface defined in `docs/operating-model.md` §2.3:
+2. Read, in order:
+   - `docs/operating-model.md`
+   - `docs/contract.md`
+   - `docs/design.md`
+   - `docs/evals.md`
+3. Read `docs/tasks.md` and locate the task block under `### <TASK_ID> `.
+4. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
+5. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
+6. If the failure analysis touches parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior, read the relevant accepted ADRs in `docs/adr/` before final classification.
+7. Gather the minimum observability surface defined in `docs/operating-model.md` §2.3:
    - command executed
    - cwd
    - exit code
@@ -19,10 +27,6 @@ Analyze the fixture failure for the target task.
    - structured traces (if available)
    - fixture manifest
    - prior failure classification (if already established)
-
-Also consult:
-- `docs/contract.md`
-- `docs/evals.md`
 
 If any §2.3 signal listed above is missing or unreadable, surface that gap before attempting classification. Do not infer missing signals from context.
 

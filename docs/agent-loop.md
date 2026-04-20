@@ -24,7 +24,9 @@ For one task, end to end:
 4. From the same session, spawn a fresh-context review subagent to run
    `.agents/skills/review-task/SKILL.md` for the same task. On agents
    that expose repo-local skill shorthand, the equivalent invocation is
-   `$review-task T1.1` inside the subagent.
+   `$review-task T1.1` inside the subagent, or `$review-task` when
+   `docs/tasks.md` already records the current active task and you want
+   the skill to ask for confirmation.
 5. If your agent does not support subagent spawning, fall back to: exit
    the session and open a fresh `codex` session, then run the skill
    there.
@@ -77,17 +79,20 @@ and process.
 | Skill | Purpose | Invocation |
 |---|---|---|
 | `implement-task` | Bounded implementation of one task (`Tn.m` product task or `Sn` spike). | `.agents/skills/implement-task/SKILL.md` or `$implement-task T1.1` when shorthand is available |
-| `review-task` | Fresh-context cumulative-diff review of one task. | `.agents/skills/review-task/SKILL.md` or `$review-task T1.1` when shorthand is available |
+| `review-task` | Fresh-context review of the current cumulative task-scoped change set for one task. | `.agents/skills/review-task/SKILL.md`, `$review-task T1.1`, or `$review-task` with confirmation of `Current active task` when shorthand is available |
 | `diagnose-fixture` | §2.3-driven classification of a fixture failure. | `.agents/skills/diagnose-fixture/SKILL.md` or `$diagnose-fixture fx01_scan_min_clean T7.2` when shorthand is available |
 | `update-tasks` | Bounded `docs/tasks.md` update after a classified deviation. | `.agents/skills/update-tasks/SKILL.md` or `$update-tasks T1.1 [T1.2]` when shorthand is available |
 | `validate-tasks` | Structural lint on `docs/tasks.md`. Runs `scripts/lint-tasks.sh`. | `.agents/skills/validate-tasks/SKILL.md` or `$validate-tasks` when shorthand is available |
 
 All 5 skills declare an explicit `policy.allow_implicit_invocation` value in
-their `agents/openai.yaml`: `false` for the four mutating skills
-(`implement-task`, `review-task`, `diagnose-fixture`, `update-tasks`) and
-`true` for `validate-tasks` (read-only, side-effect free). The policy is
+their `agents/openai.yaml`: `false` for the four task-directed skills that
+require explicit operator intent (`implement-task`, `review-task`,
+`diagnose-fixture`, `update-tasks`) and `true` for `validate-tasks`
+(read-only, side-effect free). The policy is
 therefore independent of each agent's default skill-policy, and the
 workflow described here holds on any agent that honors the field.
+For `review-task`, explicit operator intent still includes the confirmed
+`Current active task` fallback when no task ID is supplied in the request.
 
 ## Recommended roles
 
@@ -110,8 +115,8 @@ workflow described here holds on any agent that honors the field.
   - stops on the first blocking failure.
 - Review subagent:
   - reviews only against the target task and normative docs;
-  - reviews the full cumulative task diff for each review pass, not only the
-    latest follow-up delta;
+  - reviews the full current task-scoped change set for each review pass, not
+    only the latest follow-up delta;
   - does not edit files;
   - looks first for scope creep, contract drift, eval weakening, and missing
     failure coverage;
@@ -128,8 +133,9 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
    `$implement-task T1.1`.
 3. Run the smallest relevant check early in this implementation session.
 4. If blocked, classify the deviation before making more changes. If the
-   classification requires a task-plan update, invoke
-   `$update-tasks T1.1`.
+   classification requires a task-plan update, or if the blocked state must
+   be recorded in `docs/tasks.md`, invoke `$update-tasks T1.1`. All
+   `docs/tasks.md` mutations go through `update-tasks`.
 5. Run `.agents/skills/review-task/SKILL.md` for the target task. Prefer
    spawning a fresh-context review subagent from the main session when
    your agent supports it; fall back to opening a fresh `codex` session
@@ -144,8 +150,8 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
 7. If review returns `needs_rework` and the findings are bounded and
    in-scope, the orchestrator should do one follow-up implementation pass
    immediately without waiting for user input, then spawn a new
-   fresh-context reviewer for a second review of the full cumulative task
-   diff.
+   fresh-context reviewer for a second review of the full current
+   task-scoped change set, not only the latest follow-up delta.
 8. Stop instead of auto-correcting when the review exposes:
    - `spec ambiguity`
    - `product question`
@@ -161,17 +167,22 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
     - the applicable stdout/stderr/exit code/mutation policy is preserved;
     - no out-of-scope behavior changed;
     - no eval was weakened;
-    - any remaining findings are explicitly non-blocking relative to Gate F.
+    - any remaining findings are explicitly non-blocking relative to
+      `docs/operating-model.md` §19.1.
 11. After the final review decision, sync `docs/tasks.md` `## Execution State`
-    before commit or handoff:
-    - if the task is `done`, clear or replace `Current active task`, set
+    before commit or handoff via `update-tasks`:
+    - if the task is `done`, clear or replace `Current active task`, update
+      `Next executable product task after blocker clearance` only when it is
+      explicitly known from the blocker/dependency state, set
       `Last completed task`, append to `Completed tasks recorded here`, and
       clear any blocker that depended on this task;
     - if the task is `blocked`, record the blocker in `Blocked tasks` and
       keep the task out of `Last completed task`;
     - if the task is `needs_rework`, keep or restore the task as active and
       record any explicit deviation in `Open deviations` when applicable;
-    - do not auto-pick the next task while updating the cursor.
+    - do not auto-pick the next task or invent
+      `Next executable product task after blocker clearance` while updating
+      the cursor.
 12. Low severity alone does not justify `done`. A task can finish with only
     remaining `low` findings if, and only if, they are explicitly
     non-blocking.

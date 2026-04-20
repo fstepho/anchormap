@@ -13,13 +13,14 @@ Content checks enforced:
 - `docs/tasks.md` contains a `## Execution State` section
 - `## Execution State` has the required labels:
   - `Current active task`
-  - `Next executable product task`
+  - a `Next executable product task...` label (repo convention: `Next executable product task after blocker clearance`)
   - `Last completed task`
   - `Completed tasks recorded here`
   - `Blocked tasks`
   - `Open deviations`
 - every `Tn.m` (product task, optional lowercase suffix) or `Sn` (spike) reference inside `## Execution State` points to a real task heading
 - every `Open deviations` entry other than `None recorded` includes at least one task ID (`Tn.m` or `Sn`)
+- every task heading matched by the script has a non-empty task block
 
 Invocation checks (also emitted in the `validate: <check>: <detail>` format):
 - `validate: invalid_invocation: ...` if any argument is passed (the script takes none)

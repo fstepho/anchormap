@@ -7,7 +7,6 @@ You are the orchestrator for the target task.
 
 1. Identify the task ID from the user's request. Accepted forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). For spikes, apply the `docs/operating-model.md` §17 discipline: produce a bounded report with question, protocol, result, decision, and consequences - not hidden product implementation. If no explicit ID is provided, stop and ask.
 2. Read, in order:
-   - `AGENTS.md`
    - `docs/operating-model.md`
    - `docs/contract.md`
    - `docs/design.md`
@@ -15,10 +14,14 @@ You are the orchestrator for the target task.
 3. Read `docs/tasks.md` and locate both:
    - the task block under the heading `### <TASK_ID> ` (up to the next `### ` or `## `)
    - the `## Execution State` section for current progress context
-4. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
+4. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
+5. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
+6. If the task or bounded files touch parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior, read the relevant accepted ADRs in `docs/adr/` before editing. Accepted ADRs are binding unless the task is explicitly about updating that ADR surface.
+7. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
 
 Before coding:
 - state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
+- state any `docs/brief.md` or `docs/adr/` refs used for scope or architectural binding when they are applicable to the task
 - if this is a process-doc or ADR task and the task block does not name contract/design/eval refs, identify the relevant operating-model and ADR refs instead, classify the change as process maintenance, and bound the files being changed
 
 Execution model:
@@ -32,9 +35,9 @@ Execution model:
 - do not spawn a reviewer yet
 - do not commit from any implementation pass
 - if a delegated subagent hits a blocking issue, have it return a single classified deviation before more edits are attempted
-- set the task state to exactly one of: `implementing`, `needs_review`, `needs_rework`, `blocked`, `done`
-- after an implementation pass, the only valid next states are `needs_review` or `blocked`
-- if the pass ends in `blocked`, update `docs/tasks.md` `## Execution State` in the same patch to record the blocker or deviation
+- treat the broader workflow state vocabulary as exactly: `implementing`, `needs_review`, `needs_rework`, `blocked`, `done`
+- for this skill's own final output, the only valid next states after an implementation pass are `needs_review` or `blocked`
+- if the pass ends in `blocked`, do not edit `docs/tasks.md` directly; return a classified execution-state hand-off for `update-tasks` to record the blocker or deviation
 - do not mark the task `done` from this skill
 
 Constraints:
@@ -55,6 +58,16 @@ Constraints:
 - if a deviation is found, classify it before changing code, fixtures, or docs, using the `docs/operating-model.md` §10 taxonomy
 
 Delegated-subagent contract (if used):
+- the subagent prompt must satisfy `docs/operating-model.md` §9.3 and include:
+  - the current phase
+  - the target task
+  - the allowed files or targeted components
+  - the forbidden changes
+  - the relevant contract sections
+  - any relevant `docs/brief.md` or accepted ADR refs when they materially bound scope or implementation strategy
+  - the expected fixtures or tests
+  - the expected output format
+  - the allowed freedom level
 - implement the target task only
 - keep the patch minimal
 - add or update only tests/fixtures required by this task
@@ -70,7 +83,8 @@ Delegated-subagent contract (if used):
 
 Orchestrator return:
 1. files changed
-2. relevant contract/design/eval refs identified before implementation (or operating-model/ADR refs for a process-doc task)
+2. relevant contract/design/eval refs identified before implementation, plus any `docs/brief.md` or ADR refs used for scope or architectural binding (or operating-model/ADR refs for a process-doc task)
 3. smallest checks selected
 4. implementation result
 5. current task state: `needs_review` or `blocked`
+6. execution-state update hand-off for `update-tasks` when state is `blocked`, otherwise `none`
