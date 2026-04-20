@@ -1,0 +1,20 @@
+{
+	"id": "harness_smoke_init_write",
+	"family": "harness-smoke",
+	"purpose": "Walking skeleton harness smoke fixture for an init write with expected filesystem mutation.",
+	"command": ["node", "dist/cli-stub.js", "init"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["harness_smoke"],
+	"groups": ["walking_skeleton"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "harness_smoke_scan_success",
+	"family": "harness-smoke",
+	"purpose": "Walking skeleton harness smoke fixture for a successful scan --json run with exact stdout and no mutation.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["harness_smoke"],
+	"groups": ["walking_skeleton"]
+}

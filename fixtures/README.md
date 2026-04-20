@@ -80,6 +80,8 @@ For any fixture listed in `docs/evals.md`, `manifest.id` must equal the publishe
 
 The `harness-schema` examples in this directory are schema-contract examples for `T1.1`; they are not product fixtures and do not replace the future `B-*` corpus.
 
+The runnable `harness-smoke` family is the `T1.8` walking skeleton proof. These fixtures are explicitly harness smoke fixtures, not release-grade product fixtures.
+
 ## Local command surface
 
 `T1.7` exposes the stable local harness commands through `package.json`.
@@ -89,9 +91,9 @@ validator tests live outside that tree under `testdata/fixture-manifest/`.
 
 - `npm run test:unit` builds the repo and runs the `node:test` suite.
 - `npm run test:fixtures:all` builds the repo and runs the fixture runner over the default `fixtures/` tree.
-- `npm run test:fixtures -- --fixture harness_schema_success` runs a single fixture by ID.
-- `npm run test:fixtures -- --family harness-schema` runs one fixture family.
-- `npm run check:goldens -- --fixture harness_schema_success` runs the exact golden checks through the fixture runner.
+- `npm run test:fixtures -- --fixture harness_smoke_scan_success` runs a single walking skeleton smoke fixture by ID.
+- `npm run test:fixtures -- --family harness-smoke` runs the walking skeleton smoke family.
+- `npm run check:goldens -- --fixture harness_smoke_scan_success` runs the exact golden checks through the fixture runner.
 
 Fixture manifests may target either:
 

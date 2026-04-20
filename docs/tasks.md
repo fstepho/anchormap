@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `None recorded`
-- Last completed task: `T1.7 — Integrate harness into project scripts and CI-ready commands`
+- Last completed task: `T1.8 — Add walking skeleton fixtures for harness proof`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -39,6 +39,7 @@
   - `T1.5 — Implement filesystem mutation oracles`
   - `T1.6 — Implement fixture selection, grouping, and result reporting`
   - `T1.7 — Integrate harness into project scripts and CI-ready commands`
+  - `T1.8 — Add walking skeleton fixtures for harness proof`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

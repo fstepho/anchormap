@@ -1,0 +1,19 @@
+{
+	"id": "harness_smoke_scan_failure",
+	"family": "harness-smoke",
+	"purpose": "Walking skeleton harness smoke fixture for a failing scan --json run with empty stdout and no mutation.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["harness_smoke"],
+	"groups": ["walking_skeleton"]
+}
