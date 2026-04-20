@@ -164,6 +164,7 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
     - the target task objective is complete;
     - the referenced tests and fixtures pass;
     - `sh scripts/lint-tasks.sh` passes;
+    - the commit message includes the target task ID;
     - the applicable stdout/stderr/exit code/mutation policy is preserved;
     - no out-of-scope behavior changed;
     - no eval was weakened;

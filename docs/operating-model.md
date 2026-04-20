@@ -1037,6 +1037,7 @@ Règles :
 - ne pas mélanger refactor large et nouvelle capacité ;
 - ne pas mettre à jour des goldens sans explication ;
 - ne pas corriger plusieurs classes de défauts sans les classifier ;
+- tout commit lié à une tâche bornée doit inclure son identifiant (`Tn.m`, `Tn.ma` ou `Sn`) dans le message de commit ;
 - préférer une séquence de petits patchs vérifiables à un patch global.
 
 ## 19. Definition of Done
