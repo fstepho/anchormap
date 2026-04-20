@@ -18,6 +18,7 @@ You are the orchestrator for the target task.
 5. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
 6. If the task or bounded files touch parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior, read the relevant accepted ADRs in `docs/adr/` before editing. Accepted ADRs are binding unless the task is explicitly about updating that ADR surface.
 7. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
+8. Before implementation starts, `docs/tasks.md` `## Execution State` must identify the target task in `Current active task`. If it does not, stop before editing code and return `blocked` with a routine execution-state sync hand-off for `update-tasks` that sets `Current active task` to the explicit target task. Do not treat this routine sync as a product deviation by itself.
 
 Before coding:
 - state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
@@ -27,6 +28,7 @@ Before coding:
 Execution model:
 - keep `docs/tasks.md` and the normative docs as the only source of truth
 - do not create a parallel planning system
+- do not begin implementation edits until `Current active task` is aligned with the explicit target task
 - implementation is local in the main agent by default
 - delegate only if the task is large or risky enough that a bounded subagent materially improves the result
 - if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, and restrict work to the target task
@@ -37,7 +39,7 @@ Execution model:
 - if a delegated subagent hits a blocking issue, have it return a single classified deviation before more edits are attempted
 - treat the broader workflow state vocabulary as exactly: `implementing`, `needs_review`, `needs_rework`, `blocked`, `done`
 - for this skill's own final output, the only valid next states after an implementation pass are `needs_review` or `blocked`
-- if the pass ends in `blocked`, do not edit `docs/tasks.md` directly; return a classified execution-state hand-off for `update-tasks` to record the blocker or deviation
+- if the pass ends in `blocked`, do not edit `docs/tasks.md` directly; return an execution-state hand-off for `update-tasks` to record either the blocker/deviation or the required routine start-of-task sync
 - do not mark the task `done` from this skill
 
 Constraints:
@@ -87,4 +89,4 @@ Orchestrator return:
 3. smallest checks selected
 4. implementation result
 5. current task state: `needs_review` or `blocked`
-6. execution-state update hand-off for `update-tasks` when state is `blocked`, otherwise `none`
+6. execution-state update hand-off for `update-tasks` when state is `blocked`, otherwise `none`; this may be either a classified blocker/deviation hand-off or a routine `Current active task` sync hand-off required before implementation starts

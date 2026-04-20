@@ -14,29 +14,34 @@ existing normative documents win.
 For one task, end to end:
 
 1. Start an implementation session: `codex`.
-2. Use the repo-local skill definition
+2. Sync `docs/tasks.md` `## Execution State` via
+   `.agents/skills/update-tasks/SKILL.md` for the target task before
+   implementation starts if `Current active task` is not already aligned.
+   On agents that expose repo-local skill shorthand, the equivalent is
+   `$update-tasks T1.1` for a routine execution-state sync.
+3. Use the repo-local skill definition
    `.agents/skills/implement-task/SKILL.md` for `T1.1` (or any `Tn.m` /
    `Sn` ID from `docs/tasks.md`). On agents that expose repo-local skill
    shorthand, the equivalent invocation is `$implement-task T1.1`.
-3. Work until the task is implemented or you hit a blocking deviation, and
+4. Work until the task is implemented or you hit a blocking deviation, and
    run the relevant checks in this implementation session before opening
    review.
-4. From the same session, spawn a fresh-context review subagent to run
+5. From the same session, spawn a fresh-context review subagent to run
    `.agents/skills/review-task/SKILL.md` for the same task. On agents
    that expose repo-local skill shorthand, the equivalent invocation is
    `$review-task T1.1` inside the subagent, or `$review-task` when
    `docs/tasks.md` already records the current active task and you want
    the skill to ask for confirmation.
-5. If your agent does not support subagent spawning, fall back to: exit
+6. If your agent does not support subagent spawning, fall back to: exit
    the session and open a fresh `codex` session, then run the skill
    there.
-6. If review returns `needs_rework`, apply the bounded follow-up in the
+7. If review returns `needs_rework`, apply the bounded follow-up in the
    main session, then spawn a new fresh-context review subagent for the
    second review pass (fallback: fresh `codex` sessions for both the
    follow-up and the re-review).
-7. Before commit: `sh scripts/lint-tasks.sh` (or `$validate-tasks` inside
+8. Before commit: `sh scripts/lint-tasks.sh` (or `$validate-tasks` inside
    Codex) if `docs/tasks.md` changed, then `npm test`.
-8. Commit only when every condition in step 10 of the Recommended loop
+9. Commit only when every condition in step 11 of the Recommended loop
    below is met.
 
 The rest of this file expands the rationale, roles, and the detailed
@@ -128,39 +133,43 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
 ## Recommended loop
 
 1. Pick exactly one task from `docs/tasks.md` (a `Tn.m` product task or an `Sn` spike).
-2. Use `.agents/skills/implement-task/SKILL.md` in your agent for the target
+2. Sync `docs/tasks.md` `## Execution State` via `update-tasks` before
+   implementation if `Current active task` is not already the target task.
+   This routine execution-state sync records that the task is now active;
+   all `docs/tasks.md` mutations still go through `update-tasks`.
+3. Use `.agents/skills/implement-task/SKILL.md` in your agent for the target
    task. If your agent exposes repo-local skill shorthand, the equivalent is
    `$implement-task T1.1`.
-3. Run the smallest relevant check early in this implementation session.
-4. If blocked, classify the deviation before making more changes. If the
+4. Run the smallest relevant check early in this implementation session.
+5. If blocked, classify the deviation before making more changes. If the
    classification requires a task-plan update, or if the blocked state must
    be recorded in `docs/tasks.md`, invoke `$update-tasks T1.1`. All
    `docs/tasks.md` mutations go through `update-tasks`.
-5. Run `.agents/skills/review-task/SKILL.md` for the target task. Prefer
+6. Run `.agents/skills/review-task/SKILL.md` for the target task. Prefer
    spawning a fresh-context review subagent from the main session when
    your agent supports it; fall back to opening a fresh `codex` session
    otherwise. The skill forbids source edits by prose and runs the
    referenced checks itself.
-6. Keep the task in exactly one explicit state:
+7. Keep the task in exactly one explicit state:
    - `implementing`
    - `needs_review`
    - `needs_rework`
    - `blocked`
    - `done`
-7. If review returns `needs_rework` and the findings are bounded and
+8. If review returns `needs_rework` and the findings are bounded and
    in-scope, the orchestrator should do one follow-up implementation pass
    immediately without waiting for user input, then spawn a new
    fresh-context reviewer for a second review of the full current
    task-scoped change set, not only the latest follow-up delta.
-8. Stop instead of auto-correcting when the review exposes:
+9. Stop instead of auto-correcting when the review exposes:
    - `spec ambiguity`
    - `product question`
    - `out-of-scope discovery`
    - a change that would require `docs/contract.md`
    - a broader design or task-plan rewrite
    - the same `review -> rework` loop twice
-9. Do not mark the task `done` after implementation alone.
-10. Commit only if:
+10. Do not mark the task `done` after implementation alone.
+11. Commit only if:
     - the target task objective is complete;
     - the referenced tests and fixtures pass;
     - `sh scripts/lint-tasks.sh` passes;
@@ -170,7 +179,7 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
     - no eval was weakened;
     - any remaining findings are explicitly non-blocking relative to
       `docs/operating-model.md` §19.1.
-11. After the final review decision, sync `docs/tasks.md` `## Execution State`
+12. After the final review decision, sync `docs/tasks.md` `## Execution State`
     before commit or handoff via `update-tasks`:
     - if the task is `done`, clear or replace `Current active task`, update
       `Next executable product task after blocker clearance` only when it is
@@ -184,10 +193,10 @@ the task-level done criteria in `docs/operating-model.md` §19.1.
     - do not auto-pick the next task or invent
       `Next executable product task after blocker clearance` while updating
       the cursor.
-12. Low severity alone does not justify `done`. A task can finish with only
+13. Low severity alone does not justify `done`. A task can finish with only
     remaining `low` findings if, and only if, they are explicitly
     non-blocking.
-13. Move to the next task manually. Do not auto-pick from hidden state.
+14. Move to the next task manually. Do not auto-pick from hidden state.
 
 ## Non-goals
 

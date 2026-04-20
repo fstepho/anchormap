@@ -1,6 +1,6 @@
 ---
 name: update-tasks
-description: Update docs/tasks.md for a classified deviation on one or more tasks, or for a routine §8.4 task edit (split, regrouping, dependency update). Accepted task IDs - Tn.m product tasks (optionally with a lowercase suffix, e.g. T0.0a) and Sn spike tasks (e.g. S3). Use when the user asks to record a deviation, split a task, update task dependencies, or sync the execution-state cursor for explicit task IDs. Do not use to implement, review, or add product scope.
+description: Update docs/tasks.md for a classified deviation on one or more tasks, or for a routine §8.4 task edit (split, regrouping, dependency update). Accepted task IDs - Tn.m product tasks (optionally with a lowercase suffix, e.g. T0.0a) and Sn spike tasks (e.g. S3). Use when the user asks to record a deviation, split a task, update task dependencies, or sync the execution-state cursor for explicit task IDs, including marking a task active at task start and applying review hand-offs. Do not use to implement, review, or add product scope.
 ---
 
 Update `docs/tasks.md` only, for the bounded change below.
@@ -21,7 +21,7 @@ updates handed off from `implement-task` or `review-task`.
 5. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
 6. If the requested tasks update changes planning around parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior, or records a deviation against an accepted ADR, read the relevant accepted ADRs in `docs/adr/` before editing `docs/tasks.md`.
 
-Use `## Execution State` to understand current progress, blocked work, and completed work. The execution cursor must be updated in the same patch whenever this deviation changes task state. Do not auto-pick the next task or invent `Next executable product task after blocker clearance`; change that field only when the blocker/dependency state makes the value explicit.
+Use `## Execution State` to understand current progress, blocked work, and completed work. The execution cursor must be updated in the same patch whenever this deviation changes task state. Routine execution-state syncs are also allowed when the operator begins explicit work on a task and needs to set `Current active task` before implementation starts. Do not auto-pick the next task or invent `Next executable product task after blocker clearance`; change that field only when the blocker/dependency state makes the value explicit.
 
 If this change is a classified deviation, classify it with exactly one primary classification from `docs/operating-model.md` §10:
 - contract violation
@@ -35,6 +35,8 @@ If this change is a classified deviation, classify it with exactly one primary c
 Indicate separately whether the deviation is blocking or non-blocking relative to the task-level done definition (`docs/operating-model.md` §19.1) for each affected task.
 
 If this change is a routine task edit under `docs/operating-model.md` §8.4 (split, regrouping, dependency update) and not a classified deviation, state `no deviation, routine §8.4 task edit` instead of a §10 class, skip return item 6, and include return item 7 only if the execution-state cursor changes.
+
+If this change is only a routine execution-state sync and not a classified deviation, state `no deviation, routine execution-state sync` instead of a §10 class, skip return item 6, and use return item 7 to describe the cursor update. This includes setting `Current active task` to an explicit task ID when the operator starts implementation work on that task.
 
 Constraints:
 - do not modify `docs/contract.md`

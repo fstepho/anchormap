@@ -24,7 +24,7 @@
 ## Execution State
 
 - This section is the live execution cursor for the local task loop.
-- Update it only after task-level done (§19.1) or after an explicit blocked/deviation decision.
+- Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `None recorded`
 - Last completed task: `T1.3 — Execute CLI under test and capture process contract outputs`
