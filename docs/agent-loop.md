@@ -69,13 +69,13 @@ skills themselves.
 | `implement-task` | `needs_review` | Run `review-task` on the full cumulative task-scoped diff in a fresh context. |
 | `implement-task` | `blocked` because `docs/tasks.md` execution state is out of sync | Run `update-tasks` for the routine execution-state sync, then resume from the interrupted step. |
 | `implement-task` | `blocked` with a classified deviation | Run `update-tasks` to record the deviation and task state. If the block is a fixture failure that needs diagnosis, run `diagnose-fixture` next; otherwise stop and hand off. |
-| `review-task` | `done` | Hand off for the human commit or handoff gate. Do not auto-commit. |
+| `review-task` | `done` | Run `update-tasks` to apply the review hand-off to `docs/tasks.md`, then hand off for the human commit or handoff gate. Do not auto-commit. |
 | `review-task` | `needs_rework` | Apply one bounded follow-up, then run a new fresh-context `review-task` pass on the full cumulative diff. |
 | `review-task` | `blocked` | Stop and hand off with the review classification, evidence, and required escalation. |
 | `diagnose-fixture` | classified result returned | Route according to `docs/operating-model.md` §10. Record any required task-state or deviation update through `update-tasks` before resuming implementation. |
 | `update-tasks` | change applied successfully | Resume the interrupted workflow step. |
 | `validate-tasks` | exit `0` | Continue the workflow. |
-| `validate-tasks` | exit non-zero | Fix `docs/tasks.md`, then rerun `validate-tasks` before continuing. |
+| `validate-tasks` | exit non-zero | Classify the issue, apply any required `docs/tasks.md` change through `update-tasks`, then rerun `validate-tasks` before continuing. |
 
 ### Invariants
 

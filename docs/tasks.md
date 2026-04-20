@@ -573,7 +573,7 @@ Eval refs:
 Operating-model refs:
 - `operating-model.md` — §3 Hiérarchie des documents
 - `operating-model.md` — §9 Règles d'utilisation des agents IA
-- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §10.6 Tooling problem
 - `operating-model.md` — §19.1 Tâche
 
 Dependencies:
@@ -628,7 +628,7 @@ Eval refs:
 
 Operating-model refs:
 - `operating-model.md` — §2.3 Observabilité lisible par agent
-- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §10.6 Tooling problem
 - `operating-model.md` — §15 Gestion des fixtures et goldens
 
 Dependencies:
@@ -684,7 +684,7 @@ Eval refs:
 
 Operating-model refs:
 - `operating-model.md` — §2.3 Observabilité lisible par agent
-- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §10.6 Tooling problem
 - `operating-model.md` — §19.1 Tâche
 
 Dependencies:
@@ -4023,7 +4023,7 @@ Eval refs:
 - `evals.md` — Gate D — Determinism and isolation
 
 Operating-model refs:
-- `operating-model.md` — §10.3 Écart de design
+- `operating-model.md` — §10.3 Design gap
 - `operating-model.md` — §17 Politique de spikes
 - `operating-model.md` — §19.1 Tâche
 
@@ -4087,7 +4087,7 @@ Eval refs:
 - `evals.md` — Gate G — Reproductibilité de release
 
 Operating-model refs:
-- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §10.6 Tooling problem
 - `operating-model.md` — §16 Politique de dépendances
 - `operating-model.md` — §18 Commit et granularité de changement
 - `operating-model.md` — §19.1 Tâche
@@ -4159,7 +4159,7 @@ Eval refs:
 - `evals.md` — Gate G — Reproductibilité de release
 
 Operating-model refs:
-- `operating-model.md` — §10.6 Problème d'outillage
+- `operating-model.md` — §10.6 Tooling problem
 - `operating-model.md` — §16 Politique de dépendances
 - `operating-model.md` — §18 Commit et granularité de changement
 - `operating-model.md` — §19.1 Tâche

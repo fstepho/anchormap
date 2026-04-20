@@ -720,6 +720,16 @@ Cette taxonomie est unique et normative pour :
 
 Des tags secondaires de triage peuvent être ajoutés pour aider au routage ou au diagnostic, mais ils ne remplacent jamais la classification normative.
 
+Les libellés canoniques de classification sont les suivants :
+
+- `contract violation`
+- `spec ambiguity`
+- `design gap`
+- `eval defect`
+- `product question`
+- `tooling problem`
+- `out-of-scope discovery`
+
 Dans une review, chaque finding doit porter :
 
 - exactement une classification primaire issue de cette section ;
@@ -727,7 +737,7 @@ Dans une review, chaque finding doit porter :
 
 Une sévérité de type `high` / `medium` / `low` peut être ajoutée pour aider au triage, mais elle reste non normative et ne remplace ni la classification primaire ni le statut bloquant.
 
-### 10.1 Violation de contrat
+### 10.1 Contract violation
 
 L'implémentation ne satisfait pas `contract.md`.
 
@@ -737,7 +747,7 @@ Action :
 - ajouter une fixture de régression si la couverture manque ;
 - ne pas modifier le contrat sauf si la violation révèle une erreur explicite du contrat.
 
-### 10.2 Ambiguïté de spec
+### 10.2 Spec ambiguity
 
 Le contrat ne définit pas assez clairement le comportement attendu.
 
@@ -748,7 +758,7 @@ Action :
 - mettre à jour `evals.md` et les fixtures ;
 - reprendre ensuite l'implémentation.
 
-### 10.3 Écart de design
+### 10.3 Design gap
 
 Le design ne permet pas de satisfaire proprement le contrat ou les evals.
 
@@ -758,7 +768,7 @@ Action :
 - ajuster les tâches impactées ;
 - ne pas affaiblir le contrat.
 
-### 10.4 Défaut d'eval
+### 10.4 Eval defect
 
 Une fixture, un golden ou un gate contredit le contrat ou vérifie le mauvais comportement.
 
@@ -768,7 +778,7 @@ Action :
 - documenter la raison ;
 - vérifier qu'aucun gate n'a été affaibli.
 
-### 10.5 Question produit
+### 10.5 Product question
 
 La divergence révèle une question de scope, de valeur, de segment ou de promesse.
 
@@ -778,7 +788,7 @@ Action :
 - mettre à jour `brief.md` ou différer explicitement ;
 - ne pas modifier `contract.md` tant que la décision produit n'est pas prise.
 
-### 10.6 Problème d'outillage
+### 10.6 Tooling problem
 
 L'échec vient du harness, de l'environnement, d'une dépendance parser, d'un comportement plateforme ou du runner de tests.
 
@@ -788,7 +798,7 @@ Action :
 - ajouter un test de harness si nécessaire ;
 - ne pas modifier le comportement produit pour contourner un problème d'outillage.
 
-### 10.7 Découverte hors scope
+### 10.7 Out-of-scope discovery
 
 Un cas réel intéressant est découvert mais n'appartient pas à v1.0.
 
@@ -1135,13 +1145,13 @@ Ne propose pas de nouvelle feature.
 Ne fais pas de review de style sauf si cela affecte le contrat, les evals ou la maintenabilité immédiate.
 
 Classe chaque finding avec exactement une classification primaire selon la section 10 :
-- violation de contrat ;
-- ambiguïté de spec ;
-- écart de design ;
-- défaut d'eval ;
-- question produit ;
-- problème d'outillage ;
-- découverte hors scope.
+- contract violation ;
+- spec ambiguity ;
+- design gap ;
+- eval defect ;
+- product question ;
+- tooling problem ;
+- out-of-scope discovery.
 
 Indique séparément pour chaque finding s'il est :
 - bloquant ;
