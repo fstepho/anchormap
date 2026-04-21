@@ -35,8 +35,11 @@ Execution model:
 - use `docs/tasks.md`, the target task block, and the bounded files/components of the task as the authoritative scope surface; `git diff` or `git log` may be used as inspection aids only, never as the authoritative definition of task start or task scope
 - this skill must not edit source files, fixtures, or goldens. Running build, test, the referenced fixtures, and inspection commands such as `git diff` is expected when helpful.
 - run the referenced checks yourself during review and report their outcomes as part of the findings
+- identify the new invariants introduced by the diff before concluding. A review pass is incomplete until it can state what the diff newly promises to preserve, emit, persist, reject, or isolate.
 - when the task block or repo docs already name concrete commands, use those commands
 - when the task block provides only `Suggested verification:` prose, derive the smallest concrete repo-local checks from that prose plus the referenced fixtures/tests, and label them as reviewer-derived checks rather than normative task text
+- do not stop at replaying the existing checks when the diff introduces a new invariant that those checks do not actually stress. Derive at least one bounded falsification check for each new invariant that lacks direct coverage.
+- when a new invariant cannot be falsified credibly from the existing repo checks, derive a minimal reviewer-side reproduction or inspection command if one can be done without mutating repo-tracked files.
 - if no concrete repo-local check can be derived without guessing beyond the repo docs, stop and return `blocked`; classify as `eval defect` when verification guidance is missing or insufficient, or as `spec ambiguity` when the expected behavior itself is underdefined
 - do not ask the review session (or subagent) to propose new product features
 - the orchestrator decides whether follow-up edits are needed
@@ -49,6 +52,7 @@ Execution model:
 - "ready for re-review" is not `done`
 - severity alone does not decide `done`
 - if only low-severity findings remain, mark the task `done` only if they are explicitly non-blocking and the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied; otherwise keep the task in `needs_rework` or `blocked`
+- for harness, runner, fixture, or artifact tasks, a `done` review requires explicit consideration of collision, rerun/reentrancy, isolation, and misleading-metadata cases whenever the diff introduces identifiers, persisted outputs, summaries, selection logic, or archived evidence
 - stop instead of auto-correcting when review finds:
   - spec ambiguity
   - product question
@@ -78,6 +82,7 @@ Optional secondary tags may be added for routing only, for example:
 - task-scope-creep
 - mutation-policy
 - fixture-golden
+- falsification-gap
 - non-blocking-risk
 
 Do not suggest new product features.
@@ -85,6 +90,8 @@ Do not rewrite the architecture unless the diff violates the contract or task sc
 Do not request broad refactors unless the current diff prevents the referenced task from satisfying its contract/eval obligations.
 
 Review questions:
+- what new invariants does this diff introduce?
+- which of those invariants are already covered by existing tests or fixtures, and which ones need reviewer-derived falsification?
 - which task is targeted?
 - which contract sections are impacted?
 - which fixtures should pass?
@@ -94,13 +101,51 @@ Review questions:
 - did the diff weaken an eval?
 - which checks must run to verify this diff, and do they pass when you run them?
 - are failures and edge cases covered?
+- did the review actively try to break the new invariant surface, not just confirm the happy path?
+- for harness/tasking changes, were collision, rerun, isolation, and misleading-artifact cases examined where relevant?
 - are known limits documented?
 - which findings are blocking vs explicitly non-blocking relative to `docs/operating-model.md` §19.1?
 - if this is a process-doc or ADR task, which operating-model/ADR refs govern the diff, and are the changed files still properly bounded?
 
 Orchestrator return:
-1. review findings ordered by severity; each finding must include its primary classification and a `blocking` or `non-blocking` status relative to `docs/operating-model.md` §19.1
+1. review findings ordered by severity; each finding must include its primary classification and a `blocking` or `non-blocking` status relative to `docs/operating-model.md` §19.1. If there are no findings, explicitly list the new invariants reviewed and the falsification or verification checks that justified the clean verdict.
 2. any required follow-up edits
 3. any findings explicitly accepted as non-blocking
 4. execution-state update required in `docs/tasks.md`
 5. current task state: `done`, `needs_rework`, or `blocked`
+
+## Adversarial Review Requirements
+
+Every review pass must try to falsify the diff, not merely confirm that existing checks still pass.
+
+Minimum required steps:
+
+1. List the new invariants introduced by the diff.
+2. Map each invariant to:
+   - existing repo checks that already cover it, or
+   - a reviewer-derived falsification check.
+3. Run the mapped checks.
+4. If a new invariant remains unchecked, do not return `done`.
+
+Typical falsification targets:
+
+- collisions of names, IDs, paths, or keys;
+- reruns, repeated selections, or reentrancy;
+- isolation boundaries between fixtures, families, sandboxes, or runs;
+- persisted summaries or metadata that can silently misreport success/failure state;
+- cases where multiple records point at the same artifact or output location;
+- serialization that can emit technically valid but misleading data.
+
+For harness-oriented tasks, prefer finding a bounded `tooling problem` over returning a soft `no findings` verdict when the new invariant surface has not been stress-tested.
+
+## Harness-Task Review Mode
+
+When the diff touches the fixture harness, runner, sandbox, selection logic, archived artifacts, summaries, or other verification infrastructure, the reviewer must examine at least these questions when relevant to the diff:
+
+- can two logically distinct runs or records collide on the same path or identifier?
+- does rerunning the same selection destroy or overwrite evidence that the task claims to preserve?
+- do persisted summaries and metadata faithfully represent success, failure, and absence of error?
+- can one fixture, family, or selection leak into another through shared output paths or shared summary state?
+- do the existing tests prove the invariant, or only prove one happy-path example?
+
+If these questions reveal an untested but in-scope risk, return a finding rather than treating the missing falsification as acceptable.

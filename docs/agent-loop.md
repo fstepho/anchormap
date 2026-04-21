@@ -18,7 +18,8 @@ It adds:
 
 - an index of the repo-local skills under `.agents/skills/`;
 - the minimum local command surface used in the harness phase;
-- one compact loop for task execution and review.
+- one compact loop for task execution and review, including adversarial
+  falsification of newly introduced invariants.
 
 It does not replace the normative process. Use:
 
@@ -45,7 +46,7 @@ also work.
 2. Ensure `docs/tasks.md` `## Execution State` records that task as the current active task. Use `update-tasks` when the cursor is not already aligned.
 3. Run `implement-task` for that task. Identify the relevant contract, design, and eval references before patching, then run the smallest relevant check early.
 4. If blocked, classify the deviation before making more changes. Update `docs/tasks.md` through `update-tasks` only when the task state or deviation record must change.
-5. Run `review-task` against the full cumulative task-scoped diff. Prefer a fresh-context review pass; if your agent cannot spawn one, use a fresh session.
+5. Run `review-task` against the full cumulative task-scoped diff. Prefer a fresh-context review pass; if your agent cannot spawn one, use a fresh session. The review pass must not stop at rerunning the referenced checks: it must also try to falsify the new invariants introduced by the task.
 6. If review returns `needs_rework`, apply one bounded follow-up and then run a new fresh-context review pass on the full cumulative diff.
 7. Stop instead of iterating when review exposes `spec ambiguity`, `product question`, `out-of-scope discovery`, a required `docs/contract.md` change, or a broader task-plan rewrite.
 8. Mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then sync `docs/tasks.md` through `update-tasks` before commit or handoff.
@@ -69,7 +70,7 @@ skills themselves.
 | `implement-task` | `needs_review` | Run `review-task` on the full cumulative task-scoped diff in a fresh context. |
 | `implement-task` | `blocked` because `docs/tasks.md` execution state is out of sync | Run `update-tasks` for the routine execution-state sync, then resume from the interrupted step. |
 | `implement-task` | `blocked` with a classified deviation | Run `update-tasks` to record the deviation and task state. If the block is a fixture failure that needs diagnosis, run `diagnose-fixture` next; otherwise stop and hand off. |
-| `review-task` | `done` | Run `update-tasks` to apply the review hand-off to `docs/tasks.md`, then hand off for the human commit or handoff gate. Do not auto-commit. |
+| `review-task` | `done` | Run `update-tasks` to apply the review hand-off to `docs/tasks.md`, then hand off for the human commit or handoff gate. Do not auto-commit. `done` is valid only if the reviewer explicitly exercised the new task invariants through existing tests or reviewer-derived falsification checks. |
 | `review-task` | `needs_rework` | Apply one bounded follow-up, then run a new fresh-context `review-task` pass on the full cumulative diff. |
 | `review-task` | `blocked` | Stop and hand off with the review classification, evidence, and required escalation. |
 | `diagnose-fixture` | classified result returned | Route according to `docs/operating-model.md` §10. Record any required task-state or deviation update through `update-tasks` before resuming implementation. |
@@ -80,6 +81,8 @@ skills themselves.
 ### Invariants
 
 - `review-task` always runs in a fresh context. Follow the rule from `.agents/skills/review-task/SKILL.md`; do not reuse the implementation session or a previous reviewer session.
+- `review-task` must list the new invariants introduced by the diff and state how each one was verified or falsified before returning `done`.
+- for harness or tooling tasks, `review-task` must actively check for collision, rerun, isolation, and misleading-artifact cases when those risks are introduced by the diff.
 - Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
 - `update-tasks` is the only path that edits `docs/tasks.md`, including routine execution-state syncs and classified deviations.
 - Do not auto-pick the next task. Task selection remains human-directed.
@@ -92,6 +95,7 @@ Stop and hand back to the human coordinator when any of the following is true:
 - `review-task` or `diagnose-fixture` classifies the issue as `spec ambiguity`
 - `review-task` or `diagnose-fixture` classifies the issue as `product question`
 - `review-task` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
+- `review-task` cannot derive a credible falsification check for a newly introduced invariant without guessing beyond the repo docs; classify this as `eval defect` when the verification guidance is missing, or `design gap` when the invariant itself is under-specified
 - the required fix would need a change to `docs/contract.md`
 - the required fix would need a broader task-plan rewrite rather than a bounded task update
 - the same class of blocking review finding returns after one bounded follow-up
@@ -139,6 +143,7 @@ Notes:
 - the fixture-runner scripts compile first and then execute the built runner from `dist/`;
 - `npm run test:fixtures:all` scans the runnable fixture corpus under `fixtures/`;
 - fixture manifests may point either to the built product CLI when available or to `node dist/cli-stub.js` while product implementation is still in progress.
+- these commands are the minimum starting point for review, not the maximum allowed review surface. A reviewer may add bounded falsification checks when the task introduces new invariants not already stressed by the existing commands.
 
 ## Non-Goals
 
