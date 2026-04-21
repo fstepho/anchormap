@@ -46,6 +46,10 @@ function normalizeReferenceLabel(label) {
 	return label.trim().replace(/\s+/g, " ").toLowerCase()
 }
 
+function isFootnoteLabel(label) {
+	return label.trim().startsWith("^")
+}
+
 function stripInlineCodeSpans(line) {
 	let stripped = ""
 
@@ -97,6 +101,8 @@ function stripMarkdownCode(content) {
 	const lines = content.split(/\r?\n/)
 	const strippedLines = []
 	let activeFence = null
+	let activeIndentedCode = false
+	let previousLineBlank = true
 
 	for (const line of lines) {
 		if (activeFence !== null) {
@@ -110,6 +116,15 @@ function stripMarkdownCode(content) {
 			continue
 		}
 
+		if (activeIndentedCode) {
+			if (/^[ \t]*$/.test(line) || /^(?: {4,}| {0,3}\t)/.test(line)) {
+				strippedLines.push(" ".repeat(line.length))
+				previousLineBlank = /^[ \t]*$/.test(line)
+				continue
+			}
+			activeIndentedCode = false
+		}
+
 		const openingFence = /^[ \t]{0,3}(`{3,}|~{3,})/.exec(line)
 		if (openingFence) {
 			activeFence = {
@@ -117,10 +132,20 @@ function stripMarkdownCode(content) {
 				length: openingFence[1].length,
 			}
 			strippedLines.push(" ".repeat(line.length))
+			previousLineBlank = false
+			continue
+		}
+
+		const isBlank = /^[ \t]*$/.test(line)
+		if (previousLineBlank && /^(?: {4,}| {0,3}\t)/.test(line)) {
+			activeIndentedCode = true
+			strippedLines.push(" ".repeat(line.length))
+			previousLineBlank = false
 			continue
 		}
 
 		strippedLines.push(stripInlineCodeSpans(line))
+		previousLineBlank = isBlank
 	}
 
 	return strippedLines.join("\n")
@@ -148,6 +173,10 @@ function collectReferenceDefinitions(content) {
 	const definitionPattern = /^[ \t]{0,3}\[([^\]]+)\]:[ \t]*(.+)$/gm
 
 	for (const match of content.matchAll(definitionPattern)) {
+		if (isFootnoteLabel(match[1])) {
+			continue
+		}
+
 		const normalizedLabel = normalizeReferenceLabel(match[1])
 		if (normalizedLabel === "") {
 			continue
@@ -207,6 +236,10 @@ function extractMarkdownLinkTargets(content) {
 		}
 
 		const label = strippedContent.slice(index + 1, labelEnd)
+		if (isFootnoteLabel(label)) {
+			index = labelEnd
+			continue
+		}
 		const nextChar = strippedContent[labelEnd + 1]
 		if (nextChar === "(") {
 			const targetEnd = findMatchingParen(strippedContent, labelEnd + 1)
@@ -231,6 +264,10 @@ function extractMarkdownLinkTargets(content) {
 			}
 
 			const referenceLabel = strippedContent.slice(labelEnd + 2, referenceEnd)
+			if (isFootnoteLabel(referenceLabel)) {
+				index = referenceEnd
+				continue
+			}
 			const normalizedReferenceLabel = normalizeReferenceLabel(
 				referenceLabel === "" ? label : referenceLabel,
 			)

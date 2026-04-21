@@ -1,0 +1,7 @@
+{
+	"id": "validate_markdown_indented_examples_ignored",
+	"args": [],
+	"exit_code": 0,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "empty" }
+}
