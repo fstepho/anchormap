@@ -3258,7 +3258,7 @@ Done when:
 - `fx59` through `fx67d` pass.
 - Every successful map fixture has a versioned YAML golden.
 - Every failed map fixture proves initial config byte identity.
-- B-map contributes to release Gate A and Gate C.
+- B-map contributes to release Gate A and release Gate C.
 
 Suggested verification:
 - Run fixture family `B-map`.
@@ -3480,7 +3480,7 @@ Done when:
 - `medium` p95 <= 2.0 s and RSS <= 300 MiB.
 - `large` benchmark is executed and archived but excluded from pass/fail.
 - Measurement protocol is documented in the report.
-- Gate F can be evaluated from artifacts.
+- release Gate F can be evaluated from artifacts.
 
 Suggested verification:
 - Run benchmark command on release build.
@@ -3537,7 +3537,7 @@ Done when:
 - Audit fails if a contract-affecting dependency uses a floating range.
 - Audit fails if lockfile is absent or out of sync.
 - Audit reports exact parser versions used by the release candidate.
-- Gate G dependency checks pass.
+- release Gate G dependency checks pass.
 
 Suggested verification:
 - Run reproducibility audit script.
@@ -3585,7 +3585,7 @@ Implementation scope:
   - performance `small` and `medium`
   - informational `large`
   - dependency audit
-- Produce a release report with pass/fail per gate A–G.
+- Produce a release report with pass/fail per release Gate A through release Gate G.
 - Archive:
   - fixture report
   - metamorphic report
@@ -3600,7 +3600,7 @@ Out of scope:
 - Treating warnings as pass/fail unless defined by `evals.md`.
 
 Done when:
-- Gate A through Gate G each have explicit pass/fail.
+- release Gate A through release Gate G each have explicit pass/fail.
 - Release verdict is fail if any gate fails.
 - Reports are deterministic and versioned as release artifacts.
 - Any golden diff is classified before acceptance.
@@ -3644,7 +3644,8 @@ Implementation scope:
 - Run a bounded entropy review on code, fixtures, goldens, ADRs, and process docs.
 - Check for duplicated helpers, obsolete docs, stale ADR references, weak or redundant fixtures, and unresolved deviation notes.
 - Confirm that repo-local consistency checks required by M1 remain green.
-- Classify each finding as one of: no action, process-doc update, eval defect, design gap, tooling problem, or out-of-scope discovery.
+- Classify each finding with exactly one primary classification from `docs/operating-model.md` §10.
+- Record the follow-up disposition separately for each finding, for example `fix now`, `process-doc update`, `defer`, or `no action`.
 - Archive the review result as a release artifact.
 
 Out of scope:
@@ -3654,7 +3655,7 @@ Out of scope:
 
 Done when:
 - An entropy review artifact exists for the release candidate.
-- Each review finding has an explicit classification and follow-up action or `no action`.
+- Each review finding has an explicit primary classification and an explicit follow-up disposition.
 - No unclassified drift remains in the release candidate review set.
 - The release verdict references the entropy review artifact.
 
@@ -4334,13 +4335,13 @@ Done when:
 | Cross-platform matrix §9 | T9.3 | M9 | gate | Linux x86_64 and macOS arm64 |
 | Performance `small` and `medium` | T9.4 | M9 | benchmark | Release gate; p95/RSS budgets |
 | Performance `large` | T9.4 | M9 | benchmark | Informational only, archived |
-| Gate A — Observable contract coverage | T9.6 | M9 | release gate | 100% Level B fixtures |
-| Gate B — Schema/goldens/canonical order | T3.5, T4.4, T7.5, T8.6, T9.6 | M3–M9 | release gate | JSON/YAML byte-for-byte |
-| Gate C — Exit codes/preconditions/priority | T2.5, T2.6, T4.5, T7.6, T8.1, T8.2, T8.3, T8.5, T9.6 | M2–M9 | release gate | Codes `0`–`4`, priority fixtures |
-| Gate D — Determinism and isolation | T9.1, T9.2, T9.6 | M9 | release gate | C1–C12 |
-| Gate E — Cross-platform | T9.3, T9.6 | M9 | release gate | Required suite on both supported platforms |
-| Gate F — Performance | T9.4, T9.6 | M9 | release gate | `small` and `medium` budgets |
-| Gate G — Release reproducibility | T9.5, T9.6 | M9 | release gate | Pinned deps, lockfile, goldens versioned |
+| release Gate A — Observable contract coverage | T9.6 | M9 | release gate | 100% Level B fixtures |
+| release Gate B — Schema/goldens/canonical order | T3.5, T4.4, T7.5, T8.6, T9.6 | M3–M9 | release gate | JSON/YAML byte-for-byte |
+| release Gate C — Exit codes/preconditions/priority | T2.5, T2.6, T4.5, T7.6, T8.1, T8.2, T8.3, T8.5, T9.6 | M2–M9 | release gate | Codes `0`–`4`, priority fixtures |
+| release Gate D — Determinism and isolation | T9.1, T9.2, T9.6 | M9 | release gate | C1–C12 |
+| release Gate E — Cross-platform | T9.3, T9.6 | M9 | release gate | Required suite on both supported platforms |
+| release Gate F — Performance | T9.4, T9.6 | M9 | release gate | `small` and `medium` budgets |
+| release Gate G — Release reproducibility | T9.5, T9.6 | M9 | release gate | Pinned deps, lockfile, goldens versioned |
 
 ## Agent execution protocol
 

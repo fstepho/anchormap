@@ -75,7 +75,7 @@ Cons:
 Positive:
 
 - minimal runtime surface for process execution, filesystem access, and cross-platform scripting;
-- straightforward lockfile story for Gate G;
+- straightforward lockfile story for release Gate G;
 - predictable compile-then-run model for the published CLI;
 - lower structural dependency count before parser and write-path decisions are finalized.
 
@@ -102,7 +102,7 @@ Yes.
 
 Required implications:
 
-- Gate G audit must validate `package-lock.json` and pinned contract-affecting dependencies under the chosen `npm` flow;
+- release Gate G audit must validate `package-lock.json` and pinned contract-affecting dependencies under the chosen `npm` flow;
 - harness and release scripts should assume a compile-then-run product path instead of direct TypeScript execution.
 
 No change to `docs/evals.md` is introduced by this ADR alone.

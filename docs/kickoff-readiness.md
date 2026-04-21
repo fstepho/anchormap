@@ -21,7 +21,7 @@ Il ne remplace pas :
 | --- | --- | --- | --- |
 | Gate A — Brief prêt | Pass | `docs/brief.md` définit l'utilisateur primaire, le problème, la promesse limitée, le scope IN/OUT, les métriques et les kill criteria | Aucune ambiguïté bloquante relevée pour le démarrage de `T1.1` |
 | Gate B — Contrat prêt | Pass | `docs/contract.md` fixe les commandes `init` / `map` / `scan`, les profils normatifs, les règles de mutation, les codes de sortie et la sérialisation canonique | Le contrat est suffisamment fermé pour démarrer par le harness |
-| Gate C — Evals prêtes | Pass | `docs/evals.md` trace les comportements contractuels vers familles A-F, définit les fixtures B, les goldens, les budgets et les gates A-G de release | Les oracles de frontière requis pour `M1` sont nommés |
+| Gate C — Evals prêtes | Pass | `docs/evals.md` trace les comportements contractuels vers familles A-F, définit les fixtures B, les goldens, les budgets et les release Gates A-G | Les oracles de frontière requis pour `M1` sont nommés |
 | Gate D — Tâches prêtes | Pass | `docs/tasks.md` découpe le plan par milestones, tasks, spikes, dépendances, refs contrat/design/evals et critères de sortie | Les dépendances de spikes et le statut de kickoff sont explicités |
 | Gate E — Implémentation prête à démarrer | Pass | Première tâche produit bornée: `T1.1`; composants ciblés identifiés; vérifications minimales nommées; aucun blocking question ouvert pour cette tâche | Les process-doc gaps initiaux ont été refermés dans cette passe |
 

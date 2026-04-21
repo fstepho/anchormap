@@ -415,6 +415,13 @@ Ces questions peuvent être explorées par `docs/pilot.md`, mais ne doivent pas 
 
 Les gates sont binaires. Un gate flou n'est pas un gate.
 
+Sauf mention contraire dans la référence citée, les gates de cette section sont
+les **gates du modèle opérationnel**.
+
+`docs/evals.md` réutilise aussi les libellés `Gate A` à `Gate G` pour un autre
+namespace : les **gates de release**. Toute référence à ces dernières doit être
+qualifiée explicitement comme `evals.md Gate X` ou `release Gate X`.
+
 ### Gate A — Brief prêt
 
 `brief.md` est prêt lorsque :
@@ -474,15 +481,8 @@ L'implémentation peut commencer lorsque :
 
 ### Gate F — Tâche terminée
 
-Une tâche est terminée lorsque :
-
-- le comportement demandé est implémenté ;
-- les fixtures référencées passent ;
-- les tests unitaires pertinents passent ;
-- aucun fichier hors scope n'a été modifié ;
-- aucune sortie ou mutation hors contrat n'a été introduite ;
-- toute limite connue est documentée ;
-- tout bug découvert mais hors scope est classifié.
+Une tâche passe Gate F si et seulement si la définition de done de `§19.1 Tâche`
+est satisfaite.
 
 ### Gate G — Release candidate prête
 
