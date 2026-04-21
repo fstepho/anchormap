@@ -47,7 +47,7 @@ test("walking skeleton harness-smoke family passes through the real fixture runn
 			"PASS harness_smoke_init_write",
 			"PASS harness_smoke_scan_failure",
 			"PASS harness_smoke_scan_success",
-			"SUMMARY total=3 passed=3 failed=0",
+			`SUMMARY total=3 passed=3 failed=0 artifacts=${summary.artifactsDirRelative} summary=${summary.summaryPathRelative}`,
 			"",
 		].join("\n"),
 	);
@@ -56,12 +56,7 @@ test("walking skeleton harness-smoke family passes through the real fixture runn
 test("walking skeleton fixtures surface a readable broken-golden failure through the runner", async () => {
 	await withTempHarnessSmokeFixtures(async (fixturesRoot) => {
 		writeFileSync(
-			resolve(
-				fixturesRoot,
-				HARNESS_SMOKE_FAMILY,
-				"harness_smoke_scan_success",
-				"stdout.golden",
-			),
+			resolve(fixturesRoot, HARNESS_SMOKE_FAMILY, "harness_smoke_scan_success", "stdout.golden"),
 			'{"ok":false}\n',
 		);
 
@@ -77,7 +72,7 @@ test("walking skeleton fixtures surface a readable broken-golden failure through
 		assert.equal(summary.records[0]?.failedOracle, "stdout.golden");
 		assert.match(
 			summary.report,
-			/^FAIL harness_smoke_scan_success stdout\.golden stdout bytes did not match .*stdout\.golden$/m,
+			/^FAIL harness_smoke_scan_success stdout\.golden stdout bytes did not match .*stdout\.golden \[artifacts .+harness_smoke_scan_success\]$/m,
 		);
 	});
 });
@@ -107,7 +102,7 @@ test("walking skeleton fixtures surface unexpected mutation failures through the
 		assert.equal(summary.records[0]?.failedOracle, "filesystem.no_mutation");
 		assert.match(
 			summary.report,
-			/^FAIL harness_smoke_scan_success filesystem\.no_mutation filesystem\.kind "no_mutation" forbids repository mutations$/m,
+			/^FAIL harness_smoke_scan_success filesystem\.no_mutation filesystem\.kind "no_mutation" forbids repository mutations \[artifacts .+harness_smoke_scan_success\]$/m,
 		);
 	});
 });

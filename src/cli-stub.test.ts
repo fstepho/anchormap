@@ -73,8 +73,14 @@ test("scan --json fails with empty stdout when the stub fixture repo is missing 
 
 test("init writes anchormap.yaml from the walking skeleton stub template when requested", () => {
 	withTempRepo((repoDir) => {
-		const output = ["version: 1", "product_root: src", "spec_roots:", "  - specs", "mappings: {}", ""]
-			.join("\n");
+		const output = [
+			"version: 1",
+			"product_root: src",
+			"spec_roots:",
+			"  - specs",
+			"mappings: {}",
+			"",
+		].join("\n");
 
 		writeFileSync(resolve(repoDir, ".stub-init-output.yaml"), output);
 
@@ -91,10 +97,7 @@ test("scan --json can trigger a deterministic unexpected mutation for walking sk
 	withTempRepo((repoDir) => {
 		mkdirSync(resolve(repoDir, "specs"), { recursive: true });
 		writeFileSync(resolve(repoDir, "specs", "example.md"), "# US-001 Example\n");
-		writeFileSync(
-			resolve(repoDir, ".stub-scan-unexpected-mutation.txt"),
-			"unexpected mutation\n",
-		);
+		writeFileSync(resolve(repoDir, ".stub-scan-unexpected-mutation.txt"), "unexpected mutation\n");
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 
@@ -107,9 +110,6 @@ test("scan --json can trigger a deterministic unexpected mutation for walking sk
 		assert.equal(exitCode, 0);
 		assert.equal(stdout.read(), '{"ok":true}\n');
 		assert.equal(stderr.read(), "");
-		assert.equal(
-			readFileSync(resolve(repoDir, "unexpected.txt"), "utf8"),
-			"unexpected mutation\n",
-		);
+		assert.equal(readFileSync(resolve(repoDir, "unexpected.txt"), "utf8"), "unexpected mutation\n");
 	});
 });

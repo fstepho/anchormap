@@ -33,6 +33,8 @@ export class FixtureProcessError extends Error {
 
 export class FixtureProcessTimeoutError extends FixtureProcessError {
 	readonly timeoutMs: number;
+	readonly stdout: Buffer;
+	readonly stderr: Buffer;
 	readonly stdoutLength: number;
 	readonly stderrLength: number;
 
@@ -40,6 +42,8 @@ export class FixtureProcessTimeoutError extends FixtureProcessError {
 		command: string[];
 		cwd: string;
 		timeoutMs: number;
+		stdout: Buffer;
+		stderr: Buffer;
 		stdoutLength: number;
 		stderrLength: number;
 	}) {
@@ -49,6 +53,8 @@ export class FixtureProcessTimeoutError extends FixtureProcessError {
 		});
 		this.name = "FixtureProcessTimeoutError";
 		this.timeoutMs = options.timeoutMs;
+		this.stdout = options.stdout;
+		this.stderr = options.stderr;
 		this.stdoutLength = options.stdoutLength;
 		this.stderrLength = options.stderrLength;
 	}
@@ -123,6 +129,8 @@ export async function executeFixtureCommand(
 							command,
 							cwd: sandbox.cwd,
 							timeoutMs: options.timeoutMs,
+							stdout,
+							stderr,
 							stdoutLength: stdout.length,
 							stderrLength: stderr.length,
 						}),

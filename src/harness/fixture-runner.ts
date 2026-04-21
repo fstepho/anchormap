@@ -2,7 +2,9 @@ import { existsSync, lstatSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
-	assertFixtureFilesystemOracle,
+	assertFixtureFilesystemOracleFromSnapshots,
+	diffFilesystemSnapshots,
+	type FilesystemMutationDiff,
 	FixtureFilesystemOracleError,
 } from "./fixture-filesystem-oracle";
 import {
@@ -12,13 +14,31 @@ import {
 	type LoadedFixtureManifest,
 	loadFixtureManifest,
 } from "./fixture-manifest";
-import { assertFixtureOutputOracles, FixtureOutputOracleError } from "./fixture-output-oracle";
+import {
+	assertFixtureStderrOracle,
+	assertFixtureStdoutOracle,
+	FixtureOutputOracleError,
+} from "./fixture-output-oracle";
 import {
 	executeFixtureCommand,
 	FixtureProcessError,
+	type FixtureProcessResult,
 	FixtureProcessTimeoutError,
 } from "./fixture-process";
-import { FixtureSandboxError, materializeFixtureSandbox } from "./fixture-sandbox";
+import {
+	type FixtureArtifactOracleStatuses,
+	type FixtureRunnerArtifactsLayout,
+	prepareFixtureRunnerArtifacts,
+	writeFixtureRunArtifacts,
+	writeFixtureRunnerSummaryArtifacts,
+} from "./fixture-run-artifacts";
+import {
+	captureFilesystemSnapshot,
+	type FilesystemSnapshotEntry,
+	FixtureSandboxError,
+	type MaterializedFixtureSandbox,
+	materializeFixtureSandbox,
+} from "./fixture-sandbox";
 
 const DEFAULT_TIMEOUT_MS = 5_000;
 const FAILURE_MESSAGE_HEADER = /^Fixture .+ failed(?: \[fixture .+\])?$/u;
@@ -46,6 +66,12 @@ export interface FixtureRunRecord {
 	status: "pass" | "fail";
 	failedOracle: string | null;
 	summary: string;
+	artifactDir: string;
+	artifactDirRelative: string;
+	metadataPath: string;
+	metadataPathRelative: string;
+	summaryPath: string;
+	summaryPathRelative: string;
 }
 
 export interface FixtureRunSummary {
@@ -55,6 +81,10 @@ export interface FixtureRunSummary {
 	failedCount: number;
 	exitCode: number;
 	report: string;
+	artifactsDir: string;
+	artifactsDirRelative: string;
+	summaryPath: string;
+	summaryPathRelative: string;
 }
 
 interface FixtureDirectoryEntry {
@@ -150,24 +180,36 @@ export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<F
 		fixtureId: options.fixtureId,
 		family: options.family,
 	});
+	const artifactsLayout = prepareFixtureRunnerArtifacts(options.fixturesRoot, {
+		fixtureId: options.fixtureId,
+		family: options.family,
+	});
 
 	const records: FixtureRunRecord[] = [];
 
 	for (const entry of selectedEntries) {
-		records.push(await runFixtureEntry(entry, timeoutMs));
+		records.push(await runFixtureEntry(entry, timeoutMs, artifactsLayout));
 	}
 
 	const passedCount = records.filter((record) => record.status === "pass").length;
 	const failedCount = records.length - passedCount;
-
-	return {
+	const report = renderFixtureRunnerReport(records, passedCount, failedCount, artifactsLayout);
+	const summary = {
 		records,
 		totalCount: records.length,
 		passedCount,
 		failedCount,
 		exitCode: failedCount === 0 ? 0 : 1,
-		report: renderFixtureRunnerReport(records, passedCount, failedCount),
+		report,
+		artifactsDir: artifactsLayout.runDir,
+		artifactsDirRelative: artifactsLayout.runDirRelative,
+		summaryPath: artifactsLayout.summaryPath,
+		summaryPathRelative: artifactsLayout.summaryPathRelative,
 	};
+
+	writeFixtureRunnerSummaryArtifacts(artifactsLayout, summary);
+
+	return summary;
 }
 
 export async function runFixtureRunnerCli(
@@ -277,31 +319,122 @@ function selectFixtureEntries(
 async function runFixtureEntry(
 	entry: FixtureDirectoryEntry,
 	timeoutMs: number,
+	artifactsLayout: FixtureRunnerArtifactsLayout,
 ): Promise<FixtureRunRecord> {
-	let fixture: LoadedFixtureManifest;
+	let fixture: LoadedFixtureManifest | null = null;
+	let sandbox: MaterializedFixtureSandbox | null = null;
+	let processResult: FixtureProcessResult | null = null;
+	let processTimeoutError: FixtureProcessTimeoutError | null = null;
+	let processError: FixtureProcessError | null = null;
+	let postRunSnapshot: FilesystemSnapshotEntry[] | null = null;
+	let filesystemDiff: FilesystemMutationDiff | null = null;
+	const oracleStatuses: FixtureArtifactOracleStatuses = {
+		exitCode: "not_run",
+		stdout: "not_run",
+		stderr: "not_run",
+		filesystem: "not_run",
+	};
+
+	const finalizeRecord = (
+		recordStatus: "pass" | "fail",
+		failedOracle: string | null,
+		summary: string,
+		error: unknown,
+	): FixtureRunRecord => {
+		const artifactPaths = writeFixtureRunArtifacts(artifactsLayout, {
+			entryFixtureId: entry.fixtureId,
+			entryFamily: entry.family,
+			recordStatus,
+			failedOracle,
+			summary,
+			fixture,
+			sandbox,
+			processResult,
+			processTimeoutError,
+			processError,
+			postRunSnapshot,
+			filesystemDiff,
+			oracleStatuses,
+			error,
+		});
+
+		return {
+			fixtureId: fixture?.manifest.id ?? entry.fixtureId,
+			family: fixture?.manifest.family ?? entry.family,
+			status: recordStatus,
+			failedOracle,
+			summary,
+			artifactDir: artifactPaths.artifactDir,
+			artifactDirRelative: artifactPaths.artifactDirRelative,
+			metadataPath: artifactPaths.metadataPath,
+			metadataPathRelative: artifactPaths.metadataPathRelative,
+			summaryPath: artifactPaths.summaryPath,
+			summaryPathRelative: artifactPaths.summaryPathRelative,
+		};
+	};
+
 	try {
 		fixture = loadFixtureManifest(entry.fixtureDir);
 	} catch (error) {
-		return buildFailureRecord(entry.fixtureId, entry.family, error);
+		return finalizeRecord(
+			"fail",
+			classifyFailureOracle(error),
+			summarizeFailureMessage(error),
+			error,
+		);
 	}
 
-	let sandbox = null;
 	try {
 		sandbox = materializeFixtureSandbox(fixture);
-		const result = await executeFixtureCommand(fixture, sandbox, { timeoutMs });
-		assertExpectedExitCode(fixture, result.exitCode);
-		assertFixtureOutputOracles(fixture, result);
-		assertFixtureFilesystemOracle(fixture, sandbox);
+		processResult = await executeFixtureCommand(fixture, sandbox, { timeoutMs });
+		postRunSnapshot = captureFilesystemSnapshot(sandbox.sandboxDir);
+		filesystemDiff = diffFilesystemSnapshots(sandbox.preRunSnapshot, postRunSnapshot);
+		assertExpectedExitCode(fixture, processResult.exitCode);
+		oracleStatuses.exitCode = "pass";
+		assertFixtureStdoutOracle(fixture, processResult.stdout, fixture.manifest.stdout);
+		oracleStatuses.stdout = "pass";
+		assertFixtureStderrOracle(fixture, processResult.stderr, fixture.manifest.stderr);
+		oracleStatuses.stderr = "pass";
+		assertFixtureFilesystemOracleFromSnapshots(fixture, postRunSnapshot, filesystemDiff);
+		oracleStatuses.filesystem = "pass";
 
-		return {
-			fixtureId: fixture.manifest.id,
-			family: fixture.manifest.family,
-			status: "pass",
-			failedOracle: null,
-			summary: "ok",
-		};
+		return finalizeRecord("pass", null, "ok", null);
 	} catch (error) {
-		return buildFailureRecord(fixture.manifest.id, fixture.manifest.family, error);
+		if (error instanceof FixtureProcessTimeoutError) {
+			processTimeoutError = error;
+		}
+		if (error instanceof FixtureProcessError) {
+			processError = error;
+		}
+
+		if (sandbox && postRunSnapshot === null) {
+			try {
+				postRunSnapshot = captureFilesystemSnapshot(sandbox.sandboxDir);
+				filesystemDiff = diffFilesystemSnapshots(sandbox.preRunSnapshot, postRunSnapshot);
+			} catch {
+				postRunSnapshot = null;
+				filesystemDiff = null;
+			}
+		}
+
+		if (error instanceof FixtureExitCodeOracleError) {
+			oracleStatuses.exitCode = "fail";
+		} else if (error instanceof FixtureOutputOracleError) {
+			if (error.stream === "stdout") {
+				oracleStatuses.stdout = "fail";
+			} else {
+				oracleStatuses.stderr = "fail";
+			}
+		} else if (error instanceof FixtureFilesystemOracleError) {
+			oracleStatuses.filesystem = "fail";
+		}
+
+		return finalizeRecord(
+			"fail",
+			classifyFailureOracle(error),
+			summarizeFailureMessage(error),
+			error,
+		);
 	} finally {
 		sandbox?.dispose();
 	}
@@ -317,16 +450,6 @@ function assertExpectedExitCode(fixture: LoadedFixtureManifest, actualExitCode: 
 		expectedExitCode: fixture.manifest.exit_code,
 		actualExitCode,
 	});
-}
-
-function buildFailureRecord(fixtureId: string, family: string, error: unknown): FixtureRunRecord {
-	return {
-		fixtureId,
-		family,
-		status: "fail",
-		failedOracle: classifyFailureOracle(error),
-		summary: summarizeFailureMessage(error),
-	};
 }
 
 function classifyFailureOracle(error: unknown): string {
@@ -376,16 +499,19 @@ function renderFixtureRunnerReport(
 	records: FixtureRunRecord[],
 	passedCount: number,
 	failedCount: number,
+	artifactsLayout: FixtureRunnerArtifactsLayout,
 ): string {
 	const lines = records.map((record) => {
 		if (record.status === "pass") {
 			return `PASS ${record.fixtureId}`;
 		}
 
-		return `FAIL ${record.fixtureId} ${record.failedOracle} ${record.summary}`;
+		return `FAIL ${record.fixtureId} ${record.failedOracle} ${record.summary} [artifacts ${record.artifactDirRelative}]`;
 	});
 
-	lines.push(`SUMMARY total=${records.length} passed=${passedCount} failed=${failedCount}`);
+	lines.push(
+		`SUMMARY total=${records.length} passed=${passedCount} failed=${failedCount} artifacts=${artifactsLayout.runDirRelative} summary=${artifactsLayout.summaryPathRelative}`,
+	);
 
 	return `${lines.join("\n")}\n`;
 }

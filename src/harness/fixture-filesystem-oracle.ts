@@ -43,7 +43,14 @@ export function assertFixtureFilesystemOracle(
 ): void {
 	const postRunSnapshot = captureFilesystemSnapshot(sandbox.sandboxDir);
 	const diff = diffFilesystemSnapshots(sandbox.preRunSnapshot, postRunSnapshot);
+	assertFixtureFilesystemOracleFromSnapshots(fixture, postRunSnapshot, diff);
+}
 
+export function assertFixtureFilesystemOracleFromSnapshots(
+	fixture: LoadedFixtureManifest,
+	postRunSnapshot: FilesystemSnapshotEntry[],
+	diff: FilesystemMutationDiff,
+): void {
 	switch (fixture.manifest.filesystem.kind) {
 		case "no_mutation":
 			assertNoMutationFilesystemOracle(fixture, diff);

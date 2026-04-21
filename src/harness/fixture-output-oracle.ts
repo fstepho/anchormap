@@ -26,11 +26,11 @@ export function assertFixtureOutputOracles(
 	fixture: LoadedFixtureManifest,
 	result: FixtureProcessResult,
 ): void {
-	assertStdoutOracle(fixture, result.stdout, fixture.manifest.stdout);
-	assertStderrOracle(fixture, result.stderr, fixture.manifest.stderr);
+	assertFixtureStdoutOracle(fixture, result.stdout, fixture.manifest.stdout);
+	assertFixtureStderrOracle(fixture, result.stderr, fixture.manifest.stderr);
 }
 
-function assertStdoutOracle(
+export function assertFixtureStdoutOracle(
 	fixture: LoadedFixtureManifest,
 	actual: Buffer,
 	oracle: StdoutOracle,
@@ -71,7 +71,7 @@ function assertStdoutOracle(
 	}
 }
 
-function assertStderrOracle(
+export function assertFixtureStderrOracle(
 	fixture: LoadedFixtureManifest,
 	actual: Buffer,
 	oracle: StderrOracle,
