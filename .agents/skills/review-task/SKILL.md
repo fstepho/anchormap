@@ -29,6 +29,7 @@ Review the full current task-scoped change set for the target task only, against
 
 Execution model:
 - this skill must run in a fresh context. Prefer a newly spawned subagent when delegation is supported; fall back to a new Codex session with no prior conversation history otherwise. The prose rules below are the guarantee.
+- when spawning the subagent, request `model=gpt-5.4` with `reasoning_effort=high`. Do not accept the `[default]` mini/medium profile: review passes must run at the same model depth as implementation, otherwise findings may miss contract or eval regressions the implementation agent would have caught.
 - each review pass uses a fresh context; do not reuse a session or reviewer that previously handled implementation of the target task or an earlier review pass on it
 - each review pass must inspect the full current task-scoped change set present in the workspace for the target task, not only the latest follow-up delta from the previous pass
 - use `docs/tasks.md`, the target task block, and the bounded files/components of the task as the authoritative scope surface; `git diff` or `git log` may be used as inspection aids only, never as the authoritative definition of task start or task scope
