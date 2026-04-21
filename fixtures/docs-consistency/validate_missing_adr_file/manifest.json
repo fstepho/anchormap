@@ -1,0 +1,7 @@
+{
+	"id": "validate_missing_adr_file",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: adr_reference_missing_file: docs/design.md references ADR-0002" }
+}

@@ -12,6 +12,7 @@
 		"node": ">=22.0.0"
 	},
 	"scripts": {
+		"check:docs": "sh scripts/check-docs-consistency.sh",
 		"clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
 		"build": "npm run clean && tsc -p tsconfig.json",
 		"check:style": "biome check src package.json tsconfig.json biome.json",

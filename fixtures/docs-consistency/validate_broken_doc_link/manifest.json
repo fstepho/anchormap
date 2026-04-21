@@ -1,0 +1,7 @@
+{
+	"id": "validate_broken_doc_link",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: broken_doc_link: docs/overview.md references missing.md" }
+}

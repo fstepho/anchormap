@@ -40,6 +40,7 @@
   - `T1.6 — Implement fixture selection, grouping, and result reporting`
   - `T1.7 — Integrate harness into project scripts and CI-ready commands`
   - `T1.8 — Add walking skeleton fixtures for harness proof`
+  - `T1.9 — Add documentary consistency checks for agent legibility`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

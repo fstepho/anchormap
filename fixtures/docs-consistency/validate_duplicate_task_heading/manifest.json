@@ -1,0 +1,7 @@
+{
+	"id": "validate_duplicate_task_heading",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: task_heading_duplicate: docs/tasks.md duplicates T1.1" }
+}

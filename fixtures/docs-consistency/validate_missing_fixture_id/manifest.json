@@ -1,0 +1,7 @@
+{
+	"id": "validate_missing_fixture_id",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: task_fixture_reference_missing: docs/tasks.md references fx99 not found in docs/evals.md" }
+}

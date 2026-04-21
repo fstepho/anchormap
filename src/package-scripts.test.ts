@@ -14,10 +14,11 @@ function loadPackageJson(): PackageJson {
 	return JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8")) as PackageJson;
 }
 
-test("package.json exposes the stable T1.7 harness command surface", () => {
+test("package.json exposes the stable repo-local check and harness command surface", () => {
 	const packageJson = loadPackageJson();
 	const scripts = packageJson.scripts ?? {};
 
+	assert.equal(scripts["check:docs"], "sh scripts/check-docs-consistency.sh");
 	assert.equal(scripts.test, "npm run test:unit");
 	assert.equal(scripts["test:unit"], 'npm run build && node --test "dist/**/*.test.js"');
 	assert.equal(scripts["test:fixtures"], "npm run build && node dist/harness/fixture-runner.js");
