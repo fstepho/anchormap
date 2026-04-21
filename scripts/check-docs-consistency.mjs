@@ -42,14 +42,227 @@ function listMarkdownFiles(dir) {
 	return files
 }
 
+function normalizeReferenceLabel(label) {
+	return label.trim().replace(/\s+/g, " ").toLowerCase()
+}
+
+function stripInlineCodeSpans(line) {
+	let stripped = ""
+
+	for (let index = 0; index < line.length;) {
+		if (line[index] !== "`") {
+			stripped += line[index]
+			index += 1
+			continue
+		}
+
+		let fenceLength = 1
+		while (line[index + fenceLength] === "`") {
+			fenceLength += 1
+		}
+
+		let closingIndex = index + fenceLength
+		while (closingIndex < line.length) {
+			if (line[closingIndex] !== "`") {
+				closingIndex += 1
+				continue
+			}
+
+			let closingLength = 1
+			while (line[closingIndex + closingLength] === "`") {
+				closingLength += 1
+			}
+
+			if (closingLength === fenceLength) {
+				break
+			}
+
+			closingIndex += closingLength
+		}
+
+		if (closingIndex >= line.length) {
+			stripped += line.slice(index, index + fenceLength)
+			index += fenceLength
+			continue
+		}
+
+		stripped += " ".repeat(closingIndex + fenceLength - index)
+		index = closingIndex + fenceLength
+	}
+
+	return stripped
+}
+
+function stripMarkdownCode(content) {
+	const lines = content.split(/\r?\n/)
+	const strippedLines = []
+	let activeFence = null
+
+	for (const line of lines) {
+		if (activeFence !== null) {
+			const closingPattern = new RegExp(
+				`^[ \\t]{0,3}${activeFence.char}{${activeFence.length},}[ \\t]*$`,
+			)
+			if (closingPattern.test(line)) {
+				activeFence = null
+			}
+			strippedLines.push(" ".repeat(line.length))
+			continue
+		}
+
+		const openingFence = /^[ \t]{0,3}(`{3,}|~{3,})/.exec(line)
+		if (openingFence) {
+			activeFence = {
+				char: openingFence[1][0],
+				length: openingFence[1].length,
+			}
+			strippedLines.push(" ".repeat(line.length))
+			continue
+		}
+
+		strippedLines.push(stripInlineCodeSpans(line))
+	}
+
+	return strippedLines.join("\n")
+}
+
+function parseLinkDestination(rawTarget) {
+	const trimmed = rawTarget.trim()
+	if (trimmed === "") {
+		return null
+	}
+	if (trimmed.startsWith("<")) {
+		const closingIndex = trimmed.indexOf(">")
+		if (closingIndex === -1) {
+			return null
+		}
+		return trimmed.slice(1, closingIndex).trim()
+	}
+
+	const match = /^[^\s]+/.exec(trimmed)
+	return match?.[0] ?? null
+}
+
+function collectReferenceDefinitions(content) {
+	const definitions = new Map()
+	const definitionPattern = /^[ \t]{0,3}\[([^\]]+)\]:[ \t]*(.+)$/gm
+
+	for (const match of content.matchAll(definitionPattern)) {
+		const normalizedLabel = normalizeReferenceLabel(match[1])
+		if (normalizedLabel === "") {
+			continue
+		}
+
+		const target = parseLinkDestination(match[2])
+		if (target === null) {
+			continue
+		}
+
+		definitions.set(normalizedLabel, target)
+	}
+
+	return definitions
+}
+
+function findMatchingParen(content, openingIndex) {
+	let depth = 0
+
+	for (let index = openingIndex + 1; index < content.length; index += 1) {
+		const char = content[index]
+		if (char === "\\") {
+			index += 1
+			continue
+		}
+		if (char === "(") {
+			depth += 1
+			continue
+		}
+		if (char === ")") {
+			if (depth === 0) {
+				return index
+			}
+			depth -= 1
+		}
+	}
+
+	return -1
+}
+
+function extractMarkdownLinkTargets(content) {
+	const strippedContent = stripMarkdownCode(content)
+	const referenceDefinitions = collectReferenceDefinitions(strippedContent)
+	const targets = []
+
+	for (let index = 0; index < strippedContent.length; index += 1) {
+		if (strippedContent[index] !== "[") {
+			continue
+		}
+		if (index > 0 && strippedContent[index - 1] === "\\") {
+			continue
+		}
+
+		const labelEnd = strippedContent.indexOf("]", index + 1)
+		if (labelEnd === -1) {
+			continue
+		}
+
+		const label = strippedContent.slice(index + 1, labelEnd)
+		const nextChar = strippedContent[labelEnd + 1]
+		if (nextChar === "(") {
+			const targetEnd = findMatchingParen(strippedContent, labelEnd + 1)
+			if (targetEnd === -1) {
+				continue
+			}
+
+			const rawTarget = parseLinkDestination(
+				strippedContent.slice(labelEnd + 2, targetEnd),
+			)
+			if (rawTarget !== null) {
+				targets.push(rawTarget)
+			}
+			index = targetEnd
+			continue
+		}
+
+		if (nextChar === "[") {
+			const referenceEnd = strippedContent.indexOf("]", labelEnd + 2)
+			if (referenceEnd === -1) {
+				continue
+			}
+
+			const referenceLabel = strippedContent.slice(labelEnd + 2, referenceEnd)
+			const normalizedReferenceLabel = normalizeReferenceLabel(
+				referenceLabel === "" ? label : referenceLabel,
+			)
+			const rawTarget = referenceDefinitions.get(normalizedReferenceLabel)
+			if (rawTarget !== undefined) {
+				targets.push(rawTarget)
+			}
+			index = referenceEnd
+			continue
+		}
+
+		if (nextChar === ":") {
+			index = labelEnd
+			continue
+		}
+
+		const rawTarget = referenceDefinitions.get(normalizeReferenceLabel(label))
+		if (rawTarget !== undefined) {
+			targets.push(rawTarget)
+			index = labelEnd
+		}
+	}
+
+	return targets
+}
+
 function collectBrokenDocLinks(files) {
 	const errors = []
-	const markdownLinkPattern = /\[[^\]]+\]\(([^)]+)\)/g
 
 	for (const file of files) {
 		const content = readFileSync(file, "utf8")
-		for (const match of content.matchAll(markdownLinkPattern)) {
-			const rawTarget = match[1].trim().replace(/^<|>$/g, "")
+		for (const rawTarget of extractMarkdownLinkTargets(content)) {
 			if (rawTarget === "" || rawTarget.startsWith("#")) {
 				continue
 			}
