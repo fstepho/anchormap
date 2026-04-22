@@ -25,7 +25,7 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `None recorded`
+- Current active task: `T1.11 — Add structured trace and timing artifacts for fixture runs`
 - Next executable product task after blocker clearance: `None recorded`
 - Last completed task: `T1.10 — Persist per-run harness artifacts and summaries`
 - Completed tasks recorded here:
@@ -4358,7 +4358,7 @@ Do not duplicate or re-derive the agent prompts in this file. Any change to
 execution protocol must go through the skills, `docs/agent-loop.md`, or
 `docs/code-review.md`.
 Routine `## Execution State` cursor updates may be handled directly by the
-active implementation pass or native review step; use `update-tasks` for
+active implementation pass or review decision; use `update-tasks` for
 structural plan maintenance and classified deviations.
 
 ## Blocking questions

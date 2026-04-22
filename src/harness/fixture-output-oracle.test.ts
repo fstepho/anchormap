@@ -21,6 +21,12 @@ function baseProcessResult(overrides: Partial<FixtureProcessResult> = {}): Fixtu
 		stderr,
 		stdoutLength: overrides.stdoutLength ?? stdout.length,
 		stderrLength: overrides.stderrLength ?? stderr.length,
+		totalDurationMs: overrides.totalDurationMs ?? 0,
+		phaseTraceEvents: overrides.phaseTraceEvents ?? [],
+		phaseTimings: overrides.phaseTimings ?? [],
+		lastFailedPhase: overrides.lastFailedPhase ?? null,
+		phaseTraceStatus: overrides.phaseTraceStatus ?? { state: "not_emitted", detail: null },
+		phaseTraceRaw: overrides.phaseTraceRaw ?? null,
 	};
 }
 

@@ -1,8 +1,13 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, posix, resolve, sep } from "node:path";
-
 import type { FilesystemMutationDiff } from "./fixture-filesystem-oracle";
 import type { LoadedFixtureManifest, StderrOracle, StdoutOracle } from "./fixture-manifest";
+import type {
+	FixturePhaseName,
+	FixturePhaseTiming,
+	FixturePhaseTraceEvent,
+	FixturePhaseTraceStatus,
+} from "./fixture-phase-trace";
 import type {
 	FixtureProcessError,
 	FixtureProcessResult,
@@ -29,6 +34,8 @@ export interface FixtureArtifactPaths {
 	summaryPathRelative: string;
 	metadataPath: string;
 	metadataPathRelative: string;
+	totalDurationMs: number | null;
+	harnessDurationMs: number | null;
 }
 
 export interface FixtureArtifactOracleStatuses {
@@ -42,6 +49,8 @@ export interface FixtureRunArtifactInput {
 	entryFixtureId: string;
 	entryFamily: string;
 	recordStatus: "pass" | "fail";
+	recordTotalDurationMs: number | null;
+	recordHarnessDurationMs: number | null;
 	failedOracle: string | null;
 	summary: string;
 	fixture: LoadedFixtureManifest | null;
@@ -55,6 +64,11 @@ export interface FixtureRunArtifactInput {
 	error: unknown;
 }
 
+interface FixtureRunArtifactTimingOverride {
+	recordTotalDurationMs: number | null;
+	recordHarnessDurationMs: number | null;
+}
+
 export function prepareFixtureRunnerArtifacts(
 	fixturesRoot: string,
 	selection: { fixtureId?: string; family?: string },
@@ -62,7 +76,11 @@ export function prepareFixtureRunnerArtifacts(
 	const repoRoot = resolveArtifactRepoRoot(fixturesRoot);
 	const selectionDirRelative = posix.join(".tmp", "fixture-runs", renderSelectionLabel(selection));
 	const selectionDir = resolve(repoRoot, ...selectionDirRelative.split("/"));
-	const { runDir, runDirRelative } = reserveNextRunDirectory(repoRoot, selectionDir, selectionDirRelative);
+	const { runDir, runDirRelative } = reserveNextRunDirectory(
+		repoRoot,
+		selectionDir,
+		selectionDirRelative,
+	);
 	const summaryPathRelative = posix.join(runDirRelative, "summary.txt");
 	const runMetadataPathRelative = posix.join(runDirRelative, "run.json");
 	const fixturesDir = resolve(runDir, "fixtures");
@@ -83,6 +101,9 @@ export function prepareFixtureRunnerArtifacts(
 export function writeFixtureRunArtifacts(
 	layout: FixtureRunnerArtifactsLayout,
 	input: FixtureRunArtifactInput,
+	options: {
+		resolveTimingOverride?: () => FixtureRunArtifactTimingOverride;
+	} = {},
 ): FixtureArtifactPaths {
 	const artifactDirRelative = posix.join(
 		layout.runDirRelative,
@@ -98,8 +119,16 @@ export function writeFixtureRunArtifacts(
 
 	mkdirSync(artifactDir, { recursive: true });
 
-	const actualStdout = input.processResult?.stdout ?? input.processTimeoutError?.stdout ?? null;
-	const actualStderr = input.processResult?.stderr ?? input.processTimeoutError?.stderr ?? null;
+	const actualStdout =
+		input.processResult?.stdout ??
+		input.processTimeoutError?.stdout ??
+		input.processError?.stdout ??
+		null;
+	const actualStderr =
+		input.processResult?.stderr ??
+		input.processTimeoutError?.stderr ??
+		input.processError?.stderr ??
+		null;
 	const expectedStdout = input.fixture ? resolveExpectedStdoutBytes(input.fixture) : null;
 	const expectedStderr = input.fixture
 		? resolveExpectedStderrBytes(input.fixture.manifest.stderr)
@@ -132,57 +161,87 @@ export function writeFixtureRunArtifacts(
 		"filesystem.diff.json",
 		input.filesystemDiff ? serializeFilesystemDiff(input.filesystemDiff) : null,
 	);
-
-	const metadata = {
-		fixture_id: input.fixture?.manifest.id ?? input.entryFixtureId,
-		family: input.fixture?.manifest.family ?? input.entryFamily,
-		status: input.recordStatus,
-		failed_oracle: input.failedOracle,
-		summary: input.summary,
-		command: input.processResult?.command ?? input.fixture?.manifest.command ?? null,
-		cwd: input.processResult?.cwd ?? input.sandbox?.cwd ?? null,
-		exit_code: input.processResult?.exitCode ?? null,
-		declared_exit_code: input.fixture?.manifest.exit_code ?? null,
-		stdout_length:
-			input.processResult?.stdoutLength ?? input.processTimeoutError?.stdoutLength ?? null,
-		stderr_length:
-			input.processResult?.stderrLength ?? input.processTimeoutError?.stderrLength ?? null,
-		oracles: {
-			exit_code: {
-				status: input.oracleStatuses.exitCode,
-				expected: input.fixture?.manifest.exit_code ?? null,
-				actual: input.processResult?.exitCode ?? null,
-			},
-			stdout: {
-				status: input.oracleStatuses.stdout,
-				kind: input.fixture?.manifest.stdout.kind ?? null,
-			},
-			stderr: {
-				status: input.oracleStatuses.stderr,
-				kind: input.fixture?.manifest.stderr.kind ?? null,
-			},
-			filesystem: {
-				status: input.oracleStatuses.filesystem,
-				kind: input.fixture?.manifest.filesystem.kind ?? null,
-			},
-		},
-		artifacts: {
-			stdout_actual: toArtifactRelativePath(stdoutActualPath, artifactDir),
-			stdout_expected: toArtifactRelativePath(stdoutExpectedPath, artifactDir),
-			stderr_actual: toArtifactRelativePath(stderrActualPath, artifactDir),
-			stderr_expected: toArtifactRelativePath(stderrExpectedPath, artifactDir),
-			filesystem_pre: toArtifactRelativePath(preRunSnapshotPath, artifactDir),
-			filesystem_post: toArtifactRelativePath(postRunSnapshotPath, artifactDir),
-			filesystem_diff: toArtifactRelativePath(filesystemDiffPath, artifactDir),
-		},
-		error: serializeError(input.error),
-	};
-
-	writeFileSync(metadataPath, `${JSON.stringify(metadata, null, "\t")}\n`);
-	writeFileSync(
-		summaryPath,
-		`${renderFixtureArtifactSummary(input, artifactDirRelative, metadata.artifacts)}\n`,
+	const phaseTraceStatus = resolvePhaseTraceStatus(input);
+	const phaseTraceEvents = resolvePhaseTraceEvents(input);
+	const phaseTraceRaw = resolvePhaseTraceRaw(input);
+	const phaseTracePath = writeOptionalJson(
+		artifactDir,
+		"phase-trace.events.json",
+		phaseTraceStatus?.state === "captured" ? phaseTraceEvents : null,
 	);
+	const phaseTraceRawPath = writeOptionalBuffer(
+		artifactDir,
+		"phase-trace.raw.bin",
+		phaseTraceStatus?.state === "invalid" ? phaseTraceRaw : null,
+	);
+	const phaseTimings = resolvePhaseTimings(input);
+	const phaseTimingsPath = writeOptionalJson(
+		artifactDir,
+		"phase-timings.json",
+		phaseTraceStatus?.state === "captured" ? phaseTimings : null,
+	);
+	const lastFailedPhase = resolveLastFailedPhase(input);
+	const artifacts = {
+		stdout_actual: toArtifactRelativePath(stdoutActualPath, artifactDir),
+		stdout_expected: toArtifactRelativePath(stdoutExpectedPath, artifactDir),
+		stderr_actual: toArtifactRelativePath(stderrActualPath, artifactDir),
+		stderr_expected: toArtifactRelativePath(stderrExpectedPath, artifactDir),
+		filesystem_pre: toArtifactRelativePath(preRunSnapshotPath, artifactDir),
+		filesystem_post: toArtifactRelativePath(postRunSnapshotPath, artifactDir),
+		filesystem_diff: toArtifactRelativePath(filesystemDiffPath, artifactDir),
+		phase_trace_events: toArtifactRelativePath(phaseTracePath, artifactDir),
+		phase_trace_raw: toArtifactRelativePath(phaseTraceRawPath, artifactDir),
+		phase_timings: toArtifactRelativePath(phaseTimingsPath, artifactDir),
+	};
+	let finalInput = input;
+	if (options.resolveTimingOverride) {
+		finalInput = {
+			...finalInput,
+			...options.resolveTimingOverride(),
+		};
+	}
+	let totalDurationMs = resolveTotalDurationMs(finalInput);
+	let harnessDurationMs = resolveHarnessDurationMs(finalInput);
+
+	writeFixtureRunResultFiles({
+		artifactDirRelative,
+		metadataPath,
+		summaryPath,
+		input: finalInput,
+		totalDurationMs,
+		harnessDurationMs,
+		lastFailedPhase,
+		phaseTraceStatus,
+		artifacts,
+	});
+
+	if (options.resolveTimingOverride) {
+		const updatedInput = {
+			...finalInput,
+			...options.resolveTimingOverride(),
+		};
+		const updatedTotalDurationMs = resolveTotalDurationMs(updatedInput);
+		const updatedHarnessDurationMs = resolveHarnessDurationMs(updatedInput);
+		if (
+			updatedTotalDurationMs !== totalDurationMs ||
+			updatedHarnessDurationMs !== harnessDurationMs
+		) {
+			finalInput = updatedInput;
+			totalDurationMs = updatedTotalDurationMs;
+			harnessDurationMs = updatedHarnessDurationMs;
+			writeFixtureRunResultFiles({
+				artifactDirRelative,
+				metadataPath,
+				summaryPath,
+				input: finalInput,
+				totalDurationMs,
+				harnessDurationMs,
+				lastFailedPhase,
+				phaseTraceStatus,
+				artifacts,
+			});
+		}
+	}
 
 	return {
 		artifactDir,
@@ -191,10 +250,131 @@ export function writeFixtureRunArtifacts(
 		summaryPathRelative,
 		metadataPath,
 		metadataPathRelative,
+		totalDurationMs,
+		harnessDurationMs,
 	};
 }
 
+function writeFixtureRunResultFiles(input: {
+	artifactDirRelative: string;
+	metadataPath: string;
+	summaryPath: string;
+	input: FixtureRunArtifactInput;
+	totalDurationMs: number | null;
+	harnessDurationMs: number | null;
+	lastFailedPhase: FixturePhaseName | null;
+	phaseTraceStatus: FixturePhaseTraceStatus | null;
+	artifacts: Record<string, string | null>;
+}): void {
+	const metadata = {
+		fixture_id: input.input.fixture?.manifest.id ?? input.input.entryFixtureId,
+		family: input.input.fixture?.manifest.family ?? input.input.entryFamily,
+		status: input.input.recordStatus,
+		failed_oracle: input.input.failedOracle,
+		summary: input.input.summary,
+		command: input.input.processResult?.command ?? input.input.fixture?.manifest.command ?? null,
+		cwd: input.input.processResult?.cwd ?? input.input.sandbox?.cwd ?? null,
+		exit_code: input.input.processResult?.exitCode ?? null,
+		declared_exit_code: input.input.fixture?.manifest.exit_code ?? null,
+		stdout_length:
+			input.input.processResult?.stdoutLength ??
+			input.input.processTimeoutError?.stdoutLength ??
+			input.input.processError?.stdoutLength ??
+			null,
+		stderr_length:
+			input.input.processResult?.stderrLength ??
+			input.input.processTimeoutError?.stderrLength ??
+			input.input.processError?.stderrLength ??
+			null,
+		total_duration_ms: input.totalDurationMs,
+		harness_duration_ms: input.harnessDurationMs,
+		last_failed_phase: input.lastFailedPhase,
+		trace: input.phaseTraceStatus,
+		oracles: {
+			exit_code: {
+				status: input.input.oracleStatuses.exitCode,
+				expected: input.input.fixture?.manifest.exit_code ?? null,
+				actual: input.input.processResult?.exitCode ?? null,
+			},
+			stdout: {
+				status: input.input.oracleStatuses.stdout,
+				kind: input.input.fixture?.manifest.stdout.kind ?? null,
+			},
+			stderr: {
+				status: input.input.oracleStatuses.stderr,
+				kind: input.input.fixture?.manifest.stderr.kind ?? null,
+			},
+			filesystem: {
+				status: input.input.oracleStatuses.filesystem,
+				kind: input.input.fixture?.manifest.filesystem.kind ?? null,
+			},
+		},
+		artifacts: input.artifacts,
+		error: serializeError(input.input.error),
+	};
+
+	writeFileSync(input.metadataPath, `${JSON.stringify(metadata, null, "\t")}\n`);
+	writeFileSync(
+		input.summaryPath,
+		`${renderFixtureArtifactSummary(input.input, input.artifactDirRelative, metadata.artifacts, {
+			totalDurationMs: input.totalDurationMs,
+			harnessDurationMs: input.harnessDurationMs,
+			lastFailedPhase: input.lastFailedPhase,
+			phaseTraceStatus: input.phaseTraceStatus,
+		})}\n`,
+	);
+}
+
 export function writeFixtureRunnerSummaryArtifacts(
+	layout: FixtureRunnerArtifactsLayout,
+	summary: {
+		totalCount: number;
+		passedCount: number;
+		failedCount: number;
+		exitCode: number;
+		report: string;
+		totalDurationMs: number;
+		records: Array<{
+			fixtureId: string;
+			family: string;
+			status: "pass" | "fail";
+			failedOracle: string | null;
+			summary: string;
+			totalDurationMs: number | null;
+			harnessDurationMs: number | null;
+			lastFailedPhase: FixturePhaseName | null;
+			phaseTraceStatus: FixturePhaseTraceStatus | null;
+			artifactDirRelative: string;
+			metadataPathRelative: string;
+			summaryPathRelative: string;
+		}>;
+	},
+	options: {
+		resolveTimingOverride?: () => {
+			totalDurationMs: number;
+		};
+	} = {},
+): {
+	totalDurationMs: number;
+} {
+	let totalDurationMs = summary.totalDurationMs;
+
+	writeFixtureRunnerSummaryResultFiles(layout, summary, totalDurationMs);
+
+	if (options.resolveTimingOverride) {
+		const updatedTotalDurationMs = options.resolveTimingOverride().totalDurationMs;
+		if (updatedTotalDurationMs !== totalDurationMs) {
+			totalDurationMs = updatedTotalDurationMs;
+			writeFixtureRunnerSummaryResultFiles(layout, summary, totalDurationMs);
+		}
+	}
+
+	return {
+		totalDurationMs,
+	};
+}
+
+function writeFixtureRunnerSummaryResultFiles(
 	layout: FixtureRunnerArtifactsLayout,
 	summary: {
 		totalCount: number;
@@ -208,11 +388,16 @@ export function writeFixtureRunnerSummaryArtifacts(
 			status: "pass" | "fail";
 			failedOracle: string | null;
 			summary: string;
+			totalDurationMs: number | null;
+			harnessDurationMs: number | null;
+			lastFailedPhase: FixturePhaseName | null;
+			phaseTraceStatus: FixturePhaseTraceStatus | null;
 			artifactDirRelative: string;
 			metadataPathRelative: string;
 			summaryPathRelative: string;
 		}>;
 	},
+	totalDurationMs: number,
 ): void {
 	writeFileSync(layout.summaryPath, summary.report);
 	writeFileSync(
@@ -223,6 +408,7 @@ export function writeFixtureRunnerSummaryArtifacts(
 				passed_count: summary.passedCount,
 				failed_count: summary.failedCount,
 				exit_code: summary.exitCode,
+				total_duration_ms: totalDurationMs,
 				summary_path: layout.summaryPathRelative,
 				records: summary.records.map((record) => ({
 					fixture_id: record.fixtureId,
@@ -230,6 +416,10 @@ export function writeFixtureRunnerSummaryArtifacts(
 					status: record.status,
 					failed_oracle: record.failedOracle,
 					summary: record.summary,
+					total_duration_ms: record.totalDurationMs,
+					harness_duration_ms: record.harnessDurationMs,
+					last_failed_phase: record.lastFailedPhase,
+					trace: record.phaseTraceStatus,
 					artifact_dir: record.artifactDirRelative,
 					metadata_path: record.metadataPathRelative,
 					summary_path: record.summaryPathRelative,
@@ -311,9 +501,7 @@ function parseRunDirectoryNumber(entryName: string): number | null {
 
 function isAlreadyExistsError(error: unknown): boolean {
 	return (
-		error instanceof Error &&
-		"code" in error &&
-		(error as NodeJS.ErrnoException).code === "EEXIST"
+		error instanceof Error && "code" in error && (error as NodeJS.ErrnoException).code === "EEXIST"
 	);
 }
 
@@ -433,18 +621,108 @@ function serializeError(error: unknown): Record<string, unknown> | null {
 	};
 }
 
+function resolvePhaseTraceEvents(input: FixtureRunArtifactInput): FixturePhaseTraceEvent[] {
+	return (
+		input.processResult?.phaseTraceEvents ??
+		input.processTimeoutError?.phaseTraceEvents ??
+		input.processError?.phaseTraceEvents ??
+		[]
+	);
+}
+
+function resolvePhaseTimings(input: FixtureRunArtifactInput): FixturePhaseTiming[] {
+	return (
+		input.processResult?.phaseTimings ??
+		input.processTimeoutError?.phaseTimings ??
+		input.processError?.phaseTimings ??
+		[]
+	);
+}
+
+function resolvePhaseTraceRaw(input: FixtureRunArtifactInput): Buffer | null {
+	return (
+		input.processResult?.phaseTraceRaw ??
+		input.processTimeoutError?.phaseTraceRaw ??
+		input.processError?.phaseTraceRaw ??
+		null
+	);
+}
+
+function resolveTotalDurationMs(input: FixtureRunArtifactInput): number | null {
+	return (
+		input.recordTotalDurationMs ??
+		input.processResult?.totalDurationMs ??
+		input.processTimeoutError?.totalDurationMs ??
+		input.processError?.totalDurationMs ??
+		null
+	);
+}
+
+function resolveHarnessDurationMs(input: FixtureRunArtifactInput): number | null {
+	return input.recordHarnessDurationMs;
+}
+
+function resolvePhaseTraceStatus(input: FixtureRunArtifactInput): FixturePhaseTraceStatus | null {
+	return (
+		input.processResult?.phaseTraceStatus ??
+		input.processTimeoutError?.phaseTraceStatus ??
+		input.processError?.phaseTraceStatus ??
+		null
+	);
+}
+
+export function resolveFixtureRunLastFailedPhase(input: {
+	recordStatus: "pass" | "fail";
+	processResult: FixtureProcessResult | null;
+	processTimeoutError: FixtureProcessTimeoutError | null;
+	processError: FixtureProcessError | null;
+}): FixturePhaseName | null {
+	if (input.recordStatus === "pass") {
+		return null;
+	}
+
+	const tracedLastFailedPhase =
+		input.processResult?.lastFailedPhase ??
+		input.processTimeoutError?.lastFailedPhase ??
+		input.processError?.lastFailedPhase ??
+		null;
+	if (tracedLastFailedPhase !== null) {
+		return tracedLastFailedPhase;
+	}
+
+	return null;
+}
+
+function resolveLastFailedPhase(input: FixtureRunArtifactInput): FixturePhaseName | null {
+	return resolveFixtureRunLastFailedPhase(input);
+}
+
 function renderFixtureArtifactSummary(
 	input: FixtureRunArtifactInput,
 	artifactDirRelative: string,
 	artifacts: Record<string, string | null>,
+	override: {
+		totalDurationMs: number | null;
+		harnessDurationMs: number | null;
+		lastFailedPhase: FixturePhaseName | null;
+		phaseTraceStatus: FixturePhaseTraceStatus | null;
+	},
 ): string {
 	const lines = [
 		`Fixture ${input.fixture?.manifest.id ?? input.entryFixtureId}`,
 		`status: ${input.recordStatus}`,
 		`failed oracle: ${input.failedOracle ?? "none"}`,
 		`summary: ${input.summary}`,
+		`total duration ms: ${override.totalDurationMs ?? "none"}`,
+		`harness duration ms: ${override.harnessDurationMs ?? "none"}`,
+		`last failed phase: ${override.lastFailedPhase ?? "none"}`,
+		`trace status: ${override.phaseTraceStatus?.state ?? "none"}`,
 		`artifacts: ${artifactDirRelative}`,
 	];
+
+	if (override.phaseTraceStatus?.detail) {
+		lines.push(`trace detail: ${override.phaseTraceStatus.detail}`);
+	}
 
 	for (const [label, relativePath] of Object.entries(artifacts)) {
 		if (!relativePath) {

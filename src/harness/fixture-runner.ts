@@ -19,7 +19,9 @@ import {
 	assertFixtureStdoutOracle,
 	FixtureOutputOracleError,
 } from "./fixture-output-oracle";
+import type { FixturePhaseName } from "./fixture-phase-trace";
 import {
+	defaultTraceCaptureFactory,
 	executeFixtureCommand,
 	FixtureProcessError,
 	type FixtureProcessResult,
@@ -29,6 +31,7 @@ import {
 	type FixtureArtifactOracleStatuses,
 	type FixtureRunnerArtifactsLayout,
 	prepareFixtureRunnerArtifacts,
+	resolveFixtureRunLastFailedPhase,
 	writeFixtureRunArtifacts,
 	writeFixtureRunnerSummaryArtifacts,
 } from "./fixture-run-artifacts";
@@ -51,6 +54,7 @@ export interface FixtureRunnerSelection {
 export interface FixtureRunnerOptions extends FixtureRunnerSelection {
 	fixturesRoot: string;
 	timeoutMs?: number;
+	sandboxFactory?: (fixture: LoadedFixtureManifest) => MaterializedFixtureSandbox;
 }
 
 export interface FixtureRunnerCliOptions {
@@ -66,6 +70,12 @@ export interface FixtureRunRecord {
 	status: "pass" | "fail";
 	failedOracle: string | null;
 	summary: string;
+	totalDurationMs: number | null;
+	harnessDurationMs: number;
+	lastFailedPhase: FixturePhaseName | null;
+	phaseTraceStatus:
+		| FixtureProcessResult["phaseTraceStatus"]
+		| FixtureProcessError["phaseTraceStatus"];
 	artifactDir: string;
 	artifactDirRelative: string;
 	metadataPath: string;
@@ -81,6 +91,7 @@ export interface FixtureRunSummary {
 	failedCount: number;
 	exitCode: number;
 	report: string;
+	totalDurationMs: number;
 	artifactsDir: string;
 	artifactsDirRelative: string;
 	summaryPath: string;
@@ -175,6 +186,7 @@ export function parseFixtureRunnerArgs(argv: readonly string[]): FixtureRunnerSe
 }
 
 export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<FixtureRunSummary> {
+	const startedAtNs = process.hrtime.bigint();
 	const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 	const selectedEntries = selectFixtureEntries(discoverFixtureEntries(options.fixturesRoot), {
 		fixtureId: options.fixtureId,
@@ -188,7 +200,14 @@ export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<F
 	const records: FixtureRunRecord[] = [];
 
 	for (const entry of selectedEntries) {
-		records.push(await runFixtureEntry(entry, timeoutMs, artifactsLayout));
+		records.push(
+			await runFixtureEntry(
+				entry,
+				timeoutMs,
+				artifactsLayout,
+				options.sandboxFactory ?? materializeFixtureSandbox,
+			),
+		);
 	}
 
 	const passedCount = records.filter((record) => record.status === "pass").length;
@@ -201,13 +220,19 @@ export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<F
 		failedCount,
 		exitCode: failedCount === 0 ? 0 : 1,
 		report,
+		totalDurationMs: elapsedMilliseconds(startedAtNs),
 		artifactsDir: artifactsLayout.runDir,
 		artifactsDirRelative: artifactsLayout.runDirRelative,
 		summaryPath: artifactsLayout.summaryPath,
 		summaryPathRelative: artifactsLayout.summaryPathRelative,
 	};
 
-	writeFixtureRunnerSummaryArtifacts(artifactsLayout, summary);
+	const timing = writeFixtureRunnerSummaryArtifacts(artifactsLayout, summary, {
+		resolveTimingOverride: () => ({
+			totalDurationMs: elapsedMilliseconds(startedAtNs),
+		}),
+	});
+	summary.totalDurationMs = timing.totalDurationMs;
 
 	return summary;
 }
@@ -320,7 +345,9 @@ async function runFixtureEntry(
 	entry: FixtureDirectoryEntry,
 	timeoutMs: number,
 	artifactsLayout: FixtureRunnerArtifactsLayout,
+	sandboxFactory: (fixture: LoadedFixtureManifest) => MaterializedFixtureSandbox,
 ): Promise<FixtureRunRecord> {
+	const startedAtNs = process.hrtime.bigint();
 	let fixture: LoadedFixtureManifest | null = null;
 	let sandbox: MaterializedFixtureSandbox | null = null;
 	let processResult: FixtureProcessResult | null = null;
@@ -334,6 +361,10 @@ async function runFixtureEntry(
 		stderr: "not_run",
 		filesystem: "not_run",
 	};
+	let recordStatus: "pass" | "fail" = "fail";
+	let failedOracle: string | null = "harness";
+	let summary = "unknown fixture failure";
+	let recordError: unknown = null;
 
 	const finalizeRecord = (
 		recordStatus: "pass" | "fail",
@@ -341,22 +372,41 @@ async function runFixtureEntry(
 		summary: string,
 		error: unknown,
 	): FixtureRunRecord => {
-		const artifactPaths = writeFixtureRunArtifacts(artifactsLayout, {
-			entryFixtureId: entry.fixtureId,
-			entryFamily: entry.family,
+		const lastFailedPhase = resolveFixtureRunLastFailedPhase({
 			recordStatus,
-			failedOracle,
-			summary,
-			fixture,
-			sandbox,
 			processResult,
 			processTimeoutError,
 			processError,
-			postRunSnapshot,
-			filesystemDiff,
-			oracleStatuses,
-			error,
 		});
+		const artifactPaths = writeFixtureRunArtifacts(
+			artifactsLayout,
+			{
+				entryFixtureId: entry.fixtureId,
+				entryFamily: entry.family,
+				recordStatus,
+				recordTotalDurationMs: null,
+				recordHarnessDurationMs: null,
+				failedOracle,
+				summary,
+				fixture,
+				sandbox,
+				processResult,
+				processTimeoutError,
+				processError,
+				postRunSnapshot,
+				filesystemDiff,
+				oracleStatuses,
+				error,
+			},
+			{
+				resolveTimingOverride: () => {
+					return {
+						recordTotalDurationMs: null,
+						recordHarnessDurationMs: elapsedMilliseconds(startedAtNs),
+					};
+				},
+			},
+		);
 
 		return {
 			fixtureId: fixture?.manifest.id ?? entry.fixtureId,
@@ -364,6 +414,14 @@ async function runFixtureEntry(
 			status: recordStatus,
 			failedOracle,
 			summary,
+			totalDurationMs: artifactPaths.totalDurationMs,
+			harnessDurationMs: artifactPaths.harnessDurationMs ?? 0,
+			lastFailedPhase,
+			phaseTraceStatus:
+				processResult?.phaseTraceStatus ??
+				processTimeoutError?.phaseTraceStatus ??
+				processError?.phaseTraceStatus ??
+				null,
 			artifactDir: artifactPaths.artifactDir,
 			artifactDirRelative: artifactPaths.artifactDirRelative,
 			metadataPath: artifactPaths.metadataPath,
@@ -375,18 +433,11 @@ async function runFixtureEntry(
 
 	try {
 		fixture = loadFixtureManifest(entry.fixtureDir);
-	} catch (error) {
-		return finalizeRecord(
-			"fail",
-			classifyFailureOracle(error),
-			summarizeFailureMessage(error),
-			error,
-		);
-	}
-
-	try {
-		sandbox = materializeFixtureSandbox(fixture);
-		processResult = await executeFixtureCommand(fixture, sandbox, { timeoutMs });
+		sandbox = sandboxFactory(fixture);
+		processResult = await executeFixtureCommand(fixture, sandbox, {
+			timeoutMs,
+			traceCaptureFactory: defaultTraceCaptureFactory,
+		});
 		postRunSnapshot = captureFilesystemSnapshot(sandbox.sandboxDir);
 		filesystemDiff = diffFilesystemSnapshots(sandbox.preRunSnapshot, postRunSnapshot);
 		assertExpectedExitCode(fixture, processResult.exitCode);
@@ -397,8 +448,10 @@ async function runFixtureEntry(
 		oracleStatuses.stderr = "pass";
 		assertFixtureFilesystemOracleFromSnapshots(fixture, postRunSnapshot, filesystemDiff);
 		oracleStatuses.filesystem = "pass";
-
-		return finalizeRecord("pass", null, "ok", null);
+		recordStatus = "pass";
+		failedOracle = null;
+		summary = "ok";
+		recordError = null;
 	} catch (error) {
 		if (error instanceof FixtureProcessTimeoutError) {
 			processTimeoutError = error;
@@ -429,15 +482,25 @@ async function runFixtureEntry(
 			oracleStatuses.filesystem = "fail";
 		}
 
-		return finalizeRecord(
-			"fail",
-			classifyFailureOracle(error),
-			summarizeFailureMessage(error),
-			error,
-		);
-	} finally {
-		sandbox?.dispose();
+		recordStatus = "fail";
+		failedOracle = classifyFailureOracle(error);
+		summary = summarizeFailureMessage(error);
+		recordError = error;
 	}
+
+	const cleanupError = disposeSandbox(sandbox);
+	if (cleanupError !== null) {
+		if (recordError === null) {
+			recordStatus = "fail";
+			failedOracle = classifyFailureOracle(cleanupError);
+			summary = summarizeFailureMessage(cleanupError);
+			recordError = cleanupError;
+		} else {
+			summary = `${summary}; cleanup failed: ${cleanupError.message}`;
+		}
+	}
+
+	return finalizeRecord(recordStatus, failedOracle, summary, recordError);
 }
 
 function assertExpectedExitCode(fixture: LoadedFixtureManifest, actualExitCode: number): void {
@@ -543,8 +606,31 @@ function compareBinaryUtf8(left: string, right: string): number {
 	return Buffer.compare(Buffer.from(left, "utf8"), Buffer.from(right, "utf8"));
 }
 
+function elapsedMilliseconds(startedAtNs: bigint): number {
+	return Number(process.hrtime.bigint() - startedAtNs) / 1_000_000;
+}
+
 function formatUnknownErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : "unknown fixture runner failure";
+}
+
+function disposeSandbox(sandbox: MaterializedFixtureSandbox | null): FixtureSandboxError | null {
+	if (sandbox === null) {
+		return null;
+	}
+
+	try {
+		sandbox.dispose();
+		return null;
+	} catch (error) {
+		if (error instanceof FixtureSandboxError) {
+			return error;
+		}
+
+		return new FixtureSandboxError(
+			`fixture sandbox cleanup failed: ${formatUnknownErrorMessage(error)}`,
+		);
+	}
 }
 
 if (require.main === module) {
