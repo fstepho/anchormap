@@ -179,6 +179,7 @@ For `T1.7` and later harness work, the minimum local command surface is:
 Notes:
 
 - `npm test` remains the default full unit-test entrypoint and delegates to `npm run test:unit`.
+- do not run `node --test` directly on `src/**/*.test.ts`; the repo-local unit-test path is compile-then-run, so targeted unit reruns must go through `npm run test:unit` or an equivalent compiled `dist/**/*.test.js` target.
 - the fixture-runner scripts compile first and then execute the built runner from `dist/`;
 - `npm run test:fixtures:all` scans the runnable fixture corpus under `fixtures/`;
 - fixture manifests may point either to the built product CLI when available or to `node dist/cli-stub.js` while product implementation is still in progress.

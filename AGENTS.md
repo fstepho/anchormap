@@ -115,6 +115,8 @@ Before implementation work:
 During implementation:
 
 - run the smallest relevant check as early as possible;
+- run that check through the repo-local command surface defined by `package.json` and `docs/agent-loop.md`, not through an ad hoc direct source-file invocation when the repo already defines the test/build entrypoint;
+- for unit tests in this repo, do not use `node --test src/**/*.test.ts`; use `npm test`, `npm run test:unit`, or a compiled `dist/**/*.test.js` target reached through the same compile-then-run model;
 - stop on the first blocking failure;
 - classify failures before changing more code;
 - do not guess expected behavior;
