@@ -182,6 +182,7 @@ Notes:
 - do not run `node --test` directly on `src/**/*.test.ts`; the repo-local unit-test path is compile-then-run, so targeted unit reruns must go through `npm run test:unit` or an equivalent compiled `dist/**/*.test.js` target.
 - the fixture-runner scripts compile first and then execute the built runner from `dist/`;
 - `npm run test:fixtures:all` scans the runnable fixture corpus under `fixtures/`;
+- `npm run check:goldens` runs only fixtures whose manifest declares `stdout.kind = "golden"` and fails closed when the selection contains none;
 - fixture manifests may point either to the built product CLI when available or to `node dist/cli-stub.js` while product implementation is still in progress.
 - `codex` is allowed when started as a fresh interactive review session whose first work step is review.
 - `codex review` commands assume the repo-specific guidance already lives in `AGENTS.md` and `docs/code-review.md`.

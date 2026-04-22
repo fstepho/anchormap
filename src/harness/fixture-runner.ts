@@ -49,6 +49,7 @@ const FAILURE_MESSAGE_HEADER = /^Fixture .+ failed(?: \[fixture .+\])?$/u;
 export interface FixtureRunnerSelection {
 	fixtureId?: string;
 	family?: string;
+	stdoutGoldenOnly?: boolean;
 }
 
 export interface FixtureRunnerOptions extends FixtureRunnerSelection {
@@ -144,11 +145,19 @@ export class FixtureRunnerSelectionError extends Error {
 export function parseFixtureRunnerArgs(argv: readonly string[]): FixtureRunnerSelection {
 	let fixtureId: string | undefined;
 	let family: string | undefined;
+	let stdoutGoldenOnly = false;
 
 	for (let index = 0; index < argv.length; index += 1) {
 		const argument = argv[index];
 
 		switch (argument) {
+			case "--goldens-only": {
+				if (stdoutGoldenOnly) {
+					throw new FixtureRunnerUsageError("--goldens-only may be provided at most once");
+				}
+				stdoutGoldenOnly = true;
+				break;
+			}
 			case "--fixture": {
 				const value = argv[index + 1];
 				if (!value) {
@@ -182,7 +191,7 @@ export function parseFixtureRunnerArgs(argv: readonly string[]): FixtureRunnerSe
 		throw new FixtureRunnerUsageError("--fixture and --family are mutually exclusive");
 	}
 
-	return { fixtureId, family };
+	return { fixtureId, family, stdoutGoldenOnly };
 }
 
 export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<FixtureRunSummary> {
@@ -192,14 +201,18 @@ export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<F
 		fixtureId: options.fixtureId,
 		family: options.family,
 	});
+	const runnableEntries = options.stdoutGoldenOnly
+		? requireStdoutGoldenEntries(selectedEntries)
+		: selectedEntries;
 	const artifactsLayout = prepareFixtureRunnerArtifacts(options.fixturesRoot, {
 		fixtureId: options.fixtureId,
 		family: options.family,
+		stdoutGoldenOnly: options.stdoutGoldenOnly,
 	});
 
 	const records: FixtureRunRecord[] = [];
 
-	for (const entry of selectedEntries) {
+	for (const entry of runnableEntries) {
 		records.push(
 			await runFixtureEntry(
 				entry,
@@ -301,6 +314,20 @@ function discoverFixtureEntries(fixturesRoot: string): FixtureDirectoryEntry[] {
 	}
 
 	return entries;
+}
+
+function requireStdoutGoldenEntries(entries: FixtureDirectoryEntry[]): FixtureDirectoryEntry[] {
+	const goldenEntries = entries.filter((entry) => {
+		return loadFixtureManifest(entry.fixtureDir).manifest.stdout.kind === "golden";
+	});
+
+	if (goldenEntries.length === 0) {
+		throw new FixtureRunnerSelectionError(
+			'golden check selection did not match any fixture with stdout.kind "golden"',
+		);
+	}
+
+	return goldenEntries;
 }
 
 function selectFixtureEntries(

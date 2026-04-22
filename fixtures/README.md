@@ -93,7 +93,7 @@ validator tests live outside that tree under `testdata/fixture-manifest/`.
 - `npm run test:fixtures:all` builds the repo and runs the fixture runner over the default `fixtures/` tree.
 - `npm run test:fixtures -- --fixture harness_smoke_scan_success` runs a single walking skeleton smoke fixture by ID.
 - `npm run test:fixtures -- --family harness-smoke` runs the walking skeleton smoke family.
-- `npm run check:goldens -- --fixture harness_smoke_scan_success` runs the exact golden checks through the fixture runner.
+- `npm run check:goldens -- --fixture harness_smoke_scan_success` runs only fixtures with `stdout.kind = "golden"` and fails if the selection has none.
 
 Fixture manifests may target either:
 

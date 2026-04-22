@@ -71,7 +71,7 @@ interface FixtureRunArtifactTimingOverride {
 
 export function prepareFixtureRunnerArtifacts(
 	fixturesRoot: string,
-	selection: { fixtureId?: string; family?: string },
+	selection: { fixtureId?: string; family?: string; stdoutGoldenOnly?: boolean },
 ): FixtureRunnerArtifactsLayout {
 	const repoRoot = resolveArtifactRepoRoot(fixturesRoot);
 	const selectionDirRelative = posix.join(".tmp", "fixture-runs", renderSelectionLabel(selection));
@@ -436,14 +436,20 @@ function resolveArtifactRepoRoot(fixturesRoot: string): string {
 	return basename(fixturesRoot) === "fixtures" ? resolve(fixturesRoot, "..") : fixturesRoot;
 }
 
-function renderSelectionLabel(selection: { fixtureId?: string; family?: string }): string {
+function renderSelectionLabel(selection: {
+	fixtureId?: string;
+	family?: string;
+	stdoutGoldenOnly?: boolean;
+}): string {
+	const prefix = selection.stdoutGoldenOnly ? "goldens-" : "";
+
 	if (selection.fixtureId) {
-		return `fixture-${selection.fixtureId}`;
+		return `${prefix}fixture-${selection.fixtureId}`;
 	}
 	if (selection.family) {
-		return `family-${selection.family}`;
+		return `${prefix}family-${selection.family}`;
 	}
-	return "all";
+	return `${prefix}all`;
 }
 
 function allocateNextRunDirectoryName(selectionDir: string): string {

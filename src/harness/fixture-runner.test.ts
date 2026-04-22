@@ -103,8 +103,18 @@ const PASSING_FIXTURES: TempFixtureSpec[] = [
 	},
 ];
 
-function selectionRunDir(selection: string, runNumber: number): string {
-	return posix.join(".tmp", "fixture-runs", selection, `run-${String(runNumber).padStart(4, "0")}`);
+function selectionRunDir(
+	selection: string,
+	runNumber: number,
+	options: { stdoutGoldenOnly?: boolean } = {},
+): string {
+	const selectionLabel = options.stdoutGoldenOnly ? `goldens-${selection}` : selection;
+	return posix.join(
+		".tmp",
+		"fixture-runs",
+		selectionLabel,
+		`run-${String(runNumber).padStart(4, "0")}`,
+	);
 }
 
 function fixtureArtifactsRelativePath(
@@ -169,15 +179,23 @@ test("parses fixture runner selectors and rejects mixed selection modes", () => 
 	assert.deepEqual(parseFixtureRunnerArgs(["--fixture", "fx68_cli_unknown_command"]), {
 		fixtureId: "fx68_cli_unknown_command",
 		family: undefined,
+		stdoutGoldenOnly: false,
 	});
 	assert.deepEqual(parseFixtureRunnerArgs(["--family", "B-cli"]), {
 		fixtureId: undefined,
 		family: "B-cli",
+		stdoutGoldenOnly: false,
+	});
+	assert.deepEqual(parseFixtureRunnerArgs(["--goldens-only", "--family", "B-cli"]), {
+		fixtureId: undefined,
+		family: "B-cli",
+		stdoutGoldenOnly: true,
 	});
 	assert.throws(
 		() => parseFixtureRunnerArgs(["--fixture", "fx68_cli_unknown_command", "--family", "B-cli"]),
 		/mutually exclusive/,
 	);
+	assert.throws(() => parseFixtureRunnerArgs(["--goldens-only", "--goldens-only"]), /at most once/);
 });
 
 test("runs only the requested fixture ID through the CLI wrapper", async () => {
@@ -228,6 +246,70 @@ test("runs only the requested family through the CLI wrapper in stable order", a
 				"",
 			].join("\n"),
 		);
+	});
+});
+
+test("golden-only mode runs only fixtures with stdout goldens in the selected family", async () => {
+	await withTempFixtures(
+		[
+			{
+				manifest: scanFixtureManifest("fx10_non_golden", "B-cli", 0),
+				scriptBody: "process.exit(0);\n",
+			},
+			{
+				manifest: scanJsonFixtureManifest("fx20_golden", "B-cli", 0),
+				scriptBody: 'process.stdout.write("{\\"ok\\":true}\\n");\nprocess.exit(0);\n',
+				stdoutGolden: '{"ok":true}\n',
+			},
+		],
+		async (fixturesRoot) => {
+			const stdout = createBufferingWriter();
+			const stderr = createBufferingWriter();
+
+			const exitCode = await runFixtureRunnerCli(["--goldens-only", "--family", "B-cli"], {
+				fixturesRoot,
+				timeoutMs: 1_000,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			});
+
+			assert.equal(exitCode, 0);
+			assert.equal(stderr.read(), "");
+			assert.equal(
+				stdout.read(),
+				[
+					"PASS fx20_golden",
+					runnerSummaryLine(
+						selectionRunDir("family-B-cli", 1, { stdoutGoldenOnly: true }),
+						1,
+						1,
+						0,
+					),
+					"",
+				].join("\n"),
+			);
+		},
+	);
+});
+
+test("golden-only mode fails closed when the selected fixture has no stdout golden", async () => {
+	await withTempFixtures(PASSING_FIXTURES, async (fixturesRoot) => {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = await runFixtureRunnerCli(
+			["--goldens-only", "--fixture", "fx50_b_scan_only"],
+			{
+				fixturesRoot,
+				timeoutMs: 1_000,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			},
+		);
+
+		assert.equal(exitCode, 1);
+		assert.equal(stdout.read(), "");
+		assert.match(stderr.read(), /did not match any fixture with stdout\.kind "golden"/);
 	});
 });
 
