@@ -404,6 +404,43 @@ test("runner exits non-zero and names the failed oracle when one fixture fails",
 	);
 });
 
+test("fails closed when a fixture directory omits manifest.json during discovery", async () => {
+	await withTempFixtures(PASSING_FIXTURES, async (fixturesRoot) => {
+		const brokenFixtureDir = resolve(fixturesRoot, "B-cli", "fx15_missing_manifest");
+		mkdirSync(resolve(brokenFixtureDir, "repo"), { recursive: true });
+		writeFileSync(resolve(brokenFixtureDir, "repo", "cli-stub.cjs"), "process.exit(0);\n");
+
+		await assert.rejects(
+			() =>
+				runFixtureRunner({
+					fixturesRoot,
+					timeoutMs: 1_000,
+				}),
+			/fixture directory "B-cli\/fx15_missing_manifest" is incomplete: missing required file "manifest\.json"/,
+		);
+	});
+});
+
+test("fails closed when a fixture directory omits repo during discovery", async () => {
+	await withTempFixtures(PASSING_FIXTURES, async (fixturesRoot) => {
+		const brokenFixtureDir = resolve(fixturesRoot, "B-cli", "fx16_missing_repo");
+		mkdirSync(brokenFixtureDir, { recursive: true });
+		writeFileSync(
+			resolve(brokenFixtureDir, "manifest.json"),
+			`${JSON.stringify(scanFixtureManifest("fx16_missing_repo", "B-cli", 0), null, "\t")}\n`,
+		);
+
+		await assert.rejects(
+			() =>
+				runFixtureRunner({
+					fixturesRoot,
+					timeoutMs: 1_000,
+				}),
+			/fixture directory "B-cli\/fx16_missing_repo" is incomplete: missing required directory "repo"/,
+		);
+	});
+});
+
 test("persists per-run artifacts and metadata for a passing fixture", async () => {
 	await withTempFixtures(
 		[

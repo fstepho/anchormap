@@ -197,7 +197,12 @@ export function parseFixtureRunnerArgs(argv: readonly string[]): FixtureRunnerSe
 export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<FixtureRunSummary> {
 	const startedAtNs = process.hrtime.bigint();
 	const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-	const selectedEntries = selectFixtureEntries(discoverFixtureEntries(options.fixturesRoot), {
+	const selection = {
+		fixtureId: options.fixtureId,
+		family: options.family,
+		stdoutGoldenOnly: options.stdoutGoldenOnly,
+	};
+	const selectedEntries = selectFixtureEntries(discoverFixtureEntries(options.fixturesRoot, selection), {
 		fixtureId: options.fixtureId,
 		family: options.family,
 	});
@@ -272,7 +277,15 @@ export async function runFixtureRunnerCli(
 	}
 }
 
-function discoverFixtureEntries(fixturesRoot: string): FixtureDirectoryEntry[] {
+interface FixtureDirectoryShape extends FixtureDirectoryEntry {
+	hasRepoDir: boolean;
+	hasManifestFile: boolean;
+}
+
+function discoverFixtureEntries(
+	fixturesRoot: string,
+	selection: FixtureRunnerSelection,
+): FixtureDirectoryEntry[] {
 	if (!existsSync(fixturesRoot)) {
 		throw new FixtureRunnerSelectionError(`fixtures root does not exist: ${fixturesRoot}`);
 	}
@@ -289,31 +302,87 @@ function discoverFixtureEntries(fixturesRoot: string): FixtureDirectoryEntry[] {
 		if (!familyEntry.isDirectory()) {
 			continue;
 		}
+		if (selection.family && familyEntry.name !== selection.family) {
+			continue;
+		}
 
 		const familyDir = resolve(fixturesRoot, familyEntry.name);
 		const fixtureEntries = readdirSync(familyDir, { withFileTypes: true }).sort((left, right) =>
 			compareBinaryUtf8(left.name, right.name),
 		);
-
-		for (const fixtureEntry of fixtureEntries) {
+		const fixtureShapes: FixtureDirectoryShape[] = fixtureEntries.flatMap((fixtureEntry) => {
 			if (!fixtureEntry.isDirectory()) {
-				continue;
+				return [];
 			}
 
 			const fixtureDir = resolve(familyDir, fixtureEntry.name);
-			if (!looksLikeHarnessFixtureDirectory(fixtureDir)) {
+			return [
+				{
+					fixtureDir,
+					fixtureId: fixtureEntry.name,
+					family: familyEntry.name,
+					hasRepoDir: isRealDirectory(resolve(fixtureDir, FIXTURE_REPO_DIRNAME)),
+					hasManifestFile: isRegularFile(resolve(fixtureDir, FIXTURE_MANIFEST_FILENAME)),
+				},
+			];
+		});
+		const familyHasRunnableFixtures = fixtureShapes.some((fixtureShape) => fixtureShape.hasRepoDir);
+
+		for (const fixtureShape of fixtureShapes) {
+			if (selection.fixtureId && fixtureShape.fixtureId !== selection.fixtureId) {
+				continue;
+			}
+			if (
+				!isFixtureDirectoryEntry(
+					fixtureShape,
+					selection,
+					familyHasRunnableFixtures,
+				)
+			) {
 				continue;
 			}
 
 			entries.push({
-				fixtureDir,
-				fixtureId: fixtureEntry.name,
-				family: familyEntry.name,
+				fixtureDir: fixtureShape.fixtureDir,
+				fixtureId: fixtureShape.fixtureId,
+				family: fixtureShape.family,
 			});
 		}
 	}
 
 	return entries;
+}
+
+function isFixtureDirectoryEntry(
+	fixtureShape: FixtureDirectoryShape,
+	selection: FixtureRunnerSelection,
+	familyHasRunnableFixtures: boolean,
+): boolean {
+	if (fixtureShape.hasRepoDir && fixtureShape.hasManifestFile) {
+		return true;
+	}
+
+	if (!fixtureShape.hasRepoDir && !fixtureShape.hasManifestFile) {
+		return false;
+	}
+
+	const isExplicitlySelected =
+		selection.family === fixtureShape.family || selection.fixtureId === fixtureShape.fixtureId;
+	if (!fixtureShape.hasRepoDir && !isExplicitlySelected && !familyHasRunnableFixtures) {
+		return false;
+	}
+
+	const missingArtifacts = [];
+	if (!fixtureShape.hasManifestFile) {
+		missingArtifacts.push(`file "${FIXTURE_MANIFEST_FILENAME}"`);
+	}
+	if (!fixtureShape.hasRepoDir) {
+		missingArtifacts.push(`directory "${FIXTURE_REPO_DIRNAME}"`);
+	}
+
+	throw new FixtureRunnerSelectionError(
+		`fixture directory ${JSON.stringify(`${fixtureShape.family}/${fixtureShape.fixtureId}`)} is incomplete: missing required ${missingArtifacts.join(" and ")}`,
+	);
 }
 
 function requireStdoutGoldenEntries(entries: FixtureDirectoryEntry[]): FixtureDirectoryEntry[] {
@@ -632,13 +701,6 @@ function renderPassedFixtureLabel(
 	}
 
 	return `${record.family}/${record.fixtureId}`;
-}
-
-function looksLikeHarnessFixtureDirectory(fixtureDir: string): boolean {
-	return (
-		isRealDirectory(resolve(fixtureDir, FIXTURE_REPO_DIRNAME)) &&
-		isRegularFile(resolve(fixtureDir, FIXTURE_MANIFEST_FILENAME))
-	);
 }
 
 function isRealDirectory(path: string): boolean {
