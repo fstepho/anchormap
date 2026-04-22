@@ -170,6 +170,85 @@ test("fails when an unexpected file is created under filesystem.kind no_mutation
 	);
 });
 
+test("fails when a tracked file is removed under filesystem.kind no_mutation", async () => {
+	await withTempFixture(
+		noMutationFixture("fixture_filesystem_oracle_removed_file"),
+		(fixtureDir) => {
+			mkdirSync(resolve(fixtureDir, "repo", "src"), { recursive: true });
+			writeFileSync(resolve(fixtureDir, "repo", "src", "index.ts"), "export const value = 1;\n");
+			writeFileSync(
+				resolve(fixtureDir, "repo", "cli-stub.cjs"),
+				["require('node:fs').rmSync('src/index.ts');", "process.exit(0);", ""].join("\n"),
+			);
+		},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.throws(
+					() => assertFixtureFilesystemOracle(fixture, sandbox),
+					(error: unknown) => {
+						assert.ok(error instanceof FixtureFilesystemOracleError);
+						assert.equal(error.oracleKind, "no_mutation");
+						assert.match(error.message, /removed:/);
+						assert.match(error.message, /src\/index\.ts \[file 24 bytes\]/);
+						return true;
+					},
+				);
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
+test("fails when a tracked path changes type under filesystem.kind no_mutation", async () => {
+	await withTempFixture(
+		noMutationFixture("fixture_filesystem_oracle_type_changed_path"),
+		(fixtureDir) => {
+			mkdirSync(resolve(fixtureDir, "repo", "src", "target"), { recursive: true });
+			writeFileSync(
+				resolve(fixtureDir, "repo", "src", "target", "index.ts"),
+				"export const value = 1;\n",
+			);
+			writeFileSync(
+				resolve(fixtureDir, "repo", "cli-stub.cjs"),
+				[
+					"const fs = require('node:fs');",
+					"fs.rmSync('src/target', { recursive: true, force: true });",
+					"fs.writeFileSync('src/target', 'now a file\\n');",
+					"process.exit(0);",
+					"",
+				].join("\n"),
+			);
+		},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.throws(
+					() => assertFixtureFilesystemOracle(fixture, sandbox),
+					(error: unknown) => {
+						assert.ok(error instanceof FixtureFilesystemOracleError);
+						assert.equal(error.oracleKind, "no_mutation");
+						assert.match(error.message, /type-changed:/);
+						assert.match(error.message, /src\/target \(dir -> file\)/);
+						return true;
+					},
+				);
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
 test("compares expected anchormap.yaml bytes byte-for-byte for successful write fixtures", async () => {
 	await withTempFixture(
 		expectedFilesFixture("fixture_filesystem_oracle_expected_yaml"),
@@ -192,6 +271,78 @@ test("compares expected anchormap.yaml bytes byte-for-byte for successful write 
 			try {
 				await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
 				assert.doesNotThrow(() => assertFixtureFilesystemOracle(fixture, sandbox));
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
+test("fails successful write fixtures when a declared expected file is missing after the command", async () => {
+	await withTempFixture(
+		expectedFilesFixture("fixture_filesystem_oracle_expected_yaml_missing"),
+		(fixtureDir) => {
+			mkdirSync(resolve(fixtureDir, "expected", "repo"), { recursive: true });
+			writeFileSync(resolve(fixtureDir, "expected", "repo", "anchormap.yaml"), "version: 1\n");
+			writeFileSync(resolve(fixtureDir, "repo", "cli-stub.cjs"), "process.exit(0);\n");
+		},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.throws(
+					() => assertFixtureFilesystemOracle(fixture, sandbox),
+					(error: unknown) => {
+						assert.ok(error instanceof FixtureFilesystemOracleError);
+						assert.equal(error.oracleKind, "expected_files");
+						assert.match(
+							error.message,
+							/declared expected file is missing after command: anchormap\.yaml/,
+						);
+						return true;
+					},
+				);
+			} finally {
+				sandbox.dispose();
+			}
+		},
+	);
+});
+
+test("fails successful write fixtures when a declared expected file is not a regular file", async () => {
+	await withTempFixture(
+		expectedFilesFixture("fixture_filesystem_oracle_expected_yaml_non_regular"),
+		(fixtureDir) => {
+			mkdirSync(resolve(fixtureDir, "expected", "repo"), { recursive: true });
+			writeFileSync(resolve(fixtureDir, "expected", "repo", "anchormap.yaml"), "version: 1\n");
+			writeFileSync(
+				resolve(fixtureDir, "repo", "cli-stub.cjs"),
+				["require('node:fs').mkdirSync('anchormap.yaml');", "process.exit(0);", ""].join("\n"),
+			);
+		},
+		async (fixtureDir) => {
+			const fixture = loadFixtureManifest(fixtureDir);
+			const sandbox = materializeFixtureSandbox(fixture);
+
+			try {
+				await executeFixtureCommand(fixture, sandbox, { timeoutMs: 1_000 });
+
+				assert.throws(
+					() => assertFixtureFilesystemOracle(fixture, sandbox),
+					(error: unknown) => {
+						assert.ok(error instanceof FixtureFilesystemOracleError);
+						assert.equal(error.oracleKind, "expected_files");
+						assert.match(
+							error.message,
+							/declared expected file must remain a regular file: anchormap\.yaml/,
+						);
+						assert.match(error.message, /actual entry kind: dir/);
+						return true;
+					},
+				);
 			} finally {
 				sandbox.dispose();
 			}
