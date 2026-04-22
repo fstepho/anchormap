@@ -69,6 +69,10 @@ Prefer output that makes the following easy to recover:
 - findings with file and line references when applicable;
 - an explicit no-findings statement when the review is clean.
 
+Wait for the final reviewer verdict.
+Do not classify `tooling problem` from review silence alone while the review
+process is still alive.
+
 After the findings are available, record a `review decision` before any code
 change:
 

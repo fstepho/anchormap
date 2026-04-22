@@ -60,6 +60,8 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
    - `codex review --base <branch>` or `codex review --commit <sha>` when that gives a cleaner bounded surface.
    - `codex` interactive when the session is started fresh for review and review is its first work step.
    Keep routine review criteria in `AGENTS.md` and `docs/code-review.md`; do not depend on ad hoc prompt arguments for the normal loop.
+   After launch, wait for the final reviewer verdict.
+   Do not classify `tooling problem` from review silence alone while the process is still alive.
 9. Record the `review decision` immediately after the review findings and before any code change:
    - `clean verdict`
    - `actionable findings`
@@ -110,6 +112,7 @@ skills themselves.
 - the fresh review session must list the new invariants introduced by the diff and state how each one was verified or falsified before the task is considered done.
 - the `review decision` records repo-local classification and `blocking` / `non-blocking` status from the review findings without inventing additional findings.
 - for harness or tooling tasks, the fresh review session must actively check for collision, rerun, isolation, and misleading-artifact cases when those risks are introduced by the diff.
+- do not classify `tooling problem` from review silence alone while the review process is still running normally.
 - no code change is allowed before the `review decision` is explicit.
 - a task touching a linted or otherwise statically checked surface is not ready for handoff until those applicable repo-local static checks have been run on the post-patch state and pass.
 - Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
