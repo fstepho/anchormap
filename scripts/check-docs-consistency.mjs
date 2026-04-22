@@ -97,6 +97,24 @@ function stripInlineCodeSpans(line) {
 	return stripped
 }
 
+function stripBlockquotePrefixes(line) {
+	let stripped = line
+	const leadingIndent = /^[ \t]{0,3}/.exec(stripped)?.[0] ?? ""
+	stripped = stripped.slice(leadingIndent.length)
+	if (!stripped.startsWith(">")) {
+		return line
+	}
+
+	while (stripped.startsWith(">")) {
+		stripped = stripped.slice(1)
+		if (stripped.startsWith(" ")) {
+			stripped = stripped.slice(1)
+		}
+	}
+
+	return stripped
+}
+
 function stripMarkdownCode(content) {
 	const lines = content.split(/\r?\n/)
 	const strippedLines = []
@@ -105,11 +123,13 @@ function stripMarkdownCode(content) {
 	let previousLineBlank = true
 
 	for (const line of lines) {
+		const logicalLine = stripBlockquotePrefixes(line)
+
 		if (activeFence !== null) {
 			const closingPattern = new RegExp(
 				`^[ \\t]{0,3}${activeFence.char}{${activeFence.length},}[ \\t]*$`,
 			)
-			if (closingPattern.test(line)) {
+			if (closingPattern.test(logicalLine)) {
 				activeFence = null
 			}
 			strippedLines.push(" ".repeat(line.length))
@@ -117,15 +137,15 @@ function stripMarkdownCode(content) {
 		}
 
 		if (activeIndentedCode) {
-			if (/^[ \t]*$/.test(line) || /^(?: {4,}| {0,3}\t)/.test(line)) {
+			if (/^[ \t]*$/.test(logicalLine) || /^(?: {4,}| {0,3}\t)/.test(logicalLine)) {
 				strippedLines.push(" ".repeat(line.length))
-				previousLineBlank = /^[ \t]*$/.test(line)
+				previousLineBlank = /^[ \t]*$/.test(logicalLine)
 				continue
 			}
 			activeIndentedCode = false
 		}
 
-		const openingFence = /^[ \t]{0,3}(`{3,}|~{3,})/.exec(line)
+		const openingFence = /^[ \t]{0,3}(`{3,}|~{3,})/.exec(logicalLine)
 		if (openingFence) {
 			activeFence = {
 				char: openingFence[1][0],
@@ -136,8 +156,8 @@ function stripMarkdownCode(content) {
 			continue
 		}
 
-		const isBlank = /^[ \t]*$/.test(line)
-		if (previousLineBlank && /^(?: {4,}| {0,3}\t)/.test(line)) {
+		const isBlank = /^[ \t]*$/.test(logicalLine)
+		if (previousLineBlank && /^(?: {4,}| {0,3}\t)/.test(logicalLine)) {
 			activeIndentedCode = true
 			strippedLines.push(" ".repeat(line.length))
 			previousLineBlank = false
