@@ -564,9 +564,10 @@ function renderFixtureRunnerReport(
 	failedCount: number,
 	artifactsLayout: FixtureRunnerArtifactsLayout,
 ): string {
+	const duplicateFixtureIds = resolveDuplicateFixtureIds(records);
 	const lines = records.map((record) => {
 		if (record.status === "pass") {
-			return `PASS ${record.fixtureId}`;
+			return `PASS ${renderPassedFixtureLabel(record, duplicateFixtureIds)}`;
 		}
 
 		return `FAIL ${record.fixtureId} ${record.failedOracle} ${record.summary} [artifacts ${record.artifactDirRelative}]`;
@@ -577,6 +578,33 @@ function renderFixtureRunnerReport(
 	);
 
 	return `${lines.join("\n")}\n`;
+}
+
+function resolveDuplicateFixtureIds(records: readonly FixtureRunRecord[]): Set<string> {
+	const seenFixtureIds = new Set<string>();
+	const duplicateFixtureIds = new Set<string>();
+
+	for (const record of records) {
+		if (seenFixtureIds.has(record.fixtureId)) {
+			duplicateFixtureIds.add(record.fixtureId);
+			continue;
+		}
+
+		seenFixtureIds.add(record.fixtureId);
+	}
+
+	return duplicateFixtureIds;
+}
+
+function renderPassedFixtureLabel(
+	record: FixtureRunRecord,
+	duplicateFixtureIds: ReadonlySet<string>,
+): string {
+	if (!duplicateFixtureIds.has(record.fixtureId)) {
+		return record.fixtureId;
+	}
+
+	return `${record.family}/${record.fixtureId}`;
 }
 
 function looksLikeHarnessFixtureDirectory(fixtureDir: string): boolean {

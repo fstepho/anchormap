@@ -266,6 +266,7 @@ function writeFixtureRunResultFiles(input: {
 	phaseTraceStatus: FixturePhaseTraceStatus | null;
 	artifacts: Record<string, string | null>;
 }): void {
+	const declaredCwd = input.input.fixture?.manifest.cwd ?? null;
 	const metadata = {
 		fixture_id: input.input.fixture?.manifest.id ?? input.input.entryFixtureId,
 		family: input.input.fixture?.manifest.family ?? input.input.entryFamily,
@@ -273,7 +274,7 @@ function writeFixtureRunResultFiles(input: {
 		failed_oracle: input.input.failedOracle,
 		summary: input.input.summary,
 		command: input.input.processResult?.command ?? input.input.fixture?.manifest.command ?? null,
-		cwd: input.input.processResult?.cwd ?? input.input.sandbox?.cwd ?? null,
+		cwd: input.input.processResult?.cwd ?? input.input.sandbox?.cwd ?? declaredCwd,
 		exit_code: input.input.processResult?.exitCode ?? null,
 		declared_exit_code: input.input.fixture?.manifest.exit_code ?? null,
 		stdout_length:

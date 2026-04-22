@@ -621,6 +621,39 @@ test("persists fixture artifacts even when sandbox cleanup fails", async () => {
 	);
 });
 
+test("persists the declared manifest cwd when sandbox setup fails before returning a sandbox", async () => {
+	await withTempFixtures(
+		[
+			{
+				manifest: {
+					...scanFixtureManifest("fx13ad_artifact_sandbox_declared_cwd", "B-cli", 0),
+					cwd: "missing-dir",
+				},
+				scriptBody: "process.exit(0);\n",
+			},
+		],
+		async (fixturesRoot) => {
+			const summary = await runFixtureRunner({
+				fixturesRoot,
+				fixtureId: "fx13ad_artifact_sandbox_declared_cwd",
+				timeoutMs: 1_000,
+			});
+
+			assert.equal(summary.exitCode, 1);
+			const record = requireRecord(summary.records[0]);
+			assert.equal(record.status, "fail");
+			assert.equal(record.failedOracle, "sandbox");
+
+			const metadata = readJsonFile(record.metadataPath) as {
+				cwd: string | null;
+				exit_code: number | null;
+			};
+			assert.equal(metadata.cwd, "missing-dir");
+			assert.equal(metadata.exit_code, null);
+		},
+	);
+});
+
 test("accepts additional traced phase names without invalidating archived trace artifacts", async () => {
 	await withTempFixtures(
 		[
@@ -1218,6 +1251,15 @@ test("namespaces artifact directories by family when fixture IDs repeat across f
 
 			assert.equal(summary.exitCode, 0);
 			assert.equal(summary.records.length, 2);
+			assert.equal(
+				summary.report,
+				[
+					"PASS B-one/same_id",
+					"PASS B-two/same_id",
+					runnerSummaryLine(summary.artifactsDirRelative, 2, 2, 0),
+					"",
+				].join("\n"),
+			);
 			assert.deepEqual(
 				summary.records.map((record) => record.artifactDirRelative),
 				[
