@@ -333,7 +333,8 @@ Done when:
 
 Suggested verification:
 - Run intentional golden mismatch fixtures.
-- Run `stderr` empty/ignored/contains/pattern fixtures.
+- Run `stderr` empty/ignored fixture checks through manifest-valid fixture paths.
+- Run lower-level `stderr` contains/pattern oracle tests directly against the oracle helper.
 - Run a `scan --json` failure stub that prints JSON and confirm the fixture fails.
 
 ### T1.5 — Implement filesystem mutation oracles

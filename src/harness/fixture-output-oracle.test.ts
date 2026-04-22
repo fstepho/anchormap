@@ -6,7 +6,11 @@ import { test } from "node:test";
 
 import type { FixtureManifest, LoadedFixtureManifest } from "./fixture-manifest";
 import { resolveFixtureLayout } from "./fixture-manifest";
-import { assertFixtureOutputOracles, FixtureOutputOracleError } from "./fixture-output-oracle";
+import {
+	assertFixtureOutputOracles,
+	assertFixtureStderrOracle,
+	FixtureOutputOracleError,
+} from "./fixture-output-oracle";
 import type { FixtureProcessResult } from "./fixture-process";
 
 function baseProcessResult(overrides: Partial<FixtureProcessResult> = {}): FixtureProcessResult {
@@ -194,7 +198,7 @@ test("does not fail on human stderr when stderr.kind is ignored", () => {
 	);
 });
 
-test("supports stderr contains and pattern oracles", () => {
+test("supports lower-level stderr contains and pattern matching helpers", () => {
 	withTempFixture(
 		{
 			...minimalScanJsonSuccessManifest("fixture_output_oracle_stderr_text_matching"),
@@ -205,29 +209,25 @@ test("supports stderr contains and pattern oracles", () => {
 		() => {},
 		(fixture) => {
 			assert.doesNotThrow(() =>
-				assertFixtureOutputOracles(
+				assertFixtureStderrOracle(
 					fixture,
-					baseProcessResult({
-						stderr: Buffer.from("fatal: permission denied on path\n", "utf8"),
-					}),
+					Buffer.from("fatal: permission denied on path\n", "utf8"),
+					fixture.manifest.stderr,
 				),
 			);
 
-			const patternFixture: LoadedFixtureManifest = {
-				...fixture,
-				manifest: {
-					...fixture.manifest,
-					id: "fixture_output_oracle_stderr_pattern",
-					stderr: { kind: "pattern", value: "^fatal: .* path\\n$" },
-				},
-			};
-
 			assert.doesNotThrow(() =>
-				assertFixtureOutputOracles(
-					patternFixture,
-					baseProcessResult({
-						stderr: Buffer.from("fatal: permission denied on path\n", "utf8"),
-					}),
+				assertFixtureStderrOracle(
+					{
+						...fixture,
+						manifest: {
+							...fixture.manifest,
+							id: "fixture_output_oracle_stderr_pattern",
+							stderr: { kind: "pattern", value: "^fatal: .* path\\n$" },
+						},
+					},
+					Buffer.from("fatal: permission denied on path\n", "utf8"),
+					{ kind: "pattern", value: "^fatal: .* path\\n$" },
 				),
 			);
 		},
