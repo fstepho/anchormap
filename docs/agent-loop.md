@@ -3,8 +3,8 @@
 Status: helper note, non-normative
 
 Scope: repo-local workflow helper for bounded task execution by a human plus
-one implementation pass and one fresh-context review pass, with a single human
-or agent coordinating the sequence.
+one implementation pass and one fresh review pass, with a single human or
+agent coordinating the sequence.
 
 Precedence: if this file conflicts with `docs/operating-model.md`,
 `docs/contract.md`, `docs/design.md`, `docs/evals.md`, or `docs/tasks.md`, the
@@ -35,21 +35,41 @@ also work.
 | Skill | Purpose | Path |
 |---|---|---|
 | `implement-task` | Bounded implementation of one task (`Tn.m` or `Sn`). | `.agents/skills/implement-task/SKILL.md` |
-| `review-task` | Fresh-context review of the cumulative task-scoped diff for one task. | `.agents/skills/review-task/SKILL.md` |
 | `diagnose-fixture` | Classification of one fixture failure using the repo taxonomy. | `.agents/skills/diagnose-fixture/SKILL.md` |
-| `update-tasks` | Bounded update to `docs/tasks.md` after a classified deviation or explicit task-state transition. | `.agents/skills/update-tasks/SKILL.md` |
+| `update-tasks` | Bounded update to `docs/tasks.md` for structural task-plan maintenance or classified deviations. | `.agents/skills/update-tasks/SKILL.md` |
 | `validate-tasks` | Structural lint for `docs/tasks.md`; runs `scripts/lint-tasks.sh`. | `.agents/skills/validate-tasks/SKILL.md` |
+
+Review itself is not a repo-local skill. The review engine is Codex in a fresh
+review session, guided by `AGENTS.md` and `docs/code-review.md`.
 
 ## Recommended Loop
 
 1. Pick exactly one task from `docs/tasks.md`.
-2. Ensure `docs/tasks.md` `## Execution State` records that task as the current active task. Use `update-tasks` when the cursor is not already aligned.
+2. Ensure `docs/tasks.md` `## Execution State` records that task as the current active task. Apply this routine start-of-task sync directly; do not bounce through `update-tasks` just for cursor alignment.
 3. Run `implement-task` for that task. Identify the relevant contract, design, and eval references before patching, then run the smallest relevant check early.
-4. If blocked, classify the deviation before making more changes. Update `docs/tasks.md` through `update-tasks` only when the task state or deviation record must change.
-5. Run `review-task` against the full cumulative task-scoped diff. Prefer a fresh-context review pass; if your agent cannot spawn one, use a fresh session. The review pass must not stop at rerunning the referenced checks: it must also try to falsify the new invariants introduced by the task.
-6. If review returns `needs_rework`, apply one bounded follow-up and then run a new fresh-context review pass on the full cumulative diff.
-7. Stop instead of iterating when review exposes `spec ambiguity`, `product question`, `out-of-scope discovery`, a required `docs/contract.md` change, or a broader task-plan rewrite.
-8. Mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then sync `docs/tasks.md` through `update-tasks` before commit or handoff.
+4. If blocked, classify the deviation before making more changes. Use `update-tasks` only when the block or follow-up requires a structural task-plan edit or a classified deviation entry.
+5. Before handoff to review, run the repo-local static checks that apply to the touched files. A targeted regression or fixture rerun does not replace applicable lint, format-check, or type-check coverage.
+6. Determine the review mode:
+   - `critical` if the diff touches parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, `docs/contract.md`, `docs/evals.md`, or the repo-local review/orchestration mechanics;
+   - `standard` otherwise.
+7. Before review, ensure the review surface is task-scoped:
+   - prefer one task per worktree or otherwise one clean cumulative diff per task;
+   - if you plan to use `codex review --uncommitted`, unrelated staged, unstaged, and untracked changes must be absent.
+8. Start a fresh Codex review session against the full cumulative task-scoped diff:
+   - `codex review --uncommitted` when the worktree contains only that task diff;
+   - `codex review --base <branch>` or `codex review --commit <sha>` when that gives a cleaner bounded surface.
+   - `codex` interactive when the session is started fresh for review and review is its first work step.
+   Keep routine review criteria in `AGENTS.md` and `docs/code-review.md`; do not depend on ad hoc prompt arguments for the normal loop.
+9. Record the `review decision` immediately after the review findings and before any code change:
+   - `clean verdict`
+   - `actionable findings`
+   - `blocked`
+   On the interactive path, the same fresh review session may emit the `review decision`.
+   On the `codex review` path, the loop coordinator records the `review decision` immediately after reading the review output.
+   The `review decision` maps actionable findings to repo classification and `blocking` / `non-blocking` status without inventing new findings or using a second reviewer engine.
+10. If the `review decision` yields actionable findings, apply one bounded follow-up, rerun any static checks still applicable to the touched files, and then start a new fresh review session in the same mode.
+11. Stop instead of iterating when the `review decision` exposes `spec ambiguity`, `product question`, `out-of-scope discovery`, a required `docs/contract.md` change, or a broader task-plan rewrite.
+12. Mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then apply the routine `docs/tasks.md` completion transition directly before commit or handoff. Use `update-tasks` only when the completion also requires a structural plan change or deviation record.
 
 ## Orchestrator Routing
 
@@ -67,24 +87,33 @@ skills themselves.
 
 | Step just completed | Result | Next action |
 |---|---|---|
-| `implement-task` | `needs_review` | Run `review-task` on the full cumulative task-scoped diff in a fresh context. |
-| `implement-task` | `blocked` because `docs/tasks.md` execution state is out of sync | Run `update-tasks` for the routine execution-state sync, then resume from the interrupted step. |
+| `implement-task` | `needs_review` | Determine `standard` vs `critical`, isolate a task-scoped review surface, then start a fresh Codex review session on the full cumulative diff in that mode. |
 | `implement-task` | `blocked` with a classified deviation | Run `update-tasks` to record the deviation and task state. If the block is a fixture failure that needs diagnosis, run `diagnose-fixture` next; otherwise stop and hand off. |
-| `review-task` | `done` | Run `update-tasks` to apply the review hand-off to `docs/tasks.md`, then hand off for the human commit or handoff gate. Do not auto-commit. `done` is valid only if the reviewer explicitly exercised the new task invariants through existing tests or reviewer-derived falsification checks. |
-| `review-task` | `needs_rework` | Apply one bounded follow-up, then run a new fresh-context `review-task` pass on the full cumulative diff. |
-| `review-task` | `blocked` | Stop and hand off with the review classification, evidence, and required escalation. |
-| `diagnose-fixture` | classified result returned | Route according to `docs/operating-model.md` §10. Record any required task-state or deviation update through `update-tasks` before resuming implementation. |
+| fresh review session | findings emitted | Record the `review decision` before any code change. |
+| review decision | clean verdict | Apply the routine `docs/tasks.md` completion transition directly, then hand off for the human commit or handoff gate. Do not auto-commit. A clean verdict is valid only if the review explicitly exercised the new task invariants through existing checks or reviewer-derived falsification checks. |
+| review decision | actionable findings | Apply one bounded follow-up, then start a new fresh review session on the full cumulative diff in the same mode. |
+| review decision | blocked | Stop and hand off with the review classification, evidence, and required escalation. |
+| `diagnose-fixture` | classified result returned | Route according to `docs/operating-model.md` §10. Use `update-tasks` only if the diagnosis requires a structural task-plan change or a classified deviation entry in `docs/tasks.md`; otherwise resume implementation directly. |
 | `update-tasks` | change applied successfully | Resume the interrupted workflow step. |
 | `validate-tasks` | exit `0` | Continue the workflow. |
-| `validate-tasks` | exit non-zero | Classify the issue, apply any required `docs/tasks.md` change through `update-tasks`, then rerun `validate-tasks` before continuing. |
+| `validate-tasks` | exit non-zero | Fix the invalid `docs/tasks.md` edit, then rerun `validate-tasks` before continuing. |
 
 ### Invariants
 
-- `review-task` always runs in a fresh context. Follow the rule from `.agents/skills/review-task/SKILL.md`; do not reuse the implementation session or a previous reviewer session.
-- `review-task` must list the new invariants introduced by the diff and state how each one was verified or falsified before returning `done`.
-- for harness or tooling tasks, `review-task` must actively check for collision, rerun, isolation, and misleading-artifact cases when those risks are introduced by the diff.
+- choose `standard` or `critical` before launching the fresh review session.
+- `critical` review is mandatory for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, `docs/contract.md`, `docs/evals.md`, and repo-local review/orchestration changes.
+- Codex review capabilities are the only bug-finding review engine.
+- launch review in its own fresh review session, not as a same-session self-review and not through a wrapper that reparses session files.
+- when using `--uncommitted`, the worktree must contain only the current task's cumulative diff.
+- keep routine review criteria durable in `AGENTS.md` and `docs/code-review.md`.
+- when the review is launched without an explicit task ID in the runtime prompt, the fresh review session must anchor itself on `docs/tasks.md` `## Execution State` -> `Current active task`, or stop if that value is not usable.
+- the fresh review session must list the new invariants introduced by the diff and state how each one was verified or falsified before the task is considered done.
+- the `review decision` records repo-local classification and `blocking` / `non-blocking` status from the review findings without inventing additional findings.
+- for harness or tooling tasks, the fresh review session must actively check for collision, rerun, isolation, and misleading-artifact cases when those risks are introduced by the diff.
+- no code change is allowed before the `review decision` is explicit.
+- a task touching a linted or otherwise statically checked surface is not ready for handoff until those applicable repo-local static checks have been run on the post-patch state and pass.
 - Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
-- `update-tasks` is the only path that edits `docs/tasks.md`, including routine execution-state syncs and classified deviations.
+- routine `docs/tasks.md` execution-state updates may be applied directly by the implementation pass or after a clean `review decision`; `update-tasks` is reserved for structural task-plan maintenance and classified deviations that materially change the task record.
 - Do not auto-pick the next task. Task selection remains human-directed.
 - Do not auto-commit. A green review pass is necessary for handoff, not sufficient for commit.
 
@@ -92,10 +121,12 @@ skills themselves.
 
 Stop and hand back to the human coordinator when any of the following is true:
 
-- `review-task` or `diagnose-fixture` classifies the issue as `spec ambiguity`
-- `review-task` or `diagnose-fixture` classifies the issue as `product question`
-- `review-task` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
-- `review-task` cannot derive a credible falsification check for a newly introduced invariant without guessing beyond the repo docs; classify this as `eval defect` when the verification guidance is missing, or `design gap` when the invariant itself is under-specified
+- the `review decision` or `diagnose-fixture` classifies the issue as `spec ambiguity`
+- the `review decision` or `diagnose-fixture` classifies the issue as `product question`
+- the `review decision` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
+- the fresh review session cannot derive a credible falsification check for a newly introduced invariant without guessing beyond the repo docs; classify this in the `review decision` as `eval defect` when the verification guidance is missing, or `design gap` when the invariant itself is under-specified
+- a suitable fresh review session cannot be launched
+- the current worktree is not task-scoped enough for a bounded review surface
 - the required fix would need a change to `docs/contract.md`
 - the required fix would need a broader task-plan rewrite rather than a bounded task update
 - the same class of blocking review finding returns after one bounded follow-up
@@ -106,7 +137,7 @@ The coordinator does not decide these alone:
 
 - Task selection: choose the task explicitly from `docs/tasks.md`
 - Escalation handling: resolve any hard stop before resuming the loop
-- Commit or final handoff: after `review-task` returns `done`, sync `docs/tasks.md` as needed, then let the human decide whether to commit or hand off
+- Commit or final handoff: after a clean `review decision`, apply any routine `docs/tasks.md` transition still needed, then let the human decide whether to commit or hand off
 
 ### Local Stop Labels
 
@@ -131,11 +162,16 @@ remain the workflow state vocabulary and deviation taxonomy defined elsewhere.
 
 For `T1.7` and later harness work, the minimum local command surface is:
 
+- `npm run lint`
 - `npm run test:unit`
 - `npm run test:fixtures:all`
 - `npm run test:fixtures -- --fixture <fixture-id>`
 - `npm run test:fixtures -- --family <family>`
 - `npm run check:goldens -- --fixture <fixture-id>`
+- `codex`
+- `codex review --uncommitted`
+- `codex review --base <branch>`
+- `codex review --commit <sha>`
 
 Notes:
 
@@ -143,7 +179,10 @@ Notes:
 - the fixture-runner scripts compile first and then execute the built runner from `dist/`;
 - `npm run test:fixtures:all` scans the runnable fixture corpus under `fixtures/`;
 - fixture manifests may point either to the built product CLI when available or to `node dist/cli-stub.js` while product implementation is still in progress.
+- `codex` is allowed when started as a fresh interactive review session whose first work step is review.
+- `codex review` commands assume the repo-specific guidance already lives in `AGENTS.md` and `docs/code-review.md`.
 - these commands are the minimum starting point for review, not the maximum allowed review surface. A reviewer may add bounded falsification checks when the task introduces new invariants not already stressed by the existing commands.
+- when a task touches files covered by `npm run lint`, run `npm run lint` before concluding the implementation pass or marking the review `done`, unless the changed surface is explicitly outside that command's scope.
 
 ## Non-Goals
 

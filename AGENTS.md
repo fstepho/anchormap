@@ -61,9 +61,45 @@ If a change would supersede an accepted ADR, classify the deviation first and th
 
 ## Orchestration Authority
 
-When driving `docs/agent-loop.md`, spawning a sub-agent for `review-task` is pre-authorized. It is the only way to satisfy invariant I1 (fresh-context review) in a single-session interface, so the instruction "drive `docs/agent-loop.md`" (or any equivalent) stands as the authorization — no additional user confirmation is required for that spawn.
+Under the repo-local workflow, Codex review capabilities are the only
+authorized bug-finding review engine.
 
-The invariant is non-negotiable: if the tool cannot spawn a sub-agent, stop at the human commit or handoff gate and state that the fresh-context review has not yet run. Never substitute a same-session self-review and never mark the task done on that basis.
+Keep repo-specific review criteria durable in `docs/code-review.md` and
+reference them from this file rather than passing ad hoc review prompts.
+
+Do not substitute a repo-local review skill, a wrapper-parsed transcript, a
+same-session self-review, or a second reviewer engine for Codex review. If a
+suitable fresh review session cannot be launched, stop at the human commit or
+handoff gate and classify the failure as `tooling problem`.
+
+## Fresh Review Session
+
+A fresh review session is a Codex session dedicated to reviewing exactly one
+task-scoped cumulative diff.
+
+Accepted entry surfaces:
+
+- `codex review --uncommitted`
+- `codex review --base <branch>`
+- `codex review --commit <sha>`
+- a fresh interactive `codex` session whose first work step is review
+
+Keep the review bounded to one task and follow `docs/code-review.md` for
+review-scoped guidance.
+
+After the review findings are available, record a `review decision` before any
+code change:
+
+- `clean verdict`
+- `actionable findings`
+- `blocked`
+
+The `review decision` records repo-local classification, `blocking` /
+`non-blocking`, and task-state routing as defined by `docs/agent-loop.md` and
+`docs/operating-model.md`.
+
+The `review decision` does not add new findings and does not act as a second
+reviewer engine.
 
 ## Fail-Fast Rules
 

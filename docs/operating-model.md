@@ -81,6 +81,7 @@ Pendant l'implémentation :
 - une seule tâche bornée est traitée à la fois ;
 - les documents, fixtures et checks pertinents sont identifiés avant le patch ;
 - le plus petit check utile doit être lancé tôt ;
+- un check ciblé précoce ne remplace pas les checks statiques repo-locaux applicables aux fichiers modifiés ; avant handoff, ces checks doivent être relancés et passer, y compris le lint quand cette surface est couverte ;
 - un échec bloquant doit être classifié avant tout patch supplémentaire ;
 - un agent ne doit pas corriger "à l'aveugle" ni élargir la portée pour faire passer un check.
 
@@ -953,7 +954,64 @@ Chaque finding de review doit ensuite être exprimé avec :
 - un statut `bloquant` ou `non bloquant` relativement à §19.1 ;
 - éventuellement des tags secondaires de triage.
 
+Le protocole repo exige une **fresh review session Codex** pour chaque passe de
+review.
+
+Une fresh review session est une session Codex dédiée à la review d'un unique
+diff cumulé borné à une tâche.
+
+Entrées autorisées :
+
+- `codex review --uncommitted`
+- `codex review --base <branch>`
+- `codex review --commit <sha>`
+- une session interactive `codex` démarrée fraîchement pour la review, avec la
+  review comme premier work step
+
+La fresh review session produit les findings.
+
+Immédiatement après ces findings, et avant toute modification de code, il faut
+enregistrer une **review decision**.
+
+La review decision doit ensuite restater explicitement :
+
+- la tâche reviewée ;
+- le mode de review (`standard` ou `critical`) ;
+- les checks exécutés lorsque cette information est disponible ;
+- soit les findings actionnables, soit l'absence explicite de findings ;
+- en cas d'absence de findings, les invariants revus et les checks ou falsifications qui justifient ce verdict propre.
+
+États de review decision :
+
+- classer le résultat en `clean verdict`, `actionable findings` ou `blocked` ;
+- mapper chaque finding actionnable natif vers exactement une classification primaire selon la section 10 ;
+- indiquer séparément pour chaque finding actionnable s'il est `bloquant` ou `non bloquant` ;
+- ne pas inventer de finding supplémentaire au-delà de la sortie native ;
+- ne pas utiliser la review decision comme un second moteur de review.
+
 Une review de diff ne doit pas proposer de nouvelles features.
+
+#### Modes de review
+
+Le protocole local distingue deux modes :
+
+- `standard` : mode par défaut pour un diff de tâche borné qui ne touche pas une surface critique ;
+- `critical` : mode obligatoire dès que le diff touche parser, renderer, frontière CLI, mutation filesystem, packaging, test harness, `docs/contract.md`, `docs/evals.md`, ou la mécanique repo-locale de review/orchestration.
+
+Règles :
+
+- les deux modes reviewent le diff cumulé complet de la tâche ;
+- les deux modes doivent lister les nouveaux invariants introduits par le diff ;
+- les deux modes doivent mapper chaque invariant nouveau vers un check existant ou un check de falsification dérivé par le reviewer ;
+- si la review est lancée sans task ID explicite dans le prompt runtime, elle doit prendre `docs/tasks.md` `## Execution State` -> `Current active task` comme ancre de tâche ; si cette valeur est absente, ambiguë ou invalide, la review doit s'arrêter au lieu de deviner ;
+- les findings de review viennent d'une fresh review session Codex ;
+- la guidance de review durable vit dans `AGENTS.md` et `docs/code-review.md`, pas dans des prompts runtime routiniers ;
+- `codex review --uncommitted` n'est autorisé que si le worktree est strictement borné au diff cumulé de la tâche ; sinon utiliser une surface bornée via `--base` ou `--commit` ;
+- une session interactive `codex` n'est autorisée comme surface de review que si elle est fraîche et que la review est son premier work step ;
+- la review decision consomme les findings de review et les mappe vers l'état de boucle ; elle ne remplace pas la review et ne produit pas de finding nouveau ;
+- aucune modification de code n'est autorisée avant que la review decision soit explicite ;
+- `critical` doit être lancé depuis une fresh session Codex ; si la session courante ne convient pas, la review s'arrête avec une classification `tooling problem` ;
+- aucun second moteur de review n'est autorisé.
 
 ## 15. Gestion des fixtures et goldens
 
@@ -1060,6 +1118,7 @@ Une tâche est done lorsque :
 - le code respecte les sections de contrat référencées ;
 - les tests unitaires pertinents passent ;
 - les fixtures référencées passent ;
+- les checks statiques repo-locaux applicables aux fichiers touchés passent ; un test ciblé ne suffit pas à lui seul lorsqu'un lint, un check de formatage ou un check de type couvre cette surface ;
 - les cas d'échec sont couverts ;
 - les politiques `stdout`, `stderr`, exit code et mutation sont vérifiées si applicables ;
 - aucun comportement hors scope n'a changé ;
@@ -1140,11 +1199,18 @@ Review le diff cumulé complet de la tâche <TASK_ID> uniquement contre la tâch
 À chaque passe de review :
 - inspecte le diff cumulé complet depuis le début de la tâche, pas seulement le dernier delta de correction ;
 - si c'est une deuxième passe ou plus, accorde une attention supplémentaire aux fichiers modifiés depuis la review précédente tout en re-reviewant le diff cumulé complet.
+- exécute la passe dans une fresh review session Codex ;
+- garde la guidance de review durable dans `AGENTS.md` et `docs/code-review.md`, pas dans un prompt ad hoc ;
+- n'utilise aucun wrapper qui relit les fichiers de session Codex ni aucun moteur alternatif.
+- si aucun task ID explicite n'est donné au lancement, ancre la review sur `docs/tasks.md` `## Execution State` -> `Current active task`, ou stoppe si cette valeur n'est pas exploitable.
+- enregistre une review decision explicite immédiatement après les findings, et avant toute modification de code.
+- si la surface d'entrée est `codex review`, la review decision est enregistrée juste après lecture de la sortie.
+- si la surface d'entrée est une session interactive `codex`, la même session peut émettre la review decision.
 
 Ne propose pas de nouvelle feature.
 Ne fais pas de review de style sauf si cela affecte le contrat, les evals ou la maintenabilité immédiate.
 
-Classe chaque finding avec exactement une classification primaire selon la section 10 :
+Dans la review decision, classe chaque finding actionnable avec exactement une classification primaire selon la section 10 :
 - contract violation ;
 - spec ambiguity ;
 - design gap ;
@@ -1153,7 +1219,7 @@ Classe chaque finding avec exactement une classification primaire selon la secti
 - tooling problem ;
 - out-of-scope discovery.
 
-Indique séparément pour chaque finding s'il est :
+Indique séparément pour chaque finding actionnable s'il est :
 - bloquant ;
 - non bloquant.
 

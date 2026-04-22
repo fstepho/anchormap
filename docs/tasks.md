@@ -4348,13 +4348,18 @@ Done when:
 ## Agent execution protocol
 
 The authoritative agent workflow lives in the Agent Skills under
-`.agents/skills/` (`implement-task`, `review-task`, `diagnose-fixture`,
-`update-tasks`, `validate-tasks`). The bounded deterministic lint lives at
-`scripts/lint-tasks.sh`. The recommended local loop, roles, and non-goals
-are documented in `docs/agent-loop.md`.
+`.agents/skills/` (`implement-task`, `diagnose-fixture`, `update-tasks`,
+`validate-tasks`), in `docs/agent-loop.md`, and in `docs/code-review.md`.
+Native review findings come from `codex review`, not from a repo-local review
+skill or a wrapper that reparses Codex session files. The bounded deterministic
+lint lives at `scripts/lint-tasks.sh`.
 
 Do not duplicate or re-derive the agent prompts in this file. Any change to
-execution protocol must go through the skills or `docs/agent-loop.md`.
+execution protocol must go through the skills, `docs/agent-loop.md`, or
+`docs/code-review.md`.
+Routine `## Execution State` cursor updates may be handled directly by the
+active implementation pass or native review step; use `update-tasks` for
+structural plan maintenance and classified deviations.
 
 ## Blocking questions
 
