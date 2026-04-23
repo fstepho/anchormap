@@ -85,7 +85,7 @@ Wait for the final reviewer verdict.
 Do not classify `tooling problem` from review silence alone while the review
 process is still alive.
 
-After the findings are available, record a `review decision` before any code
+After the findings are available, emit a `review decision` before any code
 change:
 
 - `clean verdict`
@@ -95,6 +95,10 @@ change:
 The `review decision` records repo-local classification, `blocking` /
 `non-blocking`, and task-state routing as defined by
 `docs/operating-model.md` and `docs/agent-loop.md`.
+Its official home is the coordinator handoff or PR comment equivalent, except
+when a fresh interactive review session emits it directly.
+`docs/tasks.md` records only the resulting task-state or open-deviation effect
+when the loop requires it; it is not a full decision log.
 For a clean process-maintenance review, the routing must not mark any task
 done or update `docs/tasks.md` unless the maintenance explicitly changed the
 task plan.
@@ -102,8 +106,9 @@ task plan.
 If the entry surface is a fresh interactive `codex` session, the same session
 may emit the `review decision`.
 
-If the entry surface is `codex review`, record the `review decision`
-immediately after reading the review output.
+If the entry surface is `codex review`, emit the `review decision` in the
+coordinator handoff or PR comment equivalent immediately after reading the
+review output.
 
 ## Non-Goals
 

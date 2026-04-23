@@ -84,13 +84,13 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
    Keep routine review criteria in `AGENTS.md` and `docs/code-review.md`; do not depend on ad hoc prompt arguments for the normal loop.
    After launch, wait for the final reviewer verdict.
    Do not classify `tooling problem` from review silence alone while the process is still alive.
-9. Record the `review decision` immediately after the review findings and before any code change:
+9. Emit the `review decision` immediately after the review findings and before any code change:
    - `clean verdict`
    - `actionable findings`
    - `blocked`
    On the interactive path, the same fresh review session may emit the `review decision`.
-   On the `codex review` path, the loop coordinator records the `review decision` immediately after reading the review output.
-   The `review decision` maps actionable findings to repo classification and `blocking` / `non-blocking` status without inventing new findings or using a second reviewer engine.
+   On the `codex review` path, the loop coordinator emits the `review decision` in the coordinator handoff or PR comment equivalent immediately after reading the review output.
+   The `review decision` maps actionable findings to repo classification and `blocking` / `non-blocking` status without inventing new findings or using a second reviewer engine. `docs/tasks.md` records only the resulting task-state or deviation changes when the loop requires them.
 10. If the `review decision` yields actionable findings, apply one bounded follow-up, rerun any static checks still applicable to the touched files, and then start a new fresh review session in the same mode.
 11. Stop instead of iterating when the `review decision` exposes `spec ambiguity`, `product question`, `out-of-scope discovery`, a required `docs/contract.md` change, or a broader task-plan rewrite.
 12. If the clean review is task-scoped, mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then apply the routine `docs/tasks.md` completion transition directly before commit or handoff. Use `update-tasks` only when the completion also requires a structural plan change or deviation record.
@@ -114,7 +114,7 @@ skills themselves.
 |---|---|---|
 | `implement-task` | `needs_review` | Determine `standard` vs `critical`, isolate a task-scoped review surface, then start a fresh Codex review session on the full cumulative diff in that mode. |
 | `implement-task` | `blocked` with a classified deviation | Run `update-tasks` to record the deviation and task state. If the block is a fixture failure that needs diagnosis, run `diagnose-fixture` next; otherwise stop and hand off. |
-| fresh review session | findings emitted | Record the `review decision` before any code change. |
+| fresh review session | findings emitted | Emit the `review decision` before any code change. |
 | review decision | clean verdict for task-scoped diff | Apply the routine `docs/tasks.md` completion transition directly, then hand off for the human commit or handoff gate. Do not auto-commit. A clean verdict is valid only if the review explicitly exercised the new task invariants through existing checks or reviewer-derived falsification checks. |
 | review decision | clean verdict for process-maintenance diff | Do not apply a task completion transition. Hand off for the human commit or handoff gate with the reviewed process surface and checks. |
 | review decision | actionable findings | Apply one bounded follow-up, then start a new fresh review session on the full cumulative diff in the same mode. |
@@ -135,13 +135,15 @@ skills themselves.
 - keep routine review criteria durable in `AGENTS.md` and `docs/code-review.md`.
 - when the review is launched without an explicit task ID, the fresh review session must first determine whether the diff is a bounded process-maintenance diff; if so, it reviews that process surface. Otherwise it may anchor on `docs/tasks.md` `## Execution State` -> `Current active task`, or stop if that value is not usable.
 - the fresh review session must list the new invariants introduced by the diff and state how each one was verified or falsified before the task is considered done.
+- the `review decision` lives in the coordinator handoff or PR comment equivalent, except when a fresh interactive review session emits it directly.
 - the `review decision` records repo-local classification and `blocking` / `non-blocking` status from the review findings without inventing additional findings.
+- `docs/tasks.md` records only the task-state transition or open-deviation effect of a review decision, not a full decision log.
 - for harness or tooling tasks, the fresh review session must actively check for collision, rerun, isolation, and misleading-artifact cases when those risks are introduced by the diff.
 - do not classify `tooling problem` from review silence alone while the review process is still running normally.
 - no code change is allowed before the `review decision` is explicit.
 - a task touching a linted or otherwise statically checked surface is not ready for handoff until those applicable repo-local static checks have been run on the post-patch state and pass.
 - Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
-- routine `docs/tasks.md` execution-state updates may be applied directly by the implementation pass or after a clean `review decision`; `update-tasks` is reserved for structural task-plan maintenance and classified deviations that materially change the task record.
+- routine `docs/tasks.md` execution-state updates may be applied directly by the implementation pass or as the routed effect of a clean `review decision`; `update-tasks` is reserved for structural task-plan maintenance and classified deviations that materially change the task record.
 - Do not auto-pick the next task. Task selection remains human-directed.
 - Do not auto-commit. A green review pass is necessary for handoff, not sufficient for commit.
 

@@ -115,8 +115,11 @@ Accepted entry surfaces:
 Keep the review bounded to one task or process-maintenance surface and follow
 `docs/code-review.md` for review-scoped guidance.
 
-After the review findings are available, record a `review decision` before any
-code change:
+After the review findings are available, emit a `review decision` before any
+code change. The decision lives in the coordinator handoff or PR comment
+equivalent, except when a fresh interactive review session emits it directly;
+`docs/tasks.md` records only the resulting task-state or deviation changes when
+the loop requires them:
 
 - `clean verdict`
 - `actionable findings`
