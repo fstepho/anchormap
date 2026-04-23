@@ -571,15 +571,54 @@ test("classifies `scan --json` only from the contract flag position", () => {
 	);
 });
 
-test("rejects command arrays that do not declare a supported CLI subcommand in the command slot", () => {
+test("accepts unknown and missing command fixtures as usage-error fixtures", () => {
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
+			id: "harness_schema_valid_unknown_command",
+			command: ["node", "dist/anchormap.js", "unknown"],
+			exit_code: 4,
+			stdout: { kind: "empty" },
+			stderr: { kind: "ignored" },
+			filesystem: { kind: "no_mutation" },
+		}),
+	);
+
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
+			id: "harness_schema_valid_missing_command",
+			command: ["node", "dist/anchormap.js"],
+			exit_code: 4,
+			stdout: { kind: "empty" },
+			stderr: { kind: "empty" },
+			filesystem: { kind: "no_mutation" },
+		}),
+	);
+});
+
+test("rejects unknown or missing command fixtures with non-usage-error oracles", () => {
 	assert.throws(
 		() =>
 			validateFixtureManifest({
 				...minimalFailureManifest(),
 				id: "harness_schema_invalid_unknown_subcommand",
 				command: ["node", "dist/cli-stub.js", "status"],
+				exit_code: 2,
 			}),
-		/command must declare a supported CLI subcommand in the command slot/,
+		/unknown or missing command fixtures must expect exit_code 4/,
+	);
+
+	assert.throws(
+		() =>
+			validateFixtureManifest({
+				...minimalFailureManifest(),
+				id: "harness_schema_invalid_missing_subcommand_stdout",
+				command: ["node", "dist/cli-stub.js"],
+				exit_code: 4,
+				stdout: { kind: "ignored" },
+			}),
+		/unknown or missing command fixtures must use stdout\.kind "empty"/,
 	);
 
 	assert.throws(

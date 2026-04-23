@@ -61,8 +61,9 @@ Semantic rules already enforced by the harness validator in `T1.1`:
 Command shape note:
 
 - the manifest stores `command` as a closed argv contract, not as a shell snippet;
-- `T1.1` accepts only `["<cli>", "<subcommand>", ...]` and `["node", "<script>", "<subcommand>", ...]` launcher shapes;
-- the harness validates the subcommand from that fixed command slot, so ordinary argument values such as `--seed scan` do not change the fixture oracle rules;
+- `T1.1` accepts direct launcher shapes such as `["<cli>", "<subcommand>", ...]` and `["node", "<script>", "<subcommand>", ...]`;
+- product fixtures may also omit the subcommand or put an unknown command in that slot when the fixture is explicitly asserting a CLI usage error with exit code `4`, empty stdout, and no filesystem mutation;
+- the harness classifies the command from that fixed command slot, so ordinary argument values such as `--seed scan` do not change the fixture oracle rules;
 - the harness recognizes `scan --json` only when `--json` occupies the contract flag position immediately after `scan`; later argument values that happen to equal `--json` do not switch the fixture into machine-output mode;
 - wrapper forms such as `npm exec -- ...` or `node --eval ...` are rejected until they are modeled explicitly in the fixture contract and test coverage.
 

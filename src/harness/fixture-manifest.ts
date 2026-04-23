@@ -27,6 +27,7 @@ const TOP_LEVEL_KEYS = new Set([
 const STABLE_ID_PATTERN = /^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$/;
 const FAMILY_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/;
 const SUPPORTED_SUBCOMMANDS = new Set(["init", "map", "scan"]);
+const MISSING_SUBCOMMAND = "<missing>";
 const UNSUPPORTED_WRAPPER_LAUNCHERS = new Set([
 	"npm",
 	"npx",
@@ -298,6 +299,11 @@ function requireExitCode(value: unknown, context: ValidationContext): number {
 function validateManifestSemantics(manifest: FixtureManifest, context: ValidationContext): void {
 	const subcommand = detectSubcommand(manifest.command, context);
 
+	if (subcommand === undefined || subcommand === MISSING_SUBCOMMAND) {
+		validateUsageErrorCommandSemantics(manifest, context);
+		return;
+	}
+
 	if (subcommand === "scan" && hasImmediateScanJsonFlag(manifest.command)) {
 		validateScanJsonSemantics(manifest, context);
 		return;
@@ -426,6 +432,30 @@ function validateHumanWriteCommandSemantics(
 	}
 }
 
+function validateUsageErrorCommandSemantics(
+	manifest: FixtureManifest,
+	context: ValidationContext,
+): void {
+	if (manifest.exit_code !== 4) {
+		fail("unknown or missing command fixtures must expect exit_code 4", context);
+	}
+
+	if (manifest.stdout.kind !== "empty") {
+		fail('unknown or missing command fixtures must use stdout.kind "empty"', context);
+	}
+
+	if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
+		fail(
+			'unknown or missing command fixtures may only use stderr.kind "ignored" or "empty"',
+			context,
+		);
+	}
+
+	if (manifest.filesystem.kind !== "no_mutation") {
+		fail('unknown or missing command fixtures must use filesystem.kind "no_mutation"', context);
+	}
+}
+
 function assertExistingDirectory(path: string, label: string, context: ValidationContext): void {
 	if (!existsSync(path)) {
 		fail(`fixture directory must contain companion directory "${label}"`, context);
@@ -464,9 +494,9 @@ function assertExistingRegularFile(
 function detectSubcommand(
 	command: string[],
 	context: ValidationContext,
-): "init" | "map" | "scan" | undefined {
+): "init" | "map" | "scan" | typeof MISSING_SUBCOMMAND | undefined {
 	if (command[0] === "node") {
-		if (command.length < 3) {
+		if (command.length < 2) {
 			fail('command using "node" must be ["node", "<script>", "<subcommand>", ...]', context);
 		}
 
@@ -477,28 +507,29 @@ function detectSubcommand(
 			);
 		}
 
+		if (command.length === 2) {
+			return MISSING_SUBCOMMAND;
+		}
+
 		const candidate = command[2];
 		if (!SUPPORTED_SUBCOMMANDS.has(candidate)) {
-			fail("command must declare a supported CLI subcommand in the command slot", context);
+			return undefined;
 		}
 
 		return candidate as "init" | "map" | "scan";
-	}
-
-	if (command.length < 2) {
-		fail(
-			'command must be ["<cli>", "<subcommand>", ...] or ["node", "<script>", "<subcommand>", ...]',
-			context,
-		);
 	}
 
 	if (UNSUPPORTED_WRAPPER_LAUNCHERS.has(command[0])) {
 		fail(`command must use a direct CLI launcher, not wrapper launcher "${command[0]}"`, context);
 	}
 
+	if (command.length < 2) {
+		return MISSING_SUBCOMMAND;
+	}
+
 	const candidate = command[1];
 	if (!SUPPORTED_SUBCOMMANDS.has(candidate)) {
-		fail("command must declare a supported CLI subcommand in the command slot", context);
+		return undefined;
 	}
 
 	return candidate as "init" | "map" | "scan";

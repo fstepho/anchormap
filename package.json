@@ -3,6 +3,9 @@
 	"private": true,
 	"version": "0.0.0",
 	"description": "Local deterministic structural traceability CLI for narrow-scope TypeScript repositories.",
+	"bin": {
+		"anchormap": "dist/anchormap.js"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/fstepho/anchormap.git"

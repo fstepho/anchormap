@@ -7,6 +7,7 @@ const REPO_ROOT = resolve(__dirname, "..");
 const PACKAGE_JSON_PATH = resolve(REPO_ROOT, "package.json");
 
 interface PackageJson {
+	bin?: Record<string, string>;
 	scripts?: Record<string, string>;
 }
 
@@ -18,6 +19,9 @@ test("package.json exposes the stable repo-local check and harness command surfa
 	const packageJson = loadPackageJson();
 	const scripts = packageJson.scripts ?? {};
 
+	assert.deepEqual(packageJson.bin, {
+		anchormap: "dist/anchormap.js",
+	});
 	assert.equal(scripts["check:docs"], "sh scripts/check-docs-consistency.sh");
 	assert.equal(scripts.test, "npm run test:unit");
 	assert.equal(scripts["test:unit"], 'npm run build && node --test "dist/**/*.test.js"');
