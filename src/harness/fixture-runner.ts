@@ -202,10 +202,13 @@ export async function runFixtureRunner(options: FixtureRunnerOptions): Promise<F
 		family: options.family,
 		stdoutGoldenOnly: options.stdoutGoldenOnly,
 	};
-	const selectedEntries = selectFixtureEntries(discoverFixtureEntries(options.fixturesRoot, selection), {
-		fixtureId: options.fixtureId,
-		family: options.family,
-	});
+	const selectedEntries = selectFixtureEntries(
+		discoverFixtureEntries(options.fixturesRoot, selection),
+		{
+			fixtureId: options.fixtureId,
+			family: options.family,
+		},
+	);
 	const runnableEntries = options.stdoutGoldenOnly
 		? requireStdoutGoldenEntries(selectedEntries)
 		: selectedEntries;
@@ -332,13 +335,7 @@ function discoverFixtureEntries(
 			if (selection.fixtureId && fixtureShape.fixtureId !== selection.fixtureId) {
 				continue;
 			}
-			if (
-				!isFixtureDirectoryEntry(
-					fixtureShape,
-					selection,
-					familyHasRunnableFixtures,
-				)
-			) {
+			if (!isFixtureDirectoryEntry(fixtureShape, selection, familyHasRunnableFixtures)) {
 				continue;
 			}
 
