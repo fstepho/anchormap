@@ -753,7 +753,9 @@ Les libellés canoniques de classification sont les suivants :
 Dans une review, chaque finding doit porter :
 
 - exactement une classification primaire issue de cette section ;
-- un statut explicite `bloquant` ou `non bloquant` par rapport à la définition de done de la tâche (§19.1).
+- un statut explicite `bloquant` ou `non bloquant` par rapport à la définition
+  de done applicable : §19.1 pour une tâche, §19.4 pour une maintenance
+  process.
 
 Une sévérité de type `high` / `medium` / `low` peut être ajoutée pour aider au triage, mais elle reste non normative et ne remplace ni la classification primaire ni le statut bloquant.
 
@@ -983,7 +985,8 @@ Une review de diff process-maintenance doit répondre à ces questions :
 Chaque finding de review doit ensuite être exprimé avec :
 
 - une classification primaire selon la section 10 ;
-- un statut `bloquant` ou `non bloquant` relativement à §19.1 ;
+- un statut `bloquant` ou `non bloquant` relativement à §19.1 pour une tâche,
+  ou à §19.4 pour une maintenance process ;
 - éventuellement des tags secondaires de triage.
 
 Le protocole repo exige une **fresh review session Codex** pour chaque passe de
@@ -1195,6 +1198,8 @@ Une tâche est done lorsque :
 - les politiques `stdout`, `stderr`, exit code et mutation sont vérifiées si applicables ;
 - aucun comportement hors scope n'a changé ;
 - aucune eval n'a été affaiblie ;
+- une review decision `clean verdict` a été émise après une fresh review
+  session Codex sur le diff cumulé borné de la tâche ;
 - toute limite ou dette introduite est documentée.
 
 ### 19.2 Jalon
@@ -1219,6 +1224,23 @@ Une release candidate est done lorsque :
 - la matrice plateforme est validée ;
 - les questions produit ouvertes sont explicitement différées ;
 - aucun bug critique connu ne viole le contrat.
+
+### 19.4 Maintenance process
+
+Une maintenance process est done lorsque :
+
+- la surface process visée est explicitement nommée et reste bornée ;
+- le diff ne modifie pas le comportement runtime, le scope produit, le contrat
+  ou les evals, sauf instruction explicite ;
+- la hiérarchie documentaire reste cohérente et aucune autorité concurrente
+  n'est introduite ;
+- les invariants de review fraîche, de classification et de bornage restent
+  préservés ;
+- les checks repo-locaux applicables à la surface touchée passent ;
+- une review decision `clean verdict` a été émise après une fresh review
+  session Codex sur le diff cumulé borné de maintenance process ;
+- aucune transition de tâche `done` n'est appliquée, sauf si la maintenance
+  modifie explicitement le plan de tâches.
 
 ## 20. Prompts de travail recommandés
 
