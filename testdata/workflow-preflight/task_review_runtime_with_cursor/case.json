@@ -1,0 +1,9 @@
+{
+	"id": "task_review_runtime_with_cursor",
+	"args": ["--task", "T1.1", "--stage", "review"],
+	"changed_files": ["src/runtime.ts"],
+	"changed_file_appends": ["docs/tasks.md"],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "preflight: ok"},
+	"stderr": {"kind": "empty"}
+}

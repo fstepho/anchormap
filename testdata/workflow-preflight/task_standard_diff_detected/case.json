@@ -1,0 +1,8 @@
+{
+	"id": "task_standard_diff_detected",
+	"args": ["--task", "T1.1", "--stage", "review"],
+	"changed_files": ["src/runtime.ts"],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "diff_mode: standard"},
+	"stderr": {"kind": "empty"}
+}

@@ -1,0 +1,7 @@
+{
+	"id": "review_without_diff",
+	"args": ["--process", "workflow-preflight", "--stage", "review"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "changed_files: 0"},
+	"stderr": {"kind": "contains", "value": "preflight: review_diff_missing: --stage review requires a bounded diff"}
+}

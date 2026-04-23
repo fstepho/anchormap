@@ -1,0 +1,8 @@
+{
+	"id": "critical_diff_detected",
+	"args": ["--process", "workflow-preflight", "--stage", "review"],
+	"changed_files": ["docs/agent-loop.md"],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "diff_mode: critical"},
+	"stderr": {"kind": "empty"}
+}

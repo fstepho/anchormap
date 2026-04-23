@@ -1,0 +1,7 @@
+{
+	"id": "active_mismatch",
+	"args": ["--task", "T1.1"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: active_task_mismatch: requested T1.1, current active task is T1.2"}
+}

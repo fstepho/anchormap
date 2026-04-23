@@ -1,0 +1,9 @@
+{
+	"id": "process_renamed_product_doc",
+	"args": ["--process", "workflow-preflight", "--stage", "review"],
+	"baseline_files": ["docs/contract.md"],
+	"renamed_files": [{"from": "docs/contract.md", "to": "docs/contract-old.md"}],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: process_surface_product_docs: process review diff contains product authority docs"}
+}

@@ -1,0 +1,9 @@
+{
+	"id": "task_renamed_packaging_critical_reads",
+	"args": ["--task", "T1.1", "--stage", "review"],
+	"baseline_files": ["package.json"],
+	"renamed_files": [{"from": "package.json", "to": "package.old"}],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "required_reads: docs/operating-model.md, docs/tasks.md, full contract/design/evals, relevant ADRs"},
+	"stderr": {"kind": "empty"}
+}

@@ -1,0 +1,8 @@
+{
+	"id": "process_runtime_only",
+	"args": ["--process", "workflow-preflight", "--stage", "review"],
+	"changed_files": ["src/runtime.ts"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: process_surface_runtime_files: process review diff contains runtime files"}
+}

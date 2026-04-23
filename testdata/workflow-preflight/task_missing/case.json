@@ -1,0 +1,7 @@
+{
+	"id": "task_missing",
+	"args": ["--task", "T9.99"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: task_missing: T9.99"}
+}

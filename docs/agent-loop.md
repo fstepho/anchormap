@@ -70,7 +70,12 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
 
 1. Pick exactly one task from `docs/tasks.md`.
 2. Ensure `docs/tasks.md` `## Execution State` records that task as the current active task. Apply this routine start-of-task sync directly; do not bounce through `update-tasks` just for cursor alignment.
-3. Choose `standard` or `critical` reading mode, then run `implement-task` for that task. Identify the relevant contract, design, and eval references before patching, then run the smallest relevant check early.
+3. Choose `standard` or `critical` reading mode from the task and intended files, then run `implement-task` for that task. Identify the relevant contract, design, and eval references before patching, then run the smallest relevant check early.
+   The optional `npm run workflow:preflight -- --task <TASK_ID>` helper can
+   verify the active cursor and traceability references before implementation,
+   but its `diff_mode:` line is diff-derived and must not be used as the
+   implementation reading-mode authority on a clean worktree. For
+   process-maintenance work, use `npm run workflow:preflight -- --process <surface>`.
 4. If blocked, classify the deviation before making more changes. Use `update-tasks` only when the block or follow-up requires a structural task-plan edit or a classified deviation entry.
 5. Before handoff to review, run the repo-local static checks that apply to the touched files. A targeted regression or fixture rerun does not replace applicable lint, format-check, or type-check coverage.
 6. Determine the review mode:
@@ -80,6 +85,9 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
    - prefer one task per worktree or otherwise one clean cumulative diff per task;
    - for process maintenance, keep the diff limited to the named process surface and verify it does not change runtime behavior;
    - if you plan to use `codex review --uncommitted`, unrelated staged, unstaged, and untracked changes must be absent.
+   The optional `npm run workflow:preflight -- --task <TASK_ID> --stage review`
+   helper can validate the active cursor, traceability references, bounded diff
+   presence, and diff-derived review mode before launching review.
 8. Start a fresh Codex review session against the full cumulative bounded diff:
    - `codex review --uncommitted` when the worktree contains only that bounded diff;
    - `codex review --base <branch>` or `codex review --commit <sha>` when that gives a cleaner bounded surface.
@@ -204,6 +212,8 @@ For `T1.7` and later harness work, the minimum local command surface is:
 - `npm run test:fixtures -- --fixture <fixture-id>`
 - `npm run test:fixtures -- --family <family>`
 - `npm run check:goldens -- --fixture <fixture-id>`
+- `npm run workflow:preflight -- --task <task-id>`
+- `npm run workflow:preflight -- --process <surface> --stage review`
 - `codex`
 - `codex review --uncommitted`
 - `codex review --base <branch>`

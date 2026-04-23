@@ -1,0 +1,7 @@
+{
+	"id": "process_surface_clean",
+	"args": ["--process", "workflow-preflight"],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "diff_mode: none"},
+	"stderr": {"kind": "empty"}
+}

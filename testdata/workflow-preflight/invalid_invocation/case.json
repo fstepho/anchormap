@@ -1,0 +1,7 @@
+{
+	"id": "invalid_invocation",
+	"args": ["--task", "T1.1", "--process", "workflow-preflight"],
+	"exit_code": 2,
+	"stdout": {"kind": "empty"},
+	"stderr": {"kind": "contains", "value": "preflight: invalid_invocation: provide exactly one of --task or --process"}
+}

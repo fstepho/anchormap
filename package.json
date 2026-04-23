@@ -22,7 +22,8 @@
 		"test": "npm run test:unit",
 		"test:fixtures": "npm run build && node dist/harness/fixture-runner.js",
 		"test:fixtures:all": "npm run test:fixtures",
-		"test:unit": "npm run build && node --test \"dist/**/*.test.js\""
+		"test:unit": "npm run build && node --test \"dist/**/*.test.js\"",
+		"workflow:preflight": "sh scripts/workflow-preflight.sh"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.12",

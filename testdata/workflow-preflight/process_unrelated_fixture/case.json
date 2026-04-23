@@ -1,0 +1,8 @@
+{
+	"id": "process_unrelated_fixture",
+	"args": ["--process", "workflow-preflight", "--stage", "review"],
+	"changed_files": ["fixtures/unrelated-family/golden.json"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: process_surface_unrelated_fixtures: process review diff contains fixture files outside the named process surface"}
+}

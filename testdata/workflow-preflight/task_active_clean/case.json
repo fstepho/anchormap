@@ -1,0 +1,7 @@
+{
+	"id": "task_active_clean",
+	"args": ["--task", "T1.1"],
+	"exit_code": 0,
+	"stdout": {"kind": "contains", "value": "diff_mode: none"},
+	"stderr": {"kind": "empty"}
+}

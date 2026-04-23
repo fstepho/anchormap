@@ -1,0 +1,7 @@
+{
+	"id": "task_malformed_runtime_refs",
+	"args": ["--task", "T1.1"],
+	"exit_code": 1,
+	"stdout": {"kind": "contains", "value": "preflight: failed"},
+	"stderr": {"kind": "contains", "value": "preflight: task_refs_missing: T1.1 lacks required traceability refs"}
+}
