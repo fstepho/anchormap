@@ -8,17 +8,18 @@ You are the orchestrator for the target task.
 1. Identify the task ID from the user's request. Accepted forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). For spikes, apply the `docs/operating-model.md` §17 discipline: produce a bounded report with question, protocol, result, decision, and consequences - not hidden product implementation. If no explicit ID is provided, stop and ask.
 2. Read, in order:
    - `docs/operating-model.md`
-   - `docs/contract.md`
-   - `docs/design.md`
-   - `docs/evals.md`
-3. Read `docs/tasks.md` and locate both:
+   - `docs/tasks.md`
+3. Locate both:
    - the task block under the heading `### <TASK_ID> ` (up to the next `### ` or `## `)
    - the `## Execution State` section for current progress context
-4. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
-5. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
-6. If the task or bounded files touch parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior, read the relevant accepted ADRs in `docs/adr/` before editing. Accepted ADRs are binding unless the task is explicitly about updating that ADR surface.
-7. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
-8. Before the first implementation edit, ensure `docs/tasks.md` `## Execution State` identifies the target task in `Current active task`. Apply this routine start-of-task sync directly in the same bounded patch; do not bounce to `update-tasks` just for cursor alignment. If you edit `docs/tasks.md`, run `validate-tasks` before returning.
+4. Choose the reading mode:
+   - `standard` for ordinary bounded implementation: read only the `docs/contract.md`, `docs/design.md`, and `docs/evals.md` sections referenced by the task block.
+   - `critical` for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, repo-local review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: read the full `docs/contract.md`, `docs/design.md`, `docs/evals.md`, plus relevant accepted ADRs in `docs/adr/`.
+5. If the task block does not provide enough contract/design/eval references to support standard mode, classify the gap before patching instead of guessing.
+6. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
+7. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
+8. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
+9. Before the first implementation edit, ensure `docs/tasks.md` `## Execution State` identifies the target task in `Current active task`. Apply this routine start-of-task sync directly in the same bounded patch; do not bounce to `update-tasks` just for cursor alignment. If you edit `docs/tasks.md`, run `validate-tasks` before returning.
 
 Before coding:
 - state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
@@ -30,7 +31,7 @@ Execution model:
 - keep `docs/tasks.md` and the normative docs as the only source of truth
 - do not create a parallel planning system
 - implementation is local in the main agent by default
-- delegate only if the task is large or risky enough that a bounded subagent materially improves the result
+- delegate only if the runtime explicitly provides subagents and the task is large or risky enough that a bounded subagent materially improves the result
 - if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, and restrict work to the target task
 - if an implementation subagent is alive, do not edit files in parallel in the main agent
 - if a subagent times out, either wait again or close it before making local edits

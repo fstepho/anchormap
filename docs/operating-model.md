@@ -930,13 +930,14 @@ Sortie attendue : tâches trop larges, dépendances manquantes, critères de sor
 
 #### Diff review
 
-Question : le diff satisfait-il la tâche sans violer le contrat ni modifier du comportement hors scope ?
+Question : le diff satisfait-il la tâche ou la maintenance process bornée sans
+violer le contrat ni modifier du comportement hors scope ?
 
 Sortie attendue : violations de contrat, tests manquants, mutation cachée, scope creep.
 
 ### 14.2 Règles de review de diff
 
-Une review de diff doit répondre à ces questions :
+Une review de diff task-scoped doit répondre à ces questions :
 
 - quelle tâche est visée ?
 - quelles sections du contrat sont impactées ?
@@ -948,6 +949,18 @@ Une review de diff doit répondre à ces questions :
 - les erreurs et cas d'échec sont-ils couverts ?
 - les limites connues sont-elles documentées ?
 
+Une review de diff process-maintenance doit répondre à ces questions :
+
+- quelle surface process est visée ?
+- quelles sections de `operating-model.md`, `AGENTS.md`, `agent-loop.md`,
+  `code-review.md`, des skills ou des ADRs sont impactées ?
+- le diff modifie-t-il du comportement runtime, du scope produit, le contrat ou
+  les evals ?
+- le diff crée-t-il une autorité concurrente ou une contradiction avec la
+  hiérarchie documentaire ?
+- les invariants de review fraîche, de classification et de bornage restent-ils
+  préservés ?
+
 Chaque finding de review doit ensuite être exprimé avec :
 
 - une classification primaire selon la section 10 ;
@@ -958,7 +971,8 @@ Le protocole repo exige une **fresh review session Codex** pour chaque passe de
 review.
 
 Une fresh review session est une session Codex dédiée à la review d'un unique
-diff cumulé borné à une tâche.
+diff cumulé borné à une tâche, ou d'un unique diff de maintenance process borné
+qui ne modifie pas le comportement runtime.
 
 Entrées autorisées :
 
@@ -975,7 +989,7 @@ enregistrer une **review decision**.
 
 La review decision doit ensuite restater explicitement :
 
-- la tâche reviewée ;
+- la tâche reviewée, ou la surface de maintenance process reviewée ;
 - le mode de review (`standard` ou `critical`) ;
 - les checks exécutés lorsque cette information est disponible ;
 - soit les findings actionnables, soit l'absence explicite de findings ;
@@ -986,6 +1000,8 @@ La review decision doit ensuite restater explicitement :
 - classer le résultat en `clean verdict`, `actionable findings` ou `blocked` ;
 - mapper chaque finding actionnable natif vers exactement une classification primaire selon la section 10 ;
 - indiquer séparément pour chaque finding actionnable s'il est `bloquant` ou `non bloquant` ;
+- pour un `clean verdict` task-scoped, router vers la transition de tâche seulement si la définition de done de §19.1 est satisfaite ;
+- pour un `clean verdict` process-maintenance, ne pas marquer de tâche done et ne pas modifier `docs/tasks.md` sauf si la maintenance change explicitement le plan de tâches ;
 - ne pas inventer de finding supplémentaire au-delà de la sortie native ;
 - ne pas utiliser la review decision comme un second moteur de review.
 
@@ -1000,13 +1016,19 @@ Le protocole local distingue deux modes :
 
 Règles :
 
-- les deux modes reviewent le diff cumulé complet de la tâche ;
+- les deux modes reviewent le diff cumulé complet de la tâche ou de la surface
+  de maintenance process ;
 - les deux modes doivent lister les nouveaux invariants introduits par le diff ;
 - les deux modes doivent mapper chaque invariant nouveau vers un check existant ou un check de falsification dérivé par le reviewer ;
-- si la review est lancée sans task ID explicite dans le prompt runtime, elle doit prendre `docs/tasks.md` `## Execution State` -> `Current active task` comme ancre de tâche ; si cette valeur est absente, ambiguë ou invalide, la review doit s'arrêter au lieu de deviner ;
+- si la review est lancée sans task ID explicite dans le prompt runtime, elle
+  doit d'abord déterminer si le diff est une maintenance process bornée ; si
+  oui, cette surface process devient le scope de review ; sinon, elle doit
+  prendre `docs/tasks.md` `## Execution State` -> `Current active task` comme
+  ancre de tâche ; si aucune surface process bornée ni tâche active exploitable
+  n'existe, la review doit s'arrêter au lieu de deviner ;
 - les findings de review viennent d'une fresh review session Codex ;
 - la guidance de review durable vit dans `AGENTS.md` et `docs/code-review.md`, pas dans des prompts runtime routiniers ;
-- `codex review --uncommitted` n'est autorisé que si le worktree est strictement borné au diff cumulé de la tâche ; sinon utiliser une surface bornée via `--base` ou `--commit` ;
+- `codex review --uncommitted` n'est autorisé que si le worktree est strictement borné au diff cumulé de la tâche ou de la maintenance process ; sinon utiliser une surface bornée via `--base` ou `--commit` ;
 - une session interactive `codex` n'est autorisée comme surface de review que si elle est fraîche et que la review est son premier work step ;
 - la review decision consomme les findings de review et les mappe vers l'état de boucle ; elle ne remplace pas la review et ne produit pas de finding nouveau ;
 - aucune modification de code n'est autorisée avant que la review decision soit explicite ;
@@ -1194,15 +1216,15 @@ Retour attendu :
 ### 20.3 Review de diff
 
 ```text
-Review le diff cumulé complet de la tâche <TASK_ID> uniquement contre la tâche <TASK_ID> et docs/contract.md.
+Review le diff cumulé complet de la tâche <TASK_ID> ou de la surface process <PROCESS_SURFACE> uniquement contre cette tâche ou cette surface et les documents normatifs applicables.
 
 À chaque passe de review :
-- inspecte le diff cumulé complet depuis le début de la tâche, pas seulement le dernier delta de correction ;
+- inspecte le diff cumulé complet depuis le début de la tâche ou de la maintenance process, pas seulement le dernier delta de correction ;
 - si c'est une deuxième passe ou plus, accorde une attention supplémentaire aux fichiers modifiés depuis la review précédente tout en re-reviewant le diff cumulé complet.
 - exécute la passe dans une fresh review session Codex ;
 - garde la guidance de review durable dans `AGENTS.md` et `docs/code-review.md`, pas dans un prompt ad hoc ;
 - n'utilise aucun wrapper qui relit les fichiers de session Codex ni aucun moteur alternatif.
-- si aucun task ID explicite n'est donné au lancement, ancre la review sur `docs/tasks.md` `## Execution State` -> `Current active task`, ou stoppe si cette valeur n'est pas exploitable.
+- si aucun task ID explicite n'est donné au lancement, détermine d'abord si le diff est une maintenance process bornée ; si oui, review cette surface process ; sinon ancre la review sur `docs/tasks.md` `## Execution State` -> `Current active task`, ou stoppe si cette valeur n'est pas exploitable.
 - enregistre une review decision explicite immédiatement après les findings, et avant toute modification de code.
 - si la surface d'entrée est `codex review`, la review decision est enregistrée juste après lecture de la sortie.
 - si la surface d'entrée est une session interactive `codex`, la même session peut émettre la review decision.

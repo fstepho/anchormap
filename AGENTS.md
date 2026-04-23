@@ -2,15 +2,30 @@
 
 This repo is document-driven. The working mode is `contract-first`, `eval-driven`, `scope-closed`.
 
-## Required Reading At The Start Of Each Task
+## Work Intake
+
+Start every request by deciding whether it is:
+
+- a product task from `docs/tasks.md`;
+- process-doc or ADR maintenance;
+- review, fixture diagnosis, or task-plan maintenance.
+
+For product implementation, identify the explicit target task before coding.
+For process-doc maintenance, classify the reason first, bound the files being
+changed, and do not touch runtime behavior.
+
+### Standard Path
+
+Use this path for ordinary bounded implementation work.
 
 Read in this order:
 
 1. `docs/operating-model.md`
-2. `docs/contract.md`
-3. `docs/design.md`
-4. `docs/evals.md`
-5. `docs/tasks.md`
+2. `docs/tasks.md`
+3. the target task block in `docs/tasks.md`
+4. the referenced sections of `docs/contract.md`
+5. the referenced sections of `docs/design.md`
+6. the referenced fixtures, eval families, or gates in `docs/evals.md`
 
 Do not start coding until you have identified:
 
@@ -18,6 +33,16 @@ Do not start coding until you have identified:
 - the relevant sections of `docs/contract.md`;
 - the relevant sections of `docs/design.md`;
 - the relevant fixtures, eval families, or gates in `docs/evals.md`.
+
+If the task block does not provide enough traceability to identify those
+sections, classify the gap before patching.
+
+### Critical Path
+
+Read the full `docs/contract.md`, `docs/design.md`, `docs/evals.md`, and the
+relevant accepted ADRs before changing parser, renderer, CLI boundary,
+filesystem mutation, packaging, test-harness behavior, repo-local
+review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`.
 
 When present, use `## Execution State` in `docs/tasks.md` as the live execution
 cursor for current task, completed tasks, blocked tasks, and open deviations.
@@ -39,7 +64,9 @@ Use the document hierarchy defined in `docs/operating-model.md`.
 
 ## ADRs
 
-Read `docs/adr/` before changing parser, renderer, CLI, filesystem mutation, packaging, or test-harness behavior.
+Read the relevant accepted ADRs before changing parser, renderer, CLI,
+filesystem mutation, packaging, test-harness behavior, or repo-local
+review/orchestration mechanics.
 
 Accepted ADRs are binding.
 
@@ -49,11 +76,11 @@ If a change would supersede an accepted ADR, classify the deviation first and th
 
 ## Repo Execution Rules
 
-- Treat each request as a bounded task, ideally a `Tn.m` identifier from `docs/tasks.md`.
+- Treat each product implementation request as a bounded task, ideally a `Tn.m` identifier from `docs/tasks.md`.
 - If a request spans multiple tasks, split it and handle only one task at a time.
 - Use `docs/tasks.md` `## Execution State` to understand repo progress and blockers, but do not auto-pick or switch tasks unless the user explicitly asks.
-- Before any patch, state which task is targeted and which contract, design, and eval sections bound the change.
-- If a request is process-doc maintenance rather than a product task, classify the deviation first and bound the files being changed.
+- Before any patch, state which task or process-maintenance change is targeted and which contract, design, eval, operating-model, or ADR sections bound the change.
+- If a request is process-doc maintenance rather than a product task, classify the reason first and bound the files being changed.
 - Separate problem diagnosis from fix direction: recommendations must align with the patch intent and should complete a clean replacement rather than reintroduce fallback or legacy paths without explicit justification.
 - Do not modify `docs/contract.md` without explicit instruction.
 - Do not expand scope, weaken `docs/evals.md`, or introduce observable behavior without explicit traceability to `docs/contract.md` and `docs/evals.md`.
@@ -75,7 +102,8 @@ handoff gate and classify the failure as `tooling problem`.
 ## Fresh Review Session
 
 A fresh review session is a Codex session dedicated to reviewing exactly one
-task-scoped cumulative diff.
+task-scoped cumulative diff, or one bounded process-maintenance diff that does
+not change runtime behavior.
 
 Accepted entry surfaces:
 
@@ -84,8 +112,8 @@ Accepted entry surfaces:
 - `codex review --commit <sha>`
 - a fresh interactive `codex` session whose first work step is review
 
-Keep the review bounded to one task and follow `docs/code-review.md` for
-review-scoped guidance.
+Keep the review bounded to one task or process-maintenance surface and follow
+`docs/code-review.md` for review-scoped guidance.
 
 After the review findings are available, record a `review decision` before any
 code change:
@@ -107,9 +135,9 @@ Work in small, verifiable steps.
 
 Before implementation work:
 
-- identify the task ID in `docs/tasks.md`;
-- identify the relevant contract sections;
-- identify the relevant fixtures, eval families, or gates;
+- identify the task ID in `docs/tasks.md`, or identify the bounded process-doc maintenance surface;
+- identify the relevant contract sections, or the relevant operating-model/ADR sections for process work;
+- identify the relevant fixtures, eval families, gates, or explain why none apply;
 - state the smallest checks that should fail or pass.
 
 During implementation:

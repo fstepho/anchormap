@@ -2,7 +2,7 @@
 
 Status: helper note, durable repo-local guidance for fresh Codex review sessions
 
-Scope: one bounded task diff at a time
+Scope: one bounded task diff, or one bounded process-maintenance diff, at a time
 
 Precedence: if this file conflicts with `docs/operating-model.md`,
 `docs/contract.md`, `docs/design.md`, `docs/evals.md`, or `docs/tasks.md`, the
@@ -17,7 +17,8 @@ Keep this guidance here and in `AGENTS.md`, not in ad hoc runtime prompts.
 
 ## Review Input
 
-Review exactly one task-scoped cumulative diff.
+Review exactly one task-scoped cumulative diff, or one bounded
+process-maintenance diff that does not change runtime behavior.
 
 Read, in order:
 
@@ -29,21 +30,27 @@ Read, in order:
 
 Then identify:
 
-- the target task ID;
-- the relevant task block in `docs/tasks.md`;
-- the relevant contract, design, and eval references;
+- the target task ID and relevant task block in `docs/tasks.md`, or the
+  bounded process-maintenance surface;
+- the relevant contract, design, and eval references, or the relevant
+  operating-model / ADR references for process maintenance;
 - the accepted ADRs when the diff touches parser, renderer, CLI boundary,
-  filesystem mutation, packaging, or test-harness behavior.
+  filesystem mutation, packaging, test-harness behavior, or repo-local
+  review/orchestration mechanics.
 
-If the review was launched without an explicit task ID in the runtime prompt,
-use `docs/tasks.md` `## Execution State` -> `Current active task` as the task
-anchor. If it is absent, invalid, or ambiguous, stop rather than guess.
+If the review was launched without an explicit task ID, first determine whether
+the diff is a bounded process-maintenance diff. If it is, use that process
+surface as the review scope. Otherwise, use `docs/tasks.md`
+`## Execution State` -> `Current active task` as the task anchor. If neither a
+bounded process surface nor a usable active task can be identified, stop rather
+than guess.
 
 ## Review Method
 
-- Review the full cumulative diff for the task, not only the latest follow-up.
-- Keep the review bounded to the target task. Do not propose new product
-  features.
+- Review the full cumulative diff for the task or process-maintenance surface,
+  not only the latest follow-up.
+- Keep the review bounded to the target task or process-maintenance surface.
+  Do not propose new product features.
 - List the new invariants introduced by the diff.
 - Map each new invariant to either:
   - an existing repo check that already covers it; or
@@ -54,16 +61,21 @@ anchor. If it is absent, invalid, or ambiguous, stop rather than guess.
   - rerun and overwrite behavior;
   - isolation between runs, fixtures, or summaries;
   - misleading or incomplete archived artifacts.
+- For repo-local review/orchestration diffs, explicitly pressure-test:
+  - whether `AGENTS.md` remains an entry map rather than a competing authority;
+  - whether the standard path still identifies contract/design/eval refs before patching;
+  - whether critical surfaces still force full-doc and ADR reading;
+  - whether fresh Codex review remains the only bug-finding review engine.
 
 ## Review Output
 
 A fresh Codex review session is the authoritative bug-finding pass.
 
-Keep the review output task-bounded and findings-focused.
+Keep the review output bounded and findings-focused.
 
 Prefer output that makes the following easy to recover:
 
-- the target task ID;
+- the target task ID or process-maintenance surface;
 - the review mode when it is clear from the surface;
 - the checks or falsification steps actually exercised;
 - findings with file and line references when applicable;
@@ -83,6 +95,9 @@ change:
 The `review decision` records repo-local classification, `blocking` /
 `non-blocking`, and task-state routing as defined by
 `docs/operating-model.md` and `docs/agent-loop.md`.
+For a clean process-maintenance review, the routing must not mark any task
+done or update `docs/tasks.md` unless the maintenance explicitly changed the
+task plan.
 
 If the entry surface is a fresh interactive `codex` session, the same session
 may emit the `review decision`.
