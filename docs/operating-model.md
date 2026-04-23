@@ -70,6 +70,20 @@ Conséquences :
 - le harness doit rendre le comportement observable par captures `stdout` / `stderr`, codes de sortie, rapports de mutation, goldens explicites et diffs lisibles ;
 - le travail humain prioritaire consiste à cadrer, borner et vérifier ; le travail agentique consiste à exécuter à l'intérieur de ces bornes.
 
+`AGENTS.md` peut contenir seulement :
+
+- le classificateur d'entrée des demandes ;
+- les points d'entrée de lecture standard et critique ;
+- la carte d'autorité des documents ;
+- les rappels de hard stop nécessaires avant patch ;
+- les liens vers les helpers repo-locaux.
+
+Il ne doit pas dupliquer les protocoles complets, la définition de done, la
+taxonomie des écarts, le routage de boucle, la politique de review ou les
+règles de contrat et d'evals. Toute règle durable doit être modifiée dans le
+document d'autorité correspondant, puis résumée ou pointée depuis `AGENTS.md`
+si une entrée agentique en a besoin.
+
 ### 2.2 Fail fast
 
 Le projet préfère les échecs précoces, locaux et classifiables aux échecs tardifs et ambigus.
@@ -604,6 +618,11 @@ Règles :
 - `design.md` décrit l'architecture actuelle ;
 - les ADR expliquent pourquoi une option de stack ou d'architecture a été choisie ;
 - une ADR acceptée est contraignante jusqu'à remplacement explicite ;
+- aucune dépendance coeur ou stratégie structurante ne doit contredire une ADR
+  acceptée ;
+- remplacer une stratégie de parser, renderer, CLI, packaging, mutation
+  filesystem ou fixture-harness exige de créer ou mettre à jour l'ADR
+  correspondante lorsque le changement supplante une décision acceptée ;
 - une implémentation ou un refactor ne doit pas contourner silencieusement une ADR acceptée.
 
 ### 8.7 Pré-production : simplifier plutôt que compatibiliser
@@ -1056,7 +1075,9 @@ Règles :
   ancre de tâche ; si aucune surface process bornée ni tâche active exploitable
   n'existe, la review doit s'arrêter au lieu de deviner ;
 - les findings de review viennent d'une fresh review session Codex ;
-- la guidance de review durable vit dans `AGENTS.md` et `docs/code-review.md`, pas dans des prompts runtime routiniers ;
+- la guidance de review durable vit dans `docs/code-review.md`, avec des
+  pointeurs d'entrée depuis `AGENTS.md`, pas dans des prompts runtime
+  routiniers ;
 - `codex review --uncommitted` n'est autorisé que si le worktree est strictement borné au diff cumulé de la tâche ou de la maintenance process ; sinon utiliser une surface bornée via `--base` ou `--commit` ;
 - une session interactive `codex` n'est autorisée comme surface de review que si elle est fraîche et que la review est son premier work step ;
 - la review decision consomme les findings de review et les mappe vers l'état de boucle ; elle vit dans le handoff du coordinateur ou commentaire PR équivalent, sauf sur le chemin interactif frais où la session de review peut l'émettre directement ; elle ne remplace pas la review et ne produit pas de finding nouveau ;
@@ -1251,7 +1272,8 @@ Review le diff cumulé complet de la tâche <TASK_ID> ou de la surface process <
 - inspecte le diff cumulé complet depuis le début de la tâche ou de la maintenance process, pas seulement le dernier delta de correction ;
 - si c'est une deuxième passe ou plus, accorde une attention supplémentaire aux fichiers modifiés depuis la review précédente tout en re-reviewant le diff cumulé complet.
 - exécute la passe dans une fresh review session Codex ;
-- garde la guidance de review durable dans `AGENTS.md` et `docs/code-review.md`, pas dans un prompt ad hoc ;
+- garde la guidance de review durable dans `docs/code-review.md`, avec des
+  pointeurs d'entrée depuis `AGENTS.md`, pas dans un prompt ad hoc ;
 - n'utilise aucun wrapper qui relit les fichiers de session Codex ni aucun moteur alternatif.
 - si aucun task ID explicite n'est donné au lancement, détermine d'abord si le diff est une maintenance process bornée ; si oui, review cette surface process ; sinon ancre la review sur `docs/tasks.md` `## Execution State` -> `Current active task`, ou stoppe si cette valeur n'est pas exploitable.
 - émets une review decision explicite immédiatement après les findings, et avant toute modification de code.

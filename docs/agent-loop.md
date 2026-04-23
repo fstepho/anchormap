@@ -26,6 +26,9 @@ It does not replace the normative process. Use:
 - `docs/operating-model.md` for deviation taxonomy, review protocol, and task-level done;
 - `docs/tasks.md` for the task plan and the live `## Execution State` cursor.
 
+Do not copy this loop into `AGENTS.md`. `AGENTS.md` should point here for
+step-by-step execution details.
+
 ## Reading Modes
 
 The workflow has two reading modes.
@@ -81,7 +84,9 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
    - `codex review --uncommitted` when the worktree contains only that bounded diff;
    - `codex review --base <branch>` or `codex review --commit <sha>` when that gives a cleaner bounded surface.
    - `codex` interactive when the session is started fresh for review and review is its first work step.
-   Keep routine review criteria in `AGENTS.md` and `docs/code-review.md`; do not depend on ad hoc prompt arguments for the normal loop.
+   Keep routine review criteria in `docs/code-review.md`, with only entry
+   pointers in `AGENTS.md`; do not depend on ad hoc prompt arguments for the
+   normal loop.
    After launch, wait for the final reviewer verdict.
    Do not classify `tooling problem` from review silence alone while the process is still alive.
 9. Emit the `review decision` immediately after the review findings and before any code change:
@@ -132,7 +137,8 @@ skills themselves.
 - Codex review capabilities are the only bug-finding review engine.
 - launch review in its own fresh review session, not as a same-session self-review and not through a wrapper that reparses session files.
 - when using `--uncommitted`, the worktree must contain only the current task's cumulative diff or the bounded process-maintenance diff.
-- keep routine review criteria durable in `AGENTS.md` and `docs/code-review.md`.
+- keep routine review criteria durable in `docs/code-review.md`, with only
+  entry pointers in `AGENTS.md`.
 - when the review is launched without an explicit task ID, the fresh review session must first determine whether the diff is a bounded process-maintenance diff; if so, it reviews that process surface. Otherwise it may anchor on `docs/tasks.md` `## Execution State` -> `Current active task`, or stop if that value is not usable.
 - the fresh review session must list the new invariants introduced by the diff and state how each one was verified or falsified before the task is considered done.
 - the `review decision` lives in the coordinator handoff or PR comment equivalent, except when a fresh interactive review session emits it directly.
@@ -212,7 +218,8 @@ Notes:
 - `npm run check:goldens` runs only fixtures whose manifest declares `stdout.kind = "golden"` and fails closed when the selection contains none;
 - fixture manifests may point either to the built product CLI when available or to `node dist/cli-stub.js` while product implementation is still in progress.
 - `codex` is allowed when started as a fresh interactive review session whose first work step is review.
-- `codex review` commands assume the repo-specific guidance already lives in `AGENTS.md` and `docs/code-review.md`.
+- `codex review` commands assume repo-specific review criteria live in
+  `docs/code-review.md`, with entry pointers from `AGENTS.md`.
 - these commands are the minimum starting point for review, not the maximum allowed review surface. A reviewer may add bounded falsification checks when the task introduces new invariants not already stressed by the existing commands.
 - when a task touches files covered by `npm run lint`, run `npm run lint` before concluding the implementation pass or marking the review `done`, unless the changed surface is explicitly outside that command's scope.
 

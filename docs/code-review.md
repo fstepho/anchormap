@@ -13,7 +13,8 @@ normative documents win.
 This file captures the repo-specific review criteria that should stay durable
 across Codex review sessions.
 
-Keep this guidance here and in `AGENTS.md`, not in ad hoc runtime prompts.
+Keep this guidance here, with entry pointers from `AGENTS.md`, not in ad hoc
+runtime prompts.
 
 ## Review Input
 
@@ -63,6 +64,9 @@ than guess.
   - misleading or incomplete archived artifacts.
 - For repo-local review/orchestration diffs, explicitly pressure-test:
   - whether `AGENTS.md` remains an entry map rather than a competing authority;
+  - whether detailed process rules live in `docs/operating-model.md`,
+    `docs/agent-loop.md`, or `docs/code-review.md` rather than being duplicated
+    in `AGENTS.md`;
   - whether the standard path still identifies contract/design/eval refs before patching;
   - whether critical surfaces still force full-doc and ADR reading;
   - whether fresh Codex review remains the only bug-finding review engine.
