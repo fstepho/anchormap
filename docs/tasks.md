@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T3.4 — Implement ScanResult view model and analysis_health pure function`
-- Last completed task: `T3.3 — Implement canonical sorted collections and finding model`
+- Next executable product task after blocker clearance: `T3.5 — Implement canonical JSON renderer`
+- Last completed task: `T3.4 — Implement ScanResult view model and analysis_health pure function`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -52,6 +52,7 @@
   - `T3.1 — Implement AnchorId validation`
   - `T3.2 — Implement RepoPath, UserPathArg, and import candidate normalization`
   - `T3.3 — Implement canonical sorted collections and finding model`
+  - `T3.4 — Implement ScanResult view model and analysis_health pure function`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
