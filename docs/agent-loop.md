@@ -130,8 +130,18 @@ diffs, and carries only compact task results across task boundaries.
    - if unrelated work is present and cannot be isolated without guessing,
      stop with `blocked_execution_state`.
 2. Read `docs/tasks.md` `## Execution State` and select the next executable
-   product task from the cursor and task plan. Do not use Git history, clock,
-   cache, network, environment, or a sidecar file to choose the task.
+   product task from the cursor and task plan. If that cursor task is blocked
+   only by explicit unfinished items in `docs/tasks.md`, select the next
+   executable dependency or closure needed to unblock it instead:
+   - use only `Dependencies`, `Blocks`, and `Required closure after result`;
+   - allow product tasks, spikes, and bounded ADR/process closure tasks when
+     they are explicit blockers or closures;
+   - preserve spike discipline: when a selected spike requires explicit closure,
+     complete that closure before returning to the blocked cursor;
+   - keep the original cursor recoverable through the normal `docs/tasks.md`
+     execution-state transition, not a sidecar file.
+   Do not use Git history, clock, cache, network, environment, or a sidecar file
+   to choose the task.
 3. Launch a fresh implementation session for exactly that task, preferably
    with `codex -p autopilot exec` or an equivalent fresh Codex session. Do not
    reuse the coordinator context as the implementation context.
@@ -162,15 +172,17 @@ diffs, and carries only compact task results across task boundaries.
     checks, verdict, stop reason, commit SHA, and next cursor. Do not carry
     full implementation logs, full diffs, file contents, or review transcripts
     into the next task.
-12. Repeat from step 2 until there is no next executable product task or a hard
-   stop occurs.
+12. Repeat from step 2 until there is no next executable product task,
+   dependency, or closure item, or a hard stop occurs.
 
 Autopilot stops immediately on any hard stop from the normal loop, any required
 `docs/contract.md` change, any broader task-plan rewrite, any failed required
 check, any non-clean fifth review decision for the task, any
 unlaunchable fresh implementation, rework, or review session, any incomplete
 implementation handoff, any need for the coordinator to inspect the full task
-context itself, or any Git conflict or commit failure.
+context itself, any ambiguous, cyclic, missing, or untraceable dependency chain,
+any blocker that cannot be represented as a bounded task, spike, or closure item
+in `docs/tasks.md`, or any Git conflict or commit failure.
 
 ## Orchestrator Routing
 
@@ -203,7 +215,7 @@ skills themselves.
 | autopilot implementation session | incomplete handoff | Stop with `blocked_execution_state`; do not inspect the full task context in the coordinator. |
 | autopilot review decision | actionable findings before review 5 | Launch a fresh rework session for the same task; after its compact handoff, start the next fresh review session on the full cumulative diff. |
 | autopilot review decision | actionable findings on review 5 | Stop with `rework_cap_exceeded`; do not continue to the next task. |
-| autopilot task completion | clean verdict and §19.1 satisfied | Apply the routine completion transition, verify the task-scoped diff, commit with the task ID, then select the next executable product task. |
+| autopilot task completion | clean verdict and §19.1 satisfied | Apply the routine completion transition, verify the task-scoped diff, commit with the task ID, then select the next executable product task or explicit dependency/closure item needed to unblock the cursor. |
 | autopilot approval | auto-reviewed and approved | Continue the current `codex review`, `git add`, or `git commit` step. |
 | autopilot approval | routed to human, denied, or ineffective | Stop with `tooling problem`; do not continue to the next task. |
 

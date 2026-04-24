@@ -1219,6 +1219,10 @@ Le mode `autopilot` :
 - utilise `docs/tasks.md` `## Execution State` comme source de vérité durable ;
 - sélectionne automatiquement la prochaine tâche produit exécutable indiquée
   par le plan de tâches et le curseur d'exécution ;
+- si cette tâche curseur n'est pas exécutable uniquement parce que des
+  dépendances explicites restent incomplètes dans `docs/tasks.md`, peut
+  sélectionner la prochaine dépendance ou fermeture exécutable nécessaire pour
+  débloquer ce curseur ;
 - lance une fresh implementation session Codex pour exactement cette tâche ;
 - fait produire par cette session un handoff borné : task ID, fichiers touchés,
   checks exécutés, statut, et état de préparation à la review ;
@@ -1233,6 +1237,25 @@ Le mode `autopilot` :
   tâche dans le message de commit ;
 - recommence avec la prochaine tâche exécutable.
 
+La sélection de dépendance en mode `autopilot` est strictement bornée :
+
+- elle n'est autorisée que dans la boucle `autopilot` explicite ;
+- elle ne peut lire comme source de graphe que `docs/tasks.md` :
+  `Dependencies`, `Blocks` et `Required closure after result` ;
+- elle peut sélectionner une tâche produit, un spike, ou une tâche bornée de
+  fermeture ADR/process si cet item est explicitement requis pour débloquer le
+  curseur produit courant ;
+- elle ne peut sélectionner qu'un item exécutable à la fois, et cet item devient
+  la seule tâche active jusqu'à sa clôture ou son blocage ;
+- lorsqu'un spike sélectionné produit une `Required closure after result`, cette
+  fermeture explicite doit être traitée avant de revenir au curseur produit
+  bloqué par le spike ;
+- après chaque clôture de dépendance ou de fermeture, la transition normale de
+  `docs/tasks.md` doit garder le curseur produit d'origine récupérable ou le
+  reprendre si toutes ses dépendances explicites sont closes ;
+- aucun fichier sidecar ni état externe ne doit enregistrer la chaîne de
+  dépendances.
+
 La session coordinatrice peut retenir entre deux tâches seulement : task ID,
 statut, checks, verdict, stop reason, commit SHA et prochain curseur. Elle ne
 doit pas retenir les logs complets d'implémentation, les diffs complets, les
@@ -1242,6 +1265,9 @@ Le mode `autopilot` doit s'arrêter immédiatement lorsque l'un des cas suivants
 survient :
 
 - aucune prochaine tâche exécutable n'est déterminable depuis `docs/tasks.md` ;
+- la chaîne de dépendances ou de fermetures explicites est ambiguë, cyclique,
+  manquante, non traçable, ou ne peut pas être représentée comme une tâche,
+  un spike ou une fermeture bornée dans `docs/tasks.md` ;
 - le worktree ne permet pas d'isoler un diff cumulé borné à la tâche courante ;
 - une fresh implementation ou rework session ne peut pas être lancée ;
 - le handoff d'implémentation est incomplet ou ne permet pas d'identifier un
