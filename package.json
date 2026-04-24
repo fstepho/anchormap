@@ -23,8 +23,11 @@
 		"lint": "biome check src package.json tsconfig.json biome.json",
 		"lint:rules": "biome lint src package.json tsconfig.json biome.json",
 		"test": "npm run test:unit",
+		"test:docs": "npm run check:docs && npm run build && node --test \"dist/package-scripts.test.js\" \"dist/harness/docs-consistency.test.js\" \"dist/harness/lint-tasks-fixture.test.js\" \"dist/harness/workflow-preflight-fixture.test.js\"",
 		"test:fixtures": "npm run build && node dist/harness/fixture-runner.js",
 		"test:fixtures:all": "npm run test:fixtures",
+		"test:harness": "npm run build && node --test \"dist/cli-stub.test.js\" \"dist/harness/fixture-*.test.js\" \"dist/harness/harness-smoke-fixtures.test.js\"",
+		"test:product": "npm run build && node --test \"dist/bootstrap.test.js\" \"dist/cli/**/*.test.js\" \"dist/domain/**/*.test.js\" \"dist/infra/**/*.test.js\" \"dist/render/**/*.test.js\"",
 		"test:unit": "npm run build && node --test \"dist/**/*.test.js\"",
 		"workflow:preflight": "sh scripts/workflow-preflight.sh"
 	},

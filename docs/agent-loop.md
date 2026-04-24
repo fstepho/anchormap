@@ -338,6 +338,9 @@ For `T1.7` and later harness work, the minimum local command surface is:
 
 - `npm run lint`
 - `npm run test:unit`
+- `npm run test:product`
+- `npm run test:harness`
+- `npm run test:docs`
 - `npm run test:fixtures:all`
 - `npm run test:fixtures -- --fixture <fixture-id>`
 - `npm run test:fixtures -- --family <family>`
@@ -356,6 +359,11 @@ For `T1.7` and later harness work, the minimum local command surface is:
 Notes:
 
 - `npm test` remains the default full unit-test entrypoint and delegates to `npm run test:unit`.
+- `npm run test:product` is the targeted unit-test entrypoint for product code outside the fixture harness and process-doc tooling.
+- `npm run test:harness` is the targeted unit-test entrypoint for fixture harness code and walking-skeleton CLI-stub support.
+- `npm run test:docs` is the targeted check entrypoint for repo-local process-doc tooling, package-script surface changes, command-surface guidance, agent-skill guidance, and docs consistency fixtures.
+- routine `docs/tasks.md` execution-state transitions use `validate-tasks`; do not run `npm run test:docs` only because a task cursor or task state changed.
+- targeted test commands speed up iteration but do not replace the full applicable handoff checks for the touched surface.
 - do not run `node --test` directly on `src/**/*.test.ts`; the repo-local unit-test path is compile-then-run, so targeted unit reruns must go through `npm run test:unit` or an equivalent compiled `dist/**/*.test.js` target.
 - the fixture-runner scripts compile first and then execute the built runner from `dist/`;
 - `npm run test:fixtures:all` scans the runnable fixture corpus under `fixtures/`;

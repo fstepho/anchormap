@@ -19,11 +19,12 @@ You are the orchestrator for the target task.
 6. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
 7. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
 8. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
-9. Before the first implementation edit, ensure `docs/tasks.md` `## Execution State` identifies the target task in `Current active task`. Apply this routine start-of-task sync directly in the same bounded patch; do not bounce to `update-tasks` just for cursor alignment. If you edit `docs/tasks.md`, run `validate-tasks` before returning.
+9. Before the first implementation edit, ensure `docs/tasks.md` `## Execution State` identifies the target task in `Current active task`. Apply this routine start-of-task sync directly in the same bounded patch; do not bounce to `update-tasks` just for cursor alignment. If you edit `docs/tasks.md`, run `validate-tasks` before returning. Routine task cursor or task-state edits do not require `npm run test:docs` unless the same patch changes repo-local process-doc tooling or command-surface guidance.
 
 Before coding:
 - state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
 - state which repo-local static checks apply to the files you expect to touch, and which of them must pass before you return `needs_review`
+- choose applicable checks from the command surface in `docs/agent-loop.md`; prefer the targeted product, harness, docs, or fixture command for early iteration, then run the full applicable handoff checks before returning `needs_review`
 - state any `docs/brief.md` or `docs/adr/` refs used for scope or architectural binding when they are applicable to the task
 - if this is a process-doc or ADR task and the task block does not name contract/design/eval refs, identify the relevant operating-model and ADR refs instead, classify the change as process maintenance, and bound the files being changed
 

@@ -24,7 +24,19 @@ test("package.json exposes the stable repo-local check and harness command surfa
 	});
 	assert.equal(scripts["check:docs"], "sh scripts/check-docs-consistency.sh");
 	assert.equal(scripts.test, "npm run test:unit");
+	assert.equal(
+		scripts["test:docs"],
+		'npm run check:docs && npm run build && node --test "dist/package-scripts.test.js" "dist/harness/docs-consistency.test.js" "dist/harness/lint-tasks-fixture.test.js" "dist/harness/workflow-preflight-fixture.test.js"',
+	);
 	assert.equal(scripts["test:unit"], 'npm run build && node --test "dist/**/*.test.js"');
+	assert.equal(
+		scripts["test:product"],
+		'npm run build && node --test "dist/bootstrap.test.js" "dist/cli/**/*.test.js" "dist/domain/**/*.test.js" "dist/infra/**/*.test.js" "dist/render/**/*.test.js"',
+	);
+	assert.equal(
+		scripts["test:harness"],
+		'npm run build && node --test "dist/cli-stub.test.js" "dist/harness/fixture-*.test.js" "dist/harness/harness-smoke-fixtures.test.js"',
+	);
 	assert.equal(scripts["test:fixtures"], "npm run build && node dist/harness/fixture-runner.js");
 	assert.equal(scripts["test:fixtures:all"], "npm run test:fixtures");
 	assert.equal(scripts["check:goldens"], "npm run test:fixtures -- --goldens-only");
