@@ -29,7 +29,8 @@ function createBufferingWriter(): {
 function createRecordingHandlers(calls: string[]): AnchormapCommandHandlers {
 	function record(command: string): (context: AnchormapCommandContext) => number {
 		return (context) => {
-			calls.push(`${command}:${context.args.join(" ")}`);
+			const suffix = context.scanMode ? `:${context.scanMode}` : "";
+			calls.push(`${command}:${context.args.join(" ")}${suffix}`);
 			return 0;
 		};
 	}
@@ -75,8 +76,8 @@ test("rejects an unknown command before dispatching to supported handlers", () =
 	assert.deepEqual(calls, []);
 });
 
-test("dispatches only the three supported v1 commands", () => {
-	for (const command of ["init", "map", "scan"] as const) {
+test("dispatches init and map argument validation to their command handlers", () => {
+	for (const command of ["init", "map"] as const) {
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 		const calls: string[] = [];
@@ -91,5 +92,60 @@ test("dispatches only the three supported v1 commands", () => {
 		assert.equal(stdout.read(), "");
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(calls, [`${command}:--example`]);
+	}
+});
+
+test("parses supported scan forms before dispatch", () => {
+	const cases: Array<{
+		argv: readonly string[];
+		expectedCall: string;
+	}> = [
+		{ argv: ["scan"], expectedCall: "scan::human" },
+		{ argv: ["scan", "--json"], expectedCall: "scan:--json:json" },
+	];
+
+	for (const { argv, expectedCall } of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
+
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(calls, [expectedCall]);
+	}
+});
+
+test("rejects invalid scan options and combinations before dispatch", () => {
+	const cases: Array<{
+		argv: readonly string[];
+		expectedStderr: RegExp;
+	}> = [
+		{ argv: ["scan", "--unknown"], expectedStderr: /unknown option "--unknown"/ },
+		{ argv: ["scan", "--json", "--json"], expectedStderr: /unsupported option combination/ },
+		{ argv: ["scan", "extra"], expectedStderr: /unsupported option combination/ },
+	];
+
+	for (const { argv, expectedStderr } of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
+
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.match(stderr.read(), expectedStderr);
+		assert.deepEqual(calls, []);
 	}
 });

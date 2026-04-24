@@ -1,4 +1,5 @@
 export type AnchormapCommandName = "init" | "map" | "scan";
+export type ScanOutputMode = "human" | "json";
 
 export interface TextWriter {
 	write(chunk: string): unknown;
@@ -8,6 +9,7 @@ export interface AnchormapCommandContext {
 	args: readonly string[];
 	stdout: TextWriter;
 	stderr: TextWriter;
+	scanMode?: ScanOutputMode;
 }
 
 export type AnchormapCommandHandlers = {
@@ -44,6 +46,21 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 		return 4;
 	}
 
+	if (command === "scan") {
+		const parsedScan = parseScanArgs(args);
+		if (parsedScan.kind === "usage_error") {
+			stderr.write(`anchormap scan: ${parsedScan.message}\n`);
+			return 4;
+		}
+
+		return handlers.scan({
+			args,
+			stdout,
+			stderr,
+			scanMode: parsedScan.mode,
+		});
+	}
+
 	return handlers[command]({
 		args,
 		stdout,
@@ -53,6 +70,30 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 
 function isSupportedCommand(command: string): command is AnchormapCommandName {
 	return SUPPORTED_COMMANDS.has(command as AnchormapCommandName);
+}
+
+type ParsedScanArgs =
+	| { kind: "ok"; mode: ScanOutputMode }
+	| { kind: "usage_error"; message: string };
+
+function parseScanArgs(args: readonly string[]): ParsedScanArgs {
+	if (args.length === 0) {
+		return { kind: "ok", mode: "human" };
+	}
+
+	if (args.length === 1 && args[0] === "--json") {
+		return { kind: "ok", mode: "json" };
+	}
+
+	const unknownOption = args.find((argument) => argument.startsWith("-") && argument !== "--json");
+	if (unknownOption !== undefined) {
+		return { kind: "usage_error", message: `unknown option "${unknownOption}"` };
+	}
+
+	return {
+		kind: "usage_error",
+		message: "unsupported option combination",
+	};
 }
 
 function createNotImplementedHandler(

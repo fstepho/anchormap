@@ -1,0 +1,19 @@
+{
+	"id": "fx70_cli_invalid_option_combination",
+	"family": "B-cli",
+	"purpose": "Unsupported scan option combinations exit with usage error code 4 before reading config or mutating files.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json", "--json"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary"],
+	"groups": ["m2"]
+}

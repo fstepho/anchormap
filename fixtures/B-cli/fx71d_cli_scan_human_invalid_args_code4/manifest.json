@@ -1,0 +1,19 @@
+{
+	"id": "fx71d_cli_scan_human_invalid_args_code4",
+	"family": "B-cli",
+	"purpose": "Human scan invalid arguments exit with usage error code 4 before reading config or mutating files.",
+	"command": ["node", "dist/anchormap.js", "scan", "--unknown"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary"],
+	"groups": ["m2"]
+}
