@@ -1,0 +1,22 @@
+{
+	"id": "fx73_cli_priority_2_over_3",
+	"family": "B-cli",
+	"purpose": "Config failure exits 2 before repo analysis even when a repo failure probe is present.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "priority"],
+	"groups": ["m2"],
+	"fault_injection": {
+		"marker": "priority_config_error_probe"
+	}
+}

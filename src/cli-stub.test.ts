@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -70,6 +70,70 @@ test("scan --json fails with empty stdout when the stub fixture repo is missing 
 		assert.equal(exitCode, 2);
 		assert.equal(stdout.read(), "");
 		assert.match(stderr.read(), /missing specs\/example\.md/);
+	});
+});
+
+test("priority probe returns usage code 4 before config access", () => {
+	withTempRepo((repoDir) => {
+		writeFileSync(resolve(repoDir, ".stub-priority-config-access-mutation.txt"), "config access\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runCliStub(["scan", "--json", "--unknown"], {
+			cwd: repoDir,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(existsSync(resolve(repoDir, ".stub-priority-config-accessed.txt")), false);
+	});
+});
+
+test("priority probe returns config code 2 before repo analysis", () => {
+	withTempRepo((repoDir) => {
+		writeFileSync(resolve(repoDir, ".stub-priority-config-error"), "");
+		writeFileSync(resolve(repoDir, ".stub-priority-repo-error"), "");
+		writeFileSync(resolve(repoDir, ".stub-priority-repo-access-mutation.txt"), "repo access\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runCliStub(["scan", "--json"], {
+			cwd: repoDir,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 2);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(existsSync(resolve(repoDir, ".stub-priority-repo-accessed.txt")), false);
+	});
+});
+
+test("priority probe returns repo code 3 before later internal injection", () => {
+	withTempRepo((repoDir) => {
+		writeFileSync(resolve(repoDir, ".stub-priority-repo-error"), "");
+		writeFileSync(resolve(repoDir, ".stub-priority-internal-error"), "");
+		writeFileSync(
+			resolve(repoDir, ".stub-priority-internal-access-mutation.txt"),
+			"internal access\n",
+		);
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runCliStub(["scan", "--json"], {
+			cwd: repoDir,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(existsSync(resolve(repoDir, ".stub-priority-internal-accessed.txt")), false);
 	});
 });
 

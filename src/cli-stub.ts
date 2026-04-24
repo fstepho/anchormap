@@ -15,6 +15,15 @@ const STUB_SCAN_UNEXPECTED_MUTATION_FILENAME = ".stub-scan-unexpected-mutation.t
 const STUB_SCAN_UNEXPECTED_MUTATION_TARGET = "unexpected.txt";
 const STUB_SCAN_SPEC_SUCCESS_MARKER = "specs/example.md";
 const STUB_SCAN_GRAPH_TARGET = "src/index.ts";
+const STUB_PRIORITY_CONFIG_ERROR_MARKER = ".stub-priority-config-error";
+const STUB_PRIORITY_REPO_ERROR_MARKER = ".stub-priority-repo-error";
+const STUB_PRIORITY_INTERNAL_ERROR_MARKER = ".stub-priority-internal-error";
+const STUB_PRIORITY_CONFIG_ACCESS_MUTATION_MARKER = ".stub-priority-config-access-mutation.txt";
+const STUB_PRIORITY_REPO_ACCESS_MUTATION_MARKER = ".stub-priority-repo-access-mutation.txt";
+const STUB_PRIORITY_INTERNAL_ACCESS_MUTATION_MARKER = ".stub-priority-internal-access-mutation.txt";
+const STUB_PRIORITY_CONFIG_ACCESS_TARGET = ".stub-priority-config-accessed.txt";
+const STUB_PRIORITY_REPO_ACCESS_TARGET = ".stub-priority-repo-accessed.txt";
+const STUB_PRIORITY_INTERNAL_ACCESS_TARGET = ".stub-priority-internal-accessed.txt";
 
 export interface CliStubOptions {
 	cwd?: string;
@@ -65,7 +74,21 @@ function runScanStub(
 	stderr: { write(chunk: string): unknown },
 	phaseTrace: ReturnType<typeof createPhaseTraceRecorder>,
 ): number {
-	if (args[0] === "--json") {
+	const parsedArgs = parseScanStubArgs(args);
+	if (parsedArgs.kind === "usage_error") {
+		phaseTrace.record("cli.parse", "fail", () => parsedArgs.message);
+		stderr.write(`${parsedArgs.message}\n`);
+		return 4;
+	}
+
+	if (parsedArgs.mode === "json") {
+		if (hasPriorityProbeMarker(cwd)) {
+			const priorityExitCode = runPriorityProbeStubs(cwd, stderr, phaseTrace);
+			if (priorityExitCode !== null) {
+				return priorityExitCode;
+			}
+		}
+
 		if (existsSync(resolve(cwd, STUB_SCAN_SPEC_SUCCESS_MARKER))) {
 			phaseTrace.record("spec.index", "pass", () => STUB_SCAN_SPEC_SUCCESS_MARKER);
 			if (existsSync(resolve(cwd, STUB_SCAN_GRAPH_TARGET))) {
@@ -91,6 +114,83 @@ function runScanStub(
 
 	stdout.write("stub scan\n");
 	return 0;
+}
+
+type ParsedScanStubArgs =
+	| { kind: "ok"; mode: "human" | "json" }
+	| { kind: "usage_error"; message: string };
+
+function parseScanStubArgs(args: readonly string[]): ParsedScanStubArgs {
+	if (args.length === 0) {
+		return { kind: "ok", mode: "human" };
+	}
+
+	if (args.length === 1 && args[0] === "--json") {
+		return { kind: "ok", mode: "json" };
+	}
+
+	const unknownOption = args.find((argument) => argument.startsWith("-") && argument !== "--json");
+	if (unknownOption !== undefined) {
+		return { kind: "usage_error", message: `stub unknown option: ${unknownOption}` };
+	}
+
+	return { kind: "usage_error", message: "stub unsupported scan option combination" };
+}
+
+function runPriorityProbeStubs(
+	cwd: string,
+	stderr: { write(chunk: string): unknown },
+	phaseTrace: ReturnType<typeof createPhaseTraceRecorder>,
+): number | null {
+	writeProbeMutationIfRequested(
+		cwd,
+		STUB_PRIORITY_CONFIG_ACCESS_MUTATION_MARKER,
+		STUB_PRIORITY_CONFIG_ACCESS_TARGET,
+		phaseTrace,
+	);
+	if (existsSync(resolve(cwd, STUB_PRIORITY_CONFIG_ERROR_MARKER))) {
+		phaseTrace.record("config.load", "fail", () => STUB_PRIORITY_CONFIG_ERROR_MARKER);
+		stderr.write("stub priority config error\n");
+		return 2;
+	}
+	phaseTrace.record("config.load", "pass");
+
+	writeProbeMutationIfRequested(
+		cwd,
+		STUB_PRIORITY_REPO_ACCESS_MUTATION_MARKER,
+		STUB_PRIORITY_REPO_ACCESS_TARGET,
+		phaseTrace,
+	);
+	if (existsSync(resolve(cwd, STUB_PRIORITY_REPO_ERROR_MARKER))) {
+		phaseTrace.record("ts.graph", "fail", () => STUB_PRIORITY_REPO_ERROR_MARKER);
+		stderr.write("stub priority repo error\n");
+		return 3;
+	}
+
+	writeProbeMutationIfRequested(
+		cwd,
+		STUB_PRIORITY_INTERNAL_ACCESS_MUTATION_MARKER,
+		STUB_PRIORITY_INTERNAL_ACCESS_TARGET,
+		phaseTrace,
+	);
+	if (existsSync(resolve(cwd, STUB_PRIORITY_INTERNAL_ERROR_MARKER))) {
+		phaseTrace.record("scan.evaluate", "fail", () => STUB_PRIORITY_INTERNAL_ERROR_MARKER);
+		stderr.write("stub priority internal error\n");
+		return 1;
+	}
+
+	return null;
+}
+
+function hasPriorityProbeMarker(cwd: string): boolean {
+	return [
+		STUB_PRIORITY_CONFIG_ERROR_MARKER,
+		STUB_PRIORITY_REPO_ERROR_MARKER,
+		STUB_PRIORITY_INTERNAL_ERROR_MARKER,
+		STUB_PRIORITY_CONFIG_ACCESS_MUTATION_MARKER,
+		STUB_PRIORITY_REPO_ACCESS_MUTATION_MARKER,
+		STUB_PRIORITY_INTERNAL_ACCESS_MUTATION_MARKER,
+	].some((markerFilename) => existsSync(resolve(cwd, markerFilename)));
 }
 
 function runInitStub(cwd: string, phaseTrace: ReturnType<typeof createPhaseTraceRecorder>): number {
@@ -126,6 +226,28 @@ function writeUnexpectedScanMutationIfRequested(
 			writeFileSync(resolve(cwd, STUB_SCAN_UNEXPECTED_MUTATION_TARGET), readFileSync(markerPath));
 		},
 		() => STUB_SCAN_UNEXPECTED_MUTATION_TARGET,
+	);
+	return true;
+}
+
+function writeProbeMutationIfRequested(
+	cwd: string,
+	markerFilename: string,
+	targetFilename: string,
+	phaseTrace: ReturnType<typeof createPhaseTraceRecorder>,
+): boolean {
+	const markerPath = resolve(cwd, markerFilename);
+	if (!existsSync(markerPath)) {
+		return false;
+	}
+
+	phaseTrace.recordSpan(
+		"fs.write",
+		"fail",
+		() => {
+			writeFileSync(resolve(cwd, targetFilename), readFileSync(markerPath));
+		},
+		() => targetFilename,
 	);
 	return true;
 }

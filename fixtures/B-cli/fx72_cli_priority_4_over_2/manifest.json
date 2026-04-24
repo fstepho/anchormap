@@ -1,0 +1,22 @@
+{
+	"id": "fx72_cli_priority_4_over_2",
+	"family": "B-cli",
+	"purpose": "Invalid scan arguments exit 4 before config or repo access even when a config failure probe is present.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json", "--unknown"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "priority"],
+	"groups": ["m2"],
+	"fault_injection": {
+		"marker": "priority_config_access_probe"
+	}
+}

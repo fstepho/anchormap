@@ -1,0 +1,22 @@
+{
+	"id": "fx74_cli_priority_3_over_1",
+	"family": "B-cli",
+	"purpose": "Repo analysis failure exits 3 before later internal-error injection is evaluated.",
+	"command": ["node", "dist/cli-stub.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "priority"],
+	"groups": ["m2"],
+	"fault_injection": {
+		"marker": "priority_repo_error_probe"
+	}
+}
