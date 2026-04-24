@@ -28,6 +28,13 @@ changed, and do not touch runtime behavior.
 
 Use `docs/agent-loop.md` for the repo-local execution loop.
 
+If the user explicitly requests autopilot or automatic task chaining, use the
+autopilot loop defined by `docs/operating-model.md` and `docs/agent-loop.md`.
+Autopilot remains one active task at a time and must stop on the documented
+hard stops. Effective autopilot requires a Codex session started with
+`codex -p autopilot` or equivalent Auto-review permissions so recurring
+`codex review`, `git add`, and `git commit` approvals are not human gates.
+
 ## Reading Paths
 
 Use the standard path for ordinary bounded implementation work:
@@ -90,7 +97,8 @@ Never:
 - Use cache, network, Git, clock, or environment as a product source of truth.
 - Substitute a repo-local review skill, wrapper-parsed transcript, same-session
   self-review, or second reviewer engine for fresh Codex review.
-- Auto-pick a different task or auto-commit unless the user explicitly asks.
+- Auto-pick a different task or auto-commit unless the user explicitly asks,
+  including by requesting autopilot.
 
 During and before handoff:
 

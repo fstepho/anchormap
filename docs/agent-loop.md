@@ -19,7 +19,8 @@ It adds:
 - an index of the repo-local skills under `.agents/skills/`;
 - the minimum local command surface used in the harness phase;
 - one compact loop for task execution and review, including adversarial
-  falsification of newly introduced invariants.
+  falsification of newly introduced invariants;
+- an explicit autopilot loop for user-authorized task chaining.
 
 It does not replace the normative process. Use:
 
@@ -109,6 +110,47 @@ review session, guided by `AGENTS.md` and `docs/code-review.md`.
 12. If the clean review is task-scoped, mark the task `done` only when the task-level done conditions in `docs/operating-model.md` §19.1 are satisfied, then apply the routine `docs/tasks.md` completion transition directly before commit or handoff. Use `update-tasks` only when the completion also requires a structural plan change or deviation record.
 13. If the clean review is process-maintenance-scoped, do not mark any task `done` and do not apply a `docs/tasks.md` completion transition unless the maintenance explicitly changed the task plan. Hand off for the human commit gate with the reviewed process surface and checks.
 
+## Autopilot Loop
+
+Use this loop only when the user explicitly requests `autopilot` or asks the
+agent to chain tasks automatically. The normative rules live in
+`docs/operating-model.md` §18.1.
+
+Start the session with `codex -p autopilot` or an equivalent Auto-review
+permissions mode. Autopilot is not effective if recurring `codex review`,
+`git add`, or `git commit` approvals are routed to the human coordinator.
+
+1. Confirm the current worktree can support an autopilot run:
+   - unrelated staged, unstaged, and untracked changes must not prevent a
+     task-scoped diff, review surface, or commit;
+   - if unrelated work is present and cannot be isolated without guessing,
+     stop with `blocked_execution_state`.
+2. Read `docs/tasks.md` `## Execution State` and select the next executable
+   product task from the cursor and task plan. Do not use Git history, clock,
+   cache, network, environment, or a sidecar file to choose the task.
+3. Run the normal task loop for exactly that task, including reading mode,
+   traceability checks, implementation, applicable checks, fresh review
+   session, review decision, and up to five fresh review sessions total for
+   that task, initial review included.
+4. If `codex review` requests escalation to write its session storage, such as
+   `.codex/session`, the configured auto-reviewer should handle the approval.
+   If the approval is routed to the human coordinator, denied, or the fresh
+   review still cannot launch, stop with a `tooling problem`.
+5. On a clean task-scoped review decision, apply the normal `docs/tasks.md`
+   completion transition only if `docs/operating-model.md` §19.1 is satisfied.
+6. Verify the post-transition diff is still bounded to the completed task, then
+   create one automatic commit whose message includes the task ID. If `git add`
+   or `git commit` requires approval, the configured auto-reviewer should
+   handle it; a human approval prompt means the run is not in effective
+   autopilot mode.
+7. Repeat from step 2 until there is no next executable product task or a hard
+   stop occurs.
+
+Autopilot stops immediately on any hard stop from the normal loop, any required
+`docs/contract.md` change, any broader task-plan rewrite, any failed required
+check, any non-clean fifth review decision for the task, any
+unlaunchable fresh review session, or any Git conflict or commit failure.
+
 ## Orchestrator Routing
 
 This section is a local routing aid for the recommended loop. It is not a
@@ -136,6 +178,11 @@ skills themselves.
 | `update-tasks` | change applied successfully | Resume the interrupted workflow step. |
 | `validate-tasks` | exit `0` | Continue the workflow. |
 | `validate-tasks` | exit non-zero | Fix the invalid `docs/tasks.md` edit, then rerun `validate-tasks` before continuing. |
+| autopilot review decision | actionable findings before review 5 | Apply one bounded follow-up, rerun applicable checks, then start the next fresh review session on the full cumulative diff. |
+| autopilot review decision | actionable findings on review 5 | Stop with `rework_cap_exceeded`; do not continue to the next task. |
+| autopilot task completion | clean verdict and §19.1 satisfied | Apply the routine completion transition, verify the task-scoped diff, commit with the task ID, then select the next executable product task. |
+| autopilot approval | auto-reviewed and approved | Continue the current `codex review`, `git add`, or `git commit` step. |
+| autopilot approval | routed to human, denied, or ineffective | Stop with `tooling problem`; do not continue to the next task. |
 
 ### Invariants
 
@@ -156,10 +203,16 @@ skills themselves.
 - do not classify `tooling problem` from review silence alone while the review process is still running normally.
 - no code change is allowed before the `review decision` is explicit.
 - a task touching a linted or otherwise statically checked surface is not ready for handoff until those applicable repo-local static checks have been run on the post-patch state and pass.
-- Allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
+- Outside the explicit Autopilot Loop, allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
+- In the explicit Autopilot Loop, allow at most five fresh review sessions per
+  task, initial review included. Each rework between reviews must remain
+  bounded to the task, name the protected invariant and presumed root cause,
+  and rerun applicable checks before the next review.
 - routine `docs/tasks.md` execution-state updates may be applied directly by the implementation pass or as the routed effect of a clean `review decision`; `update-tasks` is reserved for structural task-plan maintenance and classified deviations that materially change the task record.
-- Do not auto-pick the next task. Task selection remains human-directed.
-- Do not auto-commit. A green review pass is necessary for handoff, not sufficient for commit.
+- Do not auto-pick the next task outside the explicit Autopilot Loop. Normal
+  task selection remains human-directed.
+- Do not auto-commit outside the explicit Autopilot Loop. A green review pass
+  is necessary for handoff, not sufficient for commit.
 
 ### Hard Stops
 
@@ -170,10 +223,15 @@ Stop and hand back to the human coordinator when any of the following is true:
 - the `review decision` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
 - the fresh review session cannot derive a credible falsification check for a newly introduced invariant without guessing beyond the repo docs; classify this in the `review decision` as `eval defect` when the verification guidance is missing, or `design gap` when the invariant itself is under-specified
 - a suitable fresh review session cannot be launched
+- `codex review`, `git add`, or `git commit` requires approval during autopilot
+  and the approval is routed to the human coordinator, denied, or ineffective
 - the current worktree is not bounded enough for a task-scoped or process-maintenance review surface
 - the required fix would need a change to `docs/contract.md`
 - the required fix would need a broader task-plan rewrite rather than a bounded task update
-- the same class of blocking review finding returns after one bounded follow-up
+- outside the explicit Autopilot Loop, the same class of blocking review
+  finding returns after one bounded follow-up
+- inside the explicit Autopilot Loop, the fifth review decision for the task is
+  not a `clean verdict`
 
 ### Human Gates
 
@@ -182,6 +240,11 @@ The coordinator does not decide these alone:
 - Task selection: choose the task explicitly from `docs/tasks.md`
 - Escalation handling: resolve any hard stop before resuming the loop
 - Commit or final handoff: after a clean `review decision`, apply any routine `docs/tasks.md` transition still needed, then let the human decide whether to commit or hand off
+
+In the explicit Autopilot Loop, the user has pre-authorized task selection and
+commit for clean task passes. Approval handling for `codex review`, `git add`,
+and `git commit` must be routed through the configured auto-reviewer; if approval
+is routed to the human coordinator, unavailable, or denied, autopilot stops.
 
 ### Local Stop Labels
 
@@ -198,6 +261,8 @@ recommended:
 - `blocked_execution_state`
 - `human_gate_commit`
 - `human_gate_task_selection`
+- `autopilot_complete`
+- `autopilot_blocked`
 
 These labels are shorthand for local coordination only. The normative sources
 remain the workflow state vocabulary and deviation taxonomy defined elsewhere.
@@ -218,6 +283,9 @@ For `T1.7` and later harness work, the minimum local command surface is:
 - `codex review --uncommitted`
 - `codex review --base <branch>`
 - `codex review --commit <sha>`
+- `git status --short`
+- `git add <task-scoped paths>`
+- `git commit -m "<TASK_ID>: <summary>"`
 
 Notes:
 
@@ -237,9 +305,9 @@ Notes:
 
 This helper does not:
 
-- pick the next task automatically;
+- pick the next task automatically outside the explicit Autopilot Loop;
 - use `git`, `date`, or a sidecar progress file as the source of truth;
-- auto-commit on green checks;
+- auto-commit on green checks outside the explicit Autopilot Loop;
 - replace bounded review with repeated implementation passes;
 - modify `docs/contract.md`;
 - add product scope.

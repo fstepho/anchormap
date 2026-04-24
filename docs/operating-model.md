@@ -1010,6 +1010,13 @@ Entrées autorisées :
 - une session interactive `codex` démarrée fraîchement pour la review, avec la
   review comme premier work step
 
+Si `codex review` demande une escalade pour écrire dans son stockage de
+session, notamment `.codex/session` ou un équivalent hors workspace, cette
+escalade est une permission opérationnelle attendue du protocole de review.
+Elle doit rester ciblée sur la commande de review. Si l'escalade est refusée
+ou ne permet pas de lancer une fresh review session exploitable, la boucle
+s'arrête avec une classification `tooling problem`.
+
 La fresh review session produit les findings.
 
 Immédiatement après ces findings, et avant toute modification de code, il faut
@@ -1188,6 +1195,61 @@ Règles :
 - ne pas corriger plusieurs classes de défauts sans les classifier ;
 - tout commit lié à une tâche bornée doit inclure son identifiant (`Tn.m`, `Tn.ma` ou `Sn`) dans le message de commit ;
 - préférer une séquence de petits patchs vérifiables à un patch global.
+
+### 18.1 Mode autopilot
+
+Le mode `autopilot` est une exception explicite au gate humain de sélection de
+tâche et au gate humain de commit. Il n'est actif que lorsque l'utilisateur le
+demande explicitement.
+
+Un run `autopilot` doit être lancé depuis une session Codex configurée pour
+router les approvals éligibles vers l'auto-reviewer, par exemple avec le profil
+CLI `codex -p autopilot` ou un mode de permissions équivalent. Le mode ne doit
+pas dépendre d'approbations humaines répétées pour `codex review`, `git add` ou
+`git commit`.
+
+Le mode `autopilot` :
+
+- traite toujours une seule tâche active à la fois ;
+- utilise `docs/tasks.md` `## Execution State` comme source de vérité durable ;
+- sélectionne automatiquement la prochaine tâche produit exécutable indiquée
+  par le plan de tâches et le curseur d'exécution ;
+- applique la boucle standard d'implémentation, checks, fresh review session et
+  review decision pour cette tâche ;
+- peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
+  review initiale incluse, avec au plus quatre passes de rework bornées entre
+  ces reviews ;
+- applique la transition `done` uniquement si §19.1 est satisfait ;
+- crée ensuite un commit automatique borné à cette tâche, avec l'identifiant de
+  tâche dans le message de commit ;
+- recommence avec la prochaine tâche exécutable.
+
+Le mode `autopilot` doit s'arrêter immédiatement lorsque l'un des cas suivants
+survient :
+
+- aucune prochaine tâche exécutable n'est déterminable depuis `docs/tasks.md` ;
+- le worktree ne permet pas d'isoler un diff cumulé borné à la tâche courante ;
+- un check obligatoire échoue ;
+- la fresh review session ne peut pas être lancée, y compris après une approval
+  auto-review attendue par `codex review` ;
+- la cinquième review decision de la tâche est `actionable findings`, ou une
+  review decision est `blocked` ;
+- la boucle expose une `spec ambiguity`, un `product question`, un
+  `out-of-scope discovery`, un besoin de changer `docs/contract.md`, ou un
+  besoin de réécrire plus largement le plan de tâches ;
+- un conflit Git, une erreur de commit, ou une mutation non attribuable empêche
+  de produire un commit task-scoped.
+
+Si `codex review`, `git add` ou `git commit` demande une approval dans une
+session `autopilot`, cette approval doit être routée vers l'auto-reviewer par
+la configuration Codex. Si la demande revient au coordinateur humain au lieu de
+l'auto-reviewer, le run n'est pas en mode `autopilot` effectif et doit être
+relancé avec le profil ou les permissions adaptés.
+
+Le mode `autopilot` ne peut pas utiliser Git, l'horloge, le cache, le réseau,
+l'environnement ou un fichier sidecar comme source de vérité produit ou comme
+source de sélection de tâche. Git peut seulement servir à vérifier et créer le
+commit borné après une tâche propre.
 
 ## 19. Definition of Done
 
