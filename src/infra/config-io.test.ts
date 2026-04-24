@@ -13,6 +13,7 @@ import {
 	loadConfig,
 	parseAnchormapConfigText,
 	parseAnchormapYamlText,
+	renderConfigCanonicalYaml,
 } from "./config-io";
 
 test("loads exactly anchormap.yaml from the provided cwd", () => {
@@ -165,6 +166,107 @@ mappings:
 			},
 		});
 	}
+});
+
+test("renders minimal config as canonical YAML with empty mappings", () => {
+	const rendered = renderParsedConfig(`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`);
+
+	assert.equal(
+		rendered,
+		"version: 1\n" + "product_root: 'src'\n" + "spec_roots:\n" + "  - 'specs'\n" + "mappings: {}\n",
+	);
+	assertUtf8NoBomWithSingleFinalNewline(rendered);
+});
+
+test("renders canonical YAML with sorted roots, anchors, and seed files", () => {
+	const rendered = renderParsedConfig(`
+version: 1
+product_root: src
+spec_roots:
+  - specs/z
+  - specs/a
+ignore_roots:
+  - src/vendor
+  - src/generated
+mappings:
+  DOC.README.PRESENT:
+    seed_files:
+      - src/core/z.ts
+      - src/core/a.ts
+  FR-014:
+    seed_files:
+      - src/changelog/validate-format.ts
+`);
+
+	assert.equal(
+		rendered,
+		"version: 1\n" +
+			"product_root: 'src'\n" +
+			"spec_roots:\n" +
+			"  - 'specs/a'\n" +
+			"  - 'specs/z'\n" +
+			"ignore_roots:\n" +
+			"  - 'src/generated'\n" +
+			"  - 'src/vendor'\n" +
+			"mappings:\n" +
+			"  'DOC.README.PRESENT':\n" +
+			"    seed_files:\n" +
+			"      - 'src/core/a.ts'\n" +
+			"      - 'src/core/z.ts'\n" +
+			"  'FR-014':\n" +
+			"    seed_files:\n" +
+			"      - 'src/changelog/validate-format.ts'\n",
+	);
+	assertUtf8NoBomWithSingleFinalNewline(rendered);
+});
+
+test("omits empty ignore_roots when rendering canonical YAML", () => {
+	const rendered = renderParsedConfig(`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots: []
+`);
+
+	assert.equal(
+		rendered,
+		"version: 1\n" + "product_root: 'src'\n" + "spec_roots:\n" + "  - 'specs'\n" + "mappings: {}\n",
+	);
+});
+
+test("doubles internal single quotes when rendering canonical YAML strings", () => {
+	const rendered = renderParsedConfig(`
+version: 1
+product_root: src/app's
+spec_roots:
+  - specs/owner's-guide
+ignore_roots:
+  - src/app's/generated
+mappings:
+  FR-014:
+    seed_files:
+      - src/app's/main.ts
+`);
+
+	assert.equal(
+		rendered,
+		"version: 1\n" +
+			"product_root: 'src/app''s'\n" +
+			"spec_roots:\n" +
+			"  - 'specs/owner''s-guide'\n" +
+			"ignore_roots:\n" +
+			"  - 'src/app''s/generated'\n" +
+			"mappings:\n" +
+			"  'FR-014':\n" +
+			"    seed_files:\n" +
+			"      - 'src/app''s/main.ts'\n",
+	);
 });
 
 test("loadConfig validates product_root and spec_roots as existing directories", () => {
@@ -720,4 +822,23 @@ function assertConfigError(
 
 function configToPlainObject(config: Config): unknown {
 	return config;
+}
+
+function renderParsedConfig(source: string): string {
+	const result = parseAnchormapConfigText(source);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind !== "ok") {
+		throw new Error("expected valid config");
+	}
+
+	return renderConfigCanonicalYaml(result.config);
+}
+
+function assertUtf8NoBomWithSingleFinalNewline(rendered: string): void {
+	const bytes = Buffer.from(rendered, "utf8");
+
+	assert.notDeepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf]);
+	assert.equal(rendered.endsWith("\n"), true);
+	assert.equal(rendered.endsWith("\n\n"), false);
 }
