@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `T4.5 — Implement atomic config write path`
-- Last completed task: `S2 — Atomic write and cleanup behavior report`
+- Last completed task: `T0.2 — Record atomic write ADR from S2`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -64,6 +64,7 @@
   - `T4.3 — Implement config path invariants and root existence validation`
   - `T4.4 — Implement canonical YAML renderer for config`
   - `S2 — Atomic write and cleanup behavior report`
+  - `T0.2 — Record atomic write ADR from S2`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
@@ -1672,6 +1673,10 @@ Implementation scope:
 - Implement `config_io.writeConfigAtomic`.
 - Serialize complete YAML in memory before touching disk.
 - Create a same-directory temp file exclusively.
+- Retry bounded temp-name candidates on `EEXIST` without deleting the
+  colliding path, using decimal counters `0` through `99` inclusive.
+- Return `WriteError` after bounded temp-candidate exhaustion without mutating
+  the target or non-owned collision paths.
 - Write bytes, flush runtime buffers, fsync temp file where supported, close descriptor.
 - Rename temp file to `anchormap.yaml` as the commit boundary.
 - On pre-commit failure, close descriptor, remove temp file, verify removal, and return `WriteError`.
@@ -1687,11 +1692,21 @@ Done when:
 - Injected failure before temp creation leaves initial state unchanged.
 - Injected failure after temp creation leaves initial state unchanged and no temp file.
 - Injected failure before rename returns `WriteError` that the command layer can classify as exit `1`.
+- `EEXIST` on an exclusive temp-file candidate retries the next bounded
+  candidate in the `0` through `99` range and never deletes or truncates the
+  colliding path.
+- Exhausting all 100 bounded temp-file candidates returns `WriteError`,
+  preserves the initial target state, and preserves every non-owned collision
+  path exactly.
+- Cleanup tests distinguish attempt-owned temp files from unrelated
+  pre-existing collision files and delete only the attempt-owned path.
 - No code path reports failure after the rename commit boundary has succeeded.
 - Atomic write tests cover the write-failure class required by `fx76_cli_write_failure_code_1`.
 
 Suggested verification:
 - Run atomic write unit tests with fault injection.
+- Run atomic write unit tests that force `EEXIST` retry, bounded candidate
+  exhaustion, and exact non-owned collision-path preservation.
 - Run a write-failure harness fixture against the write-path boundary.
 - Run mutation oracle against failed write attempts.
 

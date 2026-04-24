@@ -44,6 +44,7 @@ ADRs courantes :
 - `ADR-0005` — YAML parser and config input profile (`Accepted`)
 - `ADR-0006` — TypeScript parser and graph subset (`Accepted`)
 - `ADR-0007` — Canonical JSON and YAML rendering (`Accepted`)
+- `ADR-0008` — Atomic config write path (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 
 ## 3. Sources de vérité et frontières
@@ -178,6 +179,8 @@ Décisions clés :
 - `config_io` possède seul le fichier temporaire dédié à un write attempt ;
 - `config_io.writeConfigAtomic` ne peut retourner `WriteError` qu’avant commit, et seulement après cleanup synchrone du fichier temporaire éventuel ;
 - aucune étape faillible n’est autorisée après un `rename` réussi dans le chemin contractuel v1.0.
+- la stratégie de réservation du fichier temporaire, de retry sur collision,
+  de cleanup exact et de frontière post-rename est figée par `ADR-0008`.
 
 ### 5.3 `spec_index`
 
@@ -618,7 +621,9 @@ Règle structurante :
 1. construire en mémoire le modèle canonique complet ;
 2. sérialiser en UTF-8 sans BOM avec un unique `\n` final ;
 3. réserver un chemin temporaire dédié dans le même répertoire que `anchormap.yaml` ;
-4. créer ce fichier temporaire en mode exclusif ;
+4. créer ce fichier temporaire en mode exclusif selon `ADR-0008`, avec un
+   nom candidat de forme `.anchormap.yaml.<pid>.<counter>.tmp` et un
+   compteur décimal borné de `0` à `99` inclus ;
 5. écrire tous les octets sérialisés ;
 6. vider les buffers du runtime ;
 7. `fsync` le fichier temporaire sur les plateformes supportées ;
@@ -629,6 +634,10 @@ Règle structurante :
 Contraintes :
 
 - le fichier temporaire est le seul artefact auxiliaire autorisé pour une tentative d’écriture ;
+- une collision `EEXIST` sur un candidat temporaire est traitée comme un
+  chemin non possédé par la tentative courante : il n’est pas supprimé, et le
+  candidat suivant est essayé jusqu’à épuisement des 100 compteurs `0` à `99`
+  inclus ;
 - aucun append, patch partiel, ni réécriture best-effort n’est autorisé ;
 - aucun second fichier Derived n’est créé.
 
@@ -645,6 +654,8 @@ Règles :
 
 - la fonction n’est pas autorisée à retourner un code non nul tant que l’absence du fichier temporaire dédié n’a pas été rétablie ;
 - si le fichier temporaire n’a jamais été créé, aucune étape de cleanup ne touche `anchormap.yaml` ;
+- le cleanup vérifie uniquement le chemin temporaire exact créé par la
+  tentative courante, jamais les chemins de collision non possédés ;
 - le cleanup appartient entièrement à `config_io` ; aucun autre module n’en est owner.
 
 ### 8.5 Frontière de commit
@@ -849,6 +860,10 @@ Règles :
 - toute logique dépendante de la plateforme est concentrée dans `repo_fs` et le backend d’écriture de `config_io` ;
 - un backend n’est admissible que s’il fournit un `rename` atomique même-répertoire et permet de supprimer puis re-vérifier l’absence du fichier temporaire sur tout échec `pre_commit` ;
 - la durabilité renforcée par `fsync` du répertoire parent après commit est hors chemin contractuel v1.0.
+- `ADR-0008` enregistre l’évidence macOS arm64 et Linux amd64
+  container/POSIX utilisée pour sélectionner le chemin d’implémentation ;
+  l’évidence native Linux x86_64 reste une obligation de gate release portée
+  par `T9.3`.
 
 ## 13. Complexité et budgets
 
