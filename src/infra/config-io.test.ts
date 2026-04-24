@@ -1,6 +1,13 @@
 import { strict as assert } from "node:assert";
 import { Buffer } from "node:buffer";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -14,6 +21,8 @@ import {
 	parseAnchormapConfigText,
 	parseAnchormapYamlText,
 	renderConfigCanonicalYaml,
+	type WriteConfigAtomicFs,
+	writeConfigAtomic,
 } from "./config-io";
 
 test("loads exactly anchormap.yaml from the provided cwd", () => {
@@ -267,6 +276,300 @@ mappings:
 			"    seed_files:\n" +
 			"      - 'src/app''s/main.ts'\n",
 	);
+});
+
+test("writeConfigAtomic writes complete canonical YAML through the same-directory temp path", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-success-"));
+	const config = parseValidConfig(`
+version: 1
+product_root: src
+spec_roots:
+  - specs/z
+  - specs/a
+mappings:
+  FR-014:
+    seed_files:
+      - src/z.ts
+      - src/a.ts
+`);
+
+	const result = writeConfigAtomic(config, { cwd });
+
+	assert.equal(result.kind, "ok");
+	assert.equal(
+		readFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "utf8"),
+		"version: 1\n" +
+			"product_root: 'src'\n" +
+			"spec_roots:\n" +
+			"  - 'specs/a'\n" +
+			"  - 'specs/z'\n" +
+			"mappings:\n" +
+			"  'FR-014':\n" +
+			"    seed_files:\n" +
+			"      - 'src/a.ts'\n" +
+			"      - 'src/z.ts'\n",
+	);
+	assertNoAnchormapTemps(cwd);
+});
+
+test("writeConfigAtomic returns WriteError before temp reservation without touching disk", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-before-temp-"));
+	const config = minimalConfig();
+
+	const result = writeConfigAtomic(config, {
+		cwd,
+		faults: {
+			beforeTempReservation: () => {
+				throw new Error("injected before temp reservation");
+			},
+		},
+	});
+
+	assertWriteError(result);
+	assert.equal(existsSync(join(cwd, ANCHORMAP_CONFIG_FILENAME)), false);
+	assertNoAnchormapTemps(cwd);
+});
+
+test("writeConfigAtomic cleans up an attempt-owned temp file after temp creation failure", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-after-temp-"));
+	const config = minimalConfig();
+
+	const result = writeConfigAtomic(config, {
+		cwd,
+		faults: {
+			afterTempCreation: () => {
+				throw new Error("injected after temp creation");
+			},
+		},
+	});
+
+	assertWriteError(result);
+	assert.equal(existsSync(join(cwd, ANCHORMAP_CONFIG_FILENAME)), false);
+	assertNoAnchormapTemps(cwd);
+});
+
+test("writeConfigAtomic returns InternalError when cleanup unlink fails", () => {
+	const cleanupFailure = errorWithCode("EACCES", "unlink denied");
+	const fs: WriteConfigAtomicFs = {
+		openExclusive: () => 9,
+		writeAll: () => {},
+		fsync: () => {},
+		close: () => {},
+		rename: () => {
+			throw new Error("rename must not run after pre-commit failure");
+		},
+		unlink: () => {
+			throw cleanupFailure;
+		},
+		exists: () => true,
+	};
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd: "/repo",
+		fs,
+		faults: {
+			afterTempCreation: () => {
+				throw new Error("injected after temp creation");
+			},
+		},
+	});
+
+	assertInternalError(result);
+	if (result.kind === "error") {
+		assert.equal(result.error.cause, cleanupFailure);
+	}
+});
+
+test("writeConfigAtomic returns InternalError when cleanup absence check fails", () => {
+	const cleanupFailure = errorWithCode("EIO", "exists failed");
+	let tempExists = false;
+	const fs: WriteConfigAtomicFs = {
+		openExclusive: () => {
+			tempExists = true;
+			return 9;
+		},
+		writeAll: () => {},
+		fsync: () => {},
+		close: () => {},
+		rename: () => {
+			throw new Error("rename must not run after pre-commit failure");
+		},
+		unlink: () => {
+			tempExists = false;
+		},
+		exists: () => {
+			assert.equal(tempExists, false);
+			throw cleanupFailure;
+		},
+	};
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd: "/repo",
+		fs,
+		faults: {
+			afterWriteBeforeFsync: () => {
+				throw new Error("injected after write");
+			},
+		},
+	});
+
+	assertInternalError(result);
+	if (result.kind === "error") {
+		assert.equal(result.error.cause, cleanupFailure);
+	}
+});
+
+test("writeConfigAtomic returns InternalError when cleanup close fails", () => {
+	const cleanupFailure = errorWithCode("EIO", "close failed");
+	const operations: string[] = [];
+	const fs: WriteConfigAtomicFs = {
+		openExclusive: () => {
+			operations.push("open");
+			return 9;
+		},
+		writeAll: () => {
+			operations.push("write");
+		},
+		fsync: () => {
+			operations.push("fsync");
+		},
+		close: () => {
+			operations.push("cleanup-close");
+			throw cleanupFailure;
+		},
+		rename: () => {
+			throw new Error("rename must not run after pre-commit failure");
+		},
+		unlink: () => {
+			operations.push("unlink");
+		},
+		exists: () => {
+			operations.push("exists");
+			return false;
+		},
+	};
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd: "/repo",
+		fs,
+		faults: {
+			afterTempCreation: () => {
+				throw new Error("injected after temp creation");
+			},
+		},
+	});
+
+	assertInternalError(result);
+	if (result.kind === "error") {
+		assert.equal(result.error.cause, cleanupFailure);
+	}
+	assert.deepEqual(operations, ["open", "cleanup-close", "unlink", "exists"]);
+});
+
+test("writeConfigAtomic preserves the initial target and cleans up before rename failures", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-before-rename-"));
+	writeFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "initial bytes\n");
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd,
+		faults: {
+			beforeRename: () => {
+				throw new Error("injected before rename");
+			},
+		},
+	});
+
+	assertWriteError(result);
+	assert.equal(readFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "utf8"), "initial bytes\n");
+	assertNoAnchormapTemps(cwd);
+});
+
+test("writeConfigAtomic retries EEXIST candidates without deleting collision paths", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-eexist-"));
+	const collision = tempCandidatePath(cwd, 0);
+	writeFileSync(collision, "collision bytes\n");
+
+	const result = writeConfigAtomic(minimalConfig(), { cwd });
+
+	assert.equal(result.kind, "ok");
+	assert.equal(readFileSync(collision, "utf8"), "collision bytes\n");
+	assert.equal(existsSync(tempCandidatePath(cwd, 1)), false);
+	assert.equal(readFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "utf8"), minimalConfigYaml());
+});
+
+test("writeConfigAtomic preserves non-owned collisions while cleaning only the attempt-owned temp", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-owned-cleanup-"));
+	const collision = tempCandidatePath(cwd, 0);
+	writeFileSync(collision, "collision bytes\n");
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd,
+		faults: {
+			afterWriteBeforeFsync: () => {
+				throw new Error("injected after write");
+			},
+		},
+	});
+
+	assertWriteError(result);
+	assert.equal(readFileSync(collision, "utf8"), "collision bytes\n");
+	assert.equal(existsSync(tempCandidatePath(cwd, 1)), false);
+	assert.equal(existsSync(join(cwd, ANCHORMAP_CONFIG_FILENAME)), false);
+});
+
+test("writeConfigAtomic exhausts the 100-candidate EEXIST range without mutation", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-write-exhausted-"));
+	writeFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "initial bytes\n");
+	for (let counter = 0; counter < 100; counter += 1) {
+		writeFileSync(tempCandidatePath(cwd, counter), `collision ${counter}\n`);
+	}
+
+	const result = writeConfigAtomic(minimalConfig(), { cwd });
+
+	assertWriteError(result);
+	assert.equal(readFileSync(join(cwd, ANCHORMAP_CONFIG_FILENAME), "utf8"), "initial bytes\n");
+	for (let counter = 0; counter < 100; counter += 1) {
+		assert.equal(readFileSync(tempCandidatePath(cwd, counter), "utf8"), `collision ${counter}\n`);
+	}
+	assert.equal(existsSync(tempCandidatePath(cwd, 100)), false);
+});
+
+test("writeConfigAtomic performs no fallible filesystem step after successful rename", () => {
+	const operations: string[] = [];
+	const fs: WriteConfigAtomicFs = {
+		openExclusive: () => {
+			operations.push("open");
+			return 9;
+		},
+		writeAll: () => {
+			operations.push("write");
+		},
+		fsync: () => {
+			operations.push("fsync");
+		},
+		close: () => {
+			operations.push("close");
+		},
+		rename: () => {
+			operations.push("rename");
+		},
+		unlink: () => {
+			operations.push("unlink");
+			throw new Error("unlink must not run after commit");
+		},
+		exists: () => {
+			operations.push("exists");
+			throw new Error("exists must not run after commit");
+		},
+	};
+
+	const result = writeConfigAtomic(minimalConfig(), {
+		cwd: "/repo",
+		fs,
+	});
+
+	assert.equal(result.kind, "ok");
+	assert.deepEqual(operations, ["open", "write", "fsync", "close", "rename"]);
 });
 
 test("loadConfig validates product_root and spec_roots as existing directories", () => {
@@ -820,11 +1123,48 @@ function assertConfigError(
 	}
 }
 
+function assertWriteError(
+	result: { kind: "ok" } | { kind: "error"; error: { kind: string } },
+): void {
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "WriteError");
+	}
+}
+
+function assertInternalError(
+	result: { kind: "ok" } | { kind: "error"; error: { kind: string } },
+): void {
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "InternalError");
+	}
+}
+
 function configToPlainObject(config: Config): unknown {
 	return config;
 }
 
-function renderParsedConfig(source: string): string {
+function minimalConfig(): Config {
+	return parseValidConfig(`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`);
+}
+
+function minimalConfigYaml(): string {
+	return (
+		"version: 1\n" + "product_root: 'src'\n" + "spec_roots:\n" + "  - 'specs'\n" + "mappings: {}\n"
+	);
+}
+
+function tempCandidatePath(cwd: string, counter: number): string {
+	return join(cwd, `.${ANCHORMAP_CONFIG_FILENAME}.${process.pid}.${String(counter)}.tmp`);
+}
+
+function parseValidConfig(source: string): Config {
 	const result = parseAnchormapConfigText(source);
 
 	assert.equal(result.kind, "ok");
@@ -832,7 +1172,11 @@ function renderParsedConfig(source: string): string {
 		throw new Error("expected valid config");
 	}
 
-	return renderConfigCanonicalYaml(result.config);
+	return result.config;
+}
+
+function renderParsedConfig(source: string): string {
+	return renderConfigCanonicalYaml(parseValidConfig(source));
 }
 
 function assertUtf8NoBomWithSingleFinalNewline(rendered: string): void {
@@ -841,4 +1185,19 @@ function assertUtf8NoBomWithSingleFinalNewline(rendered: string): void {
 	assert.notDeepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf]);
 	assert.equal(rendered.endsWith("\n"), true);
 	assert.equal(rendered.endsWith("\n\n"), false);
+}
+
+function assertNoAnchormapTemps(cwd: string): void {
+	assert.deepEqual(
+		readdirSync(cwd).filter(
+			(entry) => entry.startsWith(".anchormap.yaml.") && entry.endsWith(".tmp"),
+		),
+		[],
+	);
+}
+
+function errorWithCode(code: string, message: string): Error & { code: string } {
+	const error = new Error(message) as Error & { code: string };
+	error.code = code;
+	return error;
 }

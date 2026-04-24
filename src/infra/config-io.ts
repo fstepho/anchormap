@@ -1,4 +1,14 @@
-import { readFileSync } from "node:fs";
+import {
+	closeSync,
+	constants,
+	existsSync,
+	fsyncSync,
+	openSync,
+	readFileSync,
+	renameSync,
+	unlinkSync,
+	writeSync,
+} from "node:fs";
 import { join } from "node:path";
 
 import { isMap, isScalar, isSeq, parseAllDocuments, type YAMLMap } from "yaml";
@@ -53,6 +63,31 @@ export type LoadAnchormapYamlResult =
 	| { kind: "error"; error: AppError };
 
 export type LoadConfigResult = { kind: "ok"; config: Config } | { kind: "error"; error: AppError };
+export type WriteConfigResult = { kind: "ok" } | { kind: "error"; error: AppError };
+
+export interface WriteConfigAtomicOptions {
+	readonly cwd?: string;
+	readonly fs?: WriteConfigAtomicFs;
+	readonly faults?: WriteConfigAtomicFaults;
+}
+
+export interface WriteConfigAtomicFs {
+	readonly openExclusive: (path: string) => number;
+	readonly writeAll: (fd: number, bytes: Uint8Array) => void;
+	readonly fsync: (fd: number) => void;
+	readonly close: (fd: number) => void;
+	readonly rename: (from: string, to: string) => void;
+	readonly unlink: (path: string) => void;
+	readonly exists: (path: string) => boolean;
+}
+
+export interface WriteConfigAtomicFaults {
+	readonly beforeTempReservation?: () => void;
+	readonly afterTempCreation?: (path: string, fd: number) => void;
+	readonly afterWriteBeforeFsync?: (path: string, fd: number) => void;
+	readonly afterFsyncBeforeClose?: (path: string, fd: number) => void;
+	readonly beforeRename?: (path: string) => void;
+}
 
 export function renderConfigCanonicalYaml(config: Config): string {
 	const lines: string[] = [
@@ -89,6 +124,53 @@ export function renderConfigCanonicalYaml(config: Config): string {
 	}
 
 	return `${lines.join("\n")}\n`;
+}
+
+export function writeConfigAtomic(
+	config: Config,
+	options: WriteConfigAtomicOptions = {},
+): WriteConfigResult {
+	const cwd = options.cwd ?? process.cwd();
+	const fs = options.fs ?? nodeWriteConfigAtomicFs;
+	const faults = options.faults ?? {};
+	const targetPath = join(cwd, ANCHORMAP_CONFIG_FILENAME);
+	const bytes = Buffer.from(renderConfigCanonicalYaml(config), "utf8");
+
+	try {
+		faults.beforeTempReservation?.();
+	} catch (error) {
+		return configWriteError("cannot prepare anchormap.yaml write", error);
+	}
+
+	const reservation = reserveTempFile(cwd, fs);
+	if (reservation.kind === "error") {
+		return configWriteError("cannot reserve anchormap.yaml temp file", reservation.cause);
+	}
+
+	let fd: number | undefined = reservation.fd;
+	let shouldCleanup = true;
+
+	try {
+		faults.afterTempCreation?.(reservation.path, fd);
+		fs.writeAll(fd, bytes);
+		faults.afterWriteBeforeFsync?.(reservation.path, fd);
+		fs.fsync(fd);
+		faults.afterFsyncBeforeClose?.(reservation.path, fd);
+		fs.close(fd);
+		fd = undefined;
+		faults.beforeRename?.(reservation.path);
+		fs.rename(reservation.path, targetPath);
+		shouldCleanup = false;
+		return { kind: "ok" };
+	} catch (error) {
+		if (shouldCleanup) {
+			const cleanup = cleanupReservedTempFile(reservation.path, fd, fs);
+			if (cleanup.kind === "error") {
+				return configInternalError("cannot confirm anchormap.yaml write cleanup", cleanup.cause);
+			}
+		}
+		return configWriteError("cannot write anchormap.yaml", error);
+	}
 }
 
 export function loadAnchormapYaml(options: LoadAnchormapYamlOptions = {}): LoadAnchormapYamlResult {
@@ -601,4 +683,132 @@ function configLoadError(message: string, cause?: unknown): ConfigErrorResult {
 			cause,
 		},
 	};
+}
+
+type TempReservation = { kind: "ok"; path: string; fd: number } | { kind: "error"; cause: unknown };
+type CleanupResult = { kind: "ok" } | { kind: "error"; cause: unknown };
+
+const TEMP_CANDIDATE_COUNT = 100;
+
+const nodeWriteConfigAtomicFs: WriteConfigAtomicFs = {
+	openExclusive: (path) =>
+		openSync(path, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600),
+	writeAll: (fd, bytes) => {
+		let offset = 0;
+		while (offset < bytes.byteLength) {
+			const written = writeSync(fd, bytes, offset, bytes.byteLength - offset);
+			if (written === 0) {
+				throw new Error("zero-byte write while writing anchormap.yaml");
+			}
+			offset += written;
+		}
+	},
+	fsync: (fd) => fsyncSync(fd),
+	close: (fd) => closeSync(fd),
+	rename: (from, to) => renameSync(from, to),
+	unlink: (path) => unlinkSync(path),
+	exists: (path) => existsSync(path),
+};
+
+function reserveTempFile(cwd: string, fs: WriteConfigAtomicFs): TempReservation {
+	let lastCollision: unknown;
+	for (let counter = 0; counter < TEMP_CANDIDATE_COUNT; counter += 1) {
+		const candidate = join(
+			cwd,
+			`.${ANCHORMAP_CONFIG_FILENAME}.${process.pid}.${String(counter)}.tmp`,
+		);
+		try {
+			return {
+				kind: "ok",
+				path: candidate,
+				fd: fs.openExclusive(candidate),
+			};
+		} catch (error) {
+			if (isErrorCode(error, "EEXIST")) {
+				lastCollision = error;
+				continue;
+			}
+			return {
+				kind: "error",
+				cause: error,
+			};
+		}
+	}
+
+	return {
+		kind: "error",
+		cause: lastCollision ?? new Error("bounded temp candidate space exhausted"),
+	};
+}
+
+function cleanupReservedTempFile(
+	path: string,
+	fd: number | undefined,
+	fs: WriteConfigAtomicFs,
+): CleanupResult {
+	let cleanupFailure: unknown;
+
+	if (fd !== undefined) {
+		try {
+			fs.close(fd);
+		} catch (error) {
+			cleanupFailure = error;
+		}
+	}
+
+	try {
+		fs.unlink(path);
+	} catch (error) {
+		if (!isErrorCode(error, "ENOENT")) {
+			cleanupFailure ??= error;
+		}
+	}
+
+	try {
+		if (fs.exists(path)) {
+			cleanupFailure ??= new Error(`cleanup failed for ${path}`);
+		}
+	} catch (error) {
+		cleanupFailure ??= error;
+	}
+
+	if (cleanupFailure !== undefined) {
+		return {
+			kind: "error",
+			cause: cleanupFailure,
+		};
+	}
+
+	return { kind: "ok" };
+}
+
+function configWriteError(message: string, cause?: unknown): WriteConfigResult {
+	return {
+		kind: "error",
+		error: {
+			kind: "WriteError",
+			message,
+			cause,
+		},
+	};
+}
+
+function configInternalError(message: string, cause?: unknown): WriteConfigResult {
+	return {
+		kind: "error",
+		error: {
+			kind: "InternalError",
+			message,
+			cause,
+		},
+	};
+}
+
+function isErrorCode(error: unknown, code: string): boolean {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		(error as { code?: unknown }).code === code
+	);
 }
