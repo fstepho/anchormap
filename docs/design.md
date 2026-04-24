@@ -40,6 +40,9 @@ ADRs courantes :
 - `ADR-0001` — Runtime and package manager (`Accepted`)
 - `ADR-0002` — CLI interface strategy (`Accepted`)
 - `ADR-0003` — Test runner and fixture harness (`Accepted`)
+- `ADR-0004` — Markdown parser profile (`Accepted`)
+- `ADR-0005` — YAML parser and config input profile (`Accepted`)
+- `ADR-0006` — TypeScript parser and graph subset (`Accepted`)
 - `ADR-0007` — Canonical JSON and YAML rendering (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 
@@ -150,6 +153,8 @@ Responsabilités :
 - charger exactement `./anchormap.yaml` via `repo_fs.readUtf8StrictNoBom` ;
 - classer toute absence, illisibilité, non-décodabilité, YAML invalide, multi-document, racine non mapping, clé dupliquée, schéma invalide ou invariant violé de `anchormap.yaml` comme `ConfigError` ;
 - détecter YAML invalide, multi-document là où interdit, ou à clés dupliquées ;
+- parser les entrées YAML avec `yaml@2.8.3` et les contraintes de wrapper de
+  `ADR-0005` ;
 - valider le schéma, les invariants de chemins et l’existence des racines requises ;
 - normaliser toutes les valeurs de chemins ;
 - matérialiser un modèle `Config` interne ;
@@ -182,6 +187,7 @@ Responsabilités :
 - filtrer par extension `.md`, `.yml`, `.yaml` ;
 - lire chaque spec via `repo_fs.readUtf8StrictNoBom` ;
 - parser Markdown et YAML avec les règles figées de la release sur le texte déjà décodé ;
+- appliquer les profils parser de `ADR-0004` et `ADR-0005` ;
 - extraire les anchors supportées ;
 - détecter les doublons d’anchors ;
 - produire l’index des anchors observées.
@@ -217,6 +223,7 @@ Responsabilités :
 - découvrir les `product_files` sous `product_root`, hors `ignore_roots` ;
 - lire chaque `product_file` via `repo_fs.readUtf8StrictNoBom` ;
 - parser TypeScript avec le parseur figé de la release sur le texte déjà décodé ;
+- appliquer le profil parser et le sous-ensemble graphe de `ADR-0006` ;
 - extraire les syntaxes supportées et reconnues-hors-support ;
 - résoudre les edges selon les règles du contrat ;
 - produire le graphe local ;
@@ -815,6 +822,8 @@ Décisions de design :
 
 - lockfile obligatoire ;
 - aucune plage `^` ou `~` sur les dépendances qui touchent au contrat ;
+- les pins parser acceptés sont `commonmark@0.30.0` (`ADR-0004`),
+  `yaml@2.8.3` (`ADR-0005`) et `typescript@5.4.5` (`ADR-0006`) ;
 - tests et goldens rejoués sur la matrice de plateformes supportées ;
 - snapshots de golden JSON versionnés dans le dépôt.
 
