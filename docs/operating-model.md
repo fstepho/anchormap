@@ -1219,6 +1219,13 @@ Le mode `autopilot` :
 - utilise `docs/tasks.md` `## Execution State` comme source de vérité durable ;
 - sélectionne automatiquement la prochaine tâche produit exécutable indiquée
   par le plan de tâches et le curseur d'exécution ;
+- doit lire le bloc de cette tâche curseur avant de la déclarer exécutable, et
+  vérifier que chaque entrée `Dependencies` est satisfaite par
+  `Completed tasks recorded here` ou par l'état de complétion documenté de
+  l'item dépendance ;
+- ne doit jamais interpréter un libellé comme "after blocker clearance" comme
+  une autorisation d'exécuter la tâche curseur avant résolution explicite de ses
+  dépendances ;
 - si cette tâche curseur n'est pas exécutable uniquement parce que des
   dépendances explicites restent incomplètes dans `docs/tasks.md`, peut
   sélectionner la prochaine dépendance ou fermeture exécutable nécessaire pour
@@ -1242,6 +1249,8 @@ La sélection de dépendance en mode `autopilot` est strictement bornée :
 - elle n'est autorisée que dans la boucle `autopilot` explicite ;
 - elle ne peut lire comme source de graphe que `docs/tasks.md` :
   `Dependencies`, `Blocks` et `Required closure after result` ;
+- une dépendance non clôturée listée sur la tâche curseur est un blocker même si
+  `Blocked tasks` vaut `None recorded` ;
 - elle peut sélectionner une tâche produit, un spike, ou une tâche bornée de
   fermeture ADR/process si cet item est explicitement requis pour débloquer le
   curseur produit courant ;

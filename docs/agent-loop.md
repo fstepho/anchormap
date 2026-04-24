@@ -130,10 +130,16 @@ diffs, and carries only compact task results across task boundaries.
    - if unrelated work is present and cannot be isolated without guessing,
      stop with `blocked_execution_state`.
 2. Read `docs/tasks.md` `## Execution State` and select the next executable
-   product task from the cursor and task plan. If that cursor task is blocked
-   only by explicit unfinished items in `docs/tasks.md`, select the next
+   product task from the cursor and task plan. Before declaring the cursor task
+   executable, read that task block and verify that every `Dependencies` entry is
+   satisfied by `Completed tasks recorded here` or by the documented completion
+   state of the dependency item. A cursor label such as "after blocker clearance"
+   never makes the cursor task executable by itself. If the cursor task is
+   blocked only by explicit unfinished items in `docs/tasks.md`, select the next
    executable dependency or closure needed to unblock it instead:
    - use only `Dependencies`, `Blocks`, and `Required closure after result`;
+   - treat an unfinished dependency listed on the cursor task as a blocker even
+     when `Blocked tasks` is empty;
    - allow product tasks, spikes, and bounded ADR/process closure tasks when
      they are explicit blockers or closures;
    - preserve spike discipline: when a selected spike requires explicit closure,
