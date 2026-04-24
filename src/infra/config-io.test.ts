@@ -7,8 +7,11 @@ import { test } from "node:test";
 
 import {
 	ANCHORMAP_CONFIG_FILENAME,
+	type Config,
 	type ConfigYamlReadFile,
 	loadAnchormapYaml,
+	loadConfig,
+	parseAnchormapConfigText,
 	parseAnchormapYamlText,
 } from "./config-io";
 
@@ -114,9 +117,370 @@ test("removes an initial BOM before YAML parsing", () => {
 	}
 });
 
-function assertConfigError(result: ReturnType<typeof loadAnchormapYaml>): void {
+test("loads a normalized Config model from anchormap.yaml", () => {
+	const result = parseAnchormapConfigText(`
+version: 1
+product_root: src
+spec_roots:
+  - specs/z
+  - specs/a
+ignore_roots:
+  - src/vendor
+  - src/generated
+mappings:
+  DOC.README.PRESENT:
+    seed_files:
+      - src/core/z.ts
+      - src/core/a.ts
+  FR-014:
+    seed_files:
+      - src/changelog/validate-format.ts
+`);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(configToPlainObject(result.config), {
+			version: 1,
+			productRoot: "src",
+			specRoots: ["specs/a", "specs/z"],
+			ignoreRoots: ["src/generated", "src/vendor"],
+			mappings: {
+				"DOC.README.PRESENT": {
+					seedFiles: ["src/core/a.ts", "src/core/z.ts"],
+				},
+				"FR-014": {
+					seedFiles: ["src/changelog/validate-format.ts"],
+				},
+			},
+		});
+	}
+});
+
+test("defaults absent optional ignore_roots and mappings to empty values", () => {
+	const result = parseAnchormapConfigText(`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(configToPlainObject(result.config), {
+			version: 1,
+			productRoot: "src",
+			specRoots: ["specs"],
+			ignoreRoots: [],
+			mappings: {},
+		});
+	}
+});
+
+test("loadConfig classifies schema validation failures as ConfigError", () => {
+	const result = loadConfig({
+		cwd: "/repo",
+		readFile: () =>
+			Buffer.from(
+				`
+version: 1
+product_root: src
+spec_roots: []
+`,
+				"utf8",
+			),
+	});
+
+	assertConfigError(result);
+});
+
+test("classifies unknown top-level fields as ConfigError", () => {
+	const result = parseAnchormapConfigText(`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+extra: true
+`);
+
+	assertConfigError(result);
+});
+
+test("classifies missing required config fields as ConfigError", () => {
+	for (const source of [
+		`
+product_root: src
+spec_roots:
+  - specs
+`,
+		`
+version: 1
+spec_roots:
+  - specs
+`,
+		`
+version: 1
+product_root: src
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies non-integer or unsupported versions as ConfigError", () => {
+	for (const source of [
+		`
+version: "1"
+product_root: src
+spec_roots:
+  - specs
+`,
+		`
+version: 2
+product_root: src
+spec_roots:
+  - specs
+`,
+		`
+version: 1.5
+product_root: src
+spec_roots:
+  - specs
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid product_root shapes and paths as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root:
+  - src
+spec_roots:
+  - specs
+`,
+		`
+version: 1
+product_root: ./src
+spec_roots:
+  - specs
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid spec_roots shapes, emptiness, items, and paths as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots: specs
+`,
+		`
+version: 1
+product_root: src
+spec_roots: []
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - 1
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs/
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid ignore_roots shapes, items, and paths as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots: src/generated
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - false
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - src//generated
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid mappings shape and anchor keys as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings: []
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  not-supported:
+    seed_files:
+      - src/a.ts
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  12:
+    seed_files:
+      - src/a.ts
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid mapping values and unknown mapping fields as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014: []
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files:
+      - src/a.ts
+    extra: true
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    other:
+      - src/a.ts
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies invalid seed_files shape, emptiness, items, paths, and duplicates as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files: src/a.ts
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files: []
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files:
+      - true
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files:
+      - /src/a.ts
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-014:
+    seed_files:
+      - src/a.ts
+      - src/a.ts
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+function assertConfigError(
+	result: { kind: "ok" } | { kind: "error"; error: { kind: string } },
+): void {
 	assert.equal(result.kind, "error");
 	if (result.kind === "error") {
 		assert.equal(result.error.kind, "ConfigError");
 	}
+}
+
+function configToPlainObject(config: Config): unknown {
+	return config;
 }
