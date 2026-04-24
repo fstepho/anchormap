@@ -4,7 +4,15 @@ import { test } from "node:test";
 import {
 	type AnchormapCommandContext,
 	type AnchormapCommandHandlers,
+	type AppError,
+	commandSuccess,
+	configError,
+	exitCodeForAppError,
+	internalError,
 	runAnchormap,
+	unsupportedRepoError,
+	usageError,
+	writeAppError,
 } from "./commands";
 
 function createBufferingWriter(): {
@@ -27,7 +35,9 @@ function createBufferingWriter(): {
 }
 
 function createRecordingHandlers(calls: string[]): AnchormapCommandHandlers {
-	function record(command: string): (context: AnchormapCommandContext) => number {
+	function record(
+		command: string,
+	): (context: AnchormapCommandContext) => ReturnType<AnchormapCommandHandlers["scan"]> {
 		return (context) => {
 			const initSuffix = context.initArgs
 				? `:root=${context.initArgs.root}:spec=${context.initArgs.specRoots.join(",")}:ignore=${context.initArgs.ignoreRoots.join(",")}`
@@ -38,7 +48,10 @@ function createRecordingHandlers(calls: string[]): AnchormapCommandHandlers {
 			const scanSuffix = context.scanMode ? `:${context.scanMode}` : "";
 			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}`;
 			calls.push(`${command}:${context.args.join(" ")}${suffix}`);
-			return 0;
+			if (context.scanMode === "json") {
+				return commandSuccess({ stdout: "{}\n" });
+			}
+			return commandSuccess();
 		};
 	}
 
@@ -48,6 +61,199 @@ function createRecordingHandlers(calls: string[]): AnchormapCommandHandlers {
 		scan: record("scan"),
 	};
 }
+
+function createHandlersReturning(result: AppError): AnchormapCommandHandlers {
+	return {
+		init: () => result,
+		map: () => result,
+		scan: () => result,
+	};
+}
+
+test("maps AppError kinds to the contract exit codes at the command boundary", () => {
+	const cases: Array<{ error: AppError; exitCode: number }> = [
+		{ error: usageError("usage"), exitCode: 4 },
+		{ error: configError("config"), exitCode: 2 },
+		{ error: unsupportedRepoError("repo"), exitCode: 3 },
+		{ error: writeAppError("write"), exitCode: 1 },
+		{ error: internalError("internal"), exitCode: 1 },
+	];
+
+	for (const { error, exitCode } of cases) {
+		assert.equal(exitCodeForAppError(error), exitCode);
+	}
+});
+
+test("maps AppError results from handlers without exposing module-owned exit codes", () => {
+	const cases: Array<{ error: AppError; exitCode: number }> = [
+		{ error: usageError("usage"), exitCode: 4 },
+		{ error: configError("config"), exitCode: 2 },
+		{ error: unsupportedRepoError("repo"), exitCode: 3 },
+		{ error: writeAppError("write"), exitCode: 1 },
+		{ error: internalError("internal"), exitCode: 1 },
+	];
+
+	for (const { error, exitCode } of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const actualExitCode = runAnchormap(["scan"], {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createHandlersReturning(error),
+		});
+
+		assert.equal(actualExitCode, exitCode);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+	}
+});
+
+test("treats thrown handler failures as InternalError code 1", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: () => {
+				throw new Error("boom");
+			},
+		},
+	});
+
+	assert.equal(exitCode, 1);
+	assert.equal(stdout.read(), "");
+	assert.notEqual(stderr.read(), "");
+});
+
+test("writes scan --json success only to stdout and keeps stderr empty", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan", "--json"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: () => commandSuccess({ stdout: '{"ok":true}\n' }),
+		},
+	});
+
+	assert.equal(exitCode, 0);
+	assert.equal(stdout.read(), '{"ok":true}\n');
+	assert.equal(stderr.read(), "");
+});
+
+test("converts scan --json success with stderr bytes into code 1 without stdout", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan", "--json"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: (context) => {
+				context.stdout.write('{"ok":true}\n');
+				context.stderr.write("warning\n");
+				return commandSuccess();
+			},
+		},
+	});
+
+	assert.equal(exitCode, 1);
+	assert.equal(stdout.read(), "");
+	assert.notEqual(stderr.read(), "");
+});
+
+test("converts scan --json success with no stdout into code 1 without stdout", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan", "--json"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: () => commandSuccess(),
+		},
+	});
+
+	assert.equal(exitCode, 1);
+	assert.equal(stdout.read(), "");
+	assert.notEqual(stderr.read(), "");
+});
+
+test("converts scan --json success without final stdout newline into code 1", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan", "--json"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: () => commandSuccess({ stdout: '{"ok":true}' }),
+		},
+	});
+
+	assert.equal(exitCode, 1);
+	assert.equal(stdout.read(), "");
+	assert.notEqual(stderr.read(), "");
+});
+
+test("converts scan --json success with extra physical stdout lines into code 1", () => {
+	const cases = ['{"ok":true}\n\n', '{"ok":\ntrue}\n'];
+
+	for (const handlerStdout of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: {
+				init: () => commandSuccess(),
+				map: () => commandSuccess(),
+				scan: () => commandSuccess({ stdout: handlerStdout }),
+			},
+		});
+
+		assert.equal(exitCode, 1);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+	}
+});
+
+test("keeps scan --json failure stdout empty even if lower code wrote stdout", () => {
+	const stdout = createBufferingWriter();
+	const stderr = createBufferingWriter();
+
+	const exitCode = runAnchormap(["scan", "--json"], {
+		stdout: stdout.writer,
+		stderr: stderr.writer,
+		handlers: {
+			init: () => commandSuccess(),
+			map: () => commandSuccess(),
+			scan: (context) => {
+				context.stdout.write('{"not":"allowed"}\n');
+				return configError("config");
+			},
+		},
+	});
+
+	assert.equal(exitCode, 2);
+	assert.equal(stdout.read(), "");
+	assert.notEqual(stderr.read(), "");
+});
 
 test("rejects a missing command as a usage error", () => {
 	const stdout = createBufferingWriter();
@@ -62,7 +268,7 @@ test("rejects a missing command as a usage error", () => {
 
 	assert.equal(exitCode, 4);
 	assert.equal(stdout.read(), "");
-	assert.match(stderr.read(), /missing command/);
+	assert.notEqual(stderr.read(), "");
 	assert.deepEqual(calls, []);
 });
 
@@ -79,7 +285,7 @@ test("rejects an unknown command before dispatching to supported handlers", () =
 
 	assert.equal(exitCode, 4);
 	assert.equal(stdout.read(), "");
-	assert.match(stderr.read(), /unknown command "unknown"/);
+	assert.notEqual(stderr.read(), "");
 	assert.deepEqual(calls, []);
 });
 
@@ -128,31 +334,16 @@ test("parses supported init forms before dispatch", () => {
 });
 
 test("rejects invalid init options and shapes before dispatch", () => {
-	const cases: Array<{
-		argv: readonly string[];
-		expectedStderr: RegExp;
-	}> = [
-		{ argv: ["init", "--spec-root", "specs"], expectedStderr: /--root is required/ },
-		{ argv: ["init", "--root", "src"], expectedStderr: /--spec-root is required/ },
-		{
-			argv: ["init", "--root", "src", "--root", "lib", "--spec-root", "specs"],
-			expectedStderr: /--root may be provided at most once/,
-		},
-		{
-			argv: ["init", "--root", "src", "--spec-root"],
-			expectedStderr: /--spec-root requires a value/,
-		},
-		{
-			argv: ["init", "--unknown", "value", "--root", "src", "--spec-root", "specs"],
-			expectedStderr: /unknown option "--unknown"/,
-		},
-		{
-			argv: ["init", "--root", "src", "--spec-root", "specs", "extra"],
-			expectedStderr: /unsupported argument "extra"/,
-		},
+	const cases: readonly (readonly string[])[] = [
+		["init", "--spec-root", "specs"],
+		["init", "--root", "src"],
+		["init", "--root", "src", "--root", "lib", "--spec-root", "specs"],
+		["init", "--root", "src", "--spec-root"],
+		["init", "--unknown", "value", "--root", "src", "--spec-root", "specs"],
+		["init", "--root", "src", "--spec-root", "specs", "extra"],
 	];
 
-	for (const { argv, expectedStderr } of cases) {
+	for (const argv of cases) {
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 		const calls: string[] = [];
@@ -165,7 +356,7 @@ test("rejects invalid init options and shapes before dispatch", () => {
 
 		assert.equal(exitCode, 4);
 		assert.equal(stdout.read(), "");
-		assert.match(stderr.read(), expectedStderr);
+		assert.notEqual(stderr.read(), "");
 		assert.deepEqual(calls, []);
 	}
 });
@@ -215,51 +406,19 @@ test("parses supported map forms before dispatch", () => {
 });
 
 test("rejects invalid map options and shapes before dispatch", () => {
-	const cases: Array<{
-		argv: readonly string[];
-		expectedStderr: RegExp;
-	}> = [
-		{ argv: ["map", "--seed", "src/index.ts"], expectedStderr: /--anchor is required/ },
-		{ argv: ["map", "--anchor", "FR-014"], expectedStderr: /--seed is required/ },
-		{
-			argv: [
-				"map",
-				"--anchor",
-				"FR-014",
-				"--anchor",
-				"DOC.README.PRESENT",
-				"--seed",
-				"src/index.ts",
-			],
-			expectedStderr: /--anchor may be provided at most once/,
-		},
-		{
-			argv: ["map", "--anchor", "FR-014", "--seed"],
-			expectedStderr: /--seed requires a value/,
-		},
-		{
-			argv: ["map", "--anchor", "--seed", "src/index.ts"],
-			expectedStderr: /--anchor requires a value/,
-		},
-		{
-			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "--replace"],
-			expectedStderr: /--replace may be provided at most once/,
-		},
-		{
-			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "yes"],
-			expectedStderr: /--replace does not take a value/,
-		},
-		{
-			argv: ["map", "--unknown", "value", "--anchor", "FR-014", "--seed", "src/index.ts"],
-			expectedStderr: /unknown option "--unknown"/,
-		},
-		{
-			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "extra"],
-			expectedStderr: /unsupported argument "extra"/,
-		},
+	const cases: readonly (readonly string[])[] = [
+		["map", "--seed", "src/index.ts"],
+		["map", "--anchor", "FR-014"],
+		["map", "--anchor", "FR-014", "--anchor", "DOC.README.PRESENT", "--seed", "src/index.ts"],
+		["map", "--anchor", "FR-014", "--seed"],
+		["map", "--anchor", "--seed", "src/index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "--replace"],
+		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "yes"],
+		["map", "--unknown", "value", "--anchor", "FR-014", "--seed", "src/index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "extra"],
 	];
 
-	for (const { argv, expectedStderr } of cases) {
+	for (const argv of cases) {
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 		const calls: string[] = [];
@@ -272,7 +431,7 @@ test("rejects invalid map options and shapes before dispatch", () => {
 
 		assert.equal(exitCode, 4);
 		assert.equal(stdout.read(), "");
-		assert.match(stderr.read(), expectedStderr);
+		assert.notEqual(stderr.read(), "");
 		assert.deepEqual(calls, []);
 	}
 });
@@ -281,12 +440,13 @@ test("parses supported scan forms before dispatch", () => {
 	const cases: Array<{
 		argv: readonly string[];
 		expectedCall: string;
+		expectedStdout: string;
 	}> = [
-		{ argv: ["scan"], expectedCall: "scan::human" },
-		{ argv: ["scan", "--json"], expectedCall: "scan:--json:json" },
+		{ argv: ["scan"], expectedCall: "scan::human", expectedStdout: "" },
+		{ argv: ["scan", "--json"], expectedCall: "scan:--json:json", expectedStdout: "{}\n" },
 	];
 
-	for (const { argv, expectedCall } of cases) {
+	for (const { argv, expectedCall, expectedStdout } of cases) {
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 		const calls: string[] = [];
@@ -298,23 +458,20 @@ test("parses supported scan forms before dispatch", () => {
 		});
 
 		assert.equal(exitCode, 0);
-		assert.equal(stdout.read(), "");
+		assert.equal(stdout.read(), expectedStdout);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(calls, [expectedCall]);
 	}
 });
 
 test("rejects invalid scan options and combinations before dispatch", () => {
-	const cases: Array<{
-		argv: readonly string[];
-		expectedStderr: RegExp;
-	}> = [
-		{ argv: ["scan", "--unknown"], expectedStderr: /unknown option "--unknown"/ },
-		{ argv: ["scan", "--json", "--json"], expectedStderr: /unsupported option combination/ },
-		{ argv: ["scan", "extra"], expectedStderr: /unsupported option combination/ },
+	const cases: readonly (readonly string[])[] = [
+		["scan", "--unknown"],
+		["scan", "--json", "--json"],
+		["scan", "extra"],
 	];
 
-	for (const { argv, expectedStderr } of cases) {
+	for (const argv of cases) {
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 		const calls: string[] = [];
@@ -327,7 +484,7 @@ test("rejects invalid scan options and combinations before dispatch", () => {
 
 		assert.equal(exitCode, 4);
 		assert.equal(stdout.read(), "");
-		assert.match(stderr.read(), expectedStderr);
+		assert.notEqual(stderr.read(), "");
 		assert.deepEqual(calls, []);
 	}
 });

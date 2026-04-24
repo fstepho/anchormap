@@ -17,6 +17,27 @@ export interface TextWriter {
 	write(chunk: string): unknown;
 }
 
+export type AppErrorKind =
+	| "UsageError"
+	| "ConfigError"
+	| "UnsupportedRepoError"
+	| "WriteError"
+	| "InternalError";
+
+export interface AppError {
+	kind: AppErrorKind;
+	message?: string;
+	cause?: unknown;
+}
+
+export interface AnchormapCommandSuccess {
+	kind: "success";
+	stdout?: string;
+	stderr?: string;
+}
+
+export type AnchormapCommandResult = AnchormapCommandSuccess | AppError;
+
 export interface AnchormapCommandContext {
 	args: readonly string[];
 	stdout: TextWriter;
@@ -27,7 +48,7 @@ export interface AnchormapCommandContext {
 }
 
 export type AnchormapCommandHandlers = {
-	[command in AnchormapCommandName]: (context: AnchormapCommandContext) => number;
+	[command in AnchormapCommandName]: (context: AnchormapCommandContext) => AnchormapCommandResult;
 };
 
 export interface AnchormapRunOptions {
@@ -51,61 +72,233 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 	const [command, ...args] = argv;
 
 	if (command === undefined) {
-		stderr.write("anchormap: missing command\n");
-		return 4;
+		return writeErrorDiagnostic({ kind: "UsageError", message: "missing command" }, stderr);
 	}
 
 	if (!isSupportedCommand(command)) {
-		stderr.write(`anchormap: unknown command "${command}"\n`);
-		return 4;
+		return writeErrorDiagnostic(
+			{ kind: "UsageError", message: `unknown command "${command}"` },
+			stderr,
+		);
 	}
 
 	if (command === "scan") {
 		const parsedScan = parseScanArgs(args);
 		if (parsedScan.kind === "usage_error") {
-			stderr.write(`anchormap scan: ${parsedScan.message}\n`);
-			return 4;
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedScan.message }, stderr);
 		}
 
-		return handlers.scan({
-			args,
-			stdout,
-			stderr,
-			scanMode: parsedScan.mode,
-		});
+		return dispatchCommand(
+			{
+				args,
+				stdout,
+				stderr,
+				scanMode: parsedScan.mode,
+			},
+			handlers.scan,
+		);
 	}
 
 	if (command === "init") {
 		const parsedInit = parseInitArgs(args);
 		if (parsedInit.kind === "usage_error") {
-			stderr.write(`anchormap init: ${parsedInit.message}\n`);
-			return 4;
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedInit.message }, stderr);
 		}
 
-		return handlers.init({
-			args,
-			stdout,
-			stderr,
-			initArgs: parsedInit.args,
-		});
+		return dispatchCommand(
+			{
+				args,
+				stdout,
+				stderr,
+				initArgs: parsedInit.args,
+			},
+			handlers.init,
+		);
 	}
 
 	if (command === "map") {
 		const parsedMap = parseMapArgs(args);
 		if (parsedMap.kind === "usage_error") {
-			stderr.write(`anchormap map: ${parsedMap.message}\n`);
-			return 4;
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedMap.message }, stderr);
 		}
 
-		return handlers.map({
-			args,
-			stdout,
-			stderr,
-			mapArgs: parsedMap.args,
-		});
+		return dispatchCommand(
+			{
+				args,
+				stdout,
+				stderr,
+				mapArgs: parsedMap.args,
+			},
+			handlers.map,
+		);
 	}
 
 	throw new Error(`unhandled command ${command}`);
+}
+
+export function exitCodeForAppError(error: AppError): number {
+	switch (error.kind) {
+		case "UsageError":
+			return 4;
+		case "ConfigError":
+			return 2;
+		case "UnsupportedRepoError":
+			return 3;
+		case "WriteError":
+		case "InternalError":
+			return 1;
+	}
+}
+
+export function commandSuccess(
+	output: Omit<AnchormapCommandSuccess, "kind"> = {},
+): AnchormapCommandSuccess {
+	return {
+		kind: "success",
+		...output,
+	};
+}
+
+export function usageError(message?: string): AppError {
+	return appError("UsageError", message);
+}
+
+export function configError(message?: string): AppError {
+	return appError("ConfigError", message);
+}
+
+export function unsupportedRepoError(message?: string): AppError {
+	return appError("UnsupportedRepoError", message);
+}
+
+export function writeAppError(message?: string): AppError {
+	return appError("WriteError", message);
+}
+
+export function internalError(message?: string, cause?: unknown): AppError {
+	return {
+		kind: "InternalError",
+		message,
+		cause,
+	};
+}
+
+function appError(kind: Exclude<AppErrorKind, "InternalError">, message?: string): AppError {
+	return {
+		kind,
+		message,
+	};
+}
+
+function dispatchCommand(
+	context: AnchormapCommandContext,
+	handler: (context: AnchormapCommandContext) => AnchormapCommandResult,
+): number {
+	const capturedStdout = createBufferedWriter();
+	const capturedStderr = createBufferedWriter();
+	let result: AnchormapCommandResult;
+
+	try {
+		result = handler({
+			...context,
+			stdout: capturedStdout.writer,
+			stderr: capturedStderr.writer,
+		});
+	} catch (error) {
+		result = internalError("internal error", error);
+	}
+
+	const stdoutText =
+		capturedStdout.read() + (isCommandSuccess(result) ? (result.stdout ?? "") : "");
+	const stderrText =
+		capturedStderr.read() + (isCommandSuccess(result) ? (result.stderr ?? "") : "");
+
+	if (isCommandSuccess(result)) {
+		if (context.scanMode === "json") {
+			const scanJsonError = validateScanJsonSuccessOutput(stdoutText, stderrText);
+			if (scanJsonError) {
+				return writeErrorDiagnostic(scanJsonError, context.stderr);
+			}
+		}
+
+		context.stdout.write(stdoutText);
+		if (context.scanMode !== "json") {
+			context.stderr.write(stderrText);
+		}
+		return 0;
+	}
+
+	return writeFailure(result, context, stderrText);
+}
+
+function validateScanJsonSuccessOutput(
+	stdoutText: string,
+	stderrText: string,
+): AppError | undefined {
+	if (stderrText.length > 0) {
+		return internalError("scan --json success wrote stderr");
+	}
+	if (stdoutText.length === 0) {
+		return internalError("scan --json success wrote no stdout");
+	}
+	if (!stdoutText.endsWith("\n")) {
+		return internalError("scan --json success stdout missing final newline");
+	}
+	if (stdoutText.slice(0, -1).includes("\n")) {
+		return internalError("scan --json success stdout is not a single physical line");
+	}
+	return undefined;
+}
+
+function writeFailure(
+	error: AppError,
+	context: AnchormapCommandContext,
+	capturedStderr: string,
+): number {
+	if (context.scanMode === "json") {
+		if (capturedStderr.length > 0) {
+			context.stderr.write(ensureFinalNewline(capturedStderr));
+		} else {
+			writeDiagnostic(error, context.stderr);
+		}
+		return exitCodeForAppError(error);
+	}
+
+	writeDiagnostic(error, context.stderr);
+	return exitCodeForAppError(error);
+}
+
+function writeErrorDiagnostic(error: AppError, stderr: TextWriter): number {
+	writeDiagnostic(error, stderr);
+	return exitCodeForAppError(error);
+}
+
+function writeDiagnostic(error: AppError, stderr: TextWriter): void {
+	stderr.write(`${error.message ?? error.kind}\n`);
+}
+
+function ensureFinalNewline(text: string): string {
+	return text.endsWith("\n") ? text : `${text}\n`;
+}
+
+function isCommandSuccess(result: AnchormapCommandResult): result is AnchormapCommandSuccess {
+	return result.kind === "success";
+}
+
+function createBufferedWriter(): { writer: TextWriter; read(): string } {
+	const chunks: string[] = [];
+
+	return {
+		writer: {
+			write(chunk: string): unknown {
+				chunks.push(chunk);
+				return true;
+			},
+		},
+		read() {
+			return chunks.join("");
+		},
+	};
 }
 
 function isSupportedCommand(command: string): command is AnchormapCommandName {
@@ -307,9 +500,6 @@ function parseScanArgs(args: readonly string[]): ParsedScanArgs {
 
 function createNotImplementedHandler(
 	command: AnchormapCommandName,
-): (context: AnchormapCommandContext) => number {
-	return ({ stderr }) => {
-		stderr.write(`anchormap ${command} is not implemented yet\n`);
-		return 1;
-	};
+): (context: AnchormapCommandContext) => AnchormapCommandResult {
+	return () => internalError(`anchormap ${command} is not implemented yet`);
 }
