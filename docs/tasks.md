@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `T4.5 — Implement atomic config write path`
-- Last completed task: `T4.4 — Implement canonical YAML renderer for config`
+- Last completed task: `S2 — Atomic write and cleanup behavior report`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -63,6 +63,7 @@
   - `T4.2 — Implement config schema validation`
   - `T4.3 — Implement config path invariants and root existence validation`
   - `T4.4 — Implement canonical YAML renderer for config`
+  - `S2 — Atomic write and cleanup behavior report`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
@@ -3436,6 +3437,7 @@ Dependencies:
 Implementation scope:
 - Run required suite on Linux x86_64.
 - Run required suite on macOS arm64.
+- Re-run or confirm the atomic write cleanup and rename-boundary probe on native Linux x86_64.
 - Compare JSON and YAML goldens byte-for-byte to versioned references.
 - Archive platform-specific reports.
 - Fail release on any divergence in sort order, paths, newline, encoding, mutation, or exit code.
@@ -3449,6 +3451,7 @@ Done when:
 - 100% of Level B fixtures pass on Linux x86_64.
 - 100% of Level B fixtures pass on macOS arm64.
 - 100% of C1–C12 pass on both platforms.
+- Native Linux x86_64 atomic write cleanup and rename-boundary evidence is recorded.
 - Golden bytes are identical across supported platforms.
 - Cross-platform reports are archived.
 
@@ -3764,7 +3767,7 @@ Required closure after result:
 ### S2 — Atomic write and cleanup behavior report
 
 Question:
-- Can the selected filesystem/write implementation provide the required same-directory temp write, pre-commit cleanup, and rename boundary on Linux x86_64 and macOS arm64?
+- Can the selected filesystem/write implementation provide the required same-directory temp write, pre-commit cleanup, and rename boundary for implementation work, with macOS arm64 observed directly and native Linux x86_64 proof retained for the release cross-platform gate?
 
 Contract refs:
 - `contract.md` — §7.5 Écriture canonique exacte
@@ -3798,7 +3801,8 @@ Why now:
 
 Protocol:
 - Build a throwaway write-path probe using same-directory temp files and bounded fault-injection points.
-- Run or document the probe outcome for Linux x86_64 and macOS arm64.
+- Run the probe on macOS arm64.
+- Run or document Linux amd64 container/POSIX evidence sufficient to select the implementation strategy before `T4.5`; native Linux x86_64 verification remains required by `T9.3`.
 - Record cleanup behavior before commit, at commit boundary, and after simulated failures.
 - Do not change production write behavior in this spike.
 
@@ -3816,7 +3820,7 @@ Done when:
 - `spikes/atomic-write-report.md` exists.
 - The report answers every `Must answer` item.
 - The report identifies the exact write boundary and cleanup verification method.
-- The report states the observed result and whether the selected approach satisfies the required mutation policy on each supported platform.
+- The report states the observed macOS arm64 result, the Linux amd64 container/POSIX evidence used for pre-implementation selection, and the native Linux x86_64 verification still required by `T9.3`.
 - The report lists consequences for design, contract, evals, and tasks, using `None` where no consequence exists.
 - No production write path is introduced by the spike itself.
 
