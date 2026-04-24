@@ -636,8 +636,10 @@ Règles :
 - lorsqu'un design, un refactor ou une convention interne en remplace un autre, l'ancien chemin doit être supprimé, pas maintenu "au cas où" ;
 - ne pas conserver deux chemins d'exécution, deux représentations internes, deux conventions ou deux comportements internes en parallèle sans nécessité explicitement tracée au contrat, aux evals ou à une ADR acceptée ;
 - ne pas accumuler de flags, couches de compatibilité, adaptateurs temporaires, aliases temporaires ou branches mortes pour ménager une migration qui n'existe pas encore ;
+- ne pas ajouter de fallback, de tolérance silencieuse ou de seconde source de vérité pour contourner une ambiguïté de contrat, de design ou d'eval ;
 - en pré-production, la compatibilité à préserver est celle du contrat, des evals, des fixtures, des goldens et des ADR, pas celle d'anciens choix internes ;
-- si une coexistence transitoire est strictement nécessaire pour garder un patch petit, vérifiable et réversible, elle doit être explicitement bornée dans le plan de tâche ou le diff de travail et supprimée avant la clôture du jalon concerné.
+- si une coexistence transitoire est strictement nécessaire pour garder un patch petit, vérifiable et réversible, elle doit être explicitement bornée dans le plan de tâche ou le diff de travail et supprimée avant la clôture du jalon concerné ;
+- si un cas exige un second chemin observable, il doit être classé comme changement de contrat, `design gap`, `eval defect` ou `product question` avant tout patch runtime.
 
 ## 9. Règles d'utilisation des agents IA
 
