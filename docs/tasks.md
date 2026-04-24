@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T2.4 — Implement option parser for map`
-- Last completed task: `T2.3 — Implement option parser for init`
+- Next executable product task after blocker clearance: `T2.5 — Implement AppError to exit-code and stream discipline`
+- Last completed task: `T2.4 — Implement option parser for map`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -46,6 +46,7 @@
   - `T2.1 — Implement process entrypoint and exact command surface`
   - `T2.2 — Implement option parser for scan`
   - `T2.3 — Implement option parser for init`
+  - `T2.4 — Implement option parser for map`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

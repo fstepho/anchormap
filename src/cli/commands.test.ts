@@ -32,8 +32,11 @@ function createRecordingHandlers(calls: string[]): AnchormapCommandHandlers {
 			const initSuffix = context.initArgs
 				? `:root=${context.initArgs.root}:spec=${context.initArgs.specRoots.join(",")}:ignore=${context.initArgs.ignoreRoots.join(",")}`
 				: "";
+			const mapSuffix = context.mapArgs
+				? `:anchor=${context.mapArgs.anchor}:seeds=${context.mapArgs.seeds.join(",")}:replace=${context.mapArgs.replace}`
+				: "";
 			const scanSuffix = context.scanMode ? `:${context.scanMode}` : "";
-			const suffix = `${initSuffix}${scanSuffix}`;
+			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}`;
 			calls.push(`${command}:${context.args.join(" ")}${suffix}`);
 			return 0;
 		};
@@ -167,21 +170,111 @@ test("rejects invalid init options and shapes before dispatch", () => {
 	}
 });
 
-test("dispatches map argument validation to its command handler", () => {
-	const stdout = createBufferingWriter();
-	const stderr = createBufferingWriter();
-	const calls: string[] = [];
+test("parses supported map forms before dispatch", () => {
+	const cases: Array<{
+		argv: readonly string[];
+		expectedCall: string;
+	}> = [
+		{
+			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts"],
+			expectedCall:
+				"map:--anchor FR-014 --seed src/index.ts:anchor=FR-014:seeds=src/index.ts:replace=false",
+		},
+		{
+			argv: [
+				"map",
+				"--seed",
+				"src/first.ts",
+				"--replace",
+				"--anchor",
+				"DOC.README.PRESENT",
+				"--seed",
+				"src/second.ts",
+			],
+			expectedCall:
+				"map:--seed src/first.ts --replace --anchor DOC.README.PRESENT --seed src/second.ts:anchor=DOC.README.PRESENT:seeds=src/first.ts,src/second.ts:replace=true",
+		},
+	];
 
-	const exitCode = runAnchormap(["map", "--example"], {
-		stdout: stdout.writer,
-		stderr: stderr.writer,
-		handlers: createRecordingHandlers(calls),
-	});
+	for (const { argv, expectedCall } of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
 
-	assert.equal(exitCode, 0);
-	assert.equal(stdout.read(), "");
-	assert.equal(stderr.read(), "");
-	assert.deepEqual(calls, ["map:--example"]);
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(calls, [expectedCall]);
+	}
+});
+
+test("rejects invalid map options and shapes before dispatch", () => {
+	const cases: Array<{
+		argv: readonly string[];
+		expectedStderr: RegExp;
+	}> = [
+		{ argv: ["map", "--seed", "src/index.ts"], expectedStderr: /--anchor is required/ },
+		{ argv: ["map", "--anchor", "FR-014"], expectedStderr: /--seed is required/ },
+		{
+			argv: [
+				"map",
+				"--anchor",
+				"FR-014",
+				"--anchor",
+				"DOC.README.PRESENT",
+				"--seed",
+				"src/index.ts",
+			],
+			expectedStderr: /--anchor may be provided at most once/,
+		},
+		{
+			argv: ["map", "--anchor", "FR-014", "--seed"],
+			expectedStderr: /--seed requires a value/,
+		},
+		{
+			argv: ["map", "--anchor", "--seed", "src/index.ts"],
+			expectedStderr: /--anchor requires a value/,
+		},
+		{
+			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "--replace"],
+			expectedStderr: /--replace may be provided at most once/,
+		},
+		{
+			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "yes"],
+			expectedStderr: /--replace does not take a value/,
+		},
+		{
+			argv: ["map", "--unknown", "value", "--anchor", "FR-014", "--seed", "src/index.ts"],
+			expectedStderr: /unknown option "--unknown"/,
+		},
+		{
+			argv: ["map", "--anchor", "FR-014", "--seed", "src/index.ts", "extra"],
+			expectedStderr: /unsupported argument "extra"/,
+		},
+	];
+
+	for (const { argv, expectedStderr } of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
+
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.match(stderr.read(), expectedStderr);
+		assert.deepEqual(calls, []);
+	}
 });
 
 test("parses supported scan forms before dispatch", () => {

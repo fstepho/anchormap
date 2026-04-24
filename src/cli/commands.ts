@@ -7,6 +7,12 @@ export interface ParsedInitArgs {
 	ignoreRoots: string[];
 }
 
+export interface ParsedMapArgs {
+	anchor: string;
+	seeds: string[];
+	replace: boolean;
+}
+
 export interface TextWriter {
 	write(chunk: string): unknown;
 }
@@ -16,6 +22,7 @@ export interface AnchormapCommandContext {
 	stdout: TextWriter;
 	stderr: TextWriter;
 	initArgs?: ParsedInitArgs;
+	mapArgs?: ParsedMapArgs;
 	scanMode?: ScanOutputMode;
 }
 
@@ -83,11 +90,22 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 		});
 	}
 
-	return handlers[command]({
-		args,
-		stdout,
-		stderr,
-	});
+	if (command === "map") {
+		const parsedMap = parseMapArgs(args);
+		if (parsedMap.kind === "usage_error") {
+			stderr.write(`anchormap map: ${parsedMap.message}\n`);
+			return 4;
+		}
+
+		return handlers.map({
+			args,
+			stdout,
+			stderr,
+			mapArgs: parsedMap.args,
+		});
+	}
+
+	throw new Error(`unhandled command ${command}`);
 }
 
 function isSupportedCommand(command: string): command is AnchormapCommandName {
@@ -100,6 +118,10 @@ type ParsedScanArgs =
 
 type ParsedInitArgsResult =
 	| { kind: "ok"; args: ParsedInitArgs }
+	| { kind: "usage_error"; message: string };
+
+type ParsedMapArgsResult =
+	| { kind: "ok"; args: ParsedMapArgs }
 	| { kind: "usage_error"; message: string };
 
 function parseInitArgs(args: readonly string[]): ParsedInitArgsResult {
@@ -169,6 +191,81 @@ function parseInitArgs(args: readonly string[]): ParsedInitArgsResult {
 			root,
 			specRoots,
 			ignoreRoots,
+		},
+	};
+}
+
+function parseMapArgs(args: readonly string[]): ParsedMapArgsResult {
+	let anchor: string | undefined;
+	const seeds: string[] = [];
+	let replace = false;
+
+	for (let index = 0; index < args.length; ) {
+		const option = args[index];
+
+		switch (option) {
+			case "--anchor": {
+				if (anchor !== undefined) {
+					return { kind: "usage_error", message: "--anchor may be provided at most once" };
+				}
+
+				const parsedValue = parseOptionValue(args, index, "--anchor");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+
+				anchor = parsedValue.value;
+				index += 2;
+				break;
+			}
+			case "--seed": {
+				const parsedValue = parseOptionValue(args, index, "--seed");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+
+				seeds.push(parsedValue.value);
+				index += 2;
+				break;
+			}
+			case "--replace": {
+				if (replace) {
+					return { kind: "usage_error", message: "--replace may be provided at most once" };
+				}
+
+				const next = args[index + 1];
+				if (next !== undefined && !next.startsWith("-")) {
+					return { kind: "usage_error", message: "--replace does not take a value" };
+				}
+
+				replace = true;
+				index += 1;
+				break;
+			}
+			default: {
+				if (option.startsWith("-")) {
+					return { kind: "usage_error", message: `unknown option "${option}"` };
+				}
+
+				return { kind: "usage_error", message: `unsupported argument "${option}"` };
+			}
+		}
+	}
+
+	if (anchor === undefined) {
+		return { kind: "usage_error", message: "--anchor is required" };
+	}
+
+	if (seeds.length === 0) {
+		return { kind: "usage_error", message: "--seed is required" };
+	}
+
+	return {
+		kind: "ok",
+		args: {
+			anchor,
+			seeds,
+			replace,
 		},
 	};
 }
