@@ -34,6 +34,8 @@ Autopilot remains one active task at a time and must stop on the documented
 hard stops. Effective autopilot requires a Codex session started with
 `codex -p autopilot` or equivalent Auto-review permissions so recurring
 `codex review`, `git add`, and `git commit` approvals are not human gates.
+Autopilot task implementation must run in fresh task-scoped Codex sessions so
+the coordinator does not accumulate implementation context across tasks.
 
 ## Reading Paths
 

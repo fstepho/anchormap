@@ -120,6 +120,10 @@ Start the session with `codex -p autopilot` or an equivalent Auto-review
 permissions mode. Autopilot is not effective if recurring `codex review`,
 `git add`, or `git commit` approvals are routed to the human coordinator.
 
+The autopilot coordinator must stay context-thin. It selects tasks, launches
+fresh implementation and review sessions, routes decisions, commits clean task
+diffs, and carries only compact task results across task boundaries.
+
 1. Confirm the current worktree can support an autopilot run:
    - unrelated staged, unstaged, and untracked changes must not prevent a
      task-scoped diff, review surface, or commit;
@@ -128,28 +132,45 @@ permissions mode. Autopilot is not effective if recurring `codex review`,
 2. Read `docs/tasks.md` `## Execution State` and select the next executable
    product task from the cursor and task plan. Do not use Git history, clock,
    cache, network, environment, or a sidecar file to choose the task.
-3. Run the normal task loop for exactly that task, including reading mode,
-   traceability checks, implementation, applicable checks, fresh review
-   session, review decision, and up to five fresh review sessions total for
-   that task, initial review included.
-4. If `codex review` requests escalation to write its session storage, such as
+3. Launch a fresh implementation session for exactly that task, preferably
+   with `codex -p autopilot exec` or an equivalent fresh Codex session. Do not
+   reuse the coordinator context as the implementation context.
+4. The implementation session runs the normal task loop through implementation
+   readiness: reading mode, traceability checks, patching, applicable checks,
+   and a compact handoff containing task ID, changed files, checks run, status,
+   and review readiness.
+5. Stop with `blocked_execution_state` if the implementation handoff is
+   missing, incomplete, or fails to identify a bounded task-scoped diff.
+6. Launch a fresh review session for the task. Autopilot may run up to five
+   fresh review sessions total for that task, initial review included.
+7. If review yields actionable findings before review 5, launch a fresh
+   implementation or rework session for the same task. The rework session must
+   name the protected invariant and presumed root cause, apply one bounded
+   follow-up, rerun applicable checks, and return a compact handoff.
+8. If `codex review` requests escalation to write its session storage, such as
    `.codex/session`, the configured auto-reviewer should handle the approval.
    If the approval is routed to the human coordinator, denied, or the fresh
    review still cannot launch, stop with a `tooling problem`.
-5. On a clean task-scoped review decision, apply the normal `docs/tasks.md`
+9. On a clean task-scoped review decision, apply the normal `docs/tasks.md`
    completion transition only if `docs/operating-model.md` §19.1 is satisfied.
-6. Verify the post-transition diff is still bounded to the completed task, then
+10. Verify the post-transition diff is still bounded to the completed task, then
    create one automatic commit whose message includes the task ID. If `git add`
    or `git commit` requires approval, the configured auto-reviewer should
    handle it; a human approval prompt means the run is not in effective
    autopilot mode.
-7. Repeat from step 2 until there is no next executable product task or a hard
+11. Record only compact task results in the coordinator context: task ID,
+    checks, verdict, stop reason, commit SHA, and next cursor. Do not carry
+    full implementation logs, full diffs, file contents, or review transcripts
+    into the next task.
+12. Repeat from step 2 until there is no next executable product task or a hard
    stop occurs.
 
 Autopilot stops immediately on any hard stop from the normal loop, any required
 `docs/contract.md` change, any broader task-plan rewrite, any failed required
 check, any non-clean fifth review decision for the task, any
-unlaunchable fresh review session, or any Git conflict or commit failure.
+unlaunchable fresh implementation, rework, or review session, any incomplete
+implementation handoff, any need for the coordinator to inspect the full task
+context itself, or any Git conflict or commit failure.
 
 ## Orchestrator Routing
 
@@ -178,7 +199,9 @@ skills themselves.
 | `update-tasks` | change applied successfully | Resume the interrupted workflow step. |
 | `validate-tasks` | exit `0` | Continue the workflow. |
 | `validate-tasks` | exit non-zero | Fix the invalid `docs/tasks.md` edit, then rerun `validate-tasks` before continuing. |
-| autopilot review decision | actionable findings before review 5 | Apply one bounded follow-up, rerun applicable checks, then start the next fresh review session on the full cumulative diff. |
+| autopilot implementation session | complete handoff | Launch a fresh review session for the task-scoped diff. |
+| autopilot implementation session | incomplete handoff | Stop with `blocked_execution_state`; do not inspect the full task context in the coordinator. |
+| autopilot review decision | actionable findings before review 5 | Launch a fresh rework session for the same task; after its compact handoff, start the next fresh review session on the full cumulative diff. |
 | autopilot review decision | actionable findings on review 5 | Stop with `rework_cap_exceeded`; do not continue to the next task. |
 | autopilot task completion | clean verdict and §19.1 satisfied | Apply the routine completion transition, verify the task-scoped diff, commit with the task ID, then select the next executable product task. |
 | autopilot approval | auto-reviewed and approved | Continue the current `codex review`, `git add`, or `git commit` step. |
@@ -208,6 +231,16 @@ skills themselves.
   task, initial review included. Each rework between reviews must remain
   bounded to the task, name the protected invariant and presumed root cause,
   and rerun applicable checks before the next review.
+- In the explicit Autopilot Loop, each task implementation and each rework pass
+  must run in a fresh task-scoped implementation or rework session. The
+  coordinator must not serve as the implementation context.
+- If a tool offers subagents, use them for autopilot implementation only when
+  they provide a fresh task-scoped context equivalent to a new Codex session.
+  Do not use same-session or context-inheriting subagents for successive
+  autopilot tasks.
+- The autopilot coordinator may retain only compact task state across task
+  boundaries: task ID, checks, verdict, stop reason, commit SHA, and next
+  cursor.
 - routine `docs/tasks.md` execution-state updates may be applied directly by the implementation pass or as the routed effect of a clean `review decision`; `update-tasks` is reserved for structural task-plan maintenance and classified deviations that materially change the task record.
 - Do not auto-pick the next task outside the explicit Autopilot Loop. Normal
   task selection remains human-directed.
@@ -223,6 +256,12 @@ Stop and hand back to the human coordinator when any of the following is true:
 - the `review decision` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`
 - the fresh review session cannot derive a credible falsification check for a newly introduced invariant without guessing beyond the repo docs; classify this in the `review decision` as `eval defect` when the verification guidance is missing, or `design gap` when the invariant itself is under-specified
 - a suitable fresh review session cannot be launched
+- a suitable fresh implementation or rework session cannot be launched during
+  autopilot
+- an autopilot implementation or rework session returns an incomplete handoff
+- continuing autopilot would require the coordinator to inspect full
+  implementation logs, full diffs, file contents, or review transcripts from a
+  completed task
 - `codex review`, `git add`, or `git commit` requires approval during autopilot
   and the approval is routed to the human coordinator, denied, or ineffective
 - the current worktree is not bounded enough for a task-scoped or process-maintenance review surface
@@ -280,6 +319,7 @@ For `T1.7` and later harness work, the minimum local command surface is:
 - `npm run workflow:preflight -- --task <task-id>`
 - `npm run workflow:preflight -- --process <surface> --stage review`
 - `codex`
+- `codex -p autopilot exec`
 - `codex review --uncommitted`
 - `codex review --base <branch>`
 - `codex review --commit <sha>`

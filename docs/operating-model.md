@@ -1208,27 +1208,46 @@ CLI `codex -p autopilot` ou un mode de permissions équivalent. Le mode ne doit
 pas dépendre d'approbations humaines répétées pour `codex review`, `git add` ou
 `git commit`.
 
+Le run `autopilot` est coordonné par une session mince. Cette session
+sélectionne les tâches, lance les sessions fraîches, route les review decisions,
+applique les transitions et crée les commits. Elle ne doit pas porter le
+contexte d'implémentation complet des tâches successives.
+
 Le mode `autopilot` :
 
 - traite toujours une seule tâche active à la fois ;
 - utilise `docs/tasks.md` `## Execution State` comme source de vérité durable ;
 - sélectionne automatiquement la prochaine tâche produit exécutable indiquée
   par le plan de tâches et le curseur d'exécution ;
-- applique la boucle standard d'implémentation, checks, fresh review session et
-  review decision pour cette tâche ;
+- lance une fresh implementation session Codex pour exactement cette tâche ;
+- fait produire par cette session un handoff borné : task ID, fichiers touchés,
+  checks exécutés, statut, et état de préparation à la review ;
+- lance des fresh review sessions séparées de la session d'implémentation ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
   review initiale incluse, avec au plus quatre passes de rework bornées entre
   ces reviews ;
+- effectue chaque rework dans une fresh implementation ou rework session bornée
+  à la même tâche, jamais dans le contexte du coordinateur ;
 - applique la transition `done` uniquement si §19.1 est satisfait ;
 - crée ensuite un commit automatique borné à cette tâche, avec l'identifiant de
   tâche dans le message de commit ;
 - recommence avec la prochaine tâche exécutable.
+
+La session coordinatrice peut retenir entre deux tâches seulement : task ID,
+statut, checks, verdict, stop reason, commit SHA et prochain curseur. Elle ne
+doit pas retenir les logs complets d'implémentation, les diffs complets, les
+contenus de fichiers ou les transcriptions de review au-delà de la tâche.
 
 Le mode `autopilot` doit s'arrêter immédiatement lorsque l'un des cas suivants
 survient :
 
 - aucune prochaine tâche exécutable n'est déterminable depuis `docs/tasks.md` ;
 - le worktree ne permet pas d'isoler un diff cumulé borné à la tâche courante ;
+- une fresh implementation ou rework session ne peut pas être lancée ;
+- le handoff d'implémentation est incomplet ou ne permet pas d'identifier un
+  diff task-scoped ;
+- le coordinateur devrait inspecter et raisonner lui-même sur le contexte
+  complet de la tâche pour continuer ;
 - un check obligatoire échoue ;
 - la fresh review session ne peut pas être lancée, y compris après une approval
   auto-review attendue par `codex review` ;
