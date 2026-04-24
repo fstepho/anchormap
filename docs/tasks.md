@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T3.6 — Implement strict UTF-8 decoding with initial BOM handling`
-- Last completed task: `T3.5 — Implement canonical JSON renderer`
+- Next executable product task after blocker clearance: `T4.1 — Implement YAML parsing profile for anchormap.yaml`
+- Last completed task: `T3.6 — Implement strict UTF-8 decoding with initial BOM handling`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -56,6 +56,7 @@
   - `S4 — Canonical serializer profile report`
   - `T0.3 — Record canonical serializer ADR from S4`
   - `T3.5 — Implement canonical JSON renderer`
+  - `T3.6 — Implement strict UTF-8 decoding with initial BOM handling`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
