@@ -97,6 +97,8 @@ Pendant l'implémentation :
 - le plus petit check utile doit être lancé tôt ;
 - un check ciblé précoce ne remplace pas les checks statiques repo-locaux applicables aux fichiers modifiés ; avant handoff, ces checks doivent être relancés et passer, y compris le lint quand cette surface est couverte ;
 - un échec bloquant doit être classifié avant tout patch supplémentaire ;
+- avant de corriger un finding de review, un échec répété ou un rework, l'agent doit nommer l'invariant protégé et la cause racine présumée ;
+- si cet invariant n'est pas déjà détenu par `contract.md`, `design.md`, `evals.md`, `operating-model.md` ou une ADR acceptée, l'agent doit classer le gap avant de patcher ;
 - un agent ne doit pas corriger "à l'aveugle" ni élargir la portée pour faire passer un check.
 
 Un échec répété est traité d'abord comme un manque d'infrastructure ou de lisibilité du dépôt, pas comme un problème de volonté de l'agent.
@@ -671,6 +673,8 @@ Les agents ne doivent pas :
 - supprimer un gate sans justification contractuelle ;
 - faire des refactors larges hors tâche ;
 - mélanger décision produit et patch d'implémentation ;
+- traiter un changement sémantique comme une correction locale si la nature d'un objet analysé, d'une sortie, d'une mutation ou d'une frontière change ;
+- verrouiller un test, une fixture ou un golden sur un contournement temporaire au lieu de l'invariant contractuel visé ;
 - introduire une dépendance structurante sans validation ;
 - ignorer ou contourner une ADR acceptée ;
 - ajouter un cache, du réseau, une dépendance à Git, à l'horloge ou à l'environnement comme source de vérité ;
