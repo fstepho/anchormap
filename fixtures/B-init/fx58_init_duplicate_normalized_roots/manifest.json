@@ -1,0 +1,29 @@
+{
+	"id": "fx58_init_duplicate_normalized_roots",
+	"family": "B-init",
+	"purpose": "Init rejects duplicate-or-overlapping spec_roots after UserPathArg normalization with code 4 and no file write.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"init",
+		"--root",
+		"src",
+		"--spec-root",
+		"specs",
+		"--spec-root",
+		"specs/sub"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["config", "write"],
+	"groups": ["m4"]
+}

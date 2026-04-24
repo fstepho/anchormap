@@ -1,0 +1,34 @@
+{
+	"id": "fx58a_init_option_order_invariant",
+	"family": "B-init",
+	"purpose": "Supported init option order permutations write the same canonical YAML bytes.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"init",
+		"--ignore-root",
+		"src/vendor",
+		"--spec-root",
+		"zspecs",
+		"--root",
+		"src",
+		"--ignore-root",
+		"src/generated",
+		"--spec-root",
+		"specs"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["config", "write"],
+	"groups": ["m4"]
+}

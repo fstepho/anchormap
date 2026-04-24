@@ -1,0 +1,9 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'specs'
+  - 'zspecs'
+ignore_roots:
+  - 'src/generated'
+  - 'src/vendor'
+mappings: {}

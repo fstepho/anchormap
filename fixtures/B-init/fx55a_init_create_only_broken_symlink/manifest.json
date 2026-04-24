@@ -1,0 +1,19 @@
+{
+	"id": "fx55a_init_create_only_broken_symlink",
+	"family": "B-init",
+	"purpose": "Init is create-only for an existing broken anchormap.yaml symlink and leaves the symlink unchanged.",
+	"command": ["node", "dist/anchormap.js", "init", "--root", "src", "--spec-root", "specs"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["config", "write", "symlink"],
+	"groups": ["m4"]
+}

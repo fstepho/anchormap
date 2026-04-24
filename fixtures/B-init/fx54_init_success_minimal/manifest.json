@@ -1,0 +1,20 @@
+{
+	"id": "fx54_init_success_minimal",
+	"family": "B-init",
+	"purpose": "Minimal init writes canonical anchormap.yaml with empty mappings and no derived data.",
+	"command": ["node", "dist/anchormap.js", "init", "--root", "src", "--spec-root", "specs"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["config", "write"],
+	"groups": ["m4"]
+}
