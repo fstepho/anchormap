@@ -40,6 +40,7 @@ ADRs courantes :
 - `ADR-0001` — Runtime and package manager (`Accepted`)
 - `ADR-0002` — CLI interface strategy (`Accepted`)
 - `ADR-0003` — Test runner and fixture harness (`Accepted`)
+- `ADR-0007` — Canonical JSON and YAML rendering (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 
 ## 3. Sources de vérité et frontières
@@ -167,6 +168,7 @@ Décisions clés :
 - `config_io.writeConfigAtomic` est **l’unique** fonction autorisée à modifier `anchormap.yaml` ;
 - le tri des `seed_files` est un effet d’écriture canonique, pas une règle métier distincte ;
 - les commentaires et le formatage source ne sont pas conservés ;
+- le writer est un rendu YAML custom de forme fermée selon `ADR-0007`, pas un emitter YAML générique ;
 - le writer émet toujours le même ordre de clés et écrit toujours `mappings`, y compris `mappings: {}` ;
 - `config_io` possède seul le fichier temporaire dédié à un write attempt ;
 - `config_io.writeConfigAtomic` ne peut retourner `WriteError` qu’avant commit, et seulement après cleanup synchrone du fichier temporaire éventuel ;
@@ -308,6 +310,7 @@ Décisions clés :
 
 - `render` ne trie rien, ne déduplique rien et ne normalise aucun chemin ;
 - le JSON est généré à partir d’un modèle déjà trié et normalisé ;
+- le JSON canonique est rendu par un encoder custom selon `ADR-0007`, pas par `JSON.stringify` ;
 - `render` retourne des bytes ou des strings en mémoire ; `commands` reste seul owner de `stdout` / `stderr` ;
 - tout échec de sérialisation d’un `ScanResult` valide remonte comme `InternalError`.
 
@@ -805,8 +808,8 @@ Le build publié doit figer les dépendances qui affectent :
 - le parsing Markdown ;
 - le parsing YAML ;
 - le parcours du système de fichiers ;
-- la sérialisation JSON ;
-- l’écriture YAML canonique.
+- la sérialisation JSON si une stratégie future remplace `ADR-0007` ;
+- l’écriture YAML canonique si une stratégie future remplace `ADR-0007`.
 
 Décisions de design :
 

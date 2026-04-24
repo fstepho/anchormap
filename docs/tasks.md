@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
 - Next executable product task after blocker clearance: `T3.5 — Implement canonical JSON renderer`
-- Last completed task: `S4 — Canonical serializer profile report`
+- Last completed task: `T0.3 — Record canonical serializer ADR from S4`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -54,6 +54,7 @@
   - `T3.3 — Implement canonical sorted collections and finding model`
   - `T3.4 — Implement ScanResult view model and analysis_health pure function`
   - `S4 — Canonical serializer profile report`
+  - `T0.3 — Record canonical serializer ADR from S4`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

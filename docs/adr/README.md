@@ -44,14 +44,14 @@ An ADR is usually not required for:
 | `ADR-0001` | Runtime and package manager | Accepted |
 | `ADR-0002` | CLI interface strategy | Accepted |
 | `ADR-0003` | Test runner and fixture harness | Accepted |
+| `ADR-0007` | Canonical JSON and YAML rendering | Accepted |
 | `ADR-0010` | Source formatting and linting tool | Accepted |
 
 Reserved next IDs for near-term stack closure:
 
 - `ADR-0004` — Markdown parser
-- `ADR-0005` — YAML parser and config rendering
+- `ADR-0005` — YAML parser and config input profile
 - `ADR-0006` — TypeScript parser and graph subset
-- `ADR-0007` — Canonical JSON rendering
 - `ADR-0008` — Filesystem mutation and atomic write
 - `ADR-0009` — Packaging and distribution
 
