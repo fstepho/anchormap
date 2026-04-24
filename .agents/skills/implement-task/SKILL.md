@@ -32,7 +32,8 @@ Execution model:
 - do not create a parallel planning system
 - implementation is local in the main agent by default
 - delegate only if the runtime explicitly provides subagents and the task is large or risky enough that a bounded subagent materially improves the result
-- if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, and restrict work to the target task
+- if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, pass `fork_context: false` explicitly when using `spawn_agent`, and restrict work to the target task
+- do not delegate implementation with a full-history fork or context-inheriting subagent; if a fresh task-scoped subagent cannot be launched, keep implementation local or return `blocked`
 - if an implementation subagent is alive, do not edit files in parallel in the main agent
 - if a subagent times out, either wait again or close it before making local edits
 - do not spawn a reviewer yet

@@ -1231,6 +1231,10 @@ Le mode `autopilot` :
   sélectionner la prochaine dépendance ou fermeture exécutable nécessaire pour
   débloquer ce curseur ;
 - lance une fresh implementation session Codex pour exactement cette tâche ;
+- si cette session est lancée via un subagent `spawn_agent`, le lancement doit
+  passer explicitement `fork_context: false` ; `fork_context: true` est interdit
+  pour une implementation ou rework session `autopilot`, car cela transmet
+  l'historique complet du coordinateur au lieu d'un contexte borné à la tâche ;
 - fait produire par cette session un handoff borné : task ID, fichiers touchés,
   checks exécutés, statut, et état de préparation à la review ;
 - lance des fresh review sessions séparées de la session d'implémentation ;

@@ -1,0 +1,7 @@
+{
+	"id": "validate_autopilot_spawn_policy_forbidden_context_fork",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: autopilot_spawn_policy_forbidden_context_fork: docs/agent-loop.md:4 must not allow fork_context: true" }
+}

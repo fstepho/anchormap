@@ -150,7 +150,10 @@ diffs, and carries only compact task results across task boundaries.
    to choose the task.
 3. Launch a fresh implementation session for exactly that task, preferably
    with `codex -p autopilot exec` or an equivalent fresh Codex session. Do not
-   reuse the coordinator context as the implementation context.
+   reuse the coordinator context as the implementation context. If the runtime
+   uses `spawn_agent` for this step, the call must pass `fork_context: false`.
+   `fork_context: true` is forbidden for autopilot implementation or rework
+   subagents because it creates a full-history fork of the coordinator.
 4. The implementation session runs the normal task loop through implementation
    readiness: reading mode, traceability checks, patching, applicable checks,
    and a compact handoff containing task ID, changed files, checks run, status,
@@ -254,6 +257,11 @@ skills themselves.
   coordinator must not serve as the implementation context.
 - If a tool offers subagents, use them for autopilot implementation only when
   they provide a fresh task-scoped context equivalent to a new Codex session.
+  For `spawn_agent`, pass `fork_context: false` explicitly. `fork_context:
+  true` is forbidden for autopilot implementation and rework subagents. Do not
+  retry a rejected spawn with forbidden `fork_context: true`; if a fresh
+  subagent cannot be launched without context inheritance, stop with `tooling
+  problem`.
   Do not use same-session or context-inheriting subagents for successive
   autopilot tasks.
 - The autopilot coordinator may retain only compact task state across task

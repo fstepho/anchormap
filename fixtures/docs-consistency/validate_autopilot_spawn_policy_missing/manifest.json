@@ -1,0 +1,7 @@
+{
+	"id": "validate_autopilot_spawn_policy_missing",
+	"args": [],
+	"exit_code": 1,
+	"stdout": { "kind": "empty" },
+	"stderr": { "kind": "contains", "value": "validate: autopilot_spawn_policy_missing: docs/agent-loop.md must require fork_context: false" }
+}

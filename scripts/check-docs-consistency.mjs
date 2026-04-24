@@ -7,9 +7,17 @@ const docsRoot = resolve(process.env.DOCS_ROOT ?? join(rootDir, "docs"))
 const tasksFile = resolve(process.env.TASKS_FILE ?? join(docsRoot, "tasks.md"))
 const evalsFile = resolve(process.env.EVALS_FILE ?? join(docsRoot, "evals.md"))
 const designFile = resolve(process.env.DESIGN_FILE ?? join(docsRoot, "design.md"))
+const agentLoopFile = resolve(process.env.AGENT_LOOP_FILE ?? join(docsRoot, "agent-loop.md"))
+const operatingModelFile = resolve(
+	process.env.OPERATING_MODEL_FILE ?? join(docsRoot, "operating-model.md"),
+)
 const adrRegisterFile = resolve(process.env.ADR_REGISTER_FILE ?? join(docsRoot, "adr", "README.md"))
 const adrDir = resolve(process.env.ADR_DIR ?? join(docsRoot, "adr"))
 const repoDisplayRoot = dirname(docsRoot)
+const implementTaskSkillFile = resolve(
+	process.env.IMPLEMENT_TASK_SKILL_FILE ??
+		join(repoDisplayRoot, ".agents", "skills", "implement-task", "SKILL.md"),
+)
 
 function fail(message) {
 	process.stderr.write(`${message}\n`)
@@ -450,6 +458,79 @@ function collectDuplicateTaskHeadingErrors() {
 	)
 }
 
+function hasForkContextFalsePolicy(content) {
+	return /fork_context:\s*false/.test(content)
+}
+
+function findAllowedForkContextTrueLines(content) {
+	const forbiddenTerms =
+		/(forbidden|interdit|interdite|do not|must not|not allowed|ne doit pas|prohibited|never|cannot|can't|stop|bloquant)/i
+	const lines = content.split(/\r?\n/)
+	const violations = []
+
+	for (let index = 0; index < lines.length; index += 1) {
+		const lineWindow = [lines[index], lines[index + 1] ?? ""].join(" ")
+		if (!/fork_context:\s*true/.test(lineWindow)) {
+			continue
+		}
+		if (forbiddenTerms.test(lineWindow)) {
+			continue
+		}
+		violations.push(index + 1)
+	}
+
+	return violations
+}
+
+function collectAutopilotSpawnPolicyErrors() {
+	const policyFiles = [agentLoopFile, operatingModelFile, implementTaskSkillFile]
+	const policySurfaceExists = policyFiles.some((file) => existsSync(file))
+	if (!policySurfaceExists) {
+		return []
+	}
+
+	const errors = []
+	const requiredPolicyFiles = [
+		[agentLoopFile, "docs/agent-loop.md"],
+		[operatingModelFile, "docs/operating-model.md"],
+	]
+
+	for (const [file, label] of requiredPolicyFiles) {
+		if (!existsSync(file)) {
+			errors.push(`validate: autopilot_spawn_policy_missing: ${label} is missing`)
+			continue
+		}
+
+		const content = readFileSync(file, "utf8")
+		if (!hasForkContextFalsePolicy(content)) {
+			errors.push(
+				`validate: autopilot_spawn_policy_missing: ${toDisplayPath(file)} must require fork_context: false`,
+			)
+		}
+		for (const line of findAllowedForkContextTrueLines(content)) {
+			errors.push(
+				`validate: autopilot_spawn_policy_forbidden_context_fork: ${toDisplayPath(file)}:${line} must not allow fork_context: true`,
+			)
+		}
+	}
+
+	if (existsSync(implementTaskSkillFile)) {
+		const content = readFileSync(implementTaskSkillFile, "utf8")
+		if (!hasForkContextFalsePolicy(content)) {
+			errors.push(
+				`validate: autopilot_spawn_policy_missing: ${toDisplayPath(implementTaskSkillFile)} must require fork_context: false`,
+			)
+		}
+		for (const line of findAllowedForkContextTrueLines(content)) {
+			errors.push(
+				`validate: autopilot_spawn_policy_forbidden_context_fork: ${toDisplayPath(implementTaskSkillFile)}:${line} must not allow fork_context: true`,
+			)
+		}
+	}
+
+	return errors
+}
+
 function main(argv) {
 	if (argv.length > 0) {
 		fail("validate: invalid_invocation: check-docs-consistency.sh takes no arguments")
@@ -473,6 +554,7 @@ function main(argv) {
 		...collectAdrReferenceErrors(),
 		...collectMissingFixtureErrors(),
 		...collectDuplicateTaskHeadingErrors(),
+		...collectAutopilotSpawnPolicyErrors(),
 	]
 
 	if (errors.length > 0) {
