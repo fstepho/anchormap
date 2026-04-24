@@ -6,8 +6,8 @@ import { isMap, isScalar, isSeq, parseAllDocuments, type YAMLMap } from "yaml";
 import type { AppError } from "../cli/commands";
 import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { sortAnchorIdsByUtf8, sortRepoPathsByUtf8 } from "../domain/canonical-order";
-import { type RepoPath, validateRepoPath } from "../domain/repo-path";
-import { decodeUtf8StrictNoBom } from "./repo-fs";
+import { type RepoPath, repoPathToString, validateRepoPath } from "../domain/repo-path";
+import { decodeUtf8StrictNoBom, type RepoPathEntryStatus, statRepoPath } from "./repo-fs";
 
 export const ANCHORMAP_CONFIG_FILENAME = "anchormap.yaml";
 
@@ -21,10 +21,12 @@ const TOP_LEVEL_CONFIG_KEYS = new Set([
 const MAPPING_KEYS = new Set(["seed_files"]);
 
 export type ConfigYamlReadFile = (path: string) => Uint8Array;
+export type ConfigRepoPathStat = (path: RepoPath) => RepoPathEntryStatus;
 
 export interface LoadAnchormapYamlOptions {
 	cwd?: string;
 	readFile?: ConfigYamlReadFile;
+	statPath?: ConfigRepoPathStat;
 }
 
 export interface LoadedAnchormapYaml {
@@ -78,7 +80,9 @@ export function loadConfig(options: LoadAnchormapYamlOptions = {}): LoadConfigRe
 		return yamlResult;
 	}
 
-	return validateConfigYamlRoot(yamlResult.yaml.root);
+	return validateConfigYamlRoot(yamlResult.yaml.root, {
+		statPath: options.statPath ?? ((path) => statRepoPath(options.cwd ?? process.cwd(), path)),
+	});
 }
 
 export function parseAnchormapYamlText(
@@ -126,16 +130,24 @@ export function parseAnchormapYamlText(
 export function parseAnchormapConfigText(
 	text: string,
 	configPath = ANCHORMAP_CONFIG_FILENAME,
+	options: ValidateConfigOptions = {},
 ): LoadConfigResult {
 	const yamlResult = parseAnchormapYamlText(text, configPath);
 	if (yamlResult.kind === "error") {
 		return yamlResult;
 	}
 
-	return validateConfigYamlRoot(yamlResult.yaml.root);
+	return validateConfigYamlRoot(yamlResult.yaml.root, options);
 }
 
-export function validateConfigYamlRoot(root: YAMLMap): LoadConfigResult {
+export interface ValidateConfigOptions {
+	readonly statPath?: ConfigRepoPathStat;
+}
+
+export function validateConfigYamlRoot(
+	root: YAMLMap,
+	options: ValidateConfigOptions = {},
+): LoadConfigResult {
 	const topLevel = readClosedMapping(root, TOP_LEVEL_CONFIG_KEYS, "anchormap.yaml");
 	if (topLevel.kind === "error") {
 		return topLevel;
@@ -171,6 +183,16 @@ export function validateConfigYamlRoot(root: YAMLMap): LoadConfigResult {
 		return mappings;
 	}
 
+	const invariantResult = validateConfigPathInvariants(
+		productRoot.repoPath,
+		specRoots.repoPaths,
+		ignoreRoots.repoPaths,
+		options,
+	);
+	if (invariantResult.kind === "error") {
+		return invariantResult;
+	}
+
 	return {
 		kind: "ok",
 		config: {
@@ -181,6 +203,113 @@ export function validateConfigYamlRoot(root: YAMLMap): LoadConfigResult {
 			mappings: mappings.mappings,
 		},
 	};
+}
+
+function validateConfigPathInvariants(
+	productRoot: RepoPath,
+	specRoots: readonly RepoPath[],
+	ignoreRoots: readonly RepoPath[],
+	options: ValidateConfigOptions,
+): { kind: "ok" } | ConfigErrorResult {
+	const duplicateSpecRoot = findDuplicateRepoPath(specRoots);
+	if (duplicateSpecRoot !== undefined) {
+		return configLoadError(`spec_roots contains duplicate path ${duplicateSpecRoot}`);
+	}
+
+	const overlappingSpecRoots = findOverlappingRepoPaths(specRoots);
+	if (overlappingSpecRoots !== undefined) {
+		return configLoadError(
+			`spec_roots contains overlapping paths ${overlappingSpecRoots.ancestor} and ${overlappingSpecRoots.descendant}`,
+		);
+	}
+
+	const duplicateIgnoreRoot = findDuplicateRepoPath(ignoreRoots);
+	if (duplicateIgnoreRoot !== undefined) {
+		return configLoadError(`ignore_roots contains duplicate path ${duplicateIgnoreRoot}`);
+	}
+
+	const overlappingIgnoreRoots = findOverlappingRepoPaths(ignoreRoots);
+	if (overlappingIgnoreRoots !== undefined) {
+		return configLoadError(
+			`ignore_roots contains overlapping paths ${overlappingIgnoreRoots.ancestor} and ${overlappingIgnoreRoots.descendant}`,
+		);
+	}
+
+	if (options.statPath === undefined) {
+		return { kind: "ok" };
+	}
+
+	const productRootStatus = options.statPath(productRoot);
+	if (productRootStatus.kind !== "directory") {
+		return configLoadError("product_root must be an existing directory", productRootStatus);
+	}
+
+	for (const specRoot of specRoots) {
+		const specRootStatus = options.statPath(specRoot);
+		if (specRootStatus.kind !== "directory") {
+			return configLoadError(`spec_root ${specRoot} must be an existing directory`, specRootStatus);
+		}
+	}
+
+	for (const ignoreRoot of ignoreRoots) {
+		const ignoreRootStatus = options.statPath(ignoreRoot);
+		if (ignoreRootStatus.kind === "missing") {
+			continue;
+		}
+		if (ignoreRootStatus.kind === "inaccessible") {
+			return configLoadError(`ignore_root ${ignoreRoot} could not be validated`, ignoreRootStatus);
+		}
+		if (!isDescendantOf(ignoreRoot, productRoot)) {
+			return configLoadError(`ignore_root ${ignoreRoot} must be under product_root`);
+		}
+	}
+
+	return { kind: "ok" };
+}
+
+function findDuplicateRepoPath(paths: readonly RepoPath[]): RepoPath | undefined {
+	const seen = new Set<string>();
+	for (const path of paths) {
+		const value = repoPathToString(path);
+		if (seen.has(value)) {
+			return path;
+		}
+		seen.add(value);
+	}
+
+	return undefined;
+}
+
+function findOverlappingRepoPaths(
+	paths: readonly RepoPath[],
+): { ancestor: RepoPath; descendant: RepoPath } | undefined {
+	const sortedPaths = sortRepoPathsByUtf8(paths);
+	for (let leftIndex = 0; leftIndex < sortedPaths.length; leftIndex += 1) {
+		for (let rightIndex = leftIndex + 1; rightIndex < sortedPaths.length; rightIndex += 1) {
+			const left = sortedPaths[leftIndex];
+			const right = sortedPaths[rightIndex];
+			if (isDescendantOf(right, left)) {
+				return {
+					ancestor: left,
+					descendant: right,
+				};
+			}
+			if (isDescendantOf(left, right)) {
+				return {
+					ancestor: right,
+					descendant: left,
+				};
+			}
+		}
+	}
+
+	return undefined;
+}
+
+function isDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boolean {
+	const pathValue = repoPathToString(path);
+	const ancestorValue = repoPathToString(possibleAncestor);
+	return pathValue.startsWith(`${ancestorValue}/`);
 }
 
 type ParsedYamlDocument = ReturnType<typeof parseAllDocuments>[number];

@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Buffer } from "node:buffer";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -30,6 +30,17 @@ test("loads exactly anchormap.yaml from the provided cwd", () => {
 
 test("classifies missing anchormap.yaml as ConfigError", () => {
 	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-missing-"));
+
+	const result = loadAnchormapYaml({ cwd });
+
+	assertConfigError(result);
+});
+
+test("does not search parent directories for anchormap.yaml", () => {
+	const parent = mkdtempSync(join(tmpdir(), "anchormap-config-parent-"));
+	const cwd = join(parent, "nested");
+	mkdirSync(cwd);
+	writeFileSync(join(parent, ANCHORMAP_CONFIG_FILENAME), "version: 1\n");
 
 	const result = loadAnchormapYaml({ cwd });
 
@@ -156,6 +167,99 @@ mappings:
 	}
 });
 
+test("loadConfig validates product_root and spec_roots as existing directories", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-roots-"));
+	mkdirSync(join(cwd, "src"));
+	mkdirSync(join(cwd, "specs"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assert.equal(result.kind, "ok");
+});
+
+test("loadConfig classifies missing product_root as ConfigError", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-product-missing-"));
+	mkdirSync(join(cwd, "specs"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assertConfigError(result);
+});
+
+test("loadConfig classifies non-directory product_root as ConfigError", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-product-file-"));
+	writeFileSync(join(cwd, "src"), "");
+	mkdirSync(join(cwd, "specs"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assertConfigError(result);
+});
+
+test("loadConfig classifies missing spec_root as ConfigError", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-spec-missing-"));
+	mkdirSync(join(cwd, "src"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assertConfigError(result);
+});
+
+test("loadConfig classifies non-directory spec_root as ConfigError", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-spec-file-"));
+	mkdirSync(join(cwd, "src"));
+	writeFileSync(join(cwd, "specs"), "");
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assertConfigError(result);
+});
+
 test("defaults absent optional ignore_roots and mappings to empty values", () => {
 	const result = parseAnchormapConfigText(`
 version: 1
@@ -174,6 +278,99 @@ spec_roots:
 			mappings: {},
 		});
 	}
+});
+
+test("classifies duplicate and overlapping spec_roots as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+  - specs
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+  - specs/api
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("classifies duplicate and overlapping ignore_roots as ConfigError", () => {
+	for (const source of [
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - src/generated
+  - src/generated
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - src/generated
+  - src/generated/client
+`,
+	]) {
+		const result = parseAnchormapConfigText(source);
+
+		assertConfigError(result);
+	}
+});
+
+test("loadConfig rejects existing ignore_roots outside product_root", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-ignore-outside-"));
+	mkdirSync(join(cwd, "src"));
+	mkdirSync(join(cwd, "specs"));
+	mkdirSync(join(cwd, "other"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - other
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assertConfigError(result);
+});
+
+test("loadConfig accepts absent ignore_roots outside product_root", () => {
+	const cwd = mkdtempSync(join(tmpdir(), "anchormap-config-ignore-absent-"));
+	mkdirSync(join(cwd, "src"));
+	mkdirSync(join(cwd, "specs"));
+	writeFileSync(
+		join(cwd, ANCHORMAP_CONFIG_FILENAME),
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - other
+`,
+	);
+
+	const result = loadConfig({ cwd });
+
+	assert.equal(result.kind, "ok");
 });
 
 test("loadConfig classifies schema validation failures as ConfigError", () => {
@@ -270,6 +467,18 @@ product_root: ./src
 spec_roots:
   - specs
 `,
+		`
+version: 1
+product_root: /src
+spec_roots:
+  - specs
+`,
+		`
+version: 1
+product_root: ../src
+spec_roots:
+  - specs
+`,
 	]) {
 		const result = parseAnchormapConfigText(source);
 
@@ -300,6 +509,18 @@ version: 1
 product_root: src
 spec_roots:
   - specs/
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - /specs
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - ../specs
 `,
 	]) {
 		const result = parseAnchormapConfigText(source);
@@ -332,6 +553,22 @@ spec_roots:
   - specs
 ignore_roots:
   - src//generated
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - /src/generated
+`,
+		`
+version: 1
+product_root: src
+spec_roots:
+  - specs
+ignore_roots:
+  - ../generated
 `,
 	]) {
 		const result = parseAnchormapConfigText(source);

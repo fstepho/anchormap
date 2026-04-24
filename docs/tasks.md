@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T4.3 — Implement config path invariants and root existence validation`
-- Last completed task: `T4.2 — Implement config schema validation`
+- Next executable product task after blocker clearance: `T4.4 — Implement canonical YAML renderer for config`
+- Last completed task: `T4.3 — Implement config path invariants and root existence validation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -61,6 +61,7 @@
   - `T0.1 — Record parser profile ADRs from S1`
   - `T4.1 — Implement YAML parsing profile for anchormap.yaml`
   - `T4.2 — Implement config schema validation`
+  - `T4.3 — Implement config path invariants and root existence validation`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

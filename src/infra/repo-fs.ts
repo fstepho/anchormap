@@ -1,6 +1,17 @@
+import { statSync } from "node:fs";
+import { join } from "node:path";
 import { TextDecoder } from "node:util";
 
+import { type RepoPath, repoPathToString } from "../domain/repo-path";
+
 export const UTF8_DECODE_ERROR_KIND = "Utf8DecodeError";
+
+export type RepoPathEntryStatus =
+	| { kind: "directory" }
+	| { kind: "file" }
+	| { kind: "other" }
+	| { kind: "missing" }
+	| { kind: "inaccessible"; cause: unknown };
 
 export class Utf8DecodeError extends Error {
 	readonly kind = UTF8_DECODE_ERROR_KIND;
@@ -41,4 +52,35 @@ export function stripInitialBom(text: string): string {
 	}
 
 	return text;
+}
+
+export function statRepoPath(root: string, repoPath: RepoPath): RepoPathEntryStatus {
+	try {
+		const stats = statSync(join(root, repoPathToString(repoPath)));
+		if (stats.isDirectory()) {
+			return { kind: "directory" };
+		}
+		if (stats.isFile()) {
+			return { kind: "file" };
+		}
+		return { kind: "other" };
+	} catch (error) {
+		if (isMissingStatError(error)) {
+			return { kind: "missing" };
+		}
+		return {
+			kind: "inaccessible",
+			cause: error,
+		};
+	}
+}
+
+function isMissingStatError(error: unknown): boolean {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		((error as { code?: unknown }).code === "ENOENT" ||
+			(error as { code?: unknown }).code === "ENOTDIR")
+	);
 }
