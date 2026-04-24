@@ -1,0 +1,19 @@
+{
+	"id": "fx56_init_invalid_args",
+	"family": "B-init",
+	"purpose": "Invalid init arguments exit with usage error code 4 before writing anchormap.yaml.",
+	"command": ["node", "dist/anchormap.js", "init", "--spec-root", "specs"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary"],
+	"groups": ["m2"]
+}
