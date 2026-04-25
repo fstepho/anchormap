@@ -287,6 +287,12 @@ skills themselves.
 - do not classify `tooling problem` from review silence alone while the review process is still running normally.
 - no code change is allowed before the `review decision` is explicit.
 - a task touching a linted or otherwise statically checked surface is not ready for handoff until those applicable repo-local static checks have been run on the post-patch state and pass.
+- if an applicable static check fails only with deterministic repo formatter or
+  import-order diagnostics on files already touched by the task, the
+  implementation or rework session must apply the bounded mechanical
+  formatter/import-order correction, rerun the failed check, and report
+  `blocked` only if the check still fails, the formatter changes unrelated
+  files, or any remaining diagnostic is not purely mechanical.
 - Outside the explicit Autopilot Loop, allow at most one bounded `review -> rework -> review` loop per task pass. If the same class of blocking issue comes back again, stop instead of iterating.
 - In the explicit Autopilot Loop, allow at most five fresh review sessions per
   task, initial review included. Each rework between reviews must remain
@@ -317,6 +323,9 @@ skills themselves.
 
 Stop and hand back to the human coordinator when any of the following is true:
 
+- an applicable static check still fails after the allowed bounded mechanical
+  formatter/import-order correction, or the correction would touch unrelated
+  files
 - the `review decision` or `diagnose-fixture` classifies the issue as `spec ambiguity`
 - the `review decision` or `diagnose-fixture` classifies the issue as `product question`
 - the `review decision` or `diagnose-fixture` classifies the issue as `out-of-scope discovery`

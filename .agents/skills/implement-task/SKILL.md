@@ -44,6 +44,7 @@ Execution model:
 - treat the broader workflow state vocabulary as exactly: `implementing`, `needs_review`, `needs_rework`, `blocked`, `done`
 - for this skill's own final output, the only valid next states after an implementation pass are `needs_review` or `blocked`
 - do not return `needs_review` until the repo-local static checks applicable to the touched files have been run on the post-patch state and pass; when no such check exists for that surface, say so explicitly
+- if an applicable static check fails only with deterministic repo formatter or import-order diagnostics on files already touched by this task, apply the bounded mechanical formatter/import-order correction, rerun the failed check, and return `blocked` only if the check still fails, the formatter changes unrelated files, or any remaining diagnostic is not purely mechanical
 - routine `docs/tasks.md` execution-state edits for start-of-task alignment may be applied directly here
 - if the pass ends in `blocked` because of a structural task-plan problem or a classified deviation that must be recorded in `docs/tasks.md`, return a bounded hand-off for `update-tasks`; do not broaden scope by editing the task plan from this skill
 - do not mark the task `done` from this skill
@@ -82,7 +83,7 @@ Delegated-subagent contract (if used):
 - add or update only tests/fixtures required by this task
 - run the smallest relevant check early
 - rerun the repo-local static checks applicable to the touched files before returning success to the orchestrator
-- stop on the first blocking failure
+- stop on the first blocking failure, after applying the allowed bounded mechanical formatter/import-order correction when the failed check is purely auto-fixable on files already touched by the task
 - return to the orchestrator with:
   1. files changed
   2. behavior implemented

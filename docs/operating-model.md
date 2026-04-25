@@ -97,6 +97,13 @@ Pendant l'implémentation :
 - le plus petit check utile doit être lancé tôt ;
 - un check ciblé précoce ne remplace pas les checks statiques repo-locaux applicables aux fichiers modifiés ; avant handoff, ces checks doivent être relancés et passer, y compris le lint quand cette surface est couverte ;
 - un échec bloquant doit être classifié avant tout patch supplémentaire ;
+- un échec de check statique qui signale uniquement des corrections
+  mécaniques déterministes de formatage ou d'ordre d'imports sur des fichiers
+  déjà touchés n'est pas encore un échec bloquant : l'agent doit appliquer la
+  correction formatter/import-order repo-locale bornée, relancer le check
+  échoué, puis ne classifier `blocked` que si le check échoue encore, si la
+  correction touche une surface inattendue, ou si le diagnostic n'est pas
+  purement mécanique ;
 - avant de corriger un finding de review, un échec répété ou un rework, l'agent doit nommer l'invariant protégé et la cause racine présumée ;
 - si cet invariant n'est pas déjà détenu par `contract.md`, `design.md`, `evals.md`, `operating-model.md` ou une ADR acceptée, l'agent doit classer le gap avant de patcher ;
 - un agent ne doit pas corriger "à l'aveugle" ni élargir la portée pour faire passer un check.
@@ -1320,7 +1327,8 @@ survient :
   diff task-scoped ;
 - le coordinateur devrait inspecter et raisonner lui-même sur le contexte
   complet de la tâche pour continuer ;
-- un check obligatoire échoue ;
+- un check obligatoire échoue après toute correction mécanique formatter/import-order
+  autorisée par §2.2, ou échoue pour une raison non mécanique ;
 - la fresh review session ne peut pas être lancée, y compris après une approval
   auto-review attendue par `codex review` ;
 - la cinquième review decision de la tâche est `actionable findings`, ou une
