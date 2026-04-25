@@ -11,6 +11,10 @@ export function renderScanResultJson(result: ScanResultView): string {
 	return `${renderScanResultObject(result)}\n`;
 }
 
+export function renderScanResultHuman(result: ScanResultView): string {
+	return `analysis_health: ${result.analysis_health}\n`;
+}
+
 function renderScanResultObject(result: ScanResultView): string {
 	return renderObject([
 		["schema_version", renderNumber(result.schema_version)],

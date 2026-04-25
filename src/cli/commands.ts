@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { validateAnchorId } from "../domain/anchor-id";
 import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
-import { createConfigView, createFileView, createScanResultView } from "../domain/scan-result";
+import { runScanEngine } from "../domain/scan-engine";
 import {
 	ANCHORMAP_CONFIG_FILENAME,
 	type Config,
@@ -13,11 +13,8 @@ import {
 import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildSpecIndex } from "../infra/spec-index";
-import {
-	buildProductGraph,
-	productGraphHasSupportedLocalDependencySyntax,
-} from "../infra/ts-graph";
-import { renderScanResultJson } from "../render/render-json";
+import { buildProductGraph } from "../infra/ts-graph";
+import { renderScanResultHuman, renderScanResultJson } from "../render/render-json";
 import {
 	type ParsedInitArgs,
 	type ParsedMapArgs,
@@ -453,30 +450,21 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		return productGraphResult.error;
 	}
 
-	if (
-		context.scanMode === "json" &&
-		!productGraphHasSupportedLocalDependencySyntax(productGraphResult.productGraph) &&
-		specIndexResult.specIndex.observedAnchors.size === 0 &&
-		Object.keys(configResult.config.mappings).length === 0
-	) {
+	const scanResult = runScanEngine({
+		config: configResult.config,
+		specIndex: specIndexResult.specIndex,
+		productGraph: productGraphResult.productGraph,
+	});
+
+	if (context.scanMode === "json") {
 		return commandSuccess({
-			stdout: renderScanResultJson(
-				createScanResultView({
-					config: createConfigView({
-						product_root: configResult.config.productRoot,
-						spec_roots: configResult.config.specRoots,
-						ignore_roots: configResult.config.ignoreRoots,
-					}),
-					observed_anchors: {},
-					stored_mappings: {},
-					files: createEmptyProductFilesView(productGraphResult.productGraph.productFiles),
-					findings: productGraphResult.productGraph.graphFindings,
-				}),
-			),
+			stdout: renderScanResultJson(scanResult),
 		});
 	}
 
-	return internalError("anchormap scan is not implemented yet");
+	return commandSuccess({
+		stdout: renderScanResultHuman(scanResult),
+	});
 }
 
 function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {
@@ -533,18 +521,6 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 	}
 
 	return internalError("anchormap map is not implemented yet");
-}
-
-function createEmptyProductFilesView(productFiles: readonly RepoPath[]) {
-	return Object.fromEntries(
-		productFiles.map((productFile) => [
-			productFile,
-			createFileView({
-				covering_anchor_ids: [],
-				supported_local_targets: [],
-			}),
-		]),
-	);
 }
 
 function normalizeInitPath(

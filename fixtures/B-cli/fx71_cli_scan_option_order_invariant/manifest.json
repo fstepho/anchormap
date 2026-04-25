@@ -1,0 +1,19 @@
+{
+	"id": "fx71_cli_scan_option_order_invariant",
+	"family": "B-cli",
+	"purpose": "scan --json succeeds through orchestration with exact stdout and no filesystem mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "scan"],
+	"groups": ["m7"]
+}

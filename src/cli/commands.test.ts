@@ -1125,6 +1125,13 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 			},
 			findings: [],
 		});
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			["version: 1", "product_root: 'src'", "spec_roots:", "  - 'specs'", "mappings: {}", ""].join(
+				"\n",
+			),
+		);
+		assertNoAnchormapTemps(cwd);
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });
 	}
@@ -1252,7 +1259,7 @@ test("scan --json renders unsupported local require and dynamic import findings"
 	}
 });
 
-test("scan --json does not emit temporary clean output for local graph syntax before extraction", () => {
+test("scan --json runs scan orchestration through supported local graph syntax", () => {
 	const cwd = createTempRepo();
 	try {
 		mkdirSync(join(cwd, "src"));
@@ -1273,9 +1280,130 @@ test("scan --json does not emit temporary clean output for local graph syntax be
 			stderr: stderr.writer,
 		});
 
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 1,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+			},
+			analysis_health: "clean",
+			observed_anchors: {},
+			stored_mappings: {},
+			files: {
+				"src/dep.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: [],
+				},
+				"src/index.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: ["src/dep.ts"],
+				},
+			},
+			findings: [],
+		});
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			["version: 1", "product_root: 'src'", "spec_roots:", "  - 'specs'", "mappings: {}", ""].join(
+				"\n",
+			),
+		);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json fails fast instead of dropping observed anchors from the success contract", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(join(cwd, "src/index.ts"), "export const value = 1;\n");
+		writeFileSync(join(cwd, "specs/requirements.md"), "# FR-014 Requirement\n");
+		const initialConfig = readFileSync(join(cwd, "anchormap.yaml"), "utf8");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
 		assert.equal(exitCode, 1);
 		assert.equal(stdout.read(), "");
 		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), initialConfig);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json fails fast instead of dropping stored mappings from the success contract", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		const configBytes = [
+			"version: 1",
+			"product_root: 'src'",
+			"spec_roots:",
+			"  - 'specs'",
+			"mappings:",
+			"  FR-014:",
+			"    seed_files:",
+			"      - 'src/index.ts'",
+			"",
+		].join("\n");
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "src/index.ts"), "export const value = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 1);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("human scan runs successful orchestration without repository mutation", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(join(cwd, "src/index.ts"), "export const value = 1;\n");
+		const initialConfig = readFileSync(join(cwd, "anchormap.yaml"), "utf8");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 0);
+		assert.notEqual(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), initialConfig);
+		assertNoAnchormapTemps(cwd);
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });
 	}

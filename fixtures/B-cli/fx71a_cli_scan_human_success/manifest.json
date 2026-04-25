@@ -1,0 +1,19 @@
+{
+	"id": "fx71a_cli_scan_human_success",
+	"family": "B-cli",
+	"purpose": "Human scan on a valid repository exits 0 without a filesystem mutation.",
+	"command": ["node", "dist/anchormap.js", "scan"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "scan"],
+	"groups": ["m7"]
+}
