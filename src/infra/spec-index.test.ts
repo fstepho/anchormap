@@ -155,7 +155,9 @@ test("discovers supported spec files under configured roots in stable order", ()
 		);
 		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
 			["A-001", "specs/a.md", "markdown"],
+			["B-001", "specs/nested/b.yml", "yaml"],
 			["DOC.README.PRESENT", "docs/readme.md", "markdown"],
+			["Z-001", "specs/z.yaml", "yaml"],
 		]);
 	}
 });
@@ -268,6 +270,90 @@ test("extracts Markdown anchors after an initial UTF-8 BOM is removed", () => {
 		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
 			["BOM-001", "specs/bom.md", "markdown"],
 		]);
+	}
+});
+
+test("extracts YAML anchors only from a valid root string id", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: [
+					"root.yaml",
+					"profile.yaml",
+					"nested.yml",
+					"no-id.yaml",
+					"invalid-id.yaml",
+					"non-string.yaml",
+				],
+			},
+			files: {
+				"specs/root.yaml": Buffer.from("id: YAML.ROOT.ID\ntitle: Root id\n"),
+				"specs/profile.yaml": Buffer.from("%YAML 1.2\n---\nid: YAML.PROFILE.OK\nflag: on\n"),
+				"specs/nested.yml": Buffer.from("feature:\n  id: NEST-001\n"),
+				"specs/no-id.yaml": Buffer.from("title: No root id\n"),
+				"specs/invalid-id.yaml": Buffer.from("id: not-supported\n"),
+				"specs/non-string.yaml": Buffer.from("id: 123\n"),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["YAML.PROFILE.OK", "specs/profile.yaml", "yaml"],
+			["YAML.ROOT.ID", "specs/root.yaml", "yaml"],
+		]);
+	}
+});
+
+test("extracts YAML anchors after an initial UTF-8 BOM is removed", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["bom.yaml"],
+			},
+			files: {
+				"specs/bom.yaml": Buffer.from([0xef, 0xbb, 0xbf, ...Buffer.from("id: BOM-001\n")]),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["BOM-001", "specs/bom.yaml", "yaml"],
+		]);
+	}
+});
+
+test("classifies invalid YAML spec inputs as UnsupportedRepoError", () => {
+	const cases: ReadonlyArray<readonly [string, string]> = [
+		["invalid.yaml", "id: [unterminated\n"],
+		["multidoc.yaml", "id: ONE-001\n---\nid: TWO-002\n"],
+		["duplicate-root.yaml", "id: ONE-001\nid: TWO-002\n"],
+		["duplicate-nested.yaml", "items:\n  key: one\n  key: two\n"],
+		["yaml-1-1.yaml", "%YAML 1.1\n---\nid: OLD-001\n"],
+	];
+
+	for (const [path, text] of cases) {
+		const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+			cwd: CWD,
+			fs: createVirtualFs({
+				directories: {
+					specs: [path],
+				},
+				files: {
+					[`specs/${path}`]: Buffer.from(text),
+				},
+			}),
+		});
+
+		assert.equal(result.kind, "error", path);
+		if (result.kind === "error") {
+			assert.equal(result.error.kind, "UnsupportedRepoError", path);
+		}
 	}
 });
 

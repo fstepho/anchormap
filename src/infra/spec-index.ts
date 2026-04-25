@@ -1,5 +1,6 @@
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { isMap, isScalar, parseAllDocuments, type YAMLMap } from "yaml";
 
 import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { compareCanonicalTextByUtf8 } from "../domain/canonical-order";
@@ -123,7 +124,11 @@ export function buildSpecIndex(
 				return read;
 			}
 			files.push(read.file);
-			anchorOccurrences.push(...extractSpecAnchorOccurrences(read.file));
+			const extracted = extractSpecAnchorOccurrences(read.file);
+			if (extracted.kind === "error") {
+				return extracted;
+			}
+			anchorOccurrences.push(...extracted.occurrences);
 		}
 	}
 
@@ -136,12 +141,16 @@ export function buildSpecIndex(
 	};
 }
 
-function extractSpecAnchorOccurrences(file: SpecFile): readonly SpecAnchorOccurrence[] {
-	if (file.sourceKind !== "markdown") {
-		return [];
+function extractSpecAnchorOccurrences(
+	file: SpecFile,
+):
+	| { kind: "ok"; occurrences: readonly SpecAnchorOccurrence[] }
+	| { kind: "error"; error: SpecIndexError } {
+	if (file.sourceKind === "markdown") {
+		return { kind: "ok", occurrences: extractMarkdownAnchorOccurrences(file) };
 	}
 
-	return extractMarkdownAnchorOccurrences(file);
+	return extractYamlAnchorOccurrences(file);
 }
 
 function extractMarkdownAnchorOccurrences(file: SpecFile): readonly SpecAnchorOccurrence[] {
@@ -232,6 +241,110 @@ function readAnchorPrefix(text: string): AnchorId | undefined {
 	}
 
 	return result.anchorId;
+}
+
+function extractYamlAnchorOccurrences(
+	file: SpecFile,
+):
+	| { kind: "ok"; occurrences: readonly SpecAnchorOccurrence[] }
+	| { kind: "error"; error: SpecIndexError } {
+	const yaml = parseSpecYamlText(file.text, file.path);
+	if (yaml.kind === "error") {
+		return yaml;
+	}
+
+	const id = readYamlRootId(yaml.root);
+	if (id === undefined) {
+		return { kind: "ok", occurrences: [] };
+	}
+
+	return {
+		kind: "ok",
+		occurrences: [
+			{
+				anchorId: id,
+				specPath: file.path,
+				sourceKind: "yaml",
+			},
+		],
+	};
+}
+
+function parseSpecYamlText(
+	text: string,
+	path: RepoPath,
+): { kind: "ok"; root: unknown } | { kind: "error"; error: SpecIndexError } {
+	let documents: ReturnType<typeof parseAllDocuments>;
+
+	try {
+		documents = parseAllDocuments(text, {
+			version: "1.2",
+			uniqueKeys: true,
+		});
+	} catch (error) {
+		return specUnsupportedError(`spec YAML ${path} is invalid YAML`, error);
+	}
+
+	if (documents.length !== 1) {
+		return specUnsupportedError(`spec YAML ${path} must contain exactly one YAML document`);
+	}
+
+	const [document] = documents;
+	if (document.errors.length > 0) {
+		return specUnsupportedError(`spec YAML ${path} is invalid YAML`, document.errors[0]);
+	}
+
+	const yamlVersionViolation = getYamlVersionDirectiveViolation(document);
+	if (yamlVersionViolation !== undefined) {
+		return specUnsupportedError(`spec YAML ${path} must use YAML 1.2`, yamlVersionViolation);
+	}
+
+	return {
+		kind: "ok",
+		root: document.contents,
+	};
+}
+
+function readYamlRootId(root: unknown): AnchorId | undefined {
+	if (!isMap(root)) {
+		return undefined;
+	}
+
+	const value = readYamlMappingValue(root, "id");
+	if (!isScalar(value) || typeof value.value !== "string") {
+		return undefined;
+	}
+
+	const result = validateAnchorId(value.value);
+	if (result.kind === "validation_failure") {
+		return undefined;
+	}
+
+	return result.anchorId;
+}
+
+function readYamlMappingValue(root: YAMLMap, keyValue: string): unknown {
+	for (const item of root.items) {
+		const pair = item as { key: unknown; value: unknown };
+		if (isScalar(pair.key) && pair.key.value === keyValue) {
+			return pair.value;
+		}
+	}
+
+	return undefined;
+}
+
+type ParsedYamlDocument = ReturnType<typeof parseAllDocuments>[number];
+
+function getYamlVersionDirectiveViolation(document: ParsedYamlDocument): unknown {
+	if (document.directives?.yaml.explicit === true && document.directives.yaml.version !== "1.2") {
+		return document.directives.yaml;
+	}
+
+	return document.warnings.find(
+		(warning) =>
+			warning.code === "BAD_DIRECTIVE" && warning.message.startsWith("Unsupported YAML version "),
+	);
 }
 
 function compareSpecAnchorOccurrences(
