@@ -65,6 +65,10 @@ Conséquences :
 
 - `AGENTS.md` est une carte d'entrée courte, pas un manuel normatif ;
 - l'intention durable du projet doit vivre dans le dépôt, jamais uniquement dans l'historique de chat ;
+- les documents durables décrivent l'état voulu et les contraintes stables, pas
+  l'historique des tentatives, retours arrière, causes incidentelles ou
+  post-mortems ; lorsqu'une règle vient d'un échec, conserver seulement la
+  contrainte finale utile à l'exécution, sauf ADR explicitement dédiée ;
 - quand un agent échoue de manière répétée, la réponse par défaut n'est pas d'élargir le prompt mais d'ajouter la contrainte manquante dans le dépôt ;
 - cette contrainte manquante peut prendre la forme d'un document, d'une ADR, d'une fixture, d'un golden, d'un check de frontière, d'un script de validation ou d'un diagnostic d'échec plus lisible ;
 - le harness doit rendre le comportement observable par captures `stdout` / `stderr`, codes de sortie, rapports de mutation, goldens explicites et diffs lisibles ;

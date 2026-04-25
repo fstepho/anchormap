@@ -71,6 +71,9 @@ than guess.
   - whether critical surfaces still require authoritative coverage of the
     relevant contract, design, eval, and accepted ADR authority without
     imposing full-document rereading by default;
+  - whether process docs describe the intended stable rule instead of preserving
+    implementation scars, failed attempts, or post-mortem rationale that is not
+    needed to execute the workflow;
   - whether fresh Codex review remains the only bug-finding review engine.
 - Treat Biome `noExcessiveLinesPerFile` diagnostics as maintainability review
   signals. For a modified file above its configured threshold, request a
