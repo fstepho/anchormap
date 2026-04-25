@@ -9,6 +9,7 @@ import {
 	writeConfigAtomic,
 } from "../infra/config-io";
 import { statRepoPath } from "../infra/repo-fs";
+import { buildSpecIndex } from "../infra/spec-index";
 
 export type AnchormapCommandName = "init" | "map" | "scan";
 export type ScanOutputMode = "human" | "json";
@@ -418,6 +419,11 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 	const configResult = loadConfig({ cwd: context.cwd });
 	if (configResult.kind === "error") {
 		return configResult.error;
+	}
+
+	const specIndexResult = buildSpecIndex(configResult.config, { cwd: context.cwd });
+	if (specIndexResult.kind === "error") {
+		return specIndexResult.error;
 	}
 
 	return internalError("anchormap scan is not implemented yet");

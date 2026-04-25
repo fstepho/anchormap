@@ -700,6 +700,38 @@ test("default scan --json handler loads config first and fails missing config wi
 	}
 });
 
+test("default scan --json handler classifies spec decode failures as code 3 with empty stdout", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(
+			join(cwd, "anchormap.yaml"),
+			"version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n",
+		);
+		writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			"version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n",
+		);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("default human scan handler fails missing config with code 2 and no mutation", () => {
 	const cwd = createTempRepo();
 	try {
