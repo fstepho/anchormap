@@ -127,11 +127,29 @@ coordinator handoff or PR comment equivalent immediately after reading the
 review output.
 
 In autopilot, the only review commands are `codex review --uncommitted`,
-`codex review --base <branch>`, and `codex review --commit <sha>`. After the
-decision, the coordinator must keep only compact review state: verdict, findings
-count, finding titles and locations, checks, stop reason, and the review
-decision. Full finding bodies are retained only for actionable findings and only
-until the corresponding rework handoff is complete.
+`codex review --base <branch>`, and `codex review --commit <sha>`. The
+coordinator may redirect stdout/stderr from those native commands to a temporary
+file outside the repository and read only a bounded footer, such as:
+
+```sh
+review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
+codex review --uncommitted >"$review_log" 2>&1
+review_rc=$?
+printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
+tail -n 220 "$review_log"
+exit "$review_rc"
+```
+
+This redirection is not a review wrapper, parser, or second reviewer engine. It
+must not synthesize findings or read Codex session files. If the bounded footer
+does not contain a usable native verdict or enough native finding detail for
+routing, stop instead of loading the complete transcript into the coordinator.
+After the decision, the coordinator must keep only compact review state:
+verdict, findings count, finding titles and locations, checks, stop reason, and
+the review decision. Full finding bodies are retained only for actionable
+findings and only until the corresponding rework handoff is complete. Complete
+redirected transcripts are temporary diagnostic artifacts outside the worktree,
+not repo state or normal coordinator context.
 
 ## Non-Goals
 

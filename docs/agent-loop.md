@@ -199,11 +199,25 @@ fresh implementation, rework, or review session.
    and review readiness.
 5. Stop with `blocked_execution_state` if the implementation handoff is
    missing, incomplete, or fails to identify a bounded task-scoped diff.
-6. Launch a fresh review session for the task with native `codex review`
-   directly: `codex review --uncommitted`, `codex review --base <branch>`, or
+6. Launch a fresh review session for the task with native `codex review`:
+   `codex review --uncommitted`, `codex review --base <branch>`, or
    `codex review --commit <sha>`. These are the only autopilot review commands.
-   Autopilot may run up to five fresh review sessions total for that task,
-   initial review included.
+   To keep the coordinator context-thin, autopilot may redirect stdout/stderr
+   to a temporary transcript outside the repository and print only a bounded
+   footer for the coordinator to read, for example:
+   ```sh
+   review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
+   codex review --uncommitted >"$review_log" 2>&1
+   review_rc=$?
+   printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
+   tail -n 220 "$review_log"
+   exit "$review_rc"
+   ```
+   This is still the native `codex review` surface. The redirection is not a
+   wrapper, does not parse or synthesize findings, and must not read Codex
+   session files. The transcript is a temporary diagnostic artifact, not a
+   product or task source of truth. Autopilot may run up to five fresh review
+   sessions total for that task, initial review included.
 7. If review yields actionable findings before review 5, launch a fresh
    implementation or rework session for the same task. The rework session must
    name the protected invariant and presumed root cause, apply one bounded
@@ -225,7 +239,10 @@ fresh implementation, rework, or review session.
     implementation logs, full diffs, file contents, long review output, or
     review transcripts into the next task. Retain full review finding bodies
     only for actionable findings and only until the corresponding rework handoff
-    is complete.
+    is complete. If the bounded footer from a redirected `codex review` does
+    not contain a usable native verdict or enough native finding detail to route
+    the task, stop with a review-output/tooling block instead of reading the
+    complete transcript in the coordinator.
 12. Repeat from step 2 until there is no next executable product task,
    dependency, or closure item, or a hard stop occurs.
 
@@ -429,6 +446,11 @@ Notes:
   `docs/code-review.md`, with entry pointers from `AGENTS.md`.
 - these commands are the minimum starting point for review, not the maximum allowed review surface. A reviewer may add bounded falsification checks when the task introduces new invariants not already stressed by the existing commands.
 - when a task touches files covered by `npm run lint`, run `npm run lint` before concluding the implementation pass or marking the review `done`, unless the changed surface is explicitly outside that command's scope.
+- in autopilot, prefer redirecting native `codex review` stdout/stderr to a
+  temporary file outside the repo and surfacing only `review_log`,
+  `review_exit`, and a bounded footer such as `tail -n 220`. Do not use a
+  repo-local parser, npm wrapper, Codex session-file reader, or second reviewer
+  engine to summarize the review.
 
 ## Autopilot Context Audit
 
@@ -440,6 +462,8 @@ the coordinator session against the compact-retention rule:
 - implementation, rework, and review sessions remain fresh and task-scoped;
 - post-task coordinator handoff does not carry full review bodies, transcripts,
   diffs, file contents, implementation logs, or completed finding bodies.
+- redirected review transcripts, when used, live outside the worktree and the
+  coordinator consumes only the bounded footer during normal autopilot routing.
 
 ## Non-Goals
 

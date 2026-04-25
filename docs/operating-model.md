@@ -1021,6 +1021,26 @@ Entrées autorisées exhaustives pour la bug-finding review :
 - une session interactive `codex` démarrée fraîchement pour la review, avec la
   review comme premier work step
 
+Sur le chemin `codex review`, l'autopilot peut rediriger stdout/stderr vers un
+fichier temporaire hors repository et ne remonter au coordinateur qu'un footer
+borné de cette sortie, par exemple :
+
+```sh
+review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
+codex review --uncommitted >"$review_log" 2>&1
+review_rc=$?
+printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
+tail -n 220 "$review_log"
+exit "$review_rc"
+```
+
+Cette forme reste une surface native `codex review`. La redirection ne doit pas
+devenir un wrapper de review : elle ne parse pas les findings, ne synthétise pas
+de verdict, ne relit pas les fichiers de session Codex, et n'introduit pas un
+second moteur de review. Le transcript complet est un artefact opérationnel
+temporaire pour diagnostic de tooling, jamais une source de vérité produit ou
+une charge normale du contexte coordinateur.
+
 Un subagent `spawn_agent` n'est pas une surface de review autorisée, même avec
 `fork_context: false`.
 
@@ -1109,6 +1129,13 @@ Règles :
   pointeurs d'entrée depuis `AGENTS.md`, pas dans des prompts runtime
   routiniers ;
 - `codex review --uncommitted` n'est autorisé que si le worktree est strictement borné au diff cumulé de la tâche ou de la maintenance process ; sinon utiliser une surface bornée via `--base` ou `--commit` ;
+- en autopilot, les commandes natives `codex review --uncommitted`,
+  `codex review --base <branch>` et `codex review --commit <sha>` peuvent
+  rediriger stdout/stderr vers un transcript temporaire hors repository et
+  afficher seulement `review_log`, `review_exit` et un footer borné ; si ce
+  footer ne contient pas un verdict natif exploitable ou les détails natifs
+  nécessaires pour router les findings actionnables, la boucle s'arrête au lieu
+  de lire le transcript complet dans le coordinateur ;
 - une session interactive `codex` n'est autorisée comme surface de review que si elle est fraîche et que la review est son premier work step ;
 - la review decision consomme les findings de review et les mappe vers l'état de boucle ; elle vit dans le handoff du coordinateur ou commentaire PR équivalent, sauf sur le chemin interactif frais où la session de review peut l'émettre directement ; elle ne remplace pas la review et ne produit pas de finding nouveau ;
 - aucune modification de code n'est autorisée avant que la review decision soit explicite ;
@@ -1282,10 +1309,12 @@ Le mode `autopilot` :
   checks exécutés, statut, et état de préparation à la review ;
 - lance les fresh review sessions séparées de la session d'implémentation selon
   le protocole de review natif de la section 14 ;
-- en mode `autopilot`, lance les surfaces `codex review` directement avec
+- en mode `autopilot`, lance les surfaces natives `codex review` avec
   `codex review --uncommitted`, `codex review --base <branch>` ou
   `codex review --commit <sha>` ; ce sont les seules commandes de review
-  autopilot autorisées ;
+  autopilot autorisées ; le coordinateur peut rediriger leur stdout/stderr vers
+  un transcript temporaire hors repository et ne consommer qu'un footer borné de
+  la sortie native ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
   review initiale incluse, avec au plus quatre passes de rework bornées entre
   ces reviews ;
@@ -1324,7 +1353,11 @@ ne doit pas retenir les logs complets d'implémentation, les diffs complets, les
 contenus de fichiers, les longues sorties de review ou les transcriptions de
 review au-delà de la tâche. Les bodies complets de findings de review peuvent
 être conservés seulement pour des findings actionnables et seulement jusqu'au
-handoff du rework correspondant.
+handoff du rework correspondant. Lorsqu'une review native redirigée est
+utilisée, le transcript complet reste hors worktree et le coordinateur ne doit
+consommer que le footer borné pendant le routage normal. Lire le transcript
+complet dans le coordinateur est réservé au diagnostic de tooling après arrêt ou
+blocage, pas à la continuation routinière de l'autopilot.
 
 Avant d'ajouter un nouvel outillage de capture, de rétention ou de handoff au
 mode `autopilot`, la boucle doit être auditée contre cette règle de rétention
@@ -1483,6 +1516,10 @@ Review le diff cumulé complet de la tâche <TASK_ID> ou de la surface process <
 - garde la guidance de review durable dans `docs/code-review.md`, avec des
   pointeurs d'entrée depuis `AGENTS.md`, pas dans un prompt ad hoc ;
 - n'utilise aucun wrapper qui relit les fichiers de session Codex ni aucun moteur alternatif.
+- pour `codex review`, une redirection stdout/stderr vers un fichier temporaire
+  hors repository et l'affichage d'un footer borné de sortie native sont
+  autorisés pour protéger le contexte coordinateur ; ce mécanisme ne parse pas
+  et ne remplace pas la review.
 - si aucun task ID explicite n'est donné au lancement, détermine d'abord si le diff est une maintenance process bornée ; si oui, review cette surface process ; sinon ancre la review sur `docs/tasks.md` `## Execution State` -> `Current active task`, ou stoppe si cette valeur n'est pas exploitable.
 - émets une review decision explicite immédiatement après les findings, et avant toute modification de code.
 - si la surface d'entrée est `codex review`, le coordinateur émet la review decision dans son handoff ou commentaire PR équivalent juste après lecture de la sortie.
