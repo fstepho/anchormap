@@ -14,7 +14,7 @@ You are the orchestrator for the target task.
    - the `## Execution State` section for current progress context
 4. Choose the reading mode:
    - `standard` for ordinary bounded implementation: read only the `docs/contract.md`, `docs/design.md`, and `docs/evals.md` sections referenced by the task block.
-   - `critical` for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, repo-local review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: read the full `docs/contract.md`, `docs/design.md`, `docs/evals.md`, plus relevant accepted ADRs in `docs/adr/`.
+   - `critical` for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, repo-local review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: establish authoritative coverage of the relevant `docs/contract.md`, `docs/design.md`, `docs/evals.md`, plus relevant accepted ADRs in `docs/adr/`. Full-document reading is appropriate when the task edits normative docs, section boundaries are unclear, references are incomplete, authorities conflict, or a concrete failure/review finding requires broader context; it is not required by default.
 5. If the task block does not provide enough contract/design/eval references to support standard mode, classify the gap before patching instead of guessing.
 6. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
 7. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
@@ -23,6 +23,7 @@ You are the orchestrator for the target task.
 
 Before coding:
 - state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
+- state the reading mode and the authority coverage used for that mode; after this statement, broaden reading only when a concrete signal requires it, such as ambiguity, missing references, conflicting docs, a failing check, a review finding, or an unexpectedly non-local invariant
 - state which repo-local static checks apply to the files you expect to touch, and which of them must pass before you return `needs_review`
 - choose applicable checks from the command surface in `docs/agent-loop.md`; prefer the targeted product, harness, docs, or fixture command for early iteration, then run the full applicable handoff checks before returning `needs_review`
 - state any `docs/brief.md` or `docs/adr/` refs used for scope or architectural binding when they are applicable to the task

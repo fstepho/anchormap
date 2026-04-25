@@ -45,8 +45,21 @@ Use `standard` mode for ordinary bounded implementation tasks:
 Use `critical` mode when the diff touches parser, renderer, CLI boundary,
 filesystem mutation, packaging, test-harness behavior, repo-local
 review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`.
-Critical mode requires the full `docs/contract.md`, `docs/design.md`,
-`docs/evals.md`, plus the relevant accepted ADRs.
+Critical mode requires authoritative coverage of the relevant contract,
+design, eval, and accepted ADR authority. It does not require exhaustive
+rereading by default. Full-document reading is appropriate when the change
+edits a normative document, section boundaries are unclear, task references are
+incomplete, documents conflict, or a concrete failure, ambiguity, or review
+finding requires broader context.
+
+In any mode, use the smallest information surface that is sufficient to state
+the target task or process surface, binding references, expected checks, and
+patch boundary before editing. After that statement, broaden reading only when
+new evidence requires it, such as a failing check, review finding, non-local
+invariant, missing reference, or conflict between authorities. The workflow
+does not prescribe how Codex obtains that coverage; native search, targeted
+reads, summaries, indexes, or full-document reads are all acceptable when they
+serve that goal.
 
 If the target task lacks enough references to support standard mode, classify
 the gap before patching instead of guessing.
@@ -259,7 +272,7 @@ skills themselves.
 
 - choose `standard` or `critical` before implementation and before launching the fresh review session.
 - `critical` review is mandatory for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, `docs/contract.md`, `docs/evals.md`, and repo-local review/orchestration changes.
-- `critical` implementation reading is mandatory for the same surfaces, and includes full contract/design/evals reading plus relevant accepted ADRs.
+- `critical` implementation reading is mandatory for the same surfaces, and requires authoritative coverage of relevant contract/design/eval authority plus relevant accepted ADRs; it is not a command policy or a blanket full-document reread requirement.
 - Codex review capabilities are the only bug-finding review engine.
 - launch review in its own fresh review session, not as a same-session self-review and not through a wrapper that reparses session files.
 - when using `--uncommitted`, the worktree must contain only the current task's cumulative diff or the bounded process-maintenance diff.

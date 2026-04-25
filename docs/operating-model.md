@@ -1229,6 +1229,18 @@ répété, diagnostic non local difficile, ou gate de release opaque ; s'il masq
 un manque de contrat, d'eval, de design ou de découpage de tâche, la boucle doit
 s'arrêter et classifier le gap au lieu d'augmenter encore l'effort.
 
+La session coordinatrice fournit à chaque fresh implementation ou rework
+session un task packet compact : identifiant de tâche, surface visée, références
+contract/design/eval déjà identifiées, ADRs pertinentes, checks attendus, niveau
+`reasoning_effort` choisi et raison courte. Ce packet borne le contexte initial
+sans remplacer l'autorité des documents durables. La session d'implémentation
+reste responsable de vérifier les références nécessaires et peut élargir sa
+lecture lorsqu'un signal concret l'exige : référence incomplète, ambiguïté,
+conflit entre autorités, invariant non local, échec de check, finding de review
+ou surface touchée plus large que prévu. Le mode `critical` exige une couverture
+autoritative suffisante des autorités pertinentes ; il n'impose pas une relecture
+complète systématique, ni une stratégie de commande particulière.
+
 Le mode `autopilot` :
 
 - traite toujours une seule tâche active à la fois ;

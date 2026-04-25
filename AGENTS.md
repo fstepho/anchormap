@@ -57,8 +57,9 @@ enough traceability, classify the gap before patching.
 
 Use the critical path before changing parser, renderer, CLI boundary,
 filesystem mutation, packaging, test-harness behavior, repo-local
-review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: read
-the full `docs/contract.md`, `docs/design.md`, `docs/evals.md`, and relevant
+review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: follow
+the critical-mode authority coverage rule in `docs/agent-loop.md`, including
+the relevant `docs/contract.md`, `docs/design.md`, `docs/evals.md`, and
 accepted ADRs.
 
 If a scope question remains open after the required reading, consult
