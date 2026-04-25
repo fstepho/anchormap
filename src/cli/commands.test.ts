@@ -901,6 +901,7 @@ test("default map handler checks replace guard before spec indexing", () => {
 		mkdirSync(join(cwd, "src"), { recursive: true });
 		mkdirSync(join(cwd, "specs"), { recursive: true });
 		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "src", "index.ts"), "export {};\n");
 		writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
@@ -921,6 +922,128 @@ test("default map handler checks replace guard before spec indexing", () => {
 	}
 });
 
+test("default map handler rejects config-dependent seed preconditions before spec indexing", () => {
+	const cases: Array<{
+		name: string;
+		seed: string;
+		setup(cwd: string): void;
+	}> = [
+		{
+			name: "outside product_root",
+			seed: "lib/index.ts",
+			setup: (cwd) => {
+				mkdirSync(join(cwd, "lib"), { recursive: true });
+				writeFileSync(join(cwd, "lib", "index.ts"), "export {};\n");
+			},
+		},
+		{
+			name: "under ignore_roots",
+			seed: "src/generated/index.ts",
+			setup: (cwd) => {
+				mkdirSync(join(cwd, "src", "generated"), { recursive: true });
+				writeFileSync(join(cwd, "src", "generated", "index.ts"), "export {};\n");
+			},
+		},
+		{
+			name: "declaration file",
+			seed: "src/types.d.ts",
+			setup: (cwd) => {
+				writeFileSync(join(cwd, "src", "types.d.ts"), "export type Value = string;\n");
+			},
+		},
+		{
+			name: "tsx file",
+			seed: "src/view.tsx",
+			setup: (cwd) => {
+				writeFileSync(join(cwd, "src", "view.tsx"), "export const view = null;\n");
+			},
+		},
+		{
+			name: "js file",
+			seed: "src/index.js",
+			setup: (cwd) => {
+				writeFileSync(join(cwd, "src", "index.js"), "module.exports = {};\n");
+			},
+		},
+		{
+			name: "absent file",
+			seed: "src/missing.ts",
+			setup: () => {},
+		},
+		{
+			name: "directory, not file",
+			seed: "src/directory.ts",
+			setup: (cwd) => {
+				mkdirSync(join(cwd, "src", "directory.ts"));
+			},
+		},
+	];
+
+	for (const testCase of cases) {
+		const cwd = createTempRepo();
+		const configBytes = [
+			"version: 1",
+			"product_root: 'src'",
+			"spec_roots:",
+			"  - 'specs'",
+			"ignore_roots:",
+			"  - 'src/generated'",
+			"mappings: {}",
+			"",
+		].join("\n");
+		try {
+			mkdirSync(join(cwd, "src"), { recursive: true });
+			mkdirSync(join(cwd, "specs"), { recursive: true });
+			writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+			writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
+			testCase.setup(cwd);
+			const stdout = createBufferingWriter();
+			const stderr = createBufferingWriter();
+
+			const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", testCase.seed], {
+				cwd,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			});
+
+			assert.equal(exitCode, 4, testCase.name);
+			assert.equal(stdout.read(), "", testCase.name);
+			assert.notEqual(stderr.read(), "", testCase.name);
+			assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes, testCase.name);
+			assertNoAnchormapTemps(cwd);
+		} finally {
+			rmSync(cwd, { recursive: true, force: true });
+		}
+	}
+});
+
+test("default map handler classifies required seed existence-test failure as code 3", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		symlinkSync("loop.ts", join(cwd, "src", "loop.ts"));
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/loop.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("default map handler rejects anchors absent from current specs with code 4", () => {
 	const cwd = createTempRepo();
 	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
@@ -929,6 +1052,7 @@ test("default map handler rejects anchors absent from current specs with code 4"
 		mkdirSync(join(cwd, "specs"), { recursive: true });
 		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
 		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "export {};\n");
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 
@@ -955,6 +1079,7 @@ test("default map handler classifies spec decode failures as code 3 without muta
 		mkdirSync(join(cwd, "src"), { recursive: true });
 		mkdirSync(join(cwd, "specs"), { recursive: true });
 		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "src", "index.ts"), "export {};\n");
 		writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();

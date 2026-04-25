@@ -1,7 +1,7 @@
 {
-	"id": "fx65_map_invalid_seed",
+	"id": "fx67d_map_required_existence_test_failure_code3",
 	"family": "B-map",
-	"purpose": "map with a config-dependent invalid seed exits 4 before spec indexing and preserves anchormap.yaml.",
+	"purpose": "map with an inaccessible required seed existence test exits 3 and preserves anchormap.yaml.",
 	"command": [
 		"node",
 		"dist/anchormap.js",
@@ -9,10 +9,10 @@
 		"--anchor",
 		"FR-014",
 		"--seed",
-		"src/generated/index.ts"
+		"src/loop.ts"
 	],
 	"cwd": ".",
-	"exit_code": 4,
+	"exit_code": 3,
 	"stdout": {
 		"kind": "ignored"
 	},
@@ -22,6 +22,6 @@
 	"filesystem": {
 		"kind": "no_mutation"
 	},
-	"tags": ["config", "map", "precondition", "priority"],
+	"tags": ["map", "repo", "precondition", "write"],
 	"groups": ["m8"]
 }

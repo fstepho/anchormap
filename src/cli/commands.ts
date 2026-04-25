@@ -2,7 +2,12 @@ import { lstatSync } from "node:fs";
 import { join } from "node:path";
 
 import { validateAnchorId } from "../domain/anchor-id";
-import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
+import {
+	normalizeUserPathArg,
+	type RepoPath,
+	repoPathToString,
+	validateRepoPath,
+} from "../domain/repo-path";
 import { runScanEngine } from "../domain/scan-engine";
 import {
 	ANCHORMAP_CONFIG_FILENAME,
@@ -523,6 +528,15 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return usageError(`mapping for ${anchorId} already exists`);
 	}
 
+	const seedPreconditions = validateMapSeedPreconditions(
+		configResult.config,
+		args.seeds,
+		context.cwd,
+	);
+	if (seedPreconditions.kind === "error") {
+		return seedPreconditions.error;
+	}
+
 	const inspectedPathCaseIndex = new Map<string, RepoPath>();
 	const specIndexResult = buildSpecIndex(configResult.config, {
 		cwd: context.cwd,
@@ -556,6 +570,43 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 	}
 
 	return internalError("anchormap map is not implemented yet");
+}
+
+function validateMapSeedPreconditions(
+	config: Config,
+	seeds: readonly string[],
+	cwd: string,
+): { kind: "ok" } | { kind: "error"; error: AppError } {
+	for (const seedValue of seeds) {
+		const seedResult = validateRepoPath(seedValue);
+		if (seedResult.kind === "validation_failure") {
+			return { kind: "error", error: usageError("--seed must be a valid repository path") };
+		}
+
+		const seed = seedResult.repoPath;
+		if (!isRepoPathDescendantOf(seed, config.productRoot)) {
+			return { kind: "error", error: usageError(`--seed ${seed} must be under product_root`) };
+		}
+		if (isIgnoredRepoPath(seed, config.ignoreRoots)) {
+			return { kind: "error", error: usageError(`--seed ${seed} must be outside ignore_roots`) };
+		}
+		if (!isAdmissibleProductFilePath(seed)) {
+			return { kind: "error", error: usageError(`--seed ${seed} must be a product .ts file`) };
+		}
+
+		const status = statRepoPath(cwd, seed);
+		if (status.kind === "inaccessible") {
+			return {
+				kind: "error",
+				error: unsupportedRepoError(`--seed ${seed} existence could not be validated`),
+			};
+		}
+		if (status.kind !== "file") {
+			return { kind: "error", error: usageError(`--seed ${seed} must exist as a file`) };
+		}
+	}
+
+	return { kind: "ok" };
 }
 
 function normalizeInitPath(
@@ -646,6 +697,17 @@ function isRepoPathDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boo
 	const pathValue = repoPathToString(path);
 	const ancestorValue = repoPathToString(possibleAncestor);
 	return pathValue.startsWith(`${ancestorValue}/`);
+}
+
+function isIgnoredRepoPath(path: RepoPath, ignoreRoots: readonly RepoPath[]): boolean {
+	return ignoreRoots.some(
+		(ignoreRoot) => path === ignoreRoot || isRepoPathDescendantOf(path, ignoreRoot),
+	);
+}
+
+function isAdmissibleProductFilePath(path: RepoPath): boolean {
+	const value = repoPathToString(path);
+	return value.endsWith(".ts") && !value.endsWith(".d.ts");
 }
 
 function isMissingPathError(error: unknown): boolean {
