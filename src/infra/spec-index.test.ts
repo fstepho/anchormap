@@ -123,6 +123,12 @@ function occurrenceView(
 	]);
 }
 
+function observedAnchorView(
+	observedAnchors: ReadonlyMap<unknown, SpecAnchorOccurrence>,
+): ReadonlyArray<readonly [string, string, string]> {
+	return occurrenceView([...observedAnchors.values()]);
+}
+
 test("discovers supported spec files under configured roots in stable order", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs", "docs"]), {
 		cwd: CWD,
@@ -159,6 +165,88 @@ test("discovers supported spec files under configured roots in stable order", ()
 			["DOC.README.PRESENT", "docs/readme.md", "markdown"],
 			["Z-001", "specs/z.yaml", "yaml"],
 		]);
+		assert.deepEqual(observedAnchorView(result.specIndex.observedAnchors), [
+			["A-001", "specs/a.md", "markdown"],
+			["B-001", "specs/nested/b.yml", "yaml"],
+			["DOC.README.PRESENT", "docs/readme.md", "markdown"],
+			["Z-001", "specs/z.yaml", "yaml"],
+		]);
+	}
+});
+
+test("returns observed anchors in canonical anchor ID order independent of file discovery order", () => {
+	const expected: ReadonlyArray<readonly [string, string, string]> = [
+		["A-001", "specs/a.md", "markdown"],
+		["B-001", "specs/b.yaml", "yaml"],
+		["Z-001", "specs/z.md", "markdown"],
+	];
+	const cases: ReadonlyArray<readonly string[]> = [
+		["z.md", "noise.md", "b.yaml", "a.md", "nested"],
+		["nested", "a.md", "b.yaml", "noise.md", "z.md"],
+	];
+
+	for (const directoryEntries of cases) {
+		const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+			cwd: CWD,
+			fs: createVirtualFs({
+				directories: {
+					specs: directoryEntries,
+					"specs/nested": ["empty.yaml"],
+				},
+				files: {
+					"specs/z.md": Buffer.from("# Z-001\n"),
+					"specs/noise.md": Buffer.from("# Editorial heading\nFree text\n"),
+					"specs/b.yaml": Buffer.from("id: B-001\n"),
+					"specs/a.md": Buffer.from("# A-001\n"),
+					"specs/nested/empty.yaml": Buffer.from("title: Valid spec without id\n"),
+				},
+			}),
+		});
+
+		assert.equal(result.kind, "ok");
+		if (result.kind === "ok") {
+			assert.deepEqual(observedAnchorView(result.specIndex.observedAnchors), expected);
+			assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), expected);
+		}
+	}
+});
+
+test("classifies duplicate anchors across spec files as UnsupportedRepoError", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["a.md", "b.yaml"],
+			},
+			files: {
+				"specs/a.md": Buffer.from("# DUP-001\n"),
+				"specs/b.yaml": Buffer.from("id: DUP-001\n"),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "UnsupportedRepoError");
+	}
+});
+
+test("classifies duplicate anchors within one Markdown spec file as UnsupportedRepoError", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["duplicates.md"],
+			},
+			files: {
+				"specs/duplicates.md": Buffer.from("# DUP-001\n\n## DUP-001 duplicate\n"),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "UnsupportedRepoError");
 	}
 });
 

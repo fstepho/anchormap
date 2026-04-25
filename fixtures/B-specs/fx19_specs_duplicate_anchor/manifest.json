@@ -1,0 +1,19 @@
+{
+	"id": "fx19_specs_duplicate_anchor",
+	"family": "B-specs",
+	"purpose": "scan --json with the same anchor observed in two spec files exits 3 with empty stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["specs", "duplicate", "scan"],
+	"groups": ["m5"]
+}

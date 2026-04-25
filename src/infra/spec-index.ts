@@ -58,6 +58,7 @@ export interface SpecAnchorOccurrence {
 
 export interface SpecIndex {
 	readonly specFiles: readonly SpecFile[];
+	readonly observedAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
 	readonly anchorOccurrences: readonly SpecAnchorOccurrence[];
 }
 
@@ -110,6 +111,7 @@ export function buildSpecIndex(
 	const fs = options.fs ?? nodeSpecIndexFs;
 	const files: SpecFile[] = [];
 	const anchorOccurrences: SpecAnchorOccurrence[] = [];
+	const observedAnchors = new Map<AnchorId, SpecAnchorOccurrence>();
 	const seenLowercasePaths = new Map<string, RepoPath>();
 
 	for (const specRoot of config.specRoots) {
@@ -128,17 +130,43 @@ export function buildSpecIndex(
 			if (extracted.kind === "error") {
 				return extracted;
 			}
-			anchorOccurrences.push(...extracted.occurrences);
+			for (const occurrence of extracted.occurrences) {
+				const inserted = insertObservedAnchor(observedAnchors, occurrence);
+				if (inserted.kind === "error") {
+					return inserted;
+				}
+				anchorOccurrences.push(occurrence);
+			}
 		}
 	}
+
+	const sortedAnchorOccurrences = anchorOccurrences.sort(compareSpecAnchorOccurrences);
 
 	return {
 		kind: "ok",
 		specIndex: {
 			specFiles: files.sort((left, right) => compareRepoPathsByUtf8(left.path, right.path)),
-			anchorOccurrences: anchorOccurrences.sort(compareSpecAnchorOccurrences),
+			observedAnchors: new Map(
+				sortedAnchorOccurrences.map((occurrence) => [occurrence.anchorId, occurrence]),
+			),
+			anchorOccurrences: sortedAnchorOccurrences,
 		},
 	};
+}
+
+function insertObservedAnchor(
+	observedAnchors: Map<AnchorId, SpecAnchorOccurrence>,
+	occurrence: SpecAnchorOccurrence,
+): { kind: "ok" } | { kind: "error"; error: SpecIndexError } {
+	const existing = observedAnchors.get(occurrence.anchorId);
+	if (existing !== undefined) {
+		return specUnsupportedError(
+			`duplicate spec anchor ${occurrence.anchorId} in ${existing.specPath} and ${occurrence.specPath}`,
+		);
+	}
+
+	observedAnchors.set(occurrence.anchorId, occurrence);
+	return { kind: "ok" };
 }
 
 function extractSpecAnchorOccurrences(
