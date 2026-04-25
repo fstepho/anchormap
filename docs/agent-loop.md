@@ -185,7 +185,12 @@ fresh implementation, rework, or review session.
    - keep the original cursor recoverable through the normal `docs/tasks.md`
      execution-state transition, not a sidecar file.
    Do not use Git history, clock, cache, network, environment, or a sidecar file
-   to choose the task.
+   to choose the task. Once the task block and dependencies are checked, launch
+   the fresh implementation session; do not use broad `rg` searches, ADR body
+   reads, product-file reads, fixture exploration, or long
+   `contract`/`design`/`evals` reads to prepare the worker. Those technical
+   reads belong to the fresh implementation session, except for worktree
+   isolation, hard-stop diagnosis, and post-handoff or post-review routing.
 3. Launch a fresh implementation session for exactly that task, preferably
    with `codex -p autopilot -c mcp_servers.context7.enabled=false exec` or an
    equivalent fresh Codex session. Do not reuse the coordinator context as the

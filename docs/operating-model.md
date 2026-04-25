@@ -1274,13 +1274,20 @@ La session coordinatrice fournit à chaque fresh implementation ou rework
 session un task packet compact : identifiant de tâche, surface visée, références
 contract/design/eval déjà identifiées, ADRs pertinentes, checks attendus, niveau
 `reasoning_effort` choisi et raison courte. Ce packet borne le contexte initial
-sans remplacer l'autorité des documents durables. La session d'implémentation
-reste responsable de vérifier les références nécessaires et peut élargir sa
-lecture lorsqu'un signal concret l'exige : référence incomplète, ambiguïté,
-conflit entre autorités, invariant non local, échec de check, finding de review
-ou surface touchée plus large que prévu. Le mode `critical` exige une couverture
-autoritative suffisante des autorités pertinentes ; il n'impose pas une relecture
-complète systématique, ni une stratégie de commande particulière.
+sans remplacer l'autorité des documents durables. Il est construit depuis
+`docs/tasks.md` `## Execution State`, le bloc de la tâche sélectionnée, ses
+entrées `Dependencies`, `Blocks` et `Required closure after result`, et les
+références explicitement listées dans ce bloc. Le coordinateur ne fait pas
+l'exploration technique destinée à la fresh implementation session : lecture
+détaillée des fichiers produit, fixtures, bodies d'ADR, sections longues de
+`contract/design/evals`, ou recherches larges pour préparer le worker. Ces
+lectures restent la responsabilité de la session d'implémentation, qui vérifie
+les références nécessaires et peut élargir sa lecture lorsqu'un signal concret
+l'exige : référence incomplète, ambiguïté, conflit entre autorités, invariant non
+local, échec de check, finding de review ou surface touchée plus large que prévu.
+Le mode `critical` exige une couverture autoritative suffisante des autorités
+pertinentes ; il n'impose pas une relecture complète systématique, ni une
+stratégie de commande particulière.
 
 Le mode `autopilot` :
 
