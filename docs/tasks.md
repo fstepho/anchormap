@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T6.7 — Integrate product graph into `scan` and `map` validation path`
-- Last completed task: `T6.6 — Build normalized `ProductGraph``
+- Next executable product task after blocker clearance: `T7.1 — Implement scan orchestration without mutation`
+- Last completed task: `T6.7 — Integrate product graph into `scan` and `map` validation path`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -79,6 +79,7 @@
   - `T6.4 — Implement local candidate resolution and classification`
   - `T6.5 — Recognize unsupported local `require` and dynamic `import``
   - `T6.6 — Build normalized `ProductGraph``
+  - `T6.7 — Integrate product graph into `scan` and `map` validation path`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

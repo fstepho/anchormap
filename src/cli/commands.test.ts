@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import {
+	chmodSync,
 	existsSync,
 	lstatSync,
 	mkdirSync,
@@ -938,6 +939,114 @@ test("default map handler classifies product guardrail failures as code 3 withou
 		});
 
 		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler validates product file decode and parse before any mutation", () => {
+	const cases: Array<{
+		name: string;
+		bytes: Uint8Array;
+	}> = [
+		{
+			name: "invalid UTF-8",
+			bytes: new Uint8Array([0xff]),
+		},
+		{
+			name: "invalid TypeScript",
+			bytes: Buffer.from("export const = ;\n", "utf8"),
+		},
+		{
+			name: "JSX in TS",
+			bytes: Buffer.from("const node = <div />;\n", "utf8"),
+		},
+	];
+
+	for (const testCase of cases) {
+		const cwd = createTempRepo();
+		const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+		try {
+			mkdirSync(join(cwd, "src"));
+			mkdirSync(join(cwd, "specs"));
+			writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+			writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+			writeFileSync(join(cwd, "src", "index.ts"), testCase.bytes);
+			const stdout = createBufferingWriter();
+			const stderr = createBufferingWriter();
+
+			const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+				cwd,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			});
+
+			assert.equal(exitCode, 3, testCase.name);
+			assert.equal(stdout.read(), "", testCase.name);
+			assert.notEqual(stderr.read(), "", testCase.name);
+			assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes, testCase.name);
+			assertNoAnchormapTemps(cwd);
+		} finally {
+			rmSync(cwd, { recursive: true, force: true });
+		}
+	}
+});
+
+test("default map handler classifies graph existence-test failures as code 3 without mutation", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		mkdirSync(join(cwd, "blocked"));
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "import { dep } from '../blocked/dep';\n");
+		chmodSync(join(cwd, "blocked"), 0);
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		chmodSync(join(cwd, "blocked"), 0o700);
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler ignores graph findings while preserving config before map mutation exists", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "const dep = require('./dep');\n");
+		writeFileSync(join(cwd, "src", "dep.ts"), "export const dep = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 1);
 		assert.equal(stdout.read(), "");
 		assert.notEqual(stderr.read(), "");
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
