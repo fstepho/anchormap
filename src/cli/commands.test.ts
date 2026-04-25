@@ -1317,7 +1317,49 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 	}
 });
 
-test("scan --json fails fast instead of dropping observed anchors from the success contract", () => {
+test("scan --json fails fast instead of rendering incomplete usable mapping reachability", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		const configBytes = [
+			"version: 1",
+			"product_root: 'src'",
+			"spec_roots:",
+			"  - 'specs'",
+			"mappings:",
+			"  FR-014:",
+			"    seed_files:",
+			"      - 'src/index.ts'",
+			"",
+		].join("\n");
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(
+			join(cwd, "src/index.ts"),
+			"import { dep } from './dep';\nexport const value = dep;\n",
+		);
+		writeFileSync(join(cwd, "src/dep.ts"), "export const dep = 1;\n");
+		writeFileSync(join(cwd, "specs/requirements.md"), "# FR-014 Requirement\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 1);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json renders observed anchors without stored mappings", () => {
 	const cwd = createTempRepo();
 	try {
 		mkdirSync(join(cwd, "src"));
@@ -1335,9 +1377,37 @@ test("scan --json fails fast instead of dropping observed anchors from the succe
 			stderr: stderr.writer,
 		});
 
-		assert.equal(exitCode, 1);
-		assert.equal(stdout.read(), "");
-		assert.notEqual(stderr.read(), "");
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 1,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+			},
+			analysis_health: "clean",
+			observed_anchors: {
+				"FR-014": {
+					spec_path: "specs/requirements.md",
+					mapping_state: "absent",
+				},
+			},
+			stored_mappings: {},
+			files: {
+				"src/index.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: [],
+				},
+			},
+			findings: [
+				{
+					kind: "unmapped_anchor",
+					anchor_id: "FR-014",
+				},
+			],
+		});
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), initialConfig);
 		assertNoAnchormapTemps(cwd);
 	} finally {
@@ -1345,7 +1415,7 @@ test("scan --json fails fast instead of dropping observed anchors from the succe
 	}
 });
 
-test("scan --json fails fast instead of dropping stored mappings from the success contract", () => {
+test("scan --json renders stale stored mappings without evaluating seeds", () => {
 	const cwd = createTempRepo();
 	try {
 		mkdirSync(join(cwd, "src"));
@@ -1372,9 +1442,38 @@ test("scan --json fails fast instead of dropping stored mappings from the succes
 			stderr: stderr.writer,
 		});
 
-		assert.equal(exitCode, 1);
-		assert.equal(stdout.read(), "");
-		assert.notEqual(stderr.read(), "");
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 1,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+			},
+			analysis_health: "degraded",
+			observed_anchors: {},
+			stored_mappings: {
+				"FR-014": {
+					state: "stale",
+					seed_files: ["src/index.ts"],
+					reached_files: [],
+				},
+			},
+			files: {
+				"src/index.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: [],
+				},
+			},
+			findings: [
+				{
+					kind: "stale_mapping_anchor",
+					anchor_id: "FR-014",
+				},
+			],
+		});
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
 		assertNoAnchormapTemps(cwd);
 	} finally {

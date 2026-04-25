@@ -6,63 +6,161 @@ import type { SpecIndex } from "../infra/spec-index";
 import type { ProductGraph } from "../infra/ts-graph";
 import type { AnchorId } from "./anchor-id";
 import { validateAnchorId } from "./anchor-id";
+import { createUnresolvedStaticEdgeFinding } from "./finding";
 import type { RepoPath } from "./repo-path";
 import { validateRepoPath } from "./repo-path";
 import { runScanEngine } from "./scan-engine";
 
-test("T7.1 scan engine stub succeeds only for empty anchors and mappings", () => {
+test("classifies usable stored mappings and observed anchors", () => {
 	const result = runScanEngine({
-		config: minimalConfig(),
-		specIndex: emptySpecIndex(),
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
 		productGraph: minimalProductGraph(),
 	});
 
-	assert.deepEqual(result.observed_anchors, {});
-	assert.deepEqual(result.stored_mappings, {});
-	assert.deepEqual(Object.keys(result.files), ["src/index.ts"]);
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.findings, []);
+	assert.deepEqual(result.observed_anchors[anchorId("FR-014")], {
+		spec_path: repoPath("specs/requirements.md"),
+		mapping_state: "usable",
+	});
+	assert.deepEqual(result.stored_mappings[anchorId("FR-014")], {
+		state: "usable",
+		seed_files: [repoPath("src/index.ts")],
+		reached_files: [repoPath("src/index.ts")],
+	});
+	assert.deepEqual(result.files[repoPath("src/index.ts")].covering_anchor_ids, [
+		anchorId("FR-014"),
+	]);
 });
 
-test("T7.1 scan engine stub fails fast before dropping observed anchors", () => {
+test("fails fast for usable mappings whose seed has supported graph targets pending T7.3", () => {
 	assert.throws(
 		() =>
 			runScanEngine({
-				config: minimalConfig(),
-				specIndex: {
-					specFiles: [],
-					observedAnchors: new Map([
-						[
-							anchorId("FR-014"),
-							{
-								anchorId: anchorId("FR-014"),
-								specPath: repoPath("specs/requirements.md"),
-								sourceKind: "markdown",
-							},
-						],
-					]),
-					anchorOccurrences: [],
-				},
-				productGraph: minimalProductGraph(),
+				config: configWithMappings({
+					[anchorId("FR-014")]: {
+						seedFiles: [repoPath("src/index.ts")],
+					},
+				}),
+				specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+				productGraph: productGraphWithSupportedEdge(),
 			}),
-		/observed anchors/,
+		/T7\.2 scan engine cannot render complete reachability/,
 	);
 });
 
-test("T7.1 scan engine stub fails fast before dropping stored mappings", () => {
-	assert.throws(
-		() =>
-			runScanEngine({
-				config: {
-					...minimalConfig(),
-					mappings: {
-						[anchorId("FR-014")]: {
-							seedFiles: [repoPath("src/index.ts")],
-						},
-					},
-				},
-				specIndex: emptySpecIndex(),
-				productGraph: minimalProductGraph(),
-			}),
-		/stored mappings/,
+test("emits unmapped_anchor for observed anchors without stored mappings", () => {
+	const result = runScanEngine({
+		config: minimalConfig(),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: minimalProductGraph(),
+	});
+
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.observed_anchors[anchorId("FR-014")], {
+		spec_path: repoPath("specs/requirements.md"),
+		mapping_state: "absent",
+	});
+	assert.deepEqual(result.stored_mappings, {});
+	assert.deepEqual(result.findings, [
+		{
+			kind: "unmapped_anchor",
+			anchor_id: anchorId("FR-014"),
+		},
+	]);
+});
+
+test("emits broken_seed_path per invalid seed for observed invalid mappings", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [
+					repoPath("src/index.ts"),
+					repoPath("src/missing.ts"),
+					repoPath("test/helper.ts"),
+				],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: minimalProductGraph(),
+	});
+
+	assert.equal(result.analysis_health, "degraded");
+	assert.deepEqual(result.observed_anchors[anchorId("FR-014")].mapping_state, "invalid");
+	assert.deepEqual(result.stored_mappings[anchorId("FR-014")], {
+		state: "invalid",
+		seed_files: [repoPath("src/index.ts"), repoPath("src/missing.ts"), repoPath("test/helper.ts")],
+		reached_files: [],
+	});
+	assert.deepEqual(result.files[repoPath("src/index.ts")].covering_anchor_ids, []);
+	assert.deepEqual(result.findings, [
+		{
+			kind: "broken_seed_path",
+			anchor_id: anchorId("FR-014"),
+			seed_path: repoPath("src/missing.ts"),
+		},
+		{
+			kind: "broken_seed_path",
+			anchor_id: anchorId("FR-014"),
+			seed_path: repoPath("test/helper.ts"),
+		},
+	]);
+});
+
+test("emits exactly one stale mapping finding and skips invalid stale seeds", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-999")]: {
+				seedFiles: [repoPath("src/missing.ts"), repoPath("test/helper.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: minimalProductGraph(),
+	});
+
+	assert.equal(result.analysis_health, "degraded");
+	assert.deepEqual(result.observed_anchors[anchorId("FR-014")].mapping_state, "absent");
+	assert.deepEqual(result.stored_mappings[anchorId("FR-999")], {
+		state: "stale",
+		seed_files: [repoPath("src/missing.ts"), repoPath("test/helper.ts")],
+		reached_files: [],
+	});
+	assert.deepEqual(result.findings, [
+		{
+			kind: "stale_mapping_anchor",
+			anchor_id: anchorId("FR-999"),
+		},
+		{
+			kind: "unmapped_anchor",
+			anchor_id: anchorId("FR-014"),
+		},
+	]);
+});
+
+test("preserves and normalizes graph findings with mapping findings", () => {
+	const result = runScanEngine({
+		config: minimalConfig(),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: {
+			...minimalProductGraph(),
+			graphFindings: [
+				createUnresolvedStaticEdgeFinding({
+					importer: repoPath("src/index.ts"),
+					specifier: "./missing",
+				}),
+			],
+		},
+	});
+
+	assert.equal(result.analysis_health, "degraded");
+	assert.deepEqual(
+		result.findings.map((finding) => finding.kind),
+		["unmapped_anchor", "unresolved_static_edge"],
 	);
 });
 
@@ -76,11 +174,30 @@ function minimalConfig(): Config {
 	};
 }
 
-function emptySpecIndex(): SpecIndex {
+function specIndexWithAnchors(anchors: readonly ReturnType<typeof observedAnchor>[]): SpecIndex {
 	return {
 		specFiles: [],
-		observedAnchors: new Map(),
-		anchorOccurrences: [],
+		observedAnchors: new Map(anchors.map((anchor) => [anchor.anchorId, anchor])),
+		anchorOccurrences: anchors,
+	};
+}
+
+function observedAnchor(value: string): {
+	readonly anchorId: AnchorId;
+	readonly specPath: RepoPath;
+	readonly sourceKind: "markdown";
+} {
+	return {
+		anchorId: anchorId(value),
+		specPath: repoPath("specs/requirements.md"),
+		sourceKind: "markdown",
+	};
+}
+
+function configWithMappings(mappings: Config["mappings"]): Config {
+	return {
+		...minimalConfig(),
+		mappings,
 	};
 }
 
@@ -89,6 +206,18 @@ function minimalProductGraph(): ProductGraph {
 		productFiles: [repoPath("src/index.ts")],
 		parsedFiles: [],
 		edgesByImporter: new Map(),
+		graphFindings: [],
+	};
+}
+
+function productGraphWithSupportedEdge(): ProductGraph {
+	return {
+		productFiles: [repoPath("src/dep.ts"), repoPath("src/index.ts")],
+		parsedFiles: [],
+		edgesByImporter: new Map([
+			[repoPath("src/dep.ts"), []],
+			[repoPath("src/index.ts"), [repoPath("src/dep.ts")]],
+		]),
 		graphFindings: [],
 	};
 }
