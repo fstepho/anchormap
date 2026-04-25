@@ -1,0 +1,22 @@
+{
+	"id": "fx39a_repo_cross_root_case_collision",
+	"family": "B-repo",
+	"purpose": "scan --json with product_root src and spec_roots SRC exits 3 with empty stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["repo", "product", "spec", "case_collision", "scan"],
+	"groups": ["m6"],
+	"fault_injection": {
+		"marker": "product_spec_root_case_collision"
+	}
+}

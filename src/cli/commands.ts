@@ -3,14 +3,17 @@ import { join } from "node:path";
 
 import { validateAnchorId } from "../domain/anchor-id";
 import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
+import { createConfigView, createScanResultView } from "../domain/scan-result";
 import {
 	ANCHORMAP_CONFIG_FILENAME,
 	type Config,
 	loadConfig,
 	writeConfigAtomic,
 } from "../infra/config-io";
+import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildSpecIndex } from "../infra/spec-index";
+import { renderScanResultJson } from "../render/render-json";
 
 export type AnchormapCommandName = "init" | "map" | "scan";
 export type ScanOutputMode = "human" | "json";
@@ -422,9 +425,44 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		return configResult.error;
 	}
 
-	const specIndexResult = buildSpecIndex(configResult.config, { cwd: context.cwd });
+	const inspectedPathCaseIndex = new Map<string, RepoPath>();
+	const specIndexResult = buildSpecIndex(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
 	if (specIndexResult.kind === "error") {
 		return specIndexResult.error;
+	}
+
+	const productFilesResult = discoverProductFiles(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
+	if (productFilesResult.kind === "error") {
+		return productFilesResult.error;
+	}
+
+	if (
+		context.scanMode === "json" &&
+		productFilesResult.productFiles.length === 0 &&
+		specIndexResult.specIndex.observedAnchors.size === 0 &&
+		Object.keys(configResult.config.mappings).length === 0
+	) {
+		return commandSuccess({
+			stdout: renderScanResultJson(
+				createScanResultView({
+					config: createConfigView({
+						product_root: configResult.config.productRoot,
+						spec_roots: configResult.config.specRoots,
+						ignore_roots: configResult.config.ignoreRoots,
+					}),
+					observed_anchors: {},
+					stored_mappings: {},
+					files: {},
+					findings: [],
+				}),
+			),
+		});
 	}
 
 	return internalError("anchormap scan is not implemented yet");
@@ -451,13 +489,25 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return usageError(`mapping for ${anchorId} already exists`);
 	}
 
-	const specIndexResult = buildSpecIndex(configResult.config, { cwd: context.cwd });
+	const inspectedPathCaseIndex = new Map<string, RepoPath>();
+	const specIndexResult = buildSpecIndex(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
 	if (specIndexResult.kind === "error") {
 		return specIndexResult.error;
 	}
 
 	if (!specIndexResult.specIndex.observedAnchors.has(anchorId)) {
 		return usageError(`anchor ${anchorId} is not present in current specs`);
+	}
+
+	const productFilesResult = discoverProductFiles(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
+	if (productFilesResult.kind === "error") {
+		return productFilesResult.error;
 	}
 
 	return internalError("anchormap map is not implemented yet");

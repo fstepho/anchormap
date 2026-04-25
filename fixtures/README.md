@@ -73,6 +73,23 @@ Optional keys:
 - `groups`: stable groups for broader selection
 - `fault_injection`: `{ "marker": "<stable-id>" }` for test-only code paths
 
+Platform-sensitive fixture markers:
+
+- `product_case_collision_in_scope` first tries to materialize native
+  `src/CASE.ts` and `src/case.ts` files in the sandbox before the pre-run
+  snapshot. If the current filesystem cannot preserve both names distinctly,
+  only macOS arm64 may use the synthetic child-process `readdir`/`lstat`
+  fallback required for `fx39_repo_case_collision_in_scope`; other platforms
+  fail the harness setup instead of silently replacing native coverage.
+- `product_spec_root_case_collision` first tries to materialize native `src`
+  and `SRC` directories in the sandbox before the pre-run snapshot. If the
+  current filesystem cannot preserve both names distinctly, only macOS arm64 may
+  use the synthetic child-process `readdir`/`lstat` fallback required for the
+  cross-root case-collision regression fixture.
+- `product_noncanonical_path_in_scope` materializes `src/bad<TAB>name.ts` in
+  the sandbox before the pre-run snapshot and leaves it in place until sandbox
+  disposal, so `no_mutation` artifacts include the fault-triggering path.
+
 ## Mapping To `docs/evals.md`
 
 For contract boundary fixtures, `manifest.family` should match the eval family name from `docs/evals.md` such as `B-scan`, `B-config`, or `B-cli`.

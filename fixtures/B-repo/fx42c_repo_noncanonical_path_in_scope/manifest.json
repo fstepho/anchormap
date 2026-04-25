@@ -1,0 +1,22 @@
+{
+	"id": "fx42c_repo_noncanonical_path_in_scope",
+	"family": "B-repo",
+	"purpose": "scan --json with a non-canonical discovered path in product_root exits 3 with empty stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["repo", "product", "noncanonical_path", "scan"],
+	"groups": ["m6"],
+	"fault_injection": {
+		"marker": "product_noncanonical_path_in_scope"
+	}
+}

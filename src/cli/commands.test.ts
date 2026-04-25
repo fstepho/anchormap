@@ -732,6 +732,35 @@ test("default scan --json handler classifies spec decode failures as code 3 with
 	}
 });
 
+test("default scan --json handler classifies product guardrail failures as code 3", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "target.ts"), "export const value = 1;\n");
+		symlinkSync("target.ts", join(cwd, "src", "linked.ts"));
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("default human scan handler fails missing config with code 2 and no mutation", () => {
 	const cwd = createTempRepo();
 	try {
@@ -874,6 +903,35 @@ test("default map handler classifies spec decode failures as code 3 without muta
 		const stderr = createBufferingWriter();
 
 		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler classifies product guardrail failures as code 3 without mutation", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "target.ts"), "export const value = 1;\n");
+		symlinkSync("target.ts", join(cwd, "src", "linked.ts"));
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/target.ts"], {
 			cwd,
 			stdout: stdout.writer,
 			stderr: stderr.writer,

@@ -1,0 +1,19 @@
+{
+	"id": "fx41_repo_noise_outside_scope_ignored",
+	"family": "B-repo",
+	"purpose": "scan --json ignores noise outside product_root and spec_roots.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["repo", "scope", "scan"],
+	"groups": ["m6"]
+}

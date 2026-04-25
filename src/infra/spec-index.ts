@@ -87,6 +87,7 @@ export interface SpecIndexStats {
 export interface BuildSpecIndexOptions {
 	readonly cwd?: string;
 	readonly fs?: SpecIndexFs;
+	readonly inspectedPathCaseIndex?: Map<string, RepoPath>;
 }
 
 const SPEC_EXTENSIONS = new Map<string, SpecSourceKind>([
@@ -112,7 +113,7 @@ export function buildSpecIndex(
 	const files: SpecFile[] = [];
 	const anchorOccurrences: SpecAnchorOccurrence[] = [];
 	const observedAnchors = new Map<AnchorId, SpecAnchorOccurrence>();
-	const seenLowercasePaths = new Map<string, RepoPath>();
+	const seenLowercasePaths = options.inspectedPathCaseIndex ?? new Map<string, RepoPath>();
 
 	for (const specRoot of config.specRoots) {
 		const discovered = discoverSpecFiles(cwd, specRoot, fs, seenLowercasePaths);

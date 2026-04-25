@@ -12,7 +12,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { posix, relative, resolve, sep } from "node:path";
+import { dirname, posix, relative, resolve, sep } from "node:path";
 
 import type { LoadedFixtureManifest } from "./fixture-manifest";
 
@@ -54,6 +54,10 @@ export function materializeFixtureSandbox(
 	try {
 		copyFixtureRepoTree(fixture.layout.repoDir, sandboxDir);
 		const cwd = resolveSandboxCwd(sandboxDir, fixture.manifest.cwd);
+		const persistentFaultInjection = createFixtureSandboxPersistentFaultInjection(
+			fixture,
+			sandboxDir,
+		);
 		const preRunSnapshot = captureFilesystemSnapshot(sandboxDir);
 
 		return {
@@ -61,6 +65,7 @@ export function materializeFixtureSandbox(
 			cwd,
 			preRunSnapshot,
 			dispose() {
+				persistentFaultInjection?.dispose();
 				rmSync(sandboxDir, { recursive: true, force: true });
 			},
 		};
@@ -68,6 +73,128 @@ export function materializeFixtureSandbox(
 		rmSync(sandboxDir, { recursive: true, force: true });
 		throw error;
 	}
+}
+
+function createFixtureSandboxPersistentFaultInjection(
+	fixture: LoadedFixtureManifest,
+	sandboxDir: string,
+): { dispose(): void } | null {
+	const marker = fixture.manifest.fault_injection?.marker;
+	if (marker === "product_case_collision_in_scope") {
+		return createNativeCaseCollisionFaultInjection(sandboxDir);
+	}
+	if (marker === "product_spec_root_case_collision") {
+		return createNativeProductSpecRootCaseCollisionFaultInjection(sandboxDir);
+	}
+	if (marker === "product_noncanonical_path_in_scope") {
+		const noncanonicalPath = resolve(sandboxDir, "src", "bad\tname.ts");
+		return createPersistentFileFaultInjection(noncanonicalPath, "export const bad = true;\n");
+	}
+
+	return null;
+}
+
+function createPersistentFileFaultInjection(path: string, content: string): { dispose(): void } {
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, content, { flag: "wx" });
+
+	return {
+		dispose() {
+			rmSync(path, { force: true });
+		},
+	};
+}
+
+function createNativeCaseCollisionFaultInjection(sandboxDir: string): { dispose(): void } | null {
+	const upperCasePath = resolve(sandboxDir, "src", "CASE.ts");
+	const lowerCasePath = resolve(sandboxDir, "src", "case.ts");
+
+	try {
+		createPersistentFileFaultInjection(upperCasePath, "export const upperCase = true;\n");
+		createPersistentFileFaultInjection(lowerCasePath, "export const lowerCase = true;\n");
+	} catch {
+		removeCaseCollisionFiles(upperCasePath, lowerCasePath);
+		if (isMacOsArm64()) {
+			return null;
+		}
+		throw new FixtureSandboxError(
+			"native fx39 case-collision files could not be materialized; synthetic fallback is only allowed on macOS arm64",
+		);
+	}
+
+	if (!hasNativeCaseCollisionEntries(sandboxDir)) {
+		removeCaseCollisionFiles(upperCasePath, lowerCasePath);
+		if (isMacOsArm64()) {
+			return null;
+		}
+		throw new FixtureSandboxError(
+			"native fx39 case-collision files were not preserved distinctly; synthetic fallback is only allowed on macOS arm64",
+		);
+	}
+
+	return {
+		dispose() {
+			removeCaseCollisionFiles(upperCasePath, lowerCasePath);
+		},
+	};
+}
+
+function createNativeProductSpecRootCaseCollisionFaultInjection(
+	sandboxDir: string,
+): { dispose(): void } | null {
+	const specRootPath = resolve(sandboxDir, "SRC");
+	let created = false;
+
+	try {
+		mkdirSync(specRootPath);
+		created = true;
+		writeFileSync(resolve(specRootPath, ".gitkeep"), "");
+	} catch {
+		if (created) {
+			rmSync(specRootPath, { recursive: true, force: true });
+		}
+		if (isMacOsArm64()) {
+			return null;
+		}
+		throw new FixtureSandboxError(
+			"native cross-root case-collision directory could not be materialized; synthetic fallback is only allowed on macOS arm64",
+		);
+	}
+
+	if (!hasNativeProductSpecRootCaseCollisionEntries(sandboxDir)) {
+		rmSync(specRootPath, { recursive: true, force: true });
+		if (isMacOsArm64()) {
+			return null;
+		}
+		throw new FixtureSandboxError(
+			"native cross-root case-collision directories were not preserved distinctly; synthetic fallback is only allowed on macOS arm64",
+		);
+	}
+
+	return {
+		dispose() {
+			rmSync(specRootPath, { recursive: true, force: true });
+		},
+	};
+}
+
+function hasNativeCaseCollisionEntries(sandboxDir: string): boolean {
+	const names = new Set(readdirSync(resolve(sandboxDir, "src")));
+	return names.has("CASE.ts") && names.has("case.ts");
+}
+
+function hasNativeProductSpecRootCaseCollisionEntries(sandboxDir: string): boolean {
+	const names = new Set(readdirSync(sandboxDir));
+	return names.has("SRC") && names.has("src");
+}
+
+function removeCaseCollisionFiles(upperCasePath: string, lowerCasePath: string): void {
+	rmSync(upperCasePath, { force: true });
+	rmSync(lowerCasePath, { force: true });
+}
+
+function isMacOsArm64(): boolean {
+	return process.platform === "darwin" && process.arch === "arm64";
 }
 
 function copyFixtureRepoTree(sourceDir: string, destinationDir: string): void {

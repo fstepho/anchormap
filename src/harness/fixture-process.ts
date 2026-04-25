@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, isAbsolute, relative, resolve, sep } from "node:path";
 
@@ -168,6 +168,7 @@ export async function executeFixtureCommand(
 	const preparedTraceCapture = prepareFixturePhaseTraceCapture(options.traceCaptureFactory);
 	const traceCapture = preparedTraceCapture.traceCapture;
 	const tracePath = traceCapture?.tracePath ?? null;
+	const faultInjectionPreload = prepareFixtureProcessFaultInjection(fixture, sandbox);
 	const startedAtNs = process.hrtime.bigint();
 
 	return await new Promise<FixtureProcessResult>((resolve, reject) => {
@@ -182,6 +183,12 @@ export async function executeFixtureCommand(
 		} else {
 			childEnv[FIXTURE_TRACE_ENV_VAR] = tracePath;
 		}
+		if (faultInjectionPreload !== null) {
+			childEnv.NODE_OPTIONS = appendNodeRequireOption(
+				childEnv.NODE_OPTIONS,
+				faultInjectionPreload.preloadPath,
+			);
+		}
 
 		const settle = (callback: () => void): void => {
 			if (settled) {
@@ -193,6 +200,7 @@ export async function executeFixtureCommand(
 				callback();
 			} finally {
 				disposeFixturePhaseTraceCapture(traceCapture);
+				faultInjectionPreload?.dispose();
 			}
 		};
 
@@ -343,6 +351,172 @@ export async function executeFixtureCommand(
 			child.kill("SIGKILL");
 		}, options.timeoutMs);
 	});
+}
+
+interface FixtureProcessFaultInjectionPreload {
+	preloadPath: string;
+	dispose(): void;
+}
+
+function prepareFixtureProcessFaultInjection(
+	fixture: LoadedFixtureManifest,
+	sandbox: MaterializedFixtureSandbox,
+): FixtureProcessFaultInjectionPreload | null {
+	const marker = fixture.manifest.fault_injection?.marker;
+	if (marker === "product_case_collision_in_scope") {
+		if (hasNativeProductCaseCollisionEntries(sandbox.cwd)) {
+			return null;
+		}
+		if (!isMacOsArm64()) {
+			throw new FixtureProcessError(
+				"fx39 synthetic case-collision fallback is only allowed on macOS arm64",
+				{
+					command: fixture.manifest.command,
+					cwd: sandbox.cwd,
+				},
+			);
+		}
+	}
+	if (marker === "product_spec_root_case_collision") {
+		if (hasNativeProductSpecRootCaseCollisionEntries(sandbox.cwd)) {
+			return null;
+		}
+		if (!isMacOsArm64()) {
+			throw new FixtureProcessError(
+				"cross-root synthetic case-collision fallback is only allowed on macOS arm64",
+				{
+					command: fixture.manifest.command,
+					cwd: sandbox.cwd,
+				},
+			);
+		}
+	}
+	if (
+		marker !== "product_case_collision_in_scope" &&
+		marker !== "product_spec_root_case_collision" &&
+		marker !== "product_root_enumeration_failure"
+	) {
+		return null;
+	}
+
+	const preloadDir = mkdtempSync(
+		resolve(tmpdir(), `anchormap-fixture-preload-${fixture.manifest.id}-`),
+	);
+	const preloadPath = resolve(preloadDir, "case-collision-preload.cjs");
+	writeFileSync(preloadPath, renderFixtureProcessFaultInjectionPreload(marker, sandbox.cwd));
+
+	return {
+		preloadPath,
+		dispose() {
+			rmSync(preloadDir, { recursive: true, force: true });
+		},
+	};
+}
+
+function hasNativeProductCaseCollisionEntries(cwd: string): boolean {
+	try {
+		const names = new Set(readdirSync(resolve(cwd, "src")));
+		return names.has("CASE.ts") && names.has("case.ts");
+	} catch {
+		return false;
+	}
+}
+
+function hasNativeProductSpecRootCaseCollisionEntries(cwd: string): boolean {
+	try {
+		const names = new Set(readdirSync(cwd));
+		return names.has("SRC") && names.has("src");
+	} catch {
+		return false;
+	}
+}
+
+function isMacOsArm64(): boolean {
+	return process.platform === "darwin" && process.arch === "arm64";
+}
+
+function renderFixtureProcessFaultInjectionPreload(marker: string, cwd: string): string {
+	if (marker === "product_spec_root_case_collision") {
+		return `
+const fs = require("node:fs");
+const path = require("node:path");
+const specRoot = ${JSON.stringify(resolve(cwd, "SRC"))};
+const realReaddirSync = fs.readdirSync;
+const realLstatSync = fs.lstatSync;
+fs.readdirSync = function readdirSyncWithCrossRootCaseCollision(targetPath, options) {
+	if (path.resolve(String(targetPath)) === specRoot && options === undefined) {
+		return [];
+	}
+	return realReaddirSync.apply(this, arguments);
+};
+fs.lstatSync = function lstatSyncWithCrossRootCaseCollision(targetPath) {
+	if (path.resolve(String(targetPath)) !== specRoot) {
+		return realLstatSync.apply(this, arguments);
+	}
+	return {
+		isDirectory: () => true,
+		isFile: () => false,
+		isSymbolicLink: () => false,
+	};
+};
+`;
+	}
+
+	if (marker === "product_root_enumeration_failure") {
+		return `
+const fs = require("node:fs");
+const path = require("node:path");
+const productRoot = ${JSON.stringify(resolve(cwd, "src"))};
+const realReaddirSync = fs.readdirSync;
+fs.readdirSync = function readdirSyncWithProductRootEnumerationFailure(targetPath) {
+	if (path.resolve(String(targetPath)) === productRoot) {
+		const error = new Error("EACCES: permission denied, scandir " + JSON.stringify(productRoot));
+		error.code = "EACCES";
+		error.syscall = "scandir";
+		error.path = productRoot;
+		throw error;
+	}
+	return realReaddirSync.apply(this, arguments);
+};
+`;
+	}
+
+	return `
+const fs = require("node:fs");
+const path = require("node:path");
+const productRoot = ${JSON.stringify(resolve(cwd, "src"))};
+const virtualFiles = new Set([
+	path.join(productRoot, "CASE.ts"),
+	path.join(productRoot, "case.ts"),
+]);
+const realReaddirSync = fs.readdirSync;
+const realLstatSync = fs.lstatSync;
+fs.readdirSync = function readdirSyncWithProductCaseCollision(targetPath, options) {
+	const result = realReaddirSync.apply(this, arguments);
+	if (path.resolve(String(targetPath)) !== productRoot || options !== undefined) {
+		return result;
+	}
+	return [...result, "CASE.ts", "case.ts"];
+};
+fs.lstatSync = function lstatSyncWithProductCaseCollision(targetPath) {
+	if (!virtualFiles.has(path.resolve(String(targetPath)))) {
+		return realLstatSync.apply(this, arguments);
+	}
+	return {
+		isDirectory: () => false,
+		isFile: () => true,
+		isSymbolicLink: () => false,
+	};
+};
+`;
+}
+
+function appendNodeRequireOption(
+	existingNodeOptions: string | undefined,
+	preloadPath: string,
+): string {
+	const requireOption = `--require=${preloadPath}`;
+	return existingNodeOptions ? `${existingNodeOptions} ${requireOption}` : requireOption;
 }
 
 function prepareFixturePhaseTraceCapture(
