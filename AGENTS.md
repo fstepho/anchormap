@@ -37,6 +37,9 @@ Auto-review permissions so recurring `codex review`, `git add`, and
 `git commit` approvals are not human gates.
 Autopilot task implementation must run in fresh task-scoped Codex sessions so
 the coordinator does not accumulate implementation context across tasks.
+Reasoning-effort selection for autopilot implementation, rework, review, and
+approval sessions is defined in `docs/operating-model.md` and operationalized
+in `docs/agent-loop.md`.
 
 ## Reading Paths
 

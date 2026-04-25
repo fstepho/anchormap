@@ -33,7 +33,7 @@ Execution model:
 - do not create a parallel planning system
 - implementation is local in the main agent by default
 - delegate only if the runtime explicitly provides subagents and the task is large or risky enough that a bounded subagent materially improves the result
-- if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, pass `fork_context: false` explicitly when using `spawn_agent`, and restrict work to the target task
+- if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, pass `fork_context: false` explicitly when using `spawn_agent`, pass an explicit `reasoning_effort`, and restrict work to the target task
 - do not delegate implementation with a full-history fork or context-inheriting subagent; if a fresh task-scoped subagent cannot be launched, keep implementation local or return `blocked`
 - if an implementation subagent is alive, do not edit files in parallel in the main agent
 - if a subagent times out, either wait again or close it before making local edits
@@ -75,6 +75,7 @@ Delegated-subagent contract (if used):
   - the expected fixtures or tests
   - the expected output format
   - the allowed freedom level
+  - the selected `reasoning_effort` and a short reason tied to the surface or invariant
 - implement the target task only
 - keep the patch minimal
 - add or update only tests/fixtures required by this task
@@ -96,3 +97,4 @@ Orchestrator return:
 4. implementation result
 5. current task state: `needs_review` or `blocked`
 6. execution-state update applied directly in `docs/tasks.md`, or bounded hand-off for `update-tasks` when structural task-plan maintenance is still required
+7. delegated subagent `reasoning_effort` when delegation used a level other than `medium`

@@ -126,6 +126,30 @@ The autopilot coordinator must stay context-thin. It selects tasks, launches
 fresh implementation and review sessions, routes decisions, commits clean task
 diffs, and carries only compact task results across task boundaries.
 
+### Reasoning Effort Policy
+
+Autopilot must choose the `reasoning_effort` explicitly before launching each
+fresh implementation, rework, or review session.
+
+- Default to `medium` for task-scoped implementation, rework, and review.
+- Use `high` only when the task or review requires non-local reasoning, such as
+  parser, renderer or canonical serialization, filesystem mutation or atomic
+  write, complex CLI boundary, packaging, test harness, repo-local
+  review/orchestration mechanics, graph or reachability, scan engine, `map`
+  transaction behavior, release gates, or structural spike/ADR work.
+- Do not treat `critical` as automatic `high`; announce a short reason tied to
+  the surface or invariant before launch.
+- Do not use `low` for task-scoped implementation, rework, or bug-finding
+  review. `low` is only for auto-review approvals or micro-inspections that do
+  not produce a patch or a repo-authoritative review.
+- Use `xhigh` only as a rare escalation after a blocker, repeated finding,
+  difficult non-local diagnosis, or opaque release gate. If the escalation would
+  hide a missing contract, eval, design, or task split, stop and classify the
+  gap instead.
+- For `spawn_agent`, pass both `fork_context: false` and the selected
+  `reasoning_effort` explicitly. Use the launch note format
+  `reasoning_effort: <medium|high|xhigh> — reason: <surface/invariant>`.
+
 1. Confirm the current worktree can support an autopilot run:
    - unrelated staged, unstaged, and untracked changes must not prevent a
      task-scoped diff, review surface, or commit;
@@ -154,7 +178,7 @@ diffs, and carries only compact task results across task boundaries.
    with `codex -p autopilot -c mcp_servers.context7.enabled=false exec` or an
    equivalent fresh Codex session. Do not reuse the coordinator context as the
    implementation context. If the runtime uses `spawn_agent` for this step, the
-   call must pass `fork_context: false`.
+   call must pass `fork_context: false` and the selected `reasoning_effort`.
    `fork_context: true` is forbidden for autopilot implementation or rework
    subagents because it creates a full-history fork of the coordinator.
 4. The implementation session runs the normal task loop through implementation
@@ -260,11 +284,11 @@ skills themselves.
   coordinator must not serve as the implementation context.
 - If a tool offers subagents, use them for autopilot implementation only when
   they provide a fresh task-scoped context equivalent to a new Codex session.
-  For `spawn_agent`, pass `fork_context: false` explicitly. `fork_context:
-  true` is forbidden for autopilot implementation and rework subagents. Do not
-  retry a rejected spawn with forbidden `fork_context: true`; if a fresh
-  subagent cannot be launched without context inheritance, stop with `tooling
-  problem`.
+  For `spawn_agent`, pass `fork_context: false` and `reasoning_effort`
+  explicitly. `fork_context: true` is forbidden for autopilot implementation
+  and rework subagents. Do not retry a rejected spawn with forbidden
+  `fork_context: true`; if a fresh subagent cannot be launched without context
+  inheritance, stop with `tooling problem`.
   Do not use same-session or context-inheriting subagents for successive
   autopilot tasks.
 - The autopilot coordinator may retain only compact task state across task

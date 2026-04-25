@@ -1213,6 +1213,22 @@ sélectionne les tâches, lance les sessions fraîches, route les review decisio
 applique les transitions et crée les commits. Elle ne doit pas porter le
 contexte d'implémentation complet des tâches successives.
 
+La session coordinatrice choisit explicitement le `reasoning_effort` avant
+chaque fresh implementation, rework ou review session. Le niveau par défaut est
+`medium`. Le niveau `high` est autorisé seulement lorsque la tâche ou la review
+exige un raisonnement non local, notamment parser, renderer ou sérialisation
+canonique, mutation filesystem ou écriture atomique, frontière CLI complexe,
+packaging, test harness, mécanique repo-locale de review/orchestration, graphe
+ou reachability, scan engine, transaction `map`, gates de release, spike ou ADR
+structurant. Le mode `critical` n'implique pas automatiquement `high` : le
+coordinateur doit annoncer une raison courte liée à la surface ou à l'invariant
+avant le lancement. Le niveau `low` est réservé aux approvals auto-review et aux
+micro-inspections qui ne produisent ni patch, ni bug-finding review
+task-scoped. Le niveau `xhigh` est une escalade rare après blocage, finding
+répété, diagnostic non local difficile, ou gate de release opaque ; s'il masque
+un manque de contrat, d'eval, de design ou de découpage de tâche, la boucle doit
+s'arrêter et classifier le gap au lieu d'augmenter encore l'effort.
+
 Le mode `autopilot` :
 
 - traite toujours une seule tâche active à la fois ;
@@ -1232,9 +1248,10 @@ Le mode `autopilot` :
   débloquer ce curseur ;
 - lance une fresh implementation session Codex pour exactement cette tâche ;
 - si cette session est lancée via un subagent `spawn_agent`, le lancement doit
-  passer explicitement `fork_context: false` ; `fork_context: true` est interdit
-  pour une implementation ou rework session `autopilot`, car cela transmet
-  l'historique complet du coordinateur au lieu d'un contexte borné à la tâche ;
+  passer explicitement `fork_context: false` et `reasoning_effort` ;
+  `fork_context: true` est interdit pour une implementation ou rework session
+  `autopilot`, car cela transmet l'historique complet du coordinateur au lieu
+  d'un contexte borné à la tâche ;
 - fait produire par cette session un handoff borné : task ID, fichiers touchés,
   checks exécutés, statut, et état de préparation à la review ;
 - lance des fresh review sessions séparées de la session d'implémentation ;
