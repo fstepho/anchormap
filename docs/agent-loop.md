@@ -2,9 +2,8 @@
 
 Status: helper note, non-normative
 
-Scope: repo-local workflow helper for bounded task execution by a human plus
-one implementation pass and one fresh review pass, with a single human or
-agent coordinating the sequence.
+Scope: repo-local workflow helper for bounded task execution, fresh review, and
+limited rework routing, with a single human or agent coordinating the sequence.
 
 Precedence: if this file conflicts with `docs/operating-model.md`,
 `docs/contract.md`, `docs/design.md`, `docs/evals.md`, or `docs/tasks.md`, the
