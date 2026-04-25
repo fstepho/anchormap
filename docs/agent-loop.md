@@ -201,10 +201,9 @@ fresh implementation, rework, or review session.
    missing, incomplete, or fails to identify a bounded task-scoped diff.
 6. Launch a fresh review session for the task with native `codex review`
    directly: `codex review --uncommitted`, `codex review --base <branch>`, or
-   `codex review --commit <sha>`. Do not wrap the review command; wrappers can
-   hide the native command from the approval layer and block access to Codex
-   session storage. Autopilot may run up to five fresh review sessions total for
-   that task, initial review included.
+   `codex review --commit <sha>`. These are the only autopilot review commands.
+   Autopilot may run up to five fresh review sessions total for that task,
+   initial review included.
 7. If review yields actionable findings before review 5, launch a fresh
    implementation or rework session for the same task. The rework session must
    name the protected invariant and presumed root cause, apply one bounded

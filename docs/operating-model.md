@@ -1280,8 +1280,8 @@ Le mode `autopilot` :
   le protocole de review natif de la section 14 ;
 - en mode `autopilot`, lance les surfaces `codex review` directement avec
   `codex review --uncommitted`, `codex review --base <branch>` ou
-  `codex review --commit <sha>` ; il ne doit pas wrapper la commande de review,
-  car cela peut masquer la commande native à la couche d'approval ;
+  `codex review --commit <sha>` ; ce sont les seules commandes de review
+  autopilot autorisées ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
   review initiale incluse, avec au plus quatre passes de rework bornées entre
   ces reviews ;
