@@ -1,0 +1,27 @@
+{
+	"id": "fx67b_map_spec_read_or_decode_failure_code3",
+	"family": "B-map",
+	"purpose": "map with a non-UTF-8 spec during indexing exits 3, preserves anchormap.yaml, and leaves no temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "specs", "decode", "write"],
+	"groups": ["m5"]
+}

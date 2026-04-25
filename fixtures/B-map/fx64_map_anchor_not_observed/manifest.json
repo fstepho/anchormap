@@ -1,0 +1,27 @@
+{
+	"id": "fx64_map_anchor_not_observed",
+	"family": "B-map",
+	"purpose": "map with an anchor absent from current specs exits 4 and preserves anchormap.yaml.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-999",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "specs", "precondition"],
+	"groups": ["m5"]
+}

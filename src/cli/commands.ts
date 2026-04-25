@@ -1,6 +1,7 @@
 import { lstatSync } from "node:fs";
 import { join } from "node:path";
 
+import { validateAnchorId } from "../domain/anchor-id";
 import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
 import {
 	ANCHORMAP_CONFIG_FILENAME,
@@ -430,9 +431,33 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 }
 
 function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {
+	const args = context.mapArgs;
+	if (args === undefined) {
+		return internalError("map arguments were not parsed");
+	}
+
+	const anchorResult = validateAnchorId(args.anchor);
+	if (anchorResult.kind === "validation_failure") {
+		return usageError("--anchor must be a supported anchor ID");
+	}
+
 	const configResult = loadConfig({ cwd: context.cwd });
 	if (configResult.kind === "error") {
 		return configResult.error;
+	}
+
+	const anchorId = anchorResult.anchorId;
+	if (configResult.config.mappings[anchorId] !== undefined && !args.replace) {
+		return usageError(`mapping for ${anchorId} already exists`);
+	}
+
+	const specIndexResult = buildSpecIndex(configResult.config, { cwd: context.cwd });
+	if (specIndexResult.kind === "error") {
+		return specIndexResult.error;
+	}
+
+	if (!specIndexResult.specIndex.observedAnchors.has(anchorId)) {
+		return usageError(`anchor ${anchorId} is not present in current specs`);
 	}
 
 	return internalError("anchormap map is not implemented yet");

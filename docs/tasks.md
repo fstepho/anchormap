@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T5.5 — Integrate spec index into `scan` and `map` preconditions`
-- Last completed task: `T5.4 — Implement duplicate anchor detection and stable spec index ordering`
+- Next executable product task after blocker clearance: `T6.1 — Implement product file discovery and repository guardrails`
+- Last completed task: `T5.5 — Integrate spec index into `scan` and `map` preconditions`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -72,6 +72,7 @@
   - `T5.2 — Implement Markdown ATX anchor extraction`
   - `T5.3 — Implement YAML spec anchor extraction`
   - `T5.4 — Implement duplicate anchor detection and stable spec index ordering`
+  - `T5.5 — Integrate spec index into `scan` and `map` preconditions`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

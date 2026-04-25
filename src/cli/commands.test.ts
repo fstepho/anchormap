@@ -777,6 +777,118 @@ test("default map handler fails invalid config with code 2 and preserves config 
 	}
 });
 
+test("default map handler rejects invalid anchor IDs before config access", () => {
+	const cwd = createTempRepo();
+	try {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "bad", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(existsSync(join(cwd, "anchormap.yaml")), false);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler checks replace guard before spec indexing", () => {
+	const cwd = createTempRepo();
+	const configBytes = [
+		"version: 1",
+		"product_root: 'src'",
+		"spec_roots:",
+		"  - 'specs'",
+		"mappings:",
+		"  FR-014:",
+		"    seed_files:",
+		"      - 'src/index.ts'",
+		"",
+	].join("\n");
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler rejects anchors absent from current specs with code 4", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-999", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler classifies spec decode failures as code 3 without mutation", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "specs", "invalid.md"), Uint8Array.from([0x66, 0x80, 0x67]));
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("parses supported scan forms before dispatch", () => {
 	const cases: Array<{
 		argv: readonly string[];
