@@ -17,9 +17,11 @@ import type { AppError } from "../cli/commands";
 import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { sortAnchorIdsByUtf8, sortRepoPathsByUtf8 } from "../domain/canonical-order";
 import { type RepoPath, repoPathToString, validateRepoPath } from "../domain/repo-path";
+import { renderConfigCanonicalYaml } from "./config-yaml-render";
 import { decodeUtf8StrictNoBom, type RepoPathEntryStatus, statRepoPath } from "./repo-fs";
 
 export const ANCHORMAP_CONFIG_FILENAME = "anchormap.yaml";
+export { renderConfigCanonicalYaml } from "./config-yaml-render";
 
 const TOP_LEVEL_CONFIG_KEYS = new Set([
 	"version",
@@ -87,43 +89,6 @@ export interface WriteConfigAtomicFaults {
 	readonly afterWriteBeforeFsync?: (path: string, fd: number) => void;
 	readonly afterFsyncBeforeClose?: (path: string, fd: number) => void;
 	readonly beforeRename?: (path: string) => void;
-}
-
-export function renderConfigCanonicalYaml(config: Config): string {
-	const lines: string[] = [
-		"version: 1",
-		`product_root: ${renderSingleQuoted(config.productRoot)}`,
-		"spec_roots:",
-	];
-
-	for (const specRoot of sortRepoPathsByUtf8(config.specRoots)) {
-		lines.push(`  - ${renderSingleQuoted(specRoot)}`);
-	}
-
-	const ignoreRoots = sortRepoPathsByUtf8(config.ignoreRoots);
-	if (ignoreRoots.length > 0) {
-		lines.push("ignore_roots:");
-		for (const ignoreRoot of ignoreRoots) {
-			lines.push(`  - ${renderSingleQuoted(ignoreRoot)}`);
-		}
-	}
-
-	const anchors = sortAnchorIdsByUtf8(Object.keys(config.mappings) as AnchorId[]);
-	if (anchors.length === 0) {
-		lines.push("mappings: {}");
-		return `${lines.join("\n")}\n`;
-	}
-
-	lines.push("mappings:");
-	for (const anchor of anchors) {
-		const mapping = config.mappings[anchor];
-		lines.push(`  ${renderSingleQuoted(anchor)}:`, "    seed_files:");
-		for (const seedFile of sortRepoPathsByUtf8(mapping.seedFiles)) {
-			lines.push(`      - ${renderSingleQuoted(seedFile)}`);
-		}
-	}
-
-	return `${lines.join("\n")}\n`;
 }
 
 export function writeConfigAtomic(
@@ -429,10 +394,6 @@ function isDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boolean {
 	const pathValue = repoPathToString(path);
 	const ancestorValue = repoPathToString(possibleAncestor);
 	return pathValue.startsWith(`${ancestorValue}/`);
-}
-
-function renderSingleQuoted(value: string): string {
-	return `'${value.replaceAll("'", "''")}'`;
 }
 
 type ParsedYamlDocument = ReturnType<typeof parseAllDocuments>[number];
