@@ -68,7 +68,9 @@ than guess.
     `docs/agent-loop.md`, or `docs/code-review.md` rather than being duplicated
     in `AGENTS.md`;
   - whether the standard path still identifies contract/design/eval refs before patching;
-  - whether critical surfaces still force full-doc and ADR reading;
+  - whether critical surfaces still require authoritative coverage of the
+    relevant contract, design, eval, and accepted ADR authority without
+    imposing full-document rereading by default;
   - whether fresh Codex review remains the only bug-finding review engine.
 
 ## Review Output
