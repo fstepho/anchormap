@@ -1002,13 +1002,16 @@ Une fresh review session est une session Codex dédiée à la review d'un unique
 diff cumulé borné à une tâche, ou d'un unique diff de maintenance process borné
 qui ne modifie pas le comportement runtime.
 
-Entrées autorisées :
+Entrées autorisées exhaustives pour la bug-finding review :
 
 - `codex review --uncommitted`
 - `codex review --base <branch>`
 - `codex review --commit <sha>`
 - une session interactive `codex` démarrée fraîchement pour la review, avec la
   review comme premier work step
+
+Un subagent `spawn_agent` n'est pas une surface de review autorisée, même avec
+`fork_context: false`.
 
 Si `codex review` demande une escalade pour écrire dans son stockage de
 session, notamment `.codex/session` ou un équivalent hors workspace, cette
@@ -1266,7 +1269,8 @@ Le mode `autopilot` :
   d'un contexte borné à la tâche ;
 - fait produire par cette session un handoff borné : task ID, fichiers touchés,
   checks exécutés, statut, et état de préparation à la review ;
-- lance des fresh review sessions séparées de la session d'implémentation ;
+- lance les fresh review sessions séparées de la session d'implémentation selon
+  le protocole de review natif de la section 14 ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
   review initiale incluse, avec au plus quatre passes de rework bornées entre
   ces reviews ;

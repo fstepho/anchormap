@@ -273,7 +273,8 @@ skills themselves.
 - choose `standard` or `critical` before implementation and before launching the fresh review session.
 - `critical` review is mandatory for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, `docs/contract.md`, `docs/evals.md`, and repo-local review/orchestration changes.
 - `critical` implementation reading is mandatory for the same surfaces, and requires authoritative coverage of relevant contract/design/eval authority plus relevant accepted ADRs; it is not a command policy or a blanket full-document reread requirement.
-- Codex review capabilities are the only bug-finding review engine.
+- Codex review capabilities are the only bug-finding review engine; a
+  `spawn_agent` reviewer is not an authorized review surface.
 - launch review in its own fresh review session, not as a same-session self-review and not through a wrapper that reparses session files.
 - when using `--uncommitted`, the worktree must contain only the current task's cumulative diff or the bounded process-maintenance diff.
 - keep routine review criteria durable in `docs/code-review.md`, with only
