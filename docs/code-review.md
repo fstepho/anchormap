@@ -72,6 +72,13 @@ than guess.
     relevant contract, design, eval, and accepted ADR authority without
     imposing full-document rereading by default;
   - whether fresh Codex review remains the only bug-finding review engine.
+- Treat Biome `noExcessiveLinesPerFile` diagnostics as maintainability review
+  signals. For a modified file above its configured threshold, request a
+  bounded split or an explicit justification when the size reflects mixed
+  responsibilities or makes review non-local. Do not require out-of-scope
+  refactors only to reduce line count, and do not promote the rule from `warn`
+  to `error` until the repository has an explicit clean baseline for that
+  category.
 
 ## Review Output
 

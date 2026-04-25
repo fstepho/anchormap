@@ -85,11 +85,33 @@
 	},
 	"overrides": [
 		{
+			"includes": ["src/harness/**/*.ts"],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noExcessiveLinesPerFile": {
+							"level": "warn",
+							"options": {
+								"maxLines": 1000,
+								"skipBlankLines": true
+							}
+						}
+					}
+				}
+			}
+		},
+		{
 			"includes": ["src/**/*.test.ts", "src/**/__tests__/**"],
 			"linter": {
 				"rules": {
 					"nursery": {
-						"noExcessiveLinesPerFile": "off"
+						"noExcessiveLinesPerFile": {
+							"level": "warn",
+							"options": {
+								"maxLines": 1300,
+								"skipBlankLines": true
+							}
+						}
 					},
 					"suspicious": {
 						"noConsole": "off",
