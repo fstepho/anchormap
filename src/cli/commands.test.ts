@@ -1317,7 +1317,7 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 	}
 });
 
-test("scan --json fails fast instead of rendering incomplete usable mapping reachability", () => {
+test("scan --json renders usable mapping reachability through supported graph edges", () => {
 	const cwd = createTempRepo();
 	try {
 		mkdirSync(join(cwd, "src"));
@@ -1349,9 +1349,42 @@ test("scan --json fails fast instead of rendering incomplete usable mapping reac
 			stderr: stderr.writer,
 		});
 
-		assert.equal(exitCode, 1);
-		assert.equal(stdout.read(), "");
-		assert.notEqual(stderr.read(), "");
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 1,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+			},
+			analysis_health: "clean",
+			observed_anchors: {
+				"FR-014": {
+					spec_path: "specs/requirements.md",
+					mapping_state: "usable",
+				},
+			},
+			stored_mappings: {
+				"FR-014": {
+					state: "usable",
+					seed_files: ["src/index.ts"],
+					reached_files: ["src/dep.ts", "src/index.ts"],
+				},
+			},
+			files: {
+				"src/dep.ts": {
+					covering_anchor_ids: ["FR-014"],
+					supported_local_targets: [],
+				},
+				"src/index.ts": {
+					covering_anchor_ids: ["FR-014"],
+					supported_local_targets: ["src/dep.ts"],
+				},
+			},
+			findings: [],
+		});
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
 		assertNoAnchormapTemps(cwd);
 	} finally {

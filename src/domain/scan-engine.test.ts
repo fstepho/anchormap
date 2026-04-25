@@ -38,20 +38,94 @@ test("classifies usable stored mappings and observed anchors", () => {
 	]);
 });
 
-test("fails fast for usable mappings whose seed has supported graph targets pending T7.3", () => {
-	assert.throws(
-		() =>
-			runScanEngine({
-				config: configWithMappings({
-					[anchorId("FR-014")]: {
-						seedFiles: [repoPath("src/index.ts")],
-					},
-				}),
-				specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
-				productGraph: productGraphWithSupportedEdge(),
-			}),
-		/T7\.2 scan engine cannot render complete reachability/,
-	);
+test("calculates sorted transitive reached files from sorted seeds and targets", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/z.ts"), repoPath("src/a.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: productGraphWithFiles(
+			[
+				repoPath("src/a.ts"),
+				repoPath("src/b.ts"),
+				repoPath("src/c.ts"),
+				repoPath("src/d.ts"),
+				repoPath("src/z.ts"),
+			],
+			[
+				[repoPath("src/a.ts"), [repoPath("src/c.ts"), repoPath("src/b.ts")]],
+				[repoPath("src/b.ts"), [repoPath("src/d.ts")]],
+				[repoPath("src/c.ts"), [repoPath("src/d.ts"), repoPath("src/not-discovered.ts")]],
+			],
+		),
+	});
+
+	assert.deepEqual(result.stored_mappings[anchorId("FR-014")], {
+		state: "usable",
+		seed_files: [repoPath("src/a.ts"), repoPath("src/z.ts")],
+		reached_files: [
+			repoPath("src/a.ts"),
+			repoPath("src/b.ts"),
+			repoPath("src/c.ts"),
+			repoPath("src/d.ts"),
+			repoPath("src/z.ts"),
+		],
+	});
+	assert.deepEqual(result.files[repoPath("src/not-discovered.ts")], undefined);
+	assert.deepEqual(result.files[repoPath("src/d.ts")].covering_anchor_ids, [anchorId("FR-014")]);
+});
+
+test("accumulates sorted covering anchor ids for overlapping closures", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-020")]: {
+				seedFiles: [repoPath("src/right.ts")],
+			},
+			[anchorId("FR-010")]: {
+				seedFiles: [repoPath("src/left.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-020"), observedAnchor("FR-010")]),
+		productGraph: productGraphWithFiles(
+			[repoPath("src/left.ts"), repoPath("src/right.ts"), repoPath("src/shared.ts")],
+			[
+				[repoPath("src/left.ts"), [repoPath("src/shared.ts")]],
+				[repoPath("src/right.ts"), [repoPath("src/shared.ts")]],
+			],
+		),
+	});
+
+	assert.deepEqual(result.files[repoPath("src/shared.ts")].covering_anchor_ids, [
+		anchorId("FR-010"),
+		anchorId("FR-020"),
+	]);
+});
+
+test("terminates deterministically on supported graph cycles", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/a.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: productGraphWithFiles(
+			[repoPath("src/a.ts"), repoPath("src/b.ts"), repoPath("src/c.ts")],
+			[
+				[repoPath("src/a.ts"), [repoPath("src/b.ts")]],
+				[repoPath("src/b.ts"), [repoPath("src/a.ts"), repoPath("src/c.ts")]],
+				[repoPath("src/c.ts"), [repoPath("src/b.ts")]],
+			],
+		),
+	});
+
+	assert.deepEqual(result.stored_mappings[anchorId("FR-014")].reached_files, [
+		repoPath("src/a.ts"),
+		repoPath("src/b.ts"),
+		repoPath("src/c.ts"),
+	]);
 });
 
 test("emits unmapped_anchor for observed anchors without stored mappings", () => {
@@ -210,14 +284,14 @@ function minimalProductGraph(): ProductGraph {
 	};
 }
 
-function productGraphWithSupportedEdge(): ProductGraph {
+function productGraphWithFiles(
+	productFiles: readonly RepoPath[],
+	edges: readonly (readonly [RepoPath, readonly RepoPath[]])[] = [],
+): ProductGraph {
 	return {
-		productFiles: [repoPath("src/dep.ts"), repoPath("src/index.ts")],
+		productFiles,
 		parsedFiles: [],
-		edgesByImporter: new Map([
-			[repoPath("src/dep.ts"), []],
-			[repoPath("src/index.ts"), [repoPath("src/dep.ts")]],
-		]),
+		edgesByImporter: new Map(edges),
 		graphFindings: [],
 	};
 }

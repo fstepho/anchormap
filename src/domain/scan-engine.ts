@@ -2,7 +2,7 @@ import type { Config } from "../infra/config-io";
 import type { SpecIndex } from "../infra/spec-index";
 import type { ProductGraph } from "../infra/ts-graph";
 import type { AnchorId } from "./anchor-id";
-import { sortAnchorIdsByUtf8 } from "./canonical-order";
+import { sortAnchorIdsByUtf8, sortRepoPathsByUtf8 } from "./canonical-order";
 import {
 	createBrokenSeedPathFinding,
 	createStaleMappingAnchorFinding,
@@ -65,8 +65,10 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 
 			if (state === "usable") {
 				usableMappingIds.add(anchorId);
-				assertNoPendingReachabilityTraversal(input.productGraph, anchorId, mapping.seedFiles);
-				reachedFilesByMapping.set(anchorId, mapping.seedFiles);
+				reachedFilesByMapping.set(
+					anchorId,
+					calculateReachedFiles(input.productGraph, mapping.seedFiles, productFiles),
+				);
 			}
 
 			return [
@@ -123,19 +125,48 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 	});
 }
 
-function assertNoPendingReachabilityTraversal(
+function calculateReachedFiles(
 	productGraph: ProductGraph,
-	anchorId: AnchorId,
 	seedFiles: readonly RepoPath[],
-): void {
-	for (const seedFile of seedFiles) {
-		const supportedLocalTargets = productGraph.edgesByImporter.get(seedFile) ?? [];
-		if (supportedLocalTargets.length > 0) {
-			throw new Error(
-				`T7.2 scan engine cannot render complete reachability for usable mapping ${anchorId} before T7.3`,
-			);
+	productFiles: ReadonlySet<RepoPath>,
+): readonly RepoPath[] {
+	const reachedFiles = new Set<RepoPath>();
+	const queuedFiles = new Set<RepoPath>();
+	const queue: RepoPath[] = [];
+
+	for (const seedFile of sortRepoPathsByUtf8(seedFiles)) {
+		if (productFiles.has(seedFile) && !queuedFiles.has(seedFile)) {
+			queue.push(seedFile);
+			queuedFiles.add(seedFile);
 		}
 	}
+
+	let cursor = 0;
+	while (cursor < queue.length) {
+		const currentFile = queue[cursor];
+		cursor += 1;
+
+		if (currentFile === undefined || reachedFiles.has(currentFile)) {
+			continue;
+		}
+
+		reachedFiles.add(currentFile);
+
+		for (const targetFile of sortRepoPathsByUtf8(
+			productGraph.edgesByImporter.get(currentFile) ?? [],
+		)) {
+			if (
+				productFiles.has(targetFile) &&
+				!reachedFiles.has(targetFile) &&
+				!queuedFiles.has(targetFile)
+			) {
+				queue.push(targetFile);
+				queuedFiles.add(targetFile);
+			}
+		}
+	}
+
+	return sortRepoPathsByUtf8([...reachedFiles]);
 }
 
 function sortedMappingEntries(
