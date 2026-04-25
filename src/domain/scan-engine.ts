@@ -7,11 +7,13 @@ import {
 	createBrokenSeedPathFinding,
 	createStaleMappingAnchorFinding,
 	createUnmappedAnchorFinding,
+	createUntracedProductFileFinding,
 	type Finding,
 	normalizeFindings,
 } from "./finding";
 import type { RepoPath } from "./repo-path";
 import {
+	analysisHealth,
 	createConfigView,
 	createFileView,
 	createObservedAnchorView,
@@ -83,6 +85,46 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 	);
 
 	const coveringAnchorIdsByFile = buildCoveringAnchorIdsByFile(reachedFilesByMapping);
+	const observed_anchors = Object.fromEntries(
+		sortedObservedAnchorEntries(input.specIndex.observedAnchors).map(([anchorId, anchor]) => {
+			const mapping_state = usableMappingIds.has(anchorId)
+				? "usable"
+				: invalidMappingIds.has(anchorId)
+					? "invalid"
+					: "absent";
+
+			if (mapping_state === "absent") {
+				mappingFindings.push(createUnmappedAnchorFinding({ anchor_id: anchorId }));
+			}
+
+			return [
+				anchorId,
+				createObservedAnchorView({
+					spec_path: anchor.specPath,
+					mapping_state,
+				}),
+			];
+		}),
+	);
+	const files = Object.fromEntries(
+		input.productGraph.productFiles.map((productFile) => [
+			productFile,
+			createFileView({
+				covering_anchor_ids: coveringAnchorIdsByFile.get(productFile) ?? [],
+				supported_local_targets: input.productGraph.edgesByImporter.get(productFile) ?? [],
+			}),
+		]),
+	);
+	const baseFindings = normalizeFindings([...input.productGraph.graphFindings, ...mappingFindings]);
+	const findings = normalizeFindings([
+		...baseFindings,
+		...untracedProductFileFindings({
+			baseFindings,
+			files,
+			observedAnchorIds,
+			usableMappingIds,
+		}),
+	]);
 
 	return createScanResultView({
 		config: createConfigView({
@@ -90,39 +132,32 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 			spec_roots: input.config.specRoots,
 			ignore_roots: input.config.ignoreRoots,
 		}),
-		observed_anchors: Object.fromEntries(
-			sortedObservedAnchorEntries(input.specIndex.observedAnchors).map(([anchorId, anchor]) => {
-				const mapping_state = usableMappingIds.has(anchorId)
-					? "usable"
-					: invalidMappingIds.has(anchorId)
-						? "invalid"
-						: "absent";
-
-				if (mapping_state === "absent") {
-					mappingFindings.push(createUnmappedAnchorFinding({ anchor_id: anchorId }));
-				}
-
-				return [
-					anchorId,
-					createObservedAnchorView({
-						spec_path: anchor.specPath,
-						mapping_state,
-					}),
-				];
-			}),
-		),
+		observed_anchors,
 		stored_mappings,
-		files: Object.fromEntries(
-			input.productGraph.productFiles.map((productFile) => [
-				productFile,
-				createFileView({
-					covering_anchor_ids: coveringAnchorIdsByFile.get(productFile) ?? [],
-					supported_local_targets: input.productGraph.edgesByImporter.get(productFile) ?? [],
-				}),
-			]),
-		),
-		findings: normalizeFindings([...input.productGraph.graphFindings, ...mappingFindings]),
+		files,
+		findings,
 	});
+}
+
+function untracedProductFileFindings(input: {
+	readonly baseFindings: readonly Finding[];
+	readonly files: ScanResultView["files"];
+	readonly observedAnchorIds: ReadonlySet<AnchorId>;
+	readonly usableMappingIds: ReadonlySet<AnchorId>;
+}): Finding[] {
+	if (analysisHealth(input.baseFindings) === "degraded" || input.usableMappingIds.size === 0) {
+		return [];
+	}
+
+	for (const anchorId of input.observedAnchorIds) {
+		if (!input.usableMappingIds.has(anchorId)) {
+			return [];
+		}
+	}
+
+	return Object.entries(input.files)
+		.filter(([, file]) => file.covering_anchor_ids.length === 0)
+		.map(([path]) => createUntracedProductFileFinding({ path: path as RepoPath }));
 }
 
 function calculateReachedFiles(

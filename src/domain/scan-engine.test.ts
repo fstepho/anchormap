@@ -238,6 +238,78 @@ test("preserves and normalizes graph findings with mapping findings", () => {
 	);
 });
 
+test("emits untraced_product_file for uncovered product files in otherwise clean analysis", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: productGraphWithFiles([repoPath("src/index.ts"), repoPath("src/unused.ts")]),
+	});
+
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.files[repoPath("src/unused.ts")].covering_anchor_ids, []);
+	assert.deepEqual(result.findings, [
+		{
+			kind: "untraced_product_file",
+			path: repoPath("src/unused.ts"),
+		},
+	]);
+});
+
+test("suppresses untraced_product_file when any observed anchor is unmapped", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014"), observedAnchor("FR-020")]),
+		productGraph: productGraphWithFiles([repoPath("src/index.ts"), repoPath("src/unused.ts")]),
+	});
+
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.files[repoPath("src/unused.ts")].covering_anchor_ids, []);
+	assert.deepEqual(result.findings, [
+		{
+			kind: "unmapped_anchor",
+			anchor_id: anchorId("FR-020"),
+		},
+	]);
+});
+
+test("suppresses untraced_product_file when analysis is degraded", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014")]),
+		productGraph: {
+			...productGraphWithFiles([repoPath("src/index.ts"), repoPath("src/unused.ts")]),
+			graphFindings: [
+				createUnresolvedStaticEdgeFinding({
+					importer: repoPath("src/index.ts"),
+					specifier: "./missing",
+				}),
+			],
+		},
+	});
+
+	assert.equal(result.analysis_health, "degraded");
+	assert.deepEqual(result.files[repoPath("src/unused.ts")].covering_anchor_ids, []);
+	assert.deepEqual(result.findings, [
+		{
+			kind: "unresolved_static_edge",
+			importer: repoPath("src/index.ts"),
+			specifier: "./missing",
+		},
+	]);
+});
+
 function minimalConfig(): Config {
 	return {
 		version: 1,
