@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
+import { type RepoPath, validateRepoPath } from "../domain/repo-path";
 import {
 	type AnchormapCommandContext,
 	type AnchormapCommandHandlers,
@@ -27,6 +28,7 @@ import {
 	runAnchormap,
 	unsupportedRepoError,
 	usageError,
+	validateMapSeedsInProductFiles,
 	writeAppError,
 } from "./commands";
 
@@ -1071,6 +1073,28 @@ test("default map handler rejects anchors absent from current specs with code 4"
 		rmSync(cwd, { recursive: true, force: true });
 	}
 });
+
+test("map seed product-file membership validation rejects seeds missing from discovery", () => {
+	assert.deepEqual(validateMapSeedsInProductFiles(["src/index.ts"], [repoPath("src/index.ts")]), {
+		kind: "ok",
+	});
+
+	const result = validateMapSeedsInProductFiles(["src/other.ts"], [repoPath("src/index.ts")]);
+
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "UsageError");
+	}
+});
+
+function repoPath(value: string): RepoPath {
+	const result = validateRepoPath(value);
+	assert.equal(result.kind, "ok");
+	if (result.kind !== "ok") {
+		throw new Error(`invalid RepoPath fixture value ${value}`);
+	}
+	return result.repoPath;
+}
 
 test("default map handler classifies spec decode failures as code 3 without mutation", () => {
 	const cwd = createTempRepo();

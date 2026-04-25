@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T8.3 — Validate map anchor and discovered product-file membership before commit`
-- Last completed task: `T8.2 — Enforce map config load, seed preconditions, and replace guard priority`
+- Next executable product task after blocker clearance: `T8.4 — Implement map create and replace YAML mutation`
+- Last completed task: `T8.3 — Validate map anchor and discovered product-file membership before commit`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -89,6 +89,7 @@
   - `T7.7 — Complete B-scan fixture family and JSON goldens`
   - `T8.1 — Implement raw map argument semantic validation`
   - `T8.2 — Enforce map config load, seed preconditions, and replace guard priority`
+  - `T8.3 — Validate map anchor and discovered product-file membership before commit`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

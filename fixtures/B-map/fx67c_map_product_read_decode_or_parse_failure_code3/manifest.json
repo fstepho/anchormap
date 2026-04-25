@@ -1,0 +1,27 @@
+{
+	"id": "fx67c_map_product_read_decode_or_parse_failure_code3",
+	"family": "B-map",
+	"purpose": "map with an unparsable product_file during repository validation exits 3, preserves anchormap.yaml, and leaves no temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "product", "parse", "write"],
+	"groups": ["m6", "m8"]
+}

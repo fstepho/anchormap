@@ -1,0 +1,27 @@
+{
+	"id": "fx00n_map_decode_product_non_utf8_no_mutation",
+	"family": "B-decodage",
+	"purpose": "map with a non-UTF-8 product_file during repository validation exits 3, preserves anchormap.yaml, and leaves no temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "product", "decode", "write"],
+	"groups": ["m6", "m8"]
+}

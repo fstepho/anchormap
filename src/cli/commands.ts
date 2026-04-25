@@ -558,6 +558,14 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return productFilesResult.error;
 	}
 
+	const seedMembership = validateMapSeedsInProductFiles(
+		args.seeds,
+		productFilesResult.productFiles,
+	);
+	if (seedMembership.kind === "error") {
+		return seedMembership.error;
+	}
+
 	const productGraphResult = buildProductGraph(
 		configResult.config,
 		productFilesResult.productFiles,
@@ -603,6 +611,28 @@ function validateMapSeedPreconditions(
 		}
 		if (status.kind !== "file") {
 			return { kind: "error", error: usageError(`--seed ${seed} must exist as a file`) };
+		}
+	}
+
+	return { kind: "ok" };
+}
+
+export function validateMapSeedsInProductFiles(
+	seeds: readonly string[],
+	productFiles: readonly RepoPath[],
+): { kind: "ok" } | { kind: "error"; error: AppError } {
+	const discoveredProductFiles = new Set(productFiles);
+
+	for (const seedValue of seeds) {
+		const seedResult = validateRepoPath(seedValue);
+		if (seedResult.kind === "validation_failure") {
+			return { kind: "error", error: usageError("--seed must be a valid repository path") };
+		}
+		if (!discoveredProductFiles.has(seedResult.repoPath)) {
+			return {
+				kind: "error",
+				error: usageError(`--seed ${seedResult.repoPath} is not a discovered product_file`),
+			};
 		}
 	}
 
