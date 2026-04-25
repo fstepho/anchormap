@@ -1326,13 +1326,12 @@ review au-delà de la tâche. Les bodies complets de findings de review peuvent
 être conservés seulement pour des findings actionnables et seulement jusqu'au
 handoff du rework correspondant.
 
-Après deux ou trois commits autopilot consécutifs, la boucle doit être auditée
-avant d'ajouter plus d'outillage de capture : relever dans les sessions JSONL les
-`token_count` avant et après review, la croissance par tâche, le volume retenu
-après commit, le nombre d'agents implementation/rework/review ouverts et leur
-moment de fermeture, puis vérifier que le handoff coordinateur post-commit ne
-transporte pas les bodies complets de review, transcripts, diffs ou logs
-d'implémentation.
+Avant d'ajouter un nouvel outillage de capture, de rétention ou de handoff au
+mode `autopilot`, la boucle doit être auditée contre cette règle de rétention
+compacte. L'audit doit vérifier que l'état conservé entre tâches reste limité à
+la liste autorisée ci-dessus, que les sessions de tâche et de review restent
+fraîches, et qu'aucun log complet, diff complet, transcript, contenu de fichier
+ou body complet de finding clôturé n'est transporté au-delà de la tâche.
 
 Le mode `autopilot` doit s'arrêter immédiatement lorsque l'un des cas suivants
 survient :

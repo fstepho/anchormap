@@ -432,16 +432,14 @@ Notes:
 
 ## Autopilot Context Audit
 
-After two or three consecutive autopilot task commits, audit the coordinator
-session before adding more review tooling:
+Before adding any new capture, retention, or handoff tooling to autopilot, audit
+the coordinator session against the compact-retention rule:
 
-- inspect the relevant `~/.codex/sessions/...jsonl` files for `token_count`
-  values immediately before and after each fresh review;
-- record token growth per task and the token volume retained after each commit;
-- count implementation, rework, and review agents opened for each task and when
-  they were closed;
-- verify the coordinator handoff after each commit contains only compact task
-  state, not full review bodies, transcripts, diffs, or implementation logs.
+- retained cross-task state is limited to the fields allowed by
+  `docs/operating-model.md` §18.1;
+- implementation, rework, and review sessions remain fresh and task-scoped;
+- post-task coordinator handoff does not carry full review bodies, transcripts,
+  diffs, file contents, implementation logs, or completed finding bodies.
 
 ## Non-Goals
 
