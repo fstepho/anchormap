@@ -100,8 +100,9 @@ export function buildProductGraph(
 	const cwd = options.cwd ?? process.cwd();
 	const fs = options.fs ?? nodeProductGraphFs;
 	const parsedFiles: ParsedProductFile[] = [];
+	const sortedProductFiles = normalizeProductFiles(productFiles);
 
-	for (const productFile of [...productFiles].sort(compareRepoPathsByUtf8)) {
+	for (const productFile of sortedProductFiles) {
 		const read = readProductFile(cwd, productFile, fs);
 		if (read.kind === "error") {
 			return read;
@@ -135,6 +136,10 @@ export function buildProductGraph(
 			graphFindings: normalizeFindings(resolution.findings),
 		},
 	};
+}
+
+function normalizeProductFiles(productFiles: readonly RepoPath[]): readonly RepoPath[] {
+	return [...new Set(productFiles)].sort(compareRepoPathsByUtf8);
 }
 
 export function parseTypeScriptProductText(

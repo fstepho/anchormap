@@ -73,6 +73,12 @@ function candidatePaths(
 	}));
 }
 
+function edgesByImporterEntries(
+	edgesByImporter: ReadonlyMap<RepoPath, readonly RepoPath[]>,
+): Array<[string, readonly string[]]> {
+	return [...edgesByImporter.entries()].map(([importer, targets]) => [importer, targets]);
+}
+
 test("uses the accepted pinned TypeScript parser dependency", () => {
 	assert.equal(ts.version, "6.0.3");
 });
@@ -453,6 +459,106 @@ test("resolves supported static edges with .ts before index.ts and deduplicates 
 	if (result.kind === "ok") {
 		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
 			"src/lib.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("normalizes product files, importers, and edges independent of discovery order", () => {
+	const files = {
+		"src/a.ts": bytes("import './c';\nimport './b';\n"),
+		"src/b.ts": bytes("export const b = 1;\n"),
+		"src/c.ts": bytes("export const c = 1;\n"),
+		"src/empty.ts": bytes("export const empty = 1;\n"),
+	};
+	const first = buildProductGraph(
+		config(),
+		[
+			repoPath("src/empty.ts"),
+			repoPath("src/c.ts"),
+			repoPath("src/a.ts"),
+			repoPath("src/b.ts"),
+			repoPath("src/a.ts"),
+		],
+		{
+			cwd: CWD,
+			fs: createReadFileFs(files),
+		},
+	);
+	const second = buildProductGraph(
+		config(),
+		[repoPath("src/b.ts"), repoPath("src/a.ts"), repoPath("src/empty.ts"), repoPath("src/c.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs(files),
+		},
+	);
+
+	assert.equal(first.kind, "ok");
+	assert.equal(second.kind, "ok");
+	if (first.kind === "ok" && second.kind === "ok") {
+		assert.deepEqual(first.productGraph.productFiles, [
+			"src/a.ts",
+			"src/b.ts",
+			"src/c.ts",
+			"src/empty.ts",
+		]);
+		assert.deepEqual(second.productGraph.productFiles, first.productGraph.productFiles);
+		assert.deepEqual(edgesByImporterEntries(first.productGraph.edgesByImporter), [
+			["src/a.ts", ["src/b.ts", "src/c.ts"]],
+			["src/b.ts", []],
+			["src/c.ts", []],
+			["src/empty.ts", []],
+		]);
+		assert.deepEqual(
+			edgesByImporterEntries(second.productGraph.edgesByImporter),
+			edgesByImporterEntries(first.productGraph.edgesByImporter),
+		);
+		assert.deepEqual(second.productGraph.graphFindings, first.productGraph.graphFindings);
+	}
+});
+
+test("deduplicates graph findings with identical canonical tuples", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './missing';\nexport * from './missing';\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./missing",
+			},
+		]);
+	}
+});
+
+test("represents cyclic supported dependencies without recursive graph expansion", () => {
+	const result = buildProductGraph(
+		config(),
+		[repoPath("src/a.ts"), repoPath("src/b.ts"), repoPath("src/c.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/a.ts": bytes("import './b';\n"),
+				"src/b.ts": bytes("import './a';\nimport './c';\n"),
+				"src/c.ts": bytes("export const c = 1;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(edgesByImporterEntries(result.productGraph.edgesByImporter), [
+			["src/a.ts", ["src/b.ts"]],
+			["src/b.ts", ["src/a.ts", "src/c.ts"]],
+			["src/c.ts", []],
 		]);
 		assert.deepEqual(result.productGraph.graphFindings, []);
 	}
