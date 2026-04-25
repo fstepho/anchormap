@@ -1,7 +1,7 @@
 import { lstatSync } from "node:fs";
 import { join } from "node:path";
 
-import { validateAnchorId } from "../domain/anchor-id";
+import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import {
 	normalizeUserPathArg,
 	type RepoPath,
@@ -577,7 +577,45 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return productGraphResult.error;
 	}
 
-	return internalError("anchormap map is not implemented yet");
+	const mappedConfig = buildConfigWithMappedSeedFiles(configResult.config, anchorId, args.seeds);
+	if (mappedConfig.kind === "error") {
+		return mappedConfig.error;
+	}
+
+	const writeResult = writeConfigAtomic(mappedConfig.config, { cwd: context.cwd });
+	if (writeResult.kind === "error") {
+		return writeResult.error;
+	}
+
+	return commandSuccess();
+}
+
+function buildConfigWithMappedSeedFiles(
+	config: Config,
+	anchorId: AnchorId,
+	seeds: readonly string[],
+): { kind: "ok"; config: Config } | { kind: "error"; error: AppError } {
+	const seedFiles: RepoPath[] = [];
+	for (const seed of seeds) {
+		const seedResult = validateRepoPath(seed);
+		if (seedResult.kind === "validation_failure") {
+			return { kind: "error", error: internalError("validated map seed became invalid") };
+		}
+		seedFiles.push(seedResult.repoPath);
+	}
+
+	return {
+		kind: "ok",
+		config: {
+			...config,
+			mappings: {
+				...config.mappings,
+				[anchorId]: {
+					seedFiles,
+				},
+			},
+		},
+	};
 }
 
 function validateMapSeedPreconditions(

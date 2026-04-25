@@ -1,0 +1,30 @@
+{
+	"id": "fx59_map_create",
+	"family": "B-map",
+	"purpose": "map creates a valid mapping and writes exact canonical YAML.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/z.ts",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "write", "golden"],
+	"groups": ["m8"]
+}

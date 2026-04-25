@@ -1,0 +1,29 @@
+{
+	"id": "fx62_map_replace_create_if_absent",
+	"family": "B-map",
+	"purpose": "map with --replace creates the mapping when it is absent and writes exact canonical YAML.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts",
+		"--replace"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "replace", "write", "golden"],
+	"groups": ["m8"]
+}

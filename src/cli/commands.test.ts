@@ -1096,6 +1096,166 @@ function repoPath(value: string): RepoPath {
 	return result.repoPath;
 }
 
+test("default map handler creates a canonical mapping with sorted seed files", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeFileSync(
+			join(cwd, "anchormap.yaml"),
+			"version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n",
+		);
+		writeFileSync(join(cwd, "specs", "requirements.md"), "# FR-014 Trace\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "export const index = 1;\n");
+		writeFileSync(join(cwd, "src", "z.ts"), "export const z = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(
+			["map", "--anchor", "FR-014", "--seed", "src/z.ts", "--seed", "src/index.ts"],
+			{ cwd, stdout: stdout.writer, stderr: stderr.writer },
+		);
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-014':",
+				"    seed_files:",
+				"      - 'src/index.ts'",
+				"      - 'src/z.ts'",
+				"",
+			].join("\n"),
+		);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler replaces only the requested mapping when --replace is present", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeFileSync(
+			join(cwd, "anchormap.yaml"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-014':",
+				"    seed_files:",
+				"      - 'src/old.ts'",
+				"  'FR-020':",
+				"    seed_files:",
+				"      - 'src/other.ts'",
+				"",
+			].join("\n"),
+		);
+		writeFileSync(join(cwd, "specs", "requirements.md"), "# FR-014 Trace\n# FR-020 Other\n");
+		writeFileSync(join(cwd, "src", "new.ts"), "export const next = 1;\n");
+		writeFileSync(join(cwd, "src", "old.ts"), "export const old = 1;\n");
+		writeFileSync(join(cwd, "src", "other.ts"), "export const other = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(
+			["map", "--anchor", "FR-014", "--seed", "src/new.ts", "--replace"],
+			{ cwd, stdout: stdout.writer, stderr: stderr.writer },
+		);
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-014':",
+				"    seed_files:",
+				"      - 'src/new.ts'",
+				"  'FR-020':",
+				"    seed_files:",
+				"      - 'src/other.ts'",
+				"",
+			].join("\n"),
+		);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler creates an absent mapping when --replace is present", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeFileSync(
+			join(cwd, "anchormap.yaml"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-020':",
+				"    seed_files:",
+				"      - 'src/other.ts'",
+				"",
+			].join("\n"),
+		);
+		writeFileSync(join(cwd, "specs", "requirements.md"), "# FR-014 Trace\n# FR-020 Other\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "export const index = 1;\n");
+		writeFileSync(join(cwd, "src", "other.ts"), "export const other = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(
+			["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace"],
+			{ cwd, stdout: stdout.writer, stderr: stderr.writer },
+		);
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-014':",
+				"    seed_files:",
+				"      - 'src/index.ts'",
+				"  'FR-020':",
+				"    seed_files:",
+				"      - 'src/other.ts'",
+				"",
+			].join("\n"),
+		);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("default map handler classifies spec decode failures as code 3 without mutation", () => {
 	const cwd = createTempRepo();
 	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
@@ -1232,7 +1392,7 @@ test("default map handler classifies graph existence-test failures as code 3 wit
 	}
 });
 
-test("default map handler ignores graph findings while preserving config before map mutation exists", () => {
+test("default map handler ignores graph findings and writes the explicit mapping", () => {
 	const cwd = createTempRepo();
 	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
 	try {
@@ -1251,10 +1411,23 @@ test("default map handler ignores graph findings while preserving config before 
 			stderr: stderr.writer,
 		});
 
-		assert.equal(exitCode, 1);
+		assert.equal(exitCode, 0);
 		assert.equal(stdout.read(), "");
-		assert.notEqual(stderr.read(), "");
-		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assert.equal(stderr.read(), "");
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			[
+				"version: 1",
+				"product_root: 'src'",
+				"spec_roots:",
+				"  - 'specs'",
+				"mappings:",
+				"  'FR-014':",
+				"    seed_files:",
+				"      - 'src/index.ts'",
+				"",
+			].join("\n"),
+		);
 		assertNoAnchormapTemps(cwd);
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });

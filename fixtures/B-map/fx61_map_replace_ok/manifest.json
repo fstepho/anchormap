@@ -1,0 +1,29 @@
+{
+	"id": "fx61_map_replace_ok",
+	"family": "B-map",
+	"purpose": "map with --replace replaces only the requested mapping and writes exact canonical YAML.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/new.ts",
+		"--replace"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "replace", "write", "golden"],
+	"groups": ["m8"]
+}
