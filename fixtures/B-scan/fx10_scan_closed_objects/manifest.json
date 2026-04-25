@@ -1,0 +1,19 @@
+{
+	"id": "fx10_scan_closed_objects",
+	"family": "B-scan",
+	"purpose": "Scan --json keeps root, config, observed anchor, stored mapping, file, and finding objects closed.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden", "closed_objects"],
+	"groups": ["m7"]
+}

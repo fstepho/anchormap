@@ -1,0 +1,19 @@
+{
+	"id": "fx01_scan_min_clean",
+	"family": "B-scan",
+	"purpose": "Minimal clean scan --json output includes usable observed and stored mapping views.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

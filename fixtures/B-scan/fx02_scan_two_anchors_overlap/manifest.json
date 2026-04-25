@@ -1,0 +1,19 @@
+{
+	"id": "fx02_scan_two_anchors_overlap",
+	"family": "B-scan",
+	"purpose": "Scan --json renders multiple usable anchors with overlapping transitive coverage.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

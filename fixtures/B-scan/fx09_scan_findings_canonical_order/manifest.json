@@ -1,0 +1,19 @@
+{
+	"id": "fx09_scan_findings_canonical_order",
+	"family": "B-scan",
+	"purpose": "Scan --json renders canonical finding order and canonical nested key order.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden", "canonical_order"],
+	"groups": ["m7"]
+}
