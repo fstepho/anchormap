@@ -2,9 +2,15 @@ import { strict as assert } from "node:assert";
 import { Buffer } from "node:buffer";
 import { test } from "node:test";
 
+import { anchorIdToString } from "../domain/anchor-id";
 import { type RepoPath, validateRepoPath } from "../domain/repo-path";
 import type { Config } from "./config-io";
-import { buildSpecIndex, type SpecIndexFs, type SpecIndexStats } from "./spec-index";
+import {
+	buildSpecIndex,
+	type SpecAnchorOccurrence,
+	type SpecIndexFs,
+	type SpecIndexStats,
+} from "./spec-index";
 
 const CWD = "/repo";
 
@@ -107,6 +113,16 @@ function relativePath(path: string): string {
 	return path.slice(CWD.length + 1);
 }
 
+function occurrenceView(
+	occurrences: readonly SpecAnchorOccurrence[],
+): ReadonlyArray<readonly [string, string, string]> {
+	return occurrences.map((occurrence) => [
+		anchorIdToString(occurrence.anchorId),
+		occurrence.specPath,
+		occurrence.sourceKind,
+	]);
+}
+
 test("discovers supported spec files under configured roots in stable order", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs", "docs"]), {
 		cwd: CWD,
@@ -137,6 +153,121 @@ test("discovers supported spec files under configured roots in stable order", ()
 				["specs/z.yaml", "yaml", "id: Z-001\n"],
 			],
 		);
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["A-001", "specs/a.md", "markdown"],
+			["DOC.README.PRESENT", "docs/readme.md", "markdown"],
+		]);
+	}
+});
+
+test("extracts supported anchors from ATX Markdown headings", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["anchors.md"],
+			},
+			files: {
+				"specs/anchors.md": Buffer.from(
+					[
+						"# AA-001",
+						"## DOC.README.PRESENT Readme present",
+						"### BB-002: Colon suffix",
+						"#### CC-003- Dash suffix",
+						"##### DD-004_not-supported",
+						"###### EE-005extra-not-supported",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["AA-001", "specs/anchors.md", "markdown"],
+			["BB-002", "specs/anchors.md", "markdown"],
+			["CC-003", "specs/anchors.md", "markdown"],
+			["DOC.README.PRESENT", "specs/anchors.md", "markdown"],
+		]);
+	}
+});
+
+test("normalizes Markdown heading inline text according to the contract", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["inline.md"],
+			},
+			files: {
+				"specs/inline.md": Buffer.from(
+					[
+						"## **FR-014**\tValidate",
+						"## `DOC.README.PRESENT`   - README present",
+						"## <!-- US-001 --> Hidden html does not count",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["DOC.README.PRESENT", "specs/inline.md", "markdown"],
+			["FR-014", "specs/inline.md", "markdown"],
+		]);
+	}
+});
+
+test("ignores Markdown Setext headings and anchors outside the heading prefix", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["ignored.md"],
+			},
+			files: {
+				"specs/ignored.md": Buffer.from(
+					[
+						"FR-014 Setext is outside support",
+						"===============================",
+						"",
+						"## Validate changelog FR-014",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.specIndex.anchorOccurrences, []);
+	}
+});
+
+test("extracts Markdown anchors after an initial UTF-8 BOM is removed", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["bom.md"],
+			},
+			files: {
+				"specs/bom.md": Buffer.from([0xef, 0xbb, 0xbf, ...Buffer.from("# BOM-001\n")]),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["BOM-001", "specs/bom.md", "markdown"],
+		]);
 	}
 });
 
