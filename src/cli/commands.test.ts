@@ -4,6 +4,7 @@ import {
 	lstatSync,
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	readlinkSync,
 	rmSync,
@@ -678,6 +679,72 @@ test("rejects invalid map options and shapes before dispatch", () => {
 	}
 });
 
+test("default scan --json handler loads config first and fails missing config with code 2", () => {
+	const cwd = createTempRepo();
+	try {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 2);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(existsSync(join(cwd, "anchormap.yaml")), false);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default human scan handler fails missing config with code 2 and no mutation", () => {
+	const cwd = createTempRepo();
+	try {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 2);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.deepEqual(readdirSync(cwd), []);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler fails invalid config with code 2 and preserves config bytes", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: [\n";
+	try {
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 2);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("parses supported scan forms before dispatch", () => {
 	const cases: Array<{
 		argv: readonly string[];
@@ -705,6 +772,15 @@ test("parses supported scan forms before dispatch", () => {
 		assert.deepEqual(calls, [expectedCall]);
 	}
 });
+
+function assertNoAnchormapTemps(cwd: string): void {
+	assert.equal(
+		readdirSync(cwd).some(
+			(entry) => entry.startsWith(".anchormap.yaml.") && entry.endsWith(".tmp"),
+		),
+		false,
+	);
+}
 
 test("rejects invalid scan options and combinations before dispatch", () => {
 	const cases: readonly (readonly string[])[] = [

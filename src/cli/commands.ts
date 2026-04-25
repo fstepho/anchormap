@@ -2,7 +2,12 @@ import { lstatSync } from "node:fs";
 import { join } from "node:path";
 
 import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
-import { ANCHORMAP_CONFIG_FILENAME, type Config, writeConfigAtomic } from "../infra/config-io";
+import {
+	ANCHORMAP_CONFIG_FILENAME,
+	type Config,
+	loadConfig,
+	writeConfigAtomic,
+} from "../infra/config-io";
 import { statRepoPath } from "../infra/repo-fs";
 
 export type AnchormapCommandName = "init" | "map" | "scan";
@@ -70,8 +75,8 @@ const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>(["init", "map", "scan"]
 
 const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	init: runInitCommand,
-	map: createNotImplementedHandler("map"),
-	scan: createNotImplementedHandler("scan"),
+	map: runMapCommandStub,
+	scan: runScanCommandStub,
 };
 
 export function runAnchormap(argv: readonly string[], options: AnchormapRunOptions = {}): number {
@@ -409,6 +414,24 @@ function runInitCommand(context: AnchormapCommandContext): AnchormapCommandResul
 	return commandSuccess();
 }
 
+function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {
+	const configResult = loadConfig({ cwd: context.cwd });
+	if (configResult.kind === "error") {
+		return configResult.error;
+	}
+
+	return internalError("anchormap scan is not implemented yet");
+}
+
+function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {
+	const configResult = loadConfig({ cwd: context.cwd });
+	if (configResult.kind === "error") {
+		return configResult.error;
+	}
+
+	return internalError("anchormap map is not implemented yet");
+}
+
 function normalizeInitPath(
 	value: string,
 	optionName: string,
@@ -696,10 +719,4 @@ function parseScanArgs(args: readonly string[]): ParsedScanArgs {
 		kind: "usage_error",
 		message: "unsupported option combination",
 	};
-}
-
-function createNotImplementedHandler(
-	command: AnchormapCommandName,
-): (context: AnchormapCommandContext) => AnchormapCommandResult {
-	return () => internalError(`anchormap ${command} is not implemented yet`);
 }

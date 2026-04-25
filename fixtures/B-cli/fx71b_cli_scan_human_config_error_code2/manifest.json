@@ -1,0 +1,19 @@
+{
+	"id": "fx71b_cli_scan_human_config_error_code2",
+	"family": "B-cli",
+	"purpose": "Human scan with missing anchormap.yaml exits 2 without a filesystem mutation.",
+	"command": ["node", "dist/anchormap.js", "scan"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "config", "scan"],
+	"groups": ["m4"]
+}

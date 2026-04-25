@@ -1,0 +1,27 @@
+{
+	"id": "fx67a_map_config_missing_or_invalid_code2",
+	"family": "B-map",
+	"purpose": "map with invalid anchormap.yaml exits 2, preserves config bytes, and leaves no temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["config", "map", "write"],
+	"groups": ["m4"]
+}
