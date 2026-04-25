@@ -1,0 +1,22 @@
+{
+	"id": "fx71e_cli_scan_human_internal_error_code1",
+	"family": "B-cli",
+	"purpose": "Human scan with a deterministic internal error injected after preconditions exits 1 without a filesystem mutation.",
+	"command": ["node", "dist/anchormap.js", "scan"],
+	"cwd": ".",
+	"exit_code": 1,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "internal_error", "scan"],
+	"groups": ["m7"],
+	"fault_injection": {
+		"marker": "scan_engine_internal_error"
+	}
+}

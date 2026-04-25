@@ -1,0 +1,19 @@
+{
+	"id": "fx37_graph_parse_failure",
+	"family": "B-graph",
+	"purpose": "scan --json with an unparsable TypeScript product file exits 3 with empty stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "product", "parse", "scan"],
+	"groups": ["m6", "m7"]
+}

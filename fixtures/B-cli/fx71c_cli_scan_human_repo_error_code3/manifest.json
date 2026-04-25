@@ -1,0 +1,22 @@
+{
+	"id": "fx71c_cli_scan_human_repo_error_code3",
+	"family": "B-cli",
+	"purpose": "Human scan with a required repository enumeration failure exits 3 without a filesystem mutation.",
+	"command": ["node", "dist/anchormap.js", "scan"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "repo", "scan"],
+	"groups": ["m7"],
+	"fault_injection": {
+		"marker": "product_root_enumeration_failure"
+	}
+}

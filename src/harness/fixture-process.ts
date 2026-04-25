@@ -393,7 +393,8 @@ function prepareFixtureProcessFaultInjection(
 	if (
 		marker !== "product_case_collision_in_scope" &&
 		marker !== "product_spec_root_case_collision" &&
-		marker !== "product_root_enumeration_failure"
+		marker !== "product_root_enumeration_failure" &&
+		marker !== "scan_engine_internal_error"
 	) {
 		return null;
 	}
@@ -435,6 +436,15 @@ function isMacOsArm64(): boolean {
 }
 
 function renderFixtureProcessFaultInjectionPreload(marker: string, cwd: string): string {
+	if (marker === "scan_engine_internal_error") {
+		return `
+const scanEngine = require(${JSON.stringify(resolve(PROJECT_ROOT, "dist", "domain", "scan-engine.js"))});
+scanEngine.runScanEngine = function runScanEngineInjectedInternalError() {
+	throw new Error("fixture injected scan_engine internal error");
+};
+`;
+	}
+
 	if (marker === "product_spec_root_case_collision") {
 		return `
 const fs = require("node:fs");

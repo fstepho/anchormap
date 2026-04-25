@@ -89,6 +89,10 @@ Platform-sensitive fixture markers:
 - `product_noncanonical_path_in_scope` materializes `src/bad<TAB>name.ts` in
   the sandbox before the pre-run snapshot and leaves it in place until sandbox
   disposal, so `no_mutation` artifacts include the fault-triggering path.
+- `product_root_enumeration_failure` injects a child-process `readdir` failure
+  for `product_root` to exercise required repository read failures.
+- `scan_engine_internal_error` replaces the child-process `scan_engine` entry
+  point with a deterministic throw after config, spec, and repo preconditions.
 
 ## Mapping To `docs/evals.md`
 
