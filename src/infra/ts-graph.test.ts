@@ -9,6 +9,7 @@ import {
 	buildProductGraph,
 	buildStaticEdgeResolutionCandidates,
 	extractSupportedStaticEdgeInputs,
+	extractUnsupportedStaticEdgeInputs,
 	type ProductGraphFs,
 	parseTypeScriptProductText,
 	productGraphHasLocalDependencySyntax,
@@ -226,6 +227,28 @@ test("extracts supported static import and export edge inputs in source order", 
 	}
 });
 
+test("extracts unsupported local require and dynamic import inputs in source order", () => {
+	const result = parseTypeScriptProductText(
+		repoPath("src/index.ts"),
+		[
+			"const required = require('./required');",
+			"const dynamic = import('./dynamic');",
+			"const externalRequire = require('pkg');",
+			"const externalDynamic = import('pkg');",
+			"const computedRequire = require(name);",
+			"const computedDynamic = import(name);",
+		].join("\n"),
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(extractUnsupportedStaticEdgeInputs(result.sourceFile), [
+			{ syntaxKind: "require_call", specifier: "./required" },
+			{ syntaxKind: "dynamic_import", specifier: "./dynamic" },
+		]);
+	}
+});
+
 test("builds local static edge candidates exactly by supported specifier shape", () => {
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./model.ts"), [
 		{ path: "src/features/model.ts", support: "supported" },
@@ -319,6 +342,100 @@ test("stores supported static edge inputs on parsed product files", () => {
 				specifier: "./types",
 			},
 		]);
+	}
+});
+
+test("emits unsupported_static_edge for local require without resolving or adding edges", () => {
+	let existenceChecks = 0;
+	const readFile = createReadFileFs({
+		"src/index.ts": bytes("const value = require('./lib');\n"),
+		"src/lib.ts": bytes("export const lib = 1;\n"),
+	}).readFile;
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/lib.ts")], {
+		cwd: CWD,
+		fs: {
+			readFile,
+			exists(_path: string): boolean {
+				existenceChecks += 1;
+				return true;
+			},
+		},
+	});
+
+	assert.equal(result.kind, "ok");
+	assert.equal(existenceChecks, 0);
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.unsupportedStaticEdgeInputs, [
+			{ syntaxKind: "require_call", specifier: "./lib" },
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unsupported_static_edge",
+				importer: "src/index.ts",
+				syntax_kind: "require_call",
+				specifier: "./lib",
+			},
+		]);
+	}
+});
+
+test("emits unsupported_static_edge for local dynamic import without resolving or adding edges", () => {
+	let existenceChecks = 0;
+	const readFile = createReadFileFs({
+		"src/index.ts": bytes("const value = import('./lib');\n"),
+		"src/lib.ts": bytes("export const lib = 1;\n"),
+	}).readFile;
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/lib.ts")], {
+		cwd: CWD,
+		fs: {
+			readFile,
+			exists(_path: string): boolean {
+				existenceChecks += 1;
+				return true;
+			},
+		},
+	});
+
+	assert.equal(result.kind, "ok");
+	assert.equal(existenceChecks, 0);
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.unsupportedStaticEdgeInputs, [
+			{ syntaxKind: "dynamic_import", specifier: "./lib" },
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unsupported_static_edge",
+				importer: "src/index.ts",
+				syntax_kind: "dynamic_import",
+				specifier: "./lib",
+			},
+		]);
+	}
+});
+
+test("ignores non-relative require and dynamic import calls", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				[
+					"const required = require('pkg');",
+					"const dynamic = import('pkg');",
+					"const computedRequire = require(name);",
+					"const computedDynamic = import(name);",
+				].join("\n"),
+			),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.unsupportedStaticEdgeInputs, []);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+		assert.equal(productGraphHasLocalDependencySyntax(result.productGraph), false);
 	}
 });
 

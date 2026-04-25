@@ -7,8 +7,10 @@ import {
 	createOutOfScopeStaticEdgeFinding,
 	createUnresolvedStaticEdgeFinding,
 	createUnsupportedLocalTargetFinding,
+	createUnsupportedStaticEdgeFinding,
 	type Finding,
 	normalizeFindings,
+	type StaticEdgeSyntaxKind,
 } from "../domain/finding";
 import {
 	compareRepoPathsByUtf8,
@@ -31,12 +33,18 @@ export interface ParsedProductFile {
 	readonly text: string;
 	readonly sourceFile: ts.SourceFile;
 	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
+	readonly unsupportedStaticEdgeInputs: readonly UnsupportedStaticEdgeInput[];
 }
 
 export type SupportedStaticEdgeSyntaxKind = "import_declaration" | "export_declaration";
 
 export interface SupportedStaticEdgeInput {
 	readonly syntaxKind: SupportedStaticEdgeSyntaxKind;
+	readonly specifier: string;
+}
+
+export interface UnsupportedStaticEdgeInput {
+	readonly syntaxKind: StaticEdgeSyntaxKind;
 	readonly specifier: string;
 }
 
@@ -109,6 +117,7 @@ export function buildProductGraph(
 			text: read.text,
 			sourceFile: parsed.sourceFile,
 			supportedStaticEdgeInputs: extractSupportedStaticEdgeInputs(parsed.sourceFile),
+			unsupportedStaticEdgeInputs: extractUnsupportedStaticEdgeInputs(parsed.sourceFile),
 		});
 	}
 
@@ -153,6 +162,10 @@ export function productGraphHasLocalDependencySyntax(productGraph: ProductGraph)
 	);
 }
 
+export function productGraphHasSupportedLocalDependencySyntax(productGraph: ProductGraph): boolean {
+	return productGraph.parsedFiles.some((file) => file.supportedStaticEdgeInputs.length > 0);
+}
+
 export function extractSupportedStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
 ): SupportedStaticEdgeInput[] {
@@ -160,6 +173,24 @@ export function extractSupportedStaticEdgeInputs(
 
 	function visit(node: ts.Node): void {
 		const edgeInput = supportedStaticEdgeInputFromNode(node);
+		if (edgeInput !== undefined) {
+			edgeInputs.push(edgeInput);
+		}
+
+		ts.forEachChild(node, visit);
+	}
+
+	visit(sourceFile);
+	return edgeInputs;
+}
+
+export function extractUnsupportedStaticEdgeInputs(
+	sourceFile: ts.SourceFile,
+): UnsupportedStaticEdgeInput[] {
+	const edgeInputs: UnsupportedStaticEdgeInput[] = [];
+
+	function visit(node: ts.Node): void {
+		const edgeInput = unsupportedStaticEdgeInputFromNode(node);
 		if (edgeInput !== undefined) {
 			edgeInputs.push(edgeInput);
 		}
@@ -242,17 +273,33 @@ function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInp
 	return undefined;
 }
 
-function callExpressionHasLocalDependencySyntax(node: ts.CallExpression): boolean {
-	const [specifier] = node.arguments;
-	if (specifier === undefined || !ts.isStringLiteral(specifier)) {
-		return false;
+function unsupportedStaticEdgeInputFromNode(node: ts.Node): UnsupportedStaticEdgeInput | undefined {
+	if (!ts.isCallExpression(node)) {
+		return undefined;
 	}
 
-	const isRequireCall =
-		ts.isIdentifier(node.expression) && node.expression.escapedText === "require";
-	const isDynamicImport = node.expression.kind === ts.SyntaxKind.ImportKeyword;
+	const [specifier] = node.arguments;
+	if (specifier === undefined || !ts.isStringLiteral(specifier)) {
+		return undefined;
+	}
 
-	return (isRequireCall || isDynamicImport) && isLocalDependencySpecifier(specifier.text);
+	if (!isLocalDependencySpecifier(specifier.text)) {
+		return undefined;
+	}
+
+	if (ts.isIdentifier(node.expression) && node.expression.escapedText === "require") {
+		return { syntaxKind: "require_call", specifier: specifier.text };
+	}
+
+	if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+		return { syntaxKind: "dynamic_import", specifier: specifier.text };
+	}
+
+	return undefined;
+}
+
+function callExpressionHasLocalDependencySyntax(node: ts.CallExpression): boolean {
+	return unsupportedStaticEdgeInputFromNode(node) !== undefined;
 }
 
 function isLocalDependencySpecifier(specifier: string): boolean {
@@ -322,6 +369,16 @@ function resolveSupportedStaticEdges(
 			}
 
 			findings.push(resolution.finding);
+		}
+
+		for (const edgeInput of file.unsupportedStaticEdgeInputs) {
+			findings.push(
+				createUnsupportedStaticEdgeFinding({
+					importer: file.path,
+					syntax_kind: edgeInput.syntaxKind,
+					specifier: edgeInput.specifier,
+				}),
+			);
 		}
 
 		edgesByImporter.set(file.path, [...supportedTargets].sort(compareRepoPathsByUtf8));

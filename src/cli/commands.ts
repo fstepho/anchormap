@@ -13,7 +13,10 @@ import {
 import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildSpecIndex } from "../infra/spec-index";
-import { buildProductGraph, productGraphHasLocalDependencySyntax } from "../infra/ts-graph";
+import {
+	buildProductGraph,
+	productGraphHasSupportedLocalDependencySyntax,
+} from "../infra/ts-graph";
 import { renderScanResultJson } from "../render/render-json";
 
 export type AnchormapCommandName = "init" | "map" | "scan";
@@ -456,7 +459,7 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 
 	if (
 		context.scanMode === "json" &&
-		!productGraphHasLocalDependencySyntax(productGraphResult.productGraph) &&
+		!productGraphHasSupportedLocalDependencySyntax(productGraphResult.productGraph) &&
 		specIndexResult.specIndex.observedAnchors.size === 0 &&
 		Object.keys(configResult.config.mappings).length === 0
 	) {

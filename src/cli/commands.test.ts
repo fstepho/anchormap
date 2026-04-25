@@ -1066,6 +1066,83 @@ test("scan --json rejects invalid product file decode and parse boundaries", () 
 	}
 });
 
+test("scan --json renders unsupported local require and dynamic import findings", () => {
+	const cases: Array<{
+		name: string;
+		source: string;
+		syntaxKind: string;
+		specifier: string;
+	}> = [
+		{
+			name: "require call",
+			source: "const value = require('./dep');\n",
+			syntaxKind: "require_call",
+			specifier: "./dep",
+		},
+		{
+			name: "dynamic import",
+			source: "const value = import('./dep');\n",
+			syntaxKind: "dynamic_import",
+			specifier: "./dep",
+		},
+	];
+
+	for (const testCase of cases) {
+		const cwd = createTempRepo();
+		try {
+			mkdirSync(join(cwd, "src"));
+			mkdirSync(join(cwd, "specs"));
+			writeMinimalScanConfig(cwd);
+			writeFileSync(join(cwd, "src/index.ts"), testCase.source);
+			writeFileSync(join(cwd, "src/dep.ts"), "export const dep = 1;\n");
+
+			const stdout = createBufferingWriter();
+			const stderr = createBufferingWriter();
+
+			const exitCode = runAnchormap(["scan", "--json"], {
+				cwd,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			});
+
+			assert.equal(exitCode, 0, testCase.name);
+			assert.equal(stderr.read(), "", testCase.name);
+			assert.deepEqual(JSON.parse(stdout.read()), {
+				schema_version: 1,
+				config: {
+					version: 1,
+					product_root: "src",
+					spec_roots: ["specs"],
+					ignore_roots: [],
+				},
+				analysis_health: "degraded",
+				observed_anchors: {},
+				stored_mappings: {},
+				files: {
+					"src/dep.ts": {
+						covering_anchor_ids: [],
+						supported_local_targets: [],
+					},
+					"src/index.ts": {
+						covering_anchor_ids: [],
+						supported_local_targets: [],
+					},
+				},
+				findings: [
+					{
+						kind: "unsupported_static_edge",
+						importer: "src/index.ts",
+						syntax_kind: testCase.syntaxKind,
+						specifier: testCase.specifier,
+					},
+				],
+			});
+		} finally {
+			rmSync(cwd, { recursive: true, force: true });
+		}
+	}
+});
+
 test("scan --json does not emit temporary clean output for local graph syntax before extraction", () => {
 	const cwd = createTempRepo();
 	try {
