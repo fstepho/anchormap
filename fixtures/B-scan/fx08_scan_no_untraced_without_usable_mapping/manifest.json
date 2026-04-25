@@ -1,0 +1,19 @@
+{
+	"id": "fx08_scan_no_untraced_without_usable_mapping",
+	"family": "B-scan",
+	"purpose": "Scan --json does not emit untraced_product_file when product files exist but no observed anchor or usable stored mapping exists.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

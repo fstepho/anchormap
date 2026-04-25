@@ -1,0 +1,19 @@
+{
+	"id": "fx07_scan_degraded_suppresses_untraced",
+	"family": "B-scan",
+	"purpose": "Scan --json suppresses untraced_product_file when a degraded analysis also has an uncovered product file.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

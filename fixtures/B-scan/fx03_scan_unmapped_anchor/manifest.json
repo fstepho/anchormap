@@ -1,0 +1,19 @@
+{
+	"id": "fx03_scan_unmapped_anchor",
+	"family": "B-scan",
+	"purpose": "Scan --json renders an observed anchor without a stored mapping as absent and emits unmapped_anchor.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

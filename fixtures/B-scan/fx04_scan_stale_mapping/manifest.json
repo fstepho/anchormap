@@ -1,0 +1,19 @@
+{
+	"id": "fx04_scan_stale_mapping",
+	"family": "B-scan",
+	"purpose": "Scan --json renders a stored mapping for an absent anchor as stale and degraded.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx06_scan_clean_untraced",
+	"family": "B-scan",
+	"purpose": "Scan --json emits untraced_product_file for an uncovered product file in a clean fully mapped analysis.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}

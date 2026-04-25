@@ -1,0 +1,19 @@
+{
+	"id": "fx06a_scan_unmapped_anchor_suppresses_untraced",
+	"family": "B-scan",
+	"purpose": "Scan --json suppresses untraced_product_file when an observed anchor is unmapped in an otherwise clean analysis.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden"],
+	"groups": ["m7"]
+}
