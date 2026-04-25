@@ -7,6 +7,14 @@
 - Files changed: this report
 - Production behavior changed: `None`
 
+Supersession note:
+
+- The original S1 TypeScript probe investigated the TypeScript 5.4 line because
+  the contract named that profile at the time.
+- `ADR-0006` now selects `typescript@6.0.3` as the exact product parser pin for
+  the same wrapper boundary: `ScriptKind.TS`, module-oriented graph extraction,
+  no JSX, and fatal syntax diagnostics.
+
 This spike is bounded by:
 
 - `contract.md` — §§1.1, 7, 8, 10.1, 10.5, 12.3
@@ -35,14 +43,15 @@ Probe dependencies:
 
 - `commonmark@0.30.0`
 - `yaml@2.8.3`
-- `typescript@5.4.5`
+- `typescript@5.4.5` for the historical TypeScript 5.4 probe, superseded by
+  `typescript@6.0.3` in `ADR-0006`
 
 Metadata also observed:
 
 - `commonmark@0.31.2` is the current npm `latest`, but `commonmark@0.30.0`
   exists and matches the contract's CommonMark 0.30 profile more directly.
-- The npm `typescript` package has no stable `5.4.0` release. The stable
-  5.4-line releases observed were `5.4.2`, `5.4.3`, `5.4.4`, and `5.4.5`.
+- The npm `typescript` package had no stable `5.4.0` release. That gap is no
+  longer active because the contract now names the exact package pin.
 
 Probe cases:
 
@@ -51,7 +60,7 @@ Probe cases:
 2. YAML 1.2 parsing, root mappings, non-mapping roots, duplicate root keys,
    duplicate nested keys, multi-document streams, and explicit YAML version
    directives.
-3. TypeScript 5.4-line parsing with `ScriptKind.TS`, supported import/export
+3. Pinned TypeScript parsing with `ScriptKind.TS`, supported import/export
    declarations, recognized-but-unsupported `require` and dynamic `import`,
    and JSX rejection in `.ts`.
 
@@ -164,20 +173,19 @@ Result:
 
 Selected dependency:
 
-- `typescript@5.4.5`
+- `typescript@6.0.3`
 
 Reason:
 
-- It is the latest stable release on the TypeScript 5.4 line observed by the
-  spike.
-- The npm registry does not provide a stable `typescript@5.4.0` package.
+- It is the project TypeScript version selected by `ADR-0006`.
+- It keeps build-time TypeScript and runtime parser TypeScript aligned.
 - It exposes the compiler API needed for `ScriptKind.TS` parsing,
   `parseDiagnostics`, import/export declarations, call expressions, string
   literal specifiers, and source traversal.
 
 Observed behavior:
 
-- `ts.version` reports `5.4.5`.
+- `ts.version` reports `6.0.3`.
 - `ts.createSourceFile("x.ts", text, ts.ScriptTarget.Latest, true,
   ts.ScriptKind.TS)` parses supported forms with zero syntax diagnostics:
   - `import type { A } from "./a"`
@@ -211,10 +219,8 @@ Required wrapper behavior:
 
 Result:
 
-- Compatible with the required TypeScript parser behavior when interpreted as
-  the stable TypeScript 5.4 line.
-- Not compatible with the literal package version `typescript@5.4.0`, because
-  no such stable npm package exists.
+- Compatible with the required TypeScript parser behavior under the exact
+  product parser pin selected by `ADR-0006`.
 
 ## Must-Answer Summary
 
@@ -239,14 +245,12 @@ The dependency should be recorded as YAML 1.2-compatible input parsing rather
 than proof of exact YAML 1.2.2 conformance unless the ADR closure adds a
 stronger external conformance citation.
 
-### Can the TypeScript parser run as TypeScript 5.4.0 with `ScriptKind.TS`, module goal, and no JSX?
+### Can the pinned TypeScript parser run with `ScriptKind.TS`, module goal, and no JSX?
 
-Partially.
+Yes.
 
-`typescript@5.4.5` runs with `ScriptKind.TS`, exposes the needed AST, and
-rejects JSX in `.ts` through parse diagnostics. No stable npm package named
-`typescript@5.4.0` exists, so the exact contract wording cannot be implemented
-as a package pin without clarification.
+`typescript@6.0.3` runs with `ScriptKind.TS`, exposes the needed AST, and
+rejects JSX in `.ts` through parse diagnostics.
 
 The wrapper can satisfy the no-JSX and syntax-diagnostic requirements with
 `ScriptKind.TS`. The `module goal` requirement should be recorded in the ADR as
@@ -259,11 +263,7 @@ Recommended exact pins for the parser ADR closure:
 
 - `commonmark`: `0.30.0`
 - `yaml`: `2.8.3`
-- `typescript`: `5.4.5`, unless the contract is changed to a different exact
-  TypeScript package version
-
-The current repo development dependency `typescript@6.0.3` is not the selected
-product parser version for `TS_PROFILE`.
+- `typescript`: `6.0.3`
 
 ## Result
 
@@ -273,8 +273,8 @@ Partial yes.
   wrapper.
 - YAML: compatible with `yaml@2.8.3` plus single-document, parse-error,
   duplicate-key, root-shape, and non-1.2-directive rejection.
-- TypeScript: compatible in behavior with `typescript@5.4.5` on the stable 5.4
-  line, but the literal `typescript@5.4.0` package pin is unavailable.
+- TypeScript: compatible with `typescript@6.0.3` as the exact product parser
+  pin selected by `ADR-0006`.
 
 ## Decision
 
@@ -284,9 +284,7 @@ Adopt the following parser profile decisions for ADR closure:
 2. Use `yaml@2.8.3` for YAML input parsing only.
 3. Use a custom closed-shape YAML writer for output, as already decided by
    `ADR-0007`; do not use `yaml` as the `anchormap.yaml` writer.
-4. Use `typescript@5.4.5` as the practical TypeScript 5.4-line parser pin, or
-   stop in T0.1 and amend the contract/ADR if maintainers require a different
-   literal package version.
+4. Use `typescript@6.0.3` as the exact TypeScript parser pin.
 5. Keep all parser dependencies as exact pins and require `package-lock.json`
    consistency for Gate G.
 
@@ -294,10 +292,8 @@ Adopt the following parser profile decisions for ADR closure:
 
 ### Contract
 
-- Potential contract closure required: `contract.md` §1.1 names
-  `TS_PROFILE = TypeScript 5.4.0 parser`, but no stable npm package
-  `typescript@5.4.0` exists. T0.1 should decide whether `5.4.5` is the intended
-  exact parser pin or whether the contract wording must change.
+- `contract.md` §1.1 now names `typescript@6.0.3` as the exact `TS_PROFILE`
+  parser API.
 - No Markdown or YAML contract relaxation is required by this spike.
 
 ### Design
@@ -322,15 +318,13 @@ Adopt the following parser profile decisions for ADR closure:
   Setext despite the parser producing `heading` nodes for both.
 - `fx00j_profile_yaml_1_2_2_boundary` should include a non-1.2 directive or
   equivalent profile boundary so wrapper rejection is covered.
-- `fx00k_profile_ts_5_4_boundary` or the Gate G audit should assert the exact
-  TypeScript parser version chosen by T0.1.
+- `fx00k_profile_ts_5_4_boundary` remains a stable fixture ID, but the fixture
+  or Gate G audit should assert the exact `typescript@6.0.3` parser version.
 
 ### Tasks
 
 - `T0.1` must record parser ADRs before parser-dependent implementation
   proceeds.
-- `T0.1` must resolve the TypeScript exact-version gap before unblocking
-  parser-dependent tasks.
 - `T4.1`, `T5.2`, `T5.3`, `T6.2`, and `T9.5` remain blocked until the parser
   ADR closure is accepted.
 - The task-scoped review diff includes the coordinator-maintained

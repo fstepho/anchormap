@@ -29,7 +29,7 @@ Le contrat v1.0 fige les profils normatifs suivants :
 
 - `MARKDOWN_PROFILE = CommonMark 0.30`
 - `YAML_PROFILE = YAML 1.2.2`
-- `TS_PROFILE = TypeScript 5.4.0 parser`, avec `ScriptKind.TS`, objectif `module`, sans JSX
+- `TS_PROFILE = typescript@6.0.3 parser API`, avec `ScriptKind.TS`, objectif `module`, sans JSX
 
 Règles :
 

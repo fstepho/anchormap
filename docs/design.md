@@ -834,7 +834,7 @@ Décisions de design :
 - lockfile obligatoire ;
 - aucune plage `^` ou `~` sur les dépendances qui touchent au contrat ;
 - les pins parser acceptés sont `commonmark@0.30.0` (`ADR-0004`),
-  `yaml@2.8.3` (`ADR-0005`) et `typescript@5.4.5` (`ADR-0006`) ;
+  `yaml@2.8.3` (`ADR-0005`) et `typescript@6.0.3` (`ADR-0006`) ;
 - tests et goldens rejoués sur la matrice de plateformes supportées ;
 - snapshots de golden JSON versionnés dans le dépôt.
 

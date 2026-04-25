@@ -975,6 +975,135 @@ test("parses supported scan forms before dispatch", () => {
 	}
 });
 
+test("scan --json validates product files through UTF-8 decode and TypeScript parse", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(
+			join(cwd, "src/index.ts"),
+			Buffer.from("\uFEFFexport const value = 1;\n", "utf8"),
+		);
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 1,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+			},
+			analysis_health: "clean",
+			observed_anchors: {},
+			stored_mappings: {},
+			files: {
+				"src/index.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: [],
+				},
+			},
+			findings: [],
+		});
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json rejects invalid product file decode and parse boundaries", () => {
+	const cases: Array<{
+		name: string;
+		bytes: Uint8Array;
+	}> = [
+		{
+			name: "invalid UTF-8",
+			bytes: new Uint8Array([0xff]),
+		},
+		{
+			name: "invalid TypeScript",
+			bytes: Buffer.from("export const = ;\n", "utf8"),
+		},
+		{
+			name: "JSX in TS",
+			bytes: Buffer.from("const node = <div />;\n", "utf8"),
+		},
+	];
+
+	for (const testCase of cases) {
+		const cwd = createTempRepo();
+		try {
+			mkdirSync(join(cwd, "src"));
+			mkdirSync(join(cwd, "specs"));
+			writeMinimalScanConfig(cwd);
+			writeFileSync(join(cwd, "src/index.ts"), testCase.bytes);
+
+			const stdout = createBufferingWriter();
+			const stderr = createBufferingWriter();
+
+			const exitCode = runAnchormap(["scan", "--json"], {
+				cwd,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			});
+
+			assert.equal(exitCode, 3, testCase.name);
+			assert.equal(stdout.read(), "", testCase.name);
+			assert.notEqual(stderr.read(), "", testCase.name);
+		} finally {
+			rmSync(cwd, { recursive: true, force: true });
+		}
+	}
+});
+
+test("scan --json does not emit temporary clean output for local graph syntax before extraction", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(
+			join(cwd, "src/index.ts"),
+			"import { dep } from './dep';\nexport const value = dep;\n",
+		);
+		writeFileSync(join(cwd, "src/dep.ts"), "export const dep = 1;\n");
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 1);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+function writeMinimalScanConfig(cwd: string): void {
+	writeFileSync(
+		join(cwd, "anchormap.yaml"),
+		["version: 1", "product_root: 'src'", "spec_roots:", "  - 'specs'", "mappings: {}", ""].join(
+			"\n",
+		),
+	);
+}
+
 function assertNoAnchormapTemps(cwd: string): void {
 	assert.equal(
 		readdirSync(cwd).some(

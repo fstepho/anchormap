@@ -140,7 +140,7 @@ Objectif : couvrir explicitement les règles de décodage et de profils grammati
 | `fx00h_decode_product_non_utf8` | `product_file` contient des octets non UTF-8 | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx00i_profile_markdown_commonmark_boundary` | cas limite CommonMark 0.30 distinguant heading ATX supporté et structure non supportée | 0 | seules les anchors attendues sont détectées ; golden JSON exact |
 | `fx00j_profile_yaml_1_2_2_boundary` | cas limite YAML 1.2.2 valide et single-document | 0 | traitement conforme au profil ; golden JSON exact |
-| `fx00k_profile_ts_5_4_boundary` | cas TypeScript 5.4.0 parsable avec `ScriptKind.TS`, objectif `module`, sans JSX | 0 | `supported_local_targets` et findings exacts |
+| `fx00k_profile_ts_5_4_boundary` | cas parsable avec le parser TypeScript piné, `ScriptKind.TS`, objectif `module`, sans JSX | 0 | `supported_local_targets` et findings exacts |
 | `fx00l_profile_ts_jsx_rejected_in_ts` | syntaxe JSX dans un `product_file` `.ts` | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx00m_map_decode_spec_non_utf8_no_mutation` | `map` rencontre une spec non UTF-8 pendant l'indexation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx00n_map_decode_product_non_utf8_no_mutation` | `map` rencontre un `product_file` non UTF-8 pendant la validation dépôt | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |

@@ -6,41 +6,32 @@ Owner: AnchorMap maintainers
 
 ## Context
 
-AnchorMap builds a local product graph from `.ts` files using the contracted
-`TS_PROFILE = TypeScript 5.4.0 parser`, with `ScriptKind.TS`, module-oriented
-import/export extraction, and no JSX. Every discovered `product_file` must parse
-with zero syntax diagnostics before graph extraction can proceed.
+AnchorMap builds a local product graph from `.ts` files. The product is new,
+has no legacy user base, and does not need to emulate an older TypeScript
+project fleet.
 
-`S1` probed the TypeScript 5.4 line and found:
-
-- the npm registry did not provide a stable `typescript@5.4.0` package;
-- stable 5.4-line packages observed were `5.4.2`, `5.4.3`, `5.4.4`, and
-  `5.4.5`;
-- `typescript@5.4.5` exposes the compiler API needed for `ScriptKind.TS`
-  parsing, syntax diagnostics, import/export declarations, call-expression
-  traversal, and string-literal module specifiers;
-- JSX is rejected in `.ts` when parsed with `ScriptKind.TS`;
-- `createSourceFile` does not expose a separate module-goal parser switch, so
-  AnchorMap owns the graph extraction profile over TypeScript source files.
+The useful invariant is not an old parser line. The useful invariant is an exact
+parser dependency pin so parse acceptance, syntax diagnostics, and graph
+extraction remain reproducible across installs and release candidates.
 
 Relevant constraints:
 
-- `docs/contract.md` sections 1.1, 10.1, 10.4, 10.5, and 12.3 require the
-  TypeScript parser profile, supported import/export forms, recognized
-  unsupported local `require` and dynamic `import`, parse-failure behavior, and
-  bounded existence checks.
+- `docs/contract.md` section 1.1 defines `TS_PROFILE`.
 - `docs/design.md` sections 5.4 and 7.4 assign TypeScript parsing and graph
   extraction to `ts_graph`.
-- `docs/evals.md` sections 5.1, 5.4, Gate A, and Gate G require TypeScript
-  profile, JSX rejection, graph, parse-failure, and exact-version audit
-  coverage.
-- `docs/operating-model.md` sections 8.6, 16, and 17 require ADR closure and
-  exact dependency pins for structural parser dependencies.
+- `docs/evals.md` requires parser-profile, JSX rejection, graph,
+  parse-failure, and exact-version audit coverage.
+- `docs/operating-model.md` sections 16 and 17 require exact dependency pins for
+  structural parser dependencies.
 
 ## Decision
 
-We will use `typescript@5.4.5` as the exact TypeScript parser dependency for
-the v1.0 TypeScript 5.4 parser profile.
+We will use `typescript@6.0.3` as the exact TypeScript parser dependency for
+the v1.0 TypeScript parser profile.
+
+The same exact TypeScript package is used by the project build and by the
+runtime parser dependency. AnchorMap does not maintain separate "compiler
+TypeScript" and "product parser TypeScript" versions.
 
 The `ts_graph` wrapper must:
 
@@ -57,69 +48,46 @@ The `ts_graph` wrapper must:
 - keep resolution, candidate ordering, and finding classification project-owned
   according to `docs/contract.md` section 10.2.
 
-Compatibility reasoning for the TypeScript 5.4.0 gap:
-
-- The contract phrase is `TS_PROFILE = TypeScript 5.4.0 parser`, not an npm
-  package coordinate.
-- `S1` found no stable npm package that can be pinned literally as
-  `typescript@5.4.0`.
-- The selected `typescript@5.4.5` package is an exact pin on the stable
-  TypeScript 5.4 release line and is the newest stable 5.4-line parser observed
-  by `S1`.
-- The wrapper preserves the contracted profile boundaries that matter to
-  AnchorMap: strict pre-decoding, `ScriptKind.TS`, no JSX, syntax-diagnostic
-  failure, supported import/export declaration extraction, explicit
-  unsupported local `require` and dynamic `import`, and project-owned
-  resolution.
-- Gate G must audit the exact `typescript@5.4.5` pin and fixtures must cover
-  the TypeScript 5.4 boundary. No floating 5.4 range is allowed.
-
-This ADR therefore treats `typescript@5.4.5` as the concrete available package
-implementation of the contracted TypeScript 5.4 parser profile without changing
-`docs/contract.md`. If maintainers require the contract to name the exact npm
-package version instead of the TypeScript 5.4 parser profile, this ADR must be
-superseded together with an explicit contract change.
-
 ## Alternatives considered
 
-### Option A - `typescript@5.4.5`
+### Option A - `typescript@6.0.3`
 
 Pros:
 
-- exact stable package pin on the TypeScript 5.4 line;
-- exposes the required compiler API;
-- rejects JSX in `.ts` under `ScriptKind.TS`;
-- keeps graph extraction and resolution behavior project-owned.
+- already the project TypeScript version before product parsing was introduced;
+- keeps build-time and runtime parser behavior aligned;
+- exact package pin preserves reproducibility;
+- avoids starting a new product on an obsolete parser line without a legacy
+  compatibility reason.
 
 Cons:
 
-- the package version is not literally `5.4.0`;
-- module-goal behavior is represented by AnchorMap's extraction profile rather
-  than a separate `createSourceFile` parser option.
+- future TypeScript upgrades remain contract-affecting and require fixtures and
+  release audit proof.
 
-### Option B - literal `typescript@5.4.0`
+### Option B - TypeScript 5.4 line
 
 Pros:
 
-- would exactly mirror the version number in `docs/contract.md` section 1.1 if
-  it existed as a stable npm package.
+- would be a conservative historical parser profile.
 
 Cons:
 
-- `S1` found no stable npm package with this version;
-- cannot be pinned in `package.json` and `package-lock.json` as a release input.
+- no current product, user, or legacy-fleet requirement justifies it;
+- creates split TypeScript versions if the project build stays modern;
+- rejects or diagnoses newer syntax according to an older parser line.
 
-### Option C - newer TypeScript line
+### Option C - floating latest TypeScript
 
 Pros:
 
-- newer parser fixes and ecosystem alignment.
+- lowest maintenance during dependency upgrades.
 
 Cons:
 
-- would no longer be a TypeScript 5.4 parser-profile implementation;
-- higher risk of parse and diagnostic drift against v1.0 fixtures;
-- requires a superseding contract and ADR decision.
+- not reproducible enough for a contract-driven parser boundary;
+- parse acceptance and syntax diagnostics could drift without an explicit
+  contract change.
 
 ## Consequences
 
@@ -128,45 +96,39 @@ Positive:
 - `ts_graph` has a concrete exact parser pin before graph implementation.
 - The no-JSX and parse-diagnostic boundaries are enforceable with the compiler
   API.
-- The graph subset remains intentionally smaller than the full TypeScript
-  module system.
+- Build-time and runtime TypeScript versions stay aligned.
+- The graph subset remains intentionally smaller than the full TypeScript module
+  system.
 
 Negative:
 
-- The project must document and audit the `5.4.0` contract wording versus the
-  `5.4.5` package pin.
+- Future TypeScript upgrades require an explicit ADR/contract update.
 - `ts_graph` must explicitly traverse call expressions for recognized
   unsupported local edges.
 
 Risks:
 
-- If a fixture later exposes a TypeScript 5.4 patch-level diagnostic difference
-  that matters to the contract, the ADR or contract must be revisited before
-  changing behavior.
-- Future TypeScript upgrades are contract-affecting and require a superseding
-  ADR plus fixture and Gate G proof.
+- If a fixture later exposes a TypeScript 6.0.3 parser behavior that is too
+  permissive or too strict for AnchorMap, this ADR or the contract must be
+  revisited before changing behavior.
 
 ## Contract impact
 
-No.
+Yes.
 
-This ADR records a concrete package implementation for the existing TypeScript
-5.4 parser profile. It does not change `docs/contract.md`.
-
-No hard stop remains for T0.1 as long as `TS_PROFILE` is interpreted as the
-TypeScript 5.4 parser profile and not as a literal npm package coordinate. A
-hard stop would remain only if maintainers require `docs/contract.md` to name
-the exact npm package version; that would be a contract change outside this
-task's scope.
+`docs/contract.md` section 1.1 names `typescript@6.0.3` as the exact
+`TS_PROFILE` parser API for v1.0.
 
 ## Eval impact
 
 No eval weakening is required.
 
 Existing B-decodage, B-graph, Gate A, and Gate G coverage remains binding.
-`fx00k_profile_ts_5_4_boundary`, JSX rejection fixtures, parse-failure
-fixtures, and the release reproducibility audit must assert the exact
-`typescript@5.4.5` dependency selected here.
+`fx00k_profile_ts_5_4_boundary` remains a stable fixture ID, but its semantic
+purpose is the pinned TypeScript parser boundary, not a TypeScript 5.4
+compatibility promise. JSX rejection fixtures, parse-failure fixtures, and the
+release reproducibility audit must assert the exact `typescript@6.0.3`
+dependency selected here.
 
 ## Design impact
 
@@ -178,9 +140,8 @@ fixtures, and the release reproducibility audit must assert the exact
 
 ## Rollback / supersession
 
-This decision can be superseded if the contract changes to another exact
-TypeScript parser profile or if another package version is proved safer while
-preserving the same observable graph and parse-failure behavior.
+This decision can be superseded if the product deliberately targets another
+exact TypeScript parser profile.
 
 ## Links
 

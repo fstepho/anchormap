@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { validateAnchorId } from "../domain/anchor-id";
 import { normalizeUserPathArg, type RepoPath, repoPathToString } from "../domain/repo-path";
-import { createConfigView, createScanResultView } from "../domain/scan-result";
+import { createConfigView, createFileView, createScanResultView } from "../domain/scan-result";
 import {
 	ANCHORMAP_CONFIG_FILENAME,
 	type Config,
@@ -13,6 +13,7 @@ import {
 import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildSpecIndex } from "../infra/spec-index";
+import { buildProductGraph, productGraphHasLocalDependencySyntax } from "../infra/ts-graph";
 import { renderScanResultJson } from "../render/render-json";
 
 export type AnchormapCommandName = "init" | "map" | "scan";
@@ -442,9 +443,20 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		return productFilesResult.error;
 	}
 
+	const productGraphResult = buildProductGraph(
+		configResult.config,
+		productFilesResult.productFiles,
+		{
+			cwd: context.cwd,
+		},
+	);
+	if (productGraphResult.kind === "error") {
+		return productGraphResult.error;
+	}
+
 	if (
 		context.scanMode === "json" &&
-		productFilesResult.productFiles.length === 0 &&
+		!productGraphHasLocalDependencySyntax(productGraphResult.productGraph) &&
 		specIndexResult.specIndex.observedAnchors.size === 0 &&
 		Object.keys(configResult.config.mappings).length === 0
 	) {
@@ -458,8 +470,8 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 					}),
 					observed_anchors: {},
 					stored_mappings: {},
-					files: {},
-					findings: [],
+					files: createEmptyProductFilesView(productGraphResult.productGraph.productFiles),
+					findings: productGraphResult.productGraph.graphFindings,
 				}),
 			),
 		});
@@ -510,7 +522,30 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return productFilesResult.error;
 	}
 
+	const productGraphResult = buildProductGraph(
+		configResult.config,
+		productFilesResult.productFiles,
+		{
+			cwd: context.cwd,
+		},
+	);
+	if (productGraphResult.kind === "error") {
+		return productGraphResult.error;
+	}
+
 	return internalError("anchormap map is not implemented yet");
+}
+
+function createEmptyProductFilesView(productFiles: readonly RepoPath[]) {
+	return Object.fromEntries(
+		productFiles.map((productFile) => [
+			productFile,
+			createFileView({
+				covering_anchor_ids: [],
+				supported_local_targets: [],
+			}),
+		]),
+	);
 }
 
 function normalizeInitPath(

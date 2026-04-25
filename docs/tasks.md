@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T6.2 — Implement TypeScript product file read/decode/parse validation`
-- Last completed task: `T6.1 — Implement product file discovery and repository guardrails`
+- Next executable product task after blocker clearance: `T6.3 — Extract supported static imports/exports and ignore non-relative imports`
+- Last completed task: `T6.2 — Implement TypeScript product file read/decode/parse validation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -74,6 +74,7 @@
   - `T5.4 — Implement duplicate anchor detection and stable spec index ordering`
   - `T5.5 — Integrate spec index into `scan` and `map` preconditions`
   - `T6.1 — Implement product file discovery and repository guardrails`
+  - `T6.2 — Implement TypeScript product file read/decode/parse validation`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
@@ -2226,7 +2227,7 @@ Dependencies:
 
 Implementation scope:
 - Read every discovered product file through strict UTF-8/BOM boundary.
-- Parse with TypeScript 5.4.0-compatible parser settings:
+- Parse with the pinned TypeScript parser settings:
   - `ScriptKind.TS`
   - module goal
   - no JSX support
@@ -3763,7 +3764,7 @@ Protocol:
 Must answer:
 - Can the Markdown parser expose ATX headings and inline text sufficiently for `contract.md` §8.1?
 - Can the YAML parser enforce YAML 1.2.2-compatible parsing, single-document input, and duplicate-key rejection for config and spec YAML?
-- Can the TypeScript parser run as TypeScript 5.4.0 with `ScriptKind.TS`, module goal, and no JSX?
+- Can the pinned TypeScript parser run with `ScriptKind.TS`, module goal, and no JSX?
 - Which versions must be pinned or locked?
 
 Output:
