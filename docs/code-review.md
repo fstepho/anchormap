@@ -123,6 +123,13 @@ If the entry surface is `codex review`, emit the `review decision` in the
 coordinator handoff or PR comment equivalent immediately after reading the
 review output.
 
+In autopilot, launch `codex review` directly so the standard auto-review
+approval can grant Codex session-storage access. After the decision, the
+coordinator must keep only compact review state: verdict, findings count,
+finding titles and locations, checks, stop reason, and the review decision.
+Full finding bodies are retained only for actionable findings and only until the
+corresponding rework handoff is complete.
+
 ## Non-Goals
 
 - No style-only review unless style affects the contract, evals, or immediate

@@ -1278,6 +1278,10 @@ Le mode `autopilot` :
   checks exécutés, statut, et état de préparation à la review ;
 - lance les fresh review sessions séparées de la session d'implémentation selon
   le protocole de review natif de la section 14 ;
+- en mode `autopilot`, lance les surfaces `codex review` directement avec
+  `codex review --uncommitted`, `codex review --base <branch>` ou
+  `codex review --commit <sha>` ; il ne doit pas wrapper la commande de review,
+  car cela peut masquer la commande native à la couche d'approval ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,
   review initiale incluse, avec au plus quatre passes de rework bornées entre
   ces reviews ;
@@ -1310,9 +1314,21 @@ La sélection de dépendance en mode `autopilot` est strictement bornée :
   dépendances.
 
 La session coordinatrice peut retenir entre deux tâches seulement : task ID,
-statut, checks, verdict, stop reason, commit SHA et prochain curseur. Elle ne
-doit pas retenir les logs complets d'implémentation, les diffs complets, les
-contenus de fichiers ou les transcriptions de review au-delà de la tâche.
+statut, checks, verdict de review, nombre de findings, titres et emplacements
+des findings, review decision, stop reason, commit SHA et prochain curseur. Elle
+ne doit pas retenir les logs complets d'implémentation, les diffs complets, les
+contenus de fichiers, les longues sorties de review ou les transcriptions de
+review au-delà de la tâche. Les bodies complets de findings de review peuvent
+être conservés seulement pour des findings actionnables et seulement jusqu'au
+handoff du rework correspondant.
+
+Après deux ou trois commits autopilot consécutifs, la boucle doit être auditée
+avant d'ajouter plus d'outillage de capture : relever dans les sessions JSONL les
+`token_count` avant et après review, la croissance par tâche, le volume retenu
+après commit, le nombre d'agents implementation/rework/review ouverts et leur
+moment de fermeture, puis vérifier que le handoff coordinateur post-commit ne
+transporte pas les bodies complets de review, transcripts, diffs ou logs
+d'implémentation.
 
 Le mode `autopilot` doit s'arrêter immédiatement lorsque l'un des cas suivants
 survient :

@@ -231,6 +231,7 @@ function classifyPath(path, processSurface = null) {
 		path.startsWith(".agents/") ||
 		path.startsWith("scripts/") ||
 		path.startsWith("src/harness/") ||
+		path === "src/package-scripts.test.ts" ||
 		path === "package.json" ||
 		path === "package-lock.json" ||
 		path === "biome.json" ||

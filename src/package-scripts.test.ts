@@ -40,4 +40,5 @@ test("package.json exposes the stable repo-local check and harness command surfa
 	assert.equal(scripts["test:fixtures"], "npm run build && node dist/harness/fixture-runner.js");
 	assert.equal(scripts["test:fixtures:all"], "npm run test:fixtures");
 	assert.equal(scripts["check:goldens"], "npm run test:fixtures -- --goldens-only");
+	assert.equal(scripts["workflow:preflight"], "sh scripts/workflow-preflight.sh");
 });

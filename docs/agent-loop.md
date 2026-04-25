@@ -199,8 +199,12 @@ fresh implementation, rework, or review session.
    and review readiness.
 5. Stop with `blocked_execution_state` if the implementation handoff is
    missing, incomplete, or fails to identify a bounded task-scoped diff.
-6. Launch a fresh review session for the task. Autopilot may run up to five
-   fresh review sessions total for that task, initial review included.
+6. Launch a fresh review session for the task with native `codex review`
+   directly: `codex review --uncommitted`, `codex review --base <branch>`, or
+   `codex review --commit <sha>`. Do not wrap the review command; wrappers can
+   hide the native command from the approval layer and block access to Codex
+   session storage. Autopilot may run up to five fresh review sessions total for
+   that task, initial review included.
 7. If review yields actionable findings before review 5, launch a fresh
    implementation or rework session for the same task. The rework session must
    name the protected invariant and presumed root cause, apply one bounded
@@ -217,9 +221,12 @@ fresh implementation, rework, or review session.
    handle it; a human approval prompt means the run is not in effective
    autopilot mode.
 11. Record only compact task results in the coordinator context: task ID,
-    checks, verdict, stop reason, commit SHA, and next cursor. Do not carry
-    full implementation logs, full diffs, file contents, or review transcripts
-    into the next task.
+    checks, review verdict, findings count, finding titles and locations,
+    review decision, stop reason, commit SHA, and next cursor. Do not carry full
+    implementation logs, full diffs, file contents, long review output, or
+    review transcripts into the next task. Retain full review finding bodies
+    only for actionable findings and only until the corresponding rework handoff
+    is complete.
 12. Repeat from step 2 until there is no next executable product task,
    dependency, or closure item, or a hard stop occurs.
 
@@ -423,6 +430,19 @@ Notes:
   `docs/code-review.md`, with entry pointers from `AGENTS.md`.
 - these commands are the minimum starting point for review, not the maximum allowed review surface. A reviewer may add bounded falsification checks when the task introduces new invariants not already stressed by the existing commands.
 - when a task touches files covered by `npm run lint`, run `npm run lint` before concluding the implementation pass or marking the review `done`, unless the changed surface is explicitly outside that command's scope.
+
+## Autopilot Context Audit
+
+After two or three consecutive autopilot task commits, audit the coordinator
+session before adding more review tooling:
+
+- inspect the relevant `~/.codex/sessions/...jsonl` files for `token_count`
+  values immediately before and after each fresh review;
+- record token growth per task and the token volume retained after each commit;
+- count implementation, rework, and review agents opened for each task and when
+  they were closed;
+- verify the coordinator handoff after each commit contains only compact task
+  state, not full review bodies, transcripts, diffs, or implementation logs.
 
 ## Non-Goals
 
