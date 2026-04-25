@@ -1,0 +1,30 @@
+{
+	"id": "fx67_map_option_order_invariant",
+	"family": "B-map",
+	"purpose": "map raw argument validation remains invariant when supported options are permuted.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--seed",
+		"./src//index.ts/",
+		"--replace",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "map", "priority"],
+	"groups": ["m8"]
+}

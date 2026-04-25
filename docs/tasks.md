@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: `None recorded`
-- Next executable product task after blocker clearance: `T8.1 — Implement raw map argument semantic validation`
-- Last completed task: `T7.7 — Complete B-scan fixture family and JSON goldens`
+- Next executable product task after blocker clearance: `T8.2 — Enforce map config load, seed preconditions, and replace guard priority`
+- Last completed task: `T8.1 — Implement raw map argument semantic validation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -87,6 +87,7 @@
   - `T7.5 — Assemble exact scan JSON output`
   - `T7.6 — Implement scan failure behavior and human scan modes`
   - `T7.7 — Complete B-scan fixture family and JSON goldens`
+  - `T8.1 — Implement raw map argument semantic validation`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

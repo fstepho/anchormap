@@ -1,0 +1,19 @@
+{
+	"id": "fx65_map_invalid_seed",
+	"family": "B-map",
+	"purpose": "map with a raw seed argument that cannot become a RepoPath exits 4 before config or repository access.",
+	"command": ["node", "dist/anchormap.js", "map", "--anchor", "FR-014", "--seed", "src/../index.ts"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "map", "priority"],
+	"groups": ["m8"]
+}

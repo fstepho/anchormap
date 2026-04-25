@@ -140,6 +140,10 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 		if (parsedMap.kind === "usage_error") {
 			return writeErrorDiagnostic({ kind: "UsageError", message: parsedMap.message }, stderr);
 		}
+		const validatedMap = validateRawMapArgs(parsedMap.args);
+		if (validatedMap.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: validatedMap.message }, stderr);
+		}
 
 		return dispatchCommand(
 			{
@@ -147,7 +151,7 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 				cwd,
 				stdout,
 				stderr,
-				mapArgs: parsedMap.args,
+				mapArgs: validatedMap.args,
 			},
 			handlers.map,
 		);
@@ -323,6 +327,37 @@ function createBufferedWriter(): { writer: TextWriter; read(): string } {
 
 function isSupportedCommand(command: string): command is AnchormapCommandName {
 	return SUPPORTED_COMMANDS.has(command as AnchormapCommandName);
+}
+
+function validateRawMapArgs(
+	args: ParsedMapArgs,
+): { kind: "ok"; args: ParsedMapArgs } | { kind: "usage_error"; message: string } {
+	const anchorResult = validateAnchorId(args.anchor);
+	if (anchorResult.kind === "validation_failure") {
+		return { kind: "usage_error", message: "--anchor must be a supported anchor ID" };
+	}
+
+	const normalizedSeeds: string[] = [];
+	for (const seed of args.seeds) {
+		const result = normalizeUserPathArg(seed);
+		if (result.kind === "validation_failure") {
+			return { kind: "usage_error", message: "--seed must be a valid repository path" };
+		}
+		normalizedSeeds.push(repoPathToString(result.repoPath));
+	}
+
+	const duplicateSeed = findDuplicateString(normalizedSeeds);
+	if (duplicateSeed !== undefined) {
+		return { kind: "usage_error", message: `duplicate --seed ${duplicateSeed}` };
+	}
+
+	return {
+		kind: "ok",
+		args: {
+			...args,
+			seeds: normalizedSeeds,
+		},
+	};
 }
 
 function runInitCommand(context: AnchormapCommandContext): AnchormapCommandResult {
@@ -552,11 +587,15 @@ function normalizeInitPathList(
 }
 
 function findDuplicateRepoPath(paths: readonly RepoPath[]): RepoPath | undefined {
+	const duplicate = findDuplicateString(paths.map(repoPathToString));
+	return duplicate as RepoPath | undefined;
+}
+
+function findDuplicateString(values: readonly string[]): string | undefined {
 	const seen = new Set<string>();
-	for (const path of paths) {
-		const value = repoPathToString(path);
+	for (const value of values) {
 		if (seen.has(value)) {
-			return path;
+			return value;
 		}
 		seen.add(value);
 	}

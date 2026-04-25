@@ -1,0 +1,19 @@
+{
+	"id": "fx63_map_invalid_anchor_argument",
+	"family": "B-map",
+	"purpose": "map with an unsupported anchor argument exits 4 before config or repository access.",
+	"command": ["node", "dist/anchormap.js", "map", "--anchor", "bad", "--seed", "src/index.ts"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "map", "priority"],
+	"groups": ["m8"]
+}

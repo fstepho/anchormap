@@ -619,7 +619,7 @@ test("parses supported map forms before dispatch", () => {
 			argv: [
 				"map",
 				"--seed",
-				"src/first.ts",
+				"./src//first.ts/",
 				"--replace",
 				"--anchor",
 				"DOC.README.PRESENT",
@@ -627,7 +627,7 @@ test("parses supported map forms before dispatch", () => {
 				"src/second.ts",
 			],
 			expectedCall:
-				"map:--seed src/first.ts --replace --anchor DOC.README.PRESENT --seed src/second.ts:anchor=DOC.README.PRESENT:seeds=src/first.ts,src/second.ts:replace=true",
+				"map:--seed ./src//first.ts/ --replace --anchor DOC.README.PRESENT --seed src/second.ts:anchor=DOC.README.PRESENT:seeds=src/first.ts,src/second.ts:replace=true",
 		},
 	];
 
@@ -649,6 +649,32 @@ test("parses supported map forms before dispatch", () => {
 	}
 });
 
+test("normalizes supported map seeds before dispatch independent of option order", () => {
+	const cases: readonly (readonly string[])[] = [
+		["map", "--anchor", "FR-014", "--seed", "./src//index.ts/", "--replace"],
+		["map", "--replace", "--seed", "src/index.ts", "--anchor", "FR-014"],
+	];
+
+	for (const argv of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
+
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 0);
+		assert.equal(stdout.read(), "");
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(calls, [
+			`map:${argv.slice(1).join(" ")}:anchor=FR-014:seeds=src/index.ts:replace=true`,
+		]);
+	}
+});
+
 test("rejects invalid map options and shapes before dispatch", () => {
 	const cases: readonly (readonly string[])[] = [
 		["map", "--seed", "src/index.ts"],
@@ -660,6 +686,36 @@ test("rejects invalid map options and shapes before dispatch", () => {
 		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--replace", "yes"],
 		["map", "--unknown", "value", "--anchor", "FR-014", "--seed", "src/index.ts"],
 		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "extra"],
+	];
+
+	for (const argv of cases) {
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+		const calls: string[] = [];
+
+		const exitCode = runAnchormap(argv, {
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+			handlers: createRecordingHandlers(calls),
+		});
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.deepEqual(calls, []);
+	}
+});
+
+test("rejects invalid raw map semantics before dispatch", () => {
+	const cases: readonly (readonly string[])[] = [
+		["map", "--anchor", "bad", "--seed", "src/index.ts"],
+		["map", "--anchor", "FR-014", "--seed", ""],
+		["map", "--anchor", "FR-014", "--seed", "/src/index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "src\\index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "src/\u001f/index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "."],
+		["map", "--anchor", "FR-014", "--seed", "src/../index.ts"],
+		["map", "--anchor", "FR-014", "--seed", "src/index.ts", "--seed", "./src//index.ts/"],
 	];
 
 	for (const argv of cases) {
