@@ -1,10 +1,21 @@
-import { readFileSync } from "node:fs";
+import { accessSync, constants, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import ts = require("typescript");
 
-import type { Finding } from "../domain/finding";
-import { compareRepoPathsByUtf8, type RepoPath, repoPathToString } from "../domain/repo-path";
+import {
+	createOutOfScopeStaticEdgeFinding,
+	createUnresolvedStaticEdgeFinding,
+	createUnsupportedLocalTargetFinding,
+	type Finding,
+	normalizeFindings,
+} from "../domain/finding";
+import {
+	compareRepoPathsByUtf8,
+	normalizeImportCandidate,
+	type RepoPath,
+	repoPathToString,
+} from "../domain/repo-path";
 import type { Config } from "./config-io";
 import { decodeUtf8StrictNoBom } from "./repo-fs";
 
@@ -41,6 +52,7 @@ export interface ProductGraphError {
 
 export interface ProductGraphFs {
 	readonly readFile: (path: string) => Uint8Array;
+	readonly exists: (path: string) => boolean;
 }
 
 export interface BuildProductGraphOptions {
@@ -56,19 +68,30 @@ type ParsedSourceFile = ts.SourceFile & {
 	readonly parseDiagnostics: readonly ts.Diagnostic[];
 };
 
+export interface StaticEdgeResolutionCandidate {
+	readonly path: RepoPath;
+	readonly support: "supported" | "diagnostic_only";
+}
+
+type CandidateDefinition = {
+	readonly specifier: string;
+	readonly suffix: string;
+	readonly support: StaticEdgeResolutionCandidate["support"];
+};
+
 const nodeProductGraphFs: ProductGraphFs = {
 	readFile: readFileSync,
+	exists: pathExists,
 };
 
 export function buildProductGraph(
-	_config: Config,
+	config: Config,
 	productFiles: readonly RepoPath[],
 	options: BuildProductGraphOptions = {},
 ): BuildProductGraphResult {
 	const cwd = options.cwd ?? process.cwd();
 	const fs = options.fs ?? nodeProductGraphFs;
 	const parsedFiles: ParsedProductFile[] = [];
-	const edgesByImporter = new Map<RepoPath, readonly RepoPath[]>();
 
 	for (const productFile of [...productFiles].sort(compareRepoPathsByUtf8)) {
 		const read = readProductFile(cwd, productFile, fs);
@@ -87,7 +110,11 @@ export function buildProductGraph(
 			sourceFile: parsed.sourceFile,
 			supportedStaticEdgeInputs: extractSupportedStaticEdgeInputs(parsed.sourceFile),
 		});
-		edgesByImporter.set(productFile, []);
+	}
+
+	const resolution = resolveSupportedStaticEdges(config, cwd, fs, parsedFiles);
+	if (resolution.kind === "error") {
+		return resolution;
 	}
 
 	return {
@@ -95,8 +122,8 @@ export function buildProductGraph(
 		productGraph: {
 			productFiles: parsedFiles.map((file) => file.path),
 			parsedFiles,
-			edgesByImporter,
-			graphFindings: [],
+			edgesByImporter: resolution.edgesByImporter,
+			graphFindings: normalizeFindings(resolution.findings),
 		},
 	};
 }
@@ -142,6 +169,25 @@ export function extractSupportedStaticEdgeInputs(
 
 	visit(sourceFile);
 	return edgeInputs;
+}
+
+export function buildStaticEdgeResolutionCandidates(
+	importer: RepoPath,
+	specifier: string,
+): StaticEdgeResolutionCandidate[] {
+	return buildCandidateDefinitions(specifier).flatMap((definition) => {
+		const normalized = normalizeImportCandidate(importer, definition.specifier, definition.suffix);
+		if (normalized.kind === "outside_repo_root") {
+			return [];
+		}
+
+		return [
+			{
+				path: normalized.repoPath,
+				support: definition.support,
+			},
+		];
+	});
 }
 
 export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): boolean {
@@ -213,6 +259,174 @@ function isLocalDependencySpecifier(specifier: string): boolean {
 	return (specifier.startsWith("./") || specifier.startsWith("../")) && !specifier.includes("\\");
 }
 
+function buildCandidateDefinitions(specifier: string): readonly CandidateDefinition[] {
+	if (specifier.endsWith("/")) {
+		return [];
+	}
+
+	if (specifier.endsWith(".ts") && !specifier.endsWith(".d.ts")) {
+		return [{ specifier, suffix: "", support: "supported" }];
+	}
+
+	if (specifier.endsWith(".tsx") || specifier.endsWith(".js") || specifier.endsWith(".d.ts")) {
+		return [{ specifier, suffix: "", support: "diagnostic_only" }];
+	}
+
+	if (lastPathSegment(specifier).includes(".")) {
+		return [];
+	}
+
+	return [
+		{ specifier, suffix: ".ts", support: "supported" },
+		{ specifier, suffix: "/index.ts", support: "supported" },
+		{ specifier, suffix: ".tsx", support: "diagnostic_only" },
+		{ specifier, suffix: ".js", support: "diagnostic_only" },
+		{ specifier, suffix: ".d.ts", support: "diagnostic_only" },
+		{ specifier, suffix: "/index.tsx", support: "diagnostic_only" },
+		{ specifier, suffix: "/index.js", support: "diagnostic_only" },
+		{ specifier, suffix: "/index.d.ts", support: "diagnostic_only" },
+	];
+}
+
+function lastPathSegment(path: string): string {
+	return path.slice(path.lastIndexOf("/") + 1);
+}
+
+function resolveSupportedStaticEdges(
+	config: Config,
+	cwd: string,
+	fs: ProductGraphFs,
+	parsedFiles: readonly ParsedProductFile[],
+):
+	| {
+			kind: "ok";
+			edgesByImporter: ReadonlyMap<RepoPath, readonly RepoPath[]>;
+			findings: readonly Finding[];
+	  }
+	| { kind: "error"; error: ProductGraphError } {
+	const edgesByImporter = new Map<RepoPath, readonly RepoPath[]>();
+	const findings: Finding[] = [];
+
+	for (const file of parsedFiles) {
+		const supportedTargets = new Set<RepoPath>();
+
+		for (const edgeInput of file.supportedStaticEdgeInputs) {
+			const resolution = resolveSupportedStaticEdge(config, cwd, fs, file.path, edgeInput);
+			if (resolution.kind === "error") {
+				return resolution;
+			}
+
+			if (resolution.kind === "supported_target") {
+				supportedTargets.add(resolution.target);
+				continue;
+			}
+
+			findings.push(resolution.finding);
+		}
+
+		edgesByImporter.set(file.path, [...supportedTargets].sort(compareRepoPathsByUtf8));
+	}
+
+	return { kind: "ok", edgesByImporter, findings };
+}
+
+function resolveSupportedStaticEdge(
+	config: Config,
+	cwd: string,
+	fs: ProductGraphFs,
+	importer: RepoPath,
+	edgeInput: SupportedStaticEdgeInput,
+):
+	| { kind: "supported_target"; target: RepoPath }
+	| { kind: "finding"; finding: Finding }
+	| { kind: "error"; error: ProductGraphError } {
+	const candidates = buildStaticEdgeResolutionCandidates(importer, edgeInput.specifier);
+	const existingCandidates: StaticEdgeResolutionCandidate[] = [];
+
+	for (const candidate of candidates) {
+		const exists = candidateExists(cwd, fs, candidate.path);
+		if (exists.kind === "error") {
+			return exists;
+		}
+		if (exists.exists) {
+			existingCandidates.push(candidate);
+		}
+	}
+
+	const supportedTarget = existingCandidates.find(
+		(candidate) =>
+			candidate.support === "supported" && isInSupportedProductScope(config, candidate.path),
+	);
+	if (supportedTarget !== undefined) {
+		return { kind: "supported_target", target: supportedTarget.path };
+	}
+
+	const outOfScopeTarget = existingCandidates.find((candidate) =>
+		isOutOfProductScope(config, candidate.path),
+	);
+	if (outOfScopeTarget !== undefined) {
+		return {
+			kind: "finding",
+			finding: createOutOfScopeStaticEdgeFinding({
+				importer,
+				target_path: outOfScopeTarget.path,
+			}),
+		};
+	}
+
+	const unsupportedTarget = existingCandidates.find(
+		(candidate) =>
+			candidate.support === "diagnostic_only" && isInSupportedProductScope(config, candidate.path),
+	);
+	if (unsupportedTarget !== undefined) {
+		return {
+			kind: "finding",
+			finding: createUnsupportedLocalTargetFinding({
+				importer,
+				target_path: unsupportedTarget.path,
+			}),
+		};
+	}
+
+	return {
+		kind: "finding",
+		finding: createUnresolvedStaticEdgeFinding({
+			importer,
+			specifier: edgeInput.specifier,
+		}),
+	};
+}
+
+function candidateExists(
+	cwd: string,
+	fs: ProductGraphFs,
+	path: RepoPath,
+): { kind: "ok"; exists: boolean } | { kind: "error"; error: ProductGraphError } {
+	try {
+		return { kind: "ok", exists: fs.exists(join(cwd, repoPathToString(path))) };
+	} catch (error) {
+		return productGraphUnsupportedError(`cannot test existence for candidate ${path}`, error);
+	}
+}
+
+function isInSupportedProductScope(config: Config, path: RepoPath): boolean {
+	return isSameOrDescendantOf(path, config.productRoot) && !isIgnoredPath(path, config.ignoreRoots);
+}
+
+function isOutOfProductScope(config: Config, path: RepoPath): boolean {
+	return !isSameOrDescendantOf(path, config.productRoot) || isIgnoredPath(path, config.ignoreRoots);
+}
+
+function isIgnoredPath(path: RepoPath, ignoreRoots: readonly RepoPath[]): boolean {
+	return ignoreRoots.some((ignoreRoot) => isSameOrDescendantOf(path, ignoreRoot));
+}
+
+function isSameOrDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boolean {
+	const pathValue = repoPathToString(path);
+	const ancestorValue = repoPathToString(possibleAncestor);
+	return pathValue === ancestorValue || pathValue.startsWith(`${ancestorValue}/`);
+}
+
 function readProductFile(
 	cwd: string,
 	path: RepoPath,
@@ -232,6 +446,27 @@ function readProductFile(
 	}
 
 	return { kind: "ok", text: decoded.text };
+}
+
+function pathExists(path: string): boolean {
+	try {
+		accessSync(path, constants.F_OK);
+		return true;
+	} catch (error) {
+		if (isMissingPathError(error)) {
+			return false;
+		}
+		throw error;
+	}
+}
+
+function isMissingPathError(error: unknown): boolean {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		(error.code === "ENOENT" || error.code === "ENOTDIR")
+	);
 }
 
 function productGraphUnsupportedError(

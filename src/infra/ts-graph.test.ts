@@ -7,6 +7,7 @@ import { type RepoPath, validateRepoPath } from "../domain/repo-path";
 import type { Config } from "./config-io";
 import {
 	buildProductGraph,
+	buildStaticEdgeResolutionCandidates,
 	extractSupportedStaticEdgeInputs,
 	type ProductGraphFs,
 	parseTypeScriptProductText,
@@ -28,12 +29,12 @@ function repoPath(value: string): RepoPath {
 	return result.repoPath;
 }
 
-function config(): Config {
+function config(options: { readonly ignoreRoots?: readonly string[] } = {}): Config {
 	return {
 		version: 1,
 		productRoot: repoPath("src"),
 		specRoots: [repoPath("specs")],
-		ignoreRoots: [],
+		ignoreRoots: (options.ignoreRoots ?? []).map(repoPath),
 		mappings: {},
 	};
 }
@@ -49,11 +50,26 @@ function createReadFileFs(files: Readonly<Record<string, Uint8Array>>): ProductG
 			}
 			return bytes;
 		},
+		exists(path: string): boolean {
+			assert.ok(path.startsWith(`${CWD}/`));
+			const relative = path.slice(CWD.length + 1);
+			return files[relative] !== undefined;
+		},
 	};
 }
 
 function bytes(text: string): Uint8Array {
 	return Buffer.from(text, "utf8");
+}
+
+function candidatePaths(
+	importer: string,
+	specifier: string,
+): Array<{ path: string; support: "supported" | "diagnostic_only" }> {
+	return buildStaticEdgeResolutionCandidates(repoPath(importer), specifier).map((candidate) => ({
+		path: candidate.path,
+		support: candidate.support,
+	}));
 }
 
 test("uses the accepted pinned TypeScript parser dependency", () => {
@@ -210,6 +226,47 @@ test("extracts supported static import and export edge inputs in source order", 
 	}
 });
 
+test("builds local static edge candidates exactly by supported specifier shape", () => {
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./model.ts"), [
+		{ path: "src/features/model.ts", support: "supported" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./view.tsx"), [
+		{ path: "src/features/view.tsx", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./compiled.js"), [
+		{ path: "src/features/compiled.js", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./types.d.ts"), [
+		{ path: "src/features/types.d.ts", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./model"), [
+		{ path: "src/features/model.ts", support: "supported" },
+		{ path: "src/features/model/index.ts", support: "supported" },
+		{ path: "src/features/model.tsx", support: "diagnostic_only" },
+		{ path: "src/features/model.js", support: "diagnostic_only" },
+		{ path: "src/features/model.d.ts", support: "diagnostic_only" },
+		{ path: "src/features/model/index.tsx", support: "diagnostic_only" },
+		{ path: "src/features/model/index.js", support: "diagnostic_only" },
+		{ path: "src/features/model/index.d.ts", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./model.json"), []);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./model/"), []);
+});
+
+test("omits outside-root static edge candidates before existence testing", () => {
+	assert.deepEqual(candidatePaths("src/index.ts", "../../outside"), []);
+	assert.deepEqual(candidatePaths("src/index.ts", "../outside"), [
+		{ path: "outside.ts", support: "supported" },
+		{ path: "outside/index.ts", support: "supported" },
+		{ path: "outside.tsx", support: "diagnostic_only" },
+		{ path: "outside.js", support: "diagnostic_only" },
+		{ path: "outside.d.ts", support: "diagnostic_only" },
+		{ path: "outside/index.tsx", support: "diagnostic_only" },
+		{ path: "outside/index.js", support: "diagnostic_only" },
+		{ path: "outside/index.d.ts", support: "diagnostic_only" },
+	]);
+});
+
 test("ignores non-relative and backslash static import and export specifiers", () => {
 	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
 		cwd: CWD,
@@ -250,7 +307,182 @@ test("stores supported static edge inputs on parsed product files", () => {
 			{ syntaxKind: "export_declaration", specifier: "./types" },
 		]);
 		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./setup",
+			},
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./types",
+			},
+		]);
+	}
+});
+
+test("resolves supported static edges with .ts before index.ts and deduplicates targets", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/lib.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './lib';\nexport * from './lib';\n"),
+			"src/lib.ts": bytes("export const lib = 1;\n"),
+			"src/lib/index.ts": bytes("export const fallback = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/lib.ts",
+		]);
 		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("falls back to index.ts when extensionless .ts candidate is absent", () => {
+	const result = buildProductGraph(
+		config(),
+		[repoPath("src/index.ts"), repoPath("src/lib/index.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import './lib';\n"),
+				"src/lib/index.ts": bytes("export const lib = 1;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/lib/index.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("emits unresolved_static_edge for missing and unsupported explicit-extension targets", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './missing';\nexport * from './data.json';\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./data.json",
+			},
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./missing",
+			},
+		]);
+	}
+});
+
+test("emits out_of_scope_static_edge before unsupported_local_target", () => {
+	const result = buildProductGraph(
+		config({ ignoreRoots: ["src/generated"] }),
+		[repoPath("src/index.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import './generated/view';\nexport * from '../outside/view';\n"),
+				"src/generated/view.tsx": bytes("export const ignored = 1;\n"),
+				"outside/view.ts": bytes("export const outside = 1;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "out_of_scope_static_edge",
+				importer: "src/index.ts",
+				target_path: "outside/view.ts",
+			},
+			{
+				kind: "out_of_scope_static_edge",
+				importer: "src/index.ts",
+				target_path: "src/generated/view.tsx",
+			},
+		]);
+	}
+});
+
+test("emits unsupported_local_target for existing unsupported in-scope targets", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './view';\n"),
+			"src/view.tsx": bytes("export const view = 1;\n"),
+			"src/view.js": bytes("export const compiled = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unsupported_local_target",
+				importer: "src/index.ts",
+				target_path: "src/view.tsx",
+			},
+		]);
+	}
+});
+
+test("treats candidates outside repository root as nonexistent during resolution", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import '../../outside';\n"),
+			"outside.ts": bytes("export const outside = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "../../outside",
+			},
+		]);
+	}
+});
+
+test("classifies required existence-test failures as UnsupportedRepoError", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: {
+			readFile: createReadFileFs({
+				"src/index.ts": bytes("import './candidate';\n"),
+			}).readFile,
+			exists(path: string): boolean {
+				assert.equal(path, `${CWD}/src/candidate.ts`);
+				throw new Error("existence unavailable");
+			},
+		},
+	});
+
+	assert.equal(result.kind, "error");
+	if (result.kind === "error") {
+		assert.equal(result.error.kind, "UnsupportedRepoError");
 	}
 });
 
