@@ -19,6 +19,14 @@ export interface ParsedProductFile {
 	readonly path: RepoPath;
 	readonly text: string;
 	readonly sourceFile: ts.SourceFile;
+	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
+}
+
+export type SupportedStaticEdgeSyntaxKind = "import_declaration" | "export_declaration";
+
+export interface SupportedStaticEdgeInput {
+	readonly syntaxKind: SupportedStaticEdgeSyntaxKind;
+	readonly specifier: string;
 }
 
 export type BuildProductGraphResult =
@@ -77,6 +85,7 @@ export function buildProductGraph(
 			path: productFile,
 			text: read.text,
 			sourceFile: parsed.sourceFile,
+			supportedStaticEdgeInputs: extractSupportedStaticEdgeInputs(parsed.sourceFile),
 		});
 		edgesByImporter.set(productFile, []);
 	}
@@ -117,6 +126,24 @@ export function productGraphHasLocalDependencySyntax(productGraph: ProductGraph)
 	);
 }
 
+export function extractSupportedStaticEdgeInputs(
+	sourceFile: ts.SourceFile,
+): SupportedStaticEdgeInput[] {
+	const edgeInputs: SupportedStaticEdgeInput[] = [];
+
+	function visit(node: ts.Node): void {
+		const edgeInput = supportedStaticEdgeInputFromNode(node);
+		if (edgeInput !== undefined) {
+			edgeInputs.push(edgeInput);
+		}
+
+		ts.forEachChild(node, visit);
+	}
+
+	visit(sourceFile);
+	return edgeInputs;
+}
+
 export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): boolean {
 	let hasLocalDependencySyntax = false;
 
@@ -125,12 +152,7 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 			return;
 		}
 
-		if (
-			(ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-			node.moduleSpecifier !== undefined &&
-			ts.isStringLiteral(node.moduleSpecifier) &&
-			isLocalDependencySpecifier(node.moduleSpecifier.text)
-		) {
+		if (supportedStaticEdgeInputFromNode(node) !== undefined) {
 			hasLocalDependencySyntax = true;
 			return;
 		}
@@ -145,6 +167,33 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 
 	visit(sourceFile);
 	return hasLocalDependencySyntax;
+}
+
+function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInput | undefined {
+	if (
+		ts.isImportDeclaration(node) &&
+		ts.isStringLiteral(node.moduleSpecifier) &&
+		isLocalDependencySpecifier(node.moduleSpecifier.text)
+	) {
+		return {
+			syntaxKind: "import_declaration",
+			specifier: node.moduleSpecifier.text,
+		};
+	}
+
+	if (
+		ts.isExportDeclaration(node) &&
+		node.moduleSpecifier !== undefined &&
+		ts.isStringLiteral(node.moduleSpecifier) &&
+		isLocalDependencySpecifier(node.moduleSpecifier.text)
+	) {
+		return {
+			syntaxKind: "export_declaration",
+			specifier: node.moduleSpecifier.text,
+		};
+	}
+
+	return undefined;
 }
 
 function callExpressionHasLocalDependencySyntax(node: ts.CallExpression): boolean {

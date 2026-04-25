@@ -7,8 +7,10 @@ import { type RepoPath, validateRepoPath } from "../domain/repo-path";
 import type { Config } from "./config-io";
 import {
 	buildProductGraph,
+	extractSupportedStaticEdgeInputs,
 	type ProductGraphFs,
 	parseTypeScriptProductText,
+	productGraphHasLocalDependencySyntax,
 	sourceFileHasLocalDependencySyntax,
 } from "./ts-graph";
 
@@ -176,6 +178,79 @@ test("detects parsed local dependency syntax without extracting graph edges", ()
 				testCase.name,
 			);
 		}
+	}
+});
+
+test("extracts supported static import and export edge inputs in source order", () => {
+	const result = parseTypeScriptProductText(
+		repoPath("src/index.ts"),
+		[
+			"import { value } from './value';",
+			"import type { Value } from '../types';",
+			"import './setup';",
+			"export * from './all';",
+			"export { item } from './item';",
+			"export {} from './empty';",
+			"export type { Value } from './type';",
+			"export const local = value;",
+		].join("\n"),
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(extractSupportedStaticEdgeInputs(result.sourceFile), [
+			{ syntaxKind: "import_declaration", specifier: "./value" },
+			{ syntaxKind: "import_declaration", specifier: "../types" },
+			{ syntaxKind: "import_declaration", specifier: "./setup" },
+			{ syntaxKind: "export_declaration", specifier: "./all" },
+			{ syntaxKind: "export_declaration", specifier: "./item" },
+			{ syntaxKind: "export_declaration", specifier: "./empty" },
+			{ syntaxKind: "export_declaration", specifier: "./type" },
+		]);
+	}
+});
+
+test("ignores non-relative and backslash static import and export specifiers", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				[
+					"import { external } from 'pkg';",
+					"import type { External } from '@scope/pkg';",
+					"import './\\\\generated';",
+					"export * from 'pkg/subpath';",
+					"export { item } from '../\\\\item';",
+				].join("\n"),
+			),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.supportedStaticEdgeInputs, []);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+		assert.equal(productGraphHasLocalDependencySyntax(result.productGraph), false);
+	}
+});
+
+test("stores supported static edge inputs on parsed product files", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './setup';\nexport type { Value } from './types';\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.supportedStaticEdgeInputs, [
+			{ syntaxKind: "import_declaration", specifier: "./setup" },
+			{ syntaxKind: "export_declaration", specifier: "./types" },
+		]);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, []);
 	}
 });
 
