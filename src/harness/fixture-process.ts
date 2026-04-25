@@ -394,6 +394,7 @@ function prepareFixtureProcessFaultInjection(
 		marker !== "product_case_collision_in_scope" &&
 		marker !== "product_spec_root_case_collision" &&
 		marker !== "product_root_enumeration_failure" &&
+		marker !== "map_write_before_rename_failure" &&
 		marker !== "scan_engine_internal_error"
 	) {
 		return null;
@@ -441,6 +442,25 @@ function renderFixtureProcessFaultInjectionPreload(marker: string, cwd: string):
 const scanEngine = require(${JSON.stringify(resolve(PROJECT_ROOT, "dist", "domain", "scan-engine.js"))});
 scanEngine.runScanEngine = function runScanEngineInjectedInternalError() {
 	throw new Error("fixture injected scan_engine internal error");
+};
+`;
+	}
+
+	if (marker === "map_write_before_rename_failure") {
+		return `
+const configIo = require(${JSON.stringify(resolve(PROJECT_ROOT, "dist", "infra", "config-io.js"))});
+const realWriteConfigAtomic = configIo.writeConfigAtomic;
+configIo.writeConfigAtomic = function writeConfigAtomicInjectedMapFailure(config, options = {}) {
+	return realWriteConfigAtomic(config, {
+		...options,
+		faults: {
+			...options.faults,
+			beforeRename() {
+				options.faults?.beforeRename?.apply(this, arguments);
+				throw new Error("fixture injected map write failure before rename");
+			},
+		},
+	});
 };
 `;
 	}

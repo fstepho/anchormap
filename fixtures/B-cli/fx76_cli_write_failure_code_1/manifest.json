@@ -1,0 +1,30 @@
+{
+	"id": "fx76_cli_write_failure_code_1",
+	"family": "B-cli",
+	"purpose": "map with an injected atomic write failure exits 1, preserves anchormap.yaml, and leaves no temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 1,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "write_failure", "map"],
+	"groups": ["m8"],
+	"fault_injection": {
+		"marker": "map_write_before_rename_failure"
+	}
+}
