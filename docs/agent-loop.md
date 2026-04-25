@@ -162,6 +162,8 @@ fresh implementation, rework, or review session.
   `reasoning_effort` explicitly. Use the launch note format
   `reasoning_effort: <medium|high|xhigh> — reason: <surface/invariant>`.
 
+### Autopilot Steps
+
 1. Confirm the current worktree can support an autopilot run:
    - unrelated staged, unstaged, and untracked changes must not prevent a
      task-scoped diff, review surface, or commit;
