@@ -116,9 +116,11 @@ Use this loop only when the user explicitly requests `autopilot` or asks the
 agent to chain tasks automatically. The normative rules live in
 `docs/operating-model.md` §18.1.
 
-Start the session with `codex -p autopilot` or an equivalent Auto-review
-permissions mode. Autopilot is not effective if recurring `codex review`,
-`git add`, or `git commit` approvals are routed to the human coordinator.
+Start the session with
+`codex -p autopilot -c mcp_servers.context7.enabled=false` or an equivalent
+Auto-review permissions mode. Autopilot is not effective if recurring
+`codex review`, `git add`, or `git commit` approvals are routed to the human
+coordinator.
 
 The autopilot coordinator must stay context-thin. It selects tasks, launches
 fresh implementation and review sessions, routes decisions, commits clean task
@@ -149,9 +151,10 @@ diffs, and carries only compact task results across task boundaries.
    Do not use Git history, clock, cache, network, environment, or a sidecar file
    to choose the task.
 3. Launch a fresh implementation session for exactly that task, preferably
-   with `codex -p autopilot exec` or an equivalent fresh Codex session. Do not
-   reuse the coordinator context as the implementation context. If the runtime
-   uses `spawn_agent` for this step, the call must pass `fork_context: false`.
+   with `codex -p autopilot -c mcp_servers.context7.enabled=false exec` or an
+   equivalent fresh Codex session. Do not reuse the coordinator context as the
+   implementation context. If the runtime uses `spawn_agent` for this step, the
+   call must pass `fork_context: false`.
    `fork_context: true` is forbidden for autopilot implementation or rework
    subagents because it creates a full-history fork of the coordinator.
 4. The implementation session runs the normal task loop through implementation
@@ -348,7 +351,7 @@ For `T1.7` and later harness work, the minimum local command surface is:
 - `npm run workflow:preflight -- --task <task-id>`
 - `npm run workflow:preflight -- --process <surface> --stage review`
 - `codex`
-- `codex -p autopilot exec`
+- `codex -p autopilot -c mcp_servers.context7.enabled=false exec`
 - `codex review --uncommitted`
 - `codex review --base <branch>`
 - `codex review --commit <sha>`

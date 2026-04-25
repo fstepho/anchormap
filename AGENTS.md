@@ -32,8 +32,9 @@ If the user explicitly requests autopilot or automatic task chaining, use the
 autopilot loop defined by `docs/operating-model.md` and `docs/agent-loop.md`.
 Autopilot remains one active task at a time and must stop on the documented
 hard stops. Effective autopilot requires a Codex session started with
-`codex -p autopilot` or equivalent Auto-review permissions so recurring
-`codex review`, `git add`, and `git commit` approvals are not human gates.
+`codex -p autopilot -c mcp_servers.context7.enabled=false` or equivalent
+Auto-review permissions so recurring `codex review`, `git add`, and
+`git commit` approvals are not human gates.
 Autopilot task implementation must run in fresh task-scoped Codex sessions so
 the coordinator does not accumulate implementation context across tasks.
 
