@@ -135,6 +135,7 @@
 | M7 — Scan engine | Produce complete contractual `scan --json` output from config, specs, and graph | `scan_engine`, mapping states, reachability, coverage, findings, `analysis_health`, scan command integration | B-scan `fx01`–`fx10`; JSON goldens; B-cli scan fixtures | M3–M6 done | All scan success goldens pass byte-for-byte; scan failures produce no JSON and no mutation |
 | M8 — Map command | Implement explicit human mapping creation/replacement with strict validation and atomic rewrite | `map` orchestration, seed validation, replace guard, canonical config update | B-map `fx59`–`fx67d`; B-decodage map fixtures `fx00m`–`fx00o`; YAML goldens | M4–M7 done | `map` creates/replaces only allowed mappings; all failure paths preserve initial config and temp-file absence |
 | M9 — Cross-platform, determinism, performance and release gates | Stabilize, measure, and validate without adding product capability | Metamorphic suite, reruns, platform matrix, benchmarks, dependency audit, release reports | C1–C12; Gates A–G; performance `small`/`medium`; reproducibility audit | M1–M8 done | Release gates pass on Linux x86_64 and macOS arm64; performance and reproducibility artifacts are archived |
+| M10 — Packaging, distribution, and publication | Turn a passing release candidate into a distributable v1.0 artifact without changing product behavior | Packaging ADR, publishable package metadata, install-artifact checks, user docs, publication runbook, published artifact evidence | Post-gate artifact verification; release checklist continuity | M9 done | `ADR-0009` is accepted, the packaged artifact installs and runs from `dist/`, user-facing docs preserve the v1.0 promise, and the selected distribution channel contains the published v1.0 artifact |
 
 ## Milestone dependency graph
 
@@ -152,6 +153,7 @@ M1 Fixture harness
               -> M7 Scan engine
                  -> M8 Map command
                     -> M9 Cross-platform, determinism, performance and release gates
+                       -> M10 Packaging, distribution, and publication
 ```
 
 ## M1 — Fixture harness
@@ -3733,6 +3735,305 @@ Suggested verification:
 - Run the entropy review on a passing candidate.
 - Introduce one intentional stale doc or duplicate helper and confirm the review records it explicitly.
 
+## M10 — Packaging, distribution, and publication
+
+### T10.1 — Record packaging and distribution ADR
+
+Purpose:
+- Decide how a passing v1.0 release candidate is distributed.
+- Convert the reserved `ADR-0009` packaging/distribution slot into a binding accepted ADR before package metadata or publication behavior changes.
+
+Contract refs:
+- `contract.md` — §3.1 Guarantees of v1.0
+- `contract.md` — §9 Commands
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §2.1 Stack and ADRs
+- `design.md` — §11 Dependencies and reproducibility
+- `design.md` — §15 Indicative repository structure
+
+Eval refs:
+- `evals.md` — §11 Gates de release
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §8.6 Architectural Decision Records
+- `operating-model.md` — §16 Politique de dépendances
+- `operating-model.md` — §19.1 Tâche
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T9.7.
+
+Implementation scope:
+- Create and accept `ADR-0009` for packaging and distribution.
+- Decide the distribution channel, for example public npm, private npm, GitHub release artifact, or another explicitly named channel.
+- Decide versioning, tag naming, package visibility, package contents, artifact checksum policy, and whether distribution is registry-based or tarball-based.
+- Decide how release evidence from M9 is linked to the published artifact.
+- Record rejected distribution alternatives and their risks.
+
+Out of scope:
+- Changing CLI commands, exit codes, JSON/YAML output, fixture expectations, or runtime behavior.
+- Publishing an artifact before the ADR is accepted.
+- Introducing Git-derived runtime behavior or hidden product state.
+
+Done when:
+- `ADR-0009` exists, is accepted, and is listed in the ADR register.
+- The selected distribution channel and package visibility are explicit.
+- The ADR states the exact release artifact shape and package contents policy.
+- The ADR states how M9 release evidence is retained or linked.
+- Any consequence for `package.json`, docs, scripts, or tasks is reflected in repository docs.
+
+Suggested verification:
+- Run docs consistency checks that verify ADR register entries.
+- Confirm no runtime file changed as part of the ADR-only decision unless explicitly scoped.
+
+### T10.2 — Prepare publishable package metadata
+
+Purpose:
+- Make the repository package metadata match the accepted distribution decision.
+- Keep the published package narrow, reproducible, and aligned with the compile-to-`dist/` product path.
+
+Contract refs:
+- `contract.md` — §9 Commands
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §2.1 Stack and ADRs
+- `design.md` — §11 Dependencies and reproducibility
+- `design.md` — §15 Indicative repository structure
+
+Eval refs:
+- `evals.md` — §4.6 Level F — Release reproducibility audit
+- `evals.md` — Gate G — Release reproducibility
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §16 Politique de dépendances
+- `operating-model.md` — §18 Commit et granularité de changement
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T10.1.
+
+Implementation scope:
+- Update `package.json` metadata according to `ADR-0009`, including package visibility, `version`, `license`, `repository`, `engines`, `bin`, and publish allowlist fields as applicable.
+- Preserve the published CLI entrypoint as compiled JavaScript under `dist/`.
+- Ensure published package contents exclude local-only harness artifacts unless `ADR-0009` explicitly requires them.
+- Keep runtime dependencies exact or lock-backed according to Gate G.
+- Update lockfile or package-manager metadata only where required by the metadata change.
+
+Out of scope:
+- Changing the CLI command surface or adding release automation.
+- Replacing the runtime, package manager, parser stack, or build path.
+- Publishing to any external channel.
+
+Done when:
+- Package metadata matches `ADR-0009`.
+- `npm pack --dry-run` or the ADR-selected equivalent shows only expected package contents.
+- The package still builds from a clean checkout.
+- Gate G dependency and lockfile assumptions remain valid.
+- No product behavior or eval acceptance criterion changed.
+
+Suggested verification:
+- Run build.
+- Run package dry-run and inspect included files.
+- Run reproducibility audit if available.
+
+### T10.3 — Verify installed artifact behavior
+
+Purpose:
+- Prove that the distributable artifact works when installed as a consumer would install it, not only from the source checkout.
+
+Contract refs:
+- `contract.md` — §9 Commands
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.5 Stable outputs
+- `contract.md` — §13 JSON and exit codes
+
+Design refs:
+- `design.md` — §10 Testability
+- `design.md` — §11 Dependencies and reproducibility
+
+Eval refs:
+- `evals.md` — §11 Gates de release
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T10.2.
+
+Implementation scope:
+- Build the release package artifact using the selected packaging command.
+- Install the artifact into a clean temporary consumer project using the selected distribution mechanism.
+- Run the installed `anchormap` binary against a minimal supported repository.
+- Verify the installed binary uses compiled `dist/` code and does not require TypeScript source execution.
+- Verify representative `init`, `map`, and `scan --json` behavior through the installed binary.
+
+Out of scope:
+- Re-running the full M9 platform matrix unless `ADR-0009` requires it.
+- Depending on network access as product runtime behavior.
+- Changing product code to hide packaging problems without a classified task.
+
+Done when:
+- The packaged artifact installs successfully in a clean consumer location.
+- The installed `anchormap` command resolves to the packaged binary.
+- Representative command behavior matches the already-passing release candidate.
+- No TypeScript source files are required at runtime unless `ADR-0009` explicitly selects that artifact shape.
+- The installed-artifact verification report is archived or linked from release evidence.
+
+Suggested verification:
+- Run local tarball install in a temporary directory.
+- Run the representative command smoke tests through the installed binary.
+
+### T10.4 — Add user-facing release documentation
+
+Purpose:
+- Provide enough documentation for a first v1.0 user to install, initialize, map, and scan within the supported scope.
+- Preserve the product promise and limitations from `brief.md`.
+
+Contract refs:
+- `contract.md` — §7 `anchormap.yaml`
+- `contract.md` — §9 Commands
+- `contract.md` — §12 Support and stability boundaries
+- `contract.md` — §13 JSON and exit codes
+
+Design refs:
+- `design.md` — §3 Sources of truth and boundaries
+- `design.md` — §15 Indicative repository structure
+
+Eval refs:
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §6.4 Séparation entre apprentissage produit et release v1.0
+- `operating-model.md` — §19.1 Tâche
+- `brief.md` — §14 Position finale de la release
+
+Dependencies:
+- T10.1.
+- T10.3.
+
+Implementation scope:
+- Add or update the root user-facing README required by the selected distribution channel.
+- Document installation, supported platforms, the minimal `anchormap.yaml` flow, `init`, `map`, `scan --json`, exit-code overview, and v1.0 limitations.
+- Include a minimal supported TypeScript mono-package example.
+- State clearly that AnchorMap is structural traceability, not a pruning or deletion-safety system.
+- Link or summarize the exact v1.0 support boundaries without duplicating the full contract.
+
+Out of scope:
+- Marketing claims beyond `brief.md`.
+- Promising support for monorepos, JavaScript, TSX, aliases, package resolution, or deletion safety.
+- Changing runtime behavior to match documentation.
+
+Done when:
+- A root user-facing README exists and matches the selected distribution channel.
+- Installation and first-use instructions are executable against the installed artifact.
+- The docs contain no claim equivalent to "safe to delete".
+- Supported and unsupported scopes are explicit.
+- Any examples are covered by a smoke check or are simple enough to be manually verified during T10.3/T10.5.
+
+Suggested verification:
+- Follow the README install and minimal-use flow from a clean temporary directory.
+- Search release docs for forbidden pruning/deletion-safety language.
+
+### T10.5 — Create publication dry-run and release runbook
+
+Purpose:
+- Make publication repeatable and auditable before any real external publish operation.
+
+Contract refs:
+- `contract.md` — §4.1 Determinism
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §11 Dependencies and reproducibility
+
+Eval refs:
+- `evals.md` — §11 Gates de release
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §18 Commit et granularité de changement
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T10.2.
+- T10.3.
+- T10.4.
+
+Implementation scope:
+- Run the selected publication dry-run, such as `npm publish --dry-run`, GitHub release draft validation, or the equivalent chosen in `ADR-0009`.
+- Record artifact filename, package version, checksums, included files, and release evidence links.
+- Write a release runbook that names pre-publish checks, publish command, credential assumptions, post-publish verification, and rollback or deprecation procedure.
+- Confirm the runbook starts from a passing M9 release verdict and installed-artifact report.
+
+Out of scope:
+- Real publication to the selected external channel.
+- Changing release gates, accepting missing artifacts, or publishing from a failing M9 verdict.
+- Adding broad CI or release automation unless `ADR-0009` explicitly requires it.
+
+Done when:
+- Publication dry-run succeeds for the selected channel.
+- Runbook exists and is deterministic enough to follow without hidden chat context.
+- Dry-run output or report is archived as release evidence.
+- The runbook refuses publication if any M9 gate or T10 installed-artifact check is missing or failing.
+
+Suggested verification:
+- Execute the dry-run command from the runbook.
+- Intentionally point the runbook checklist at a missing artifact and confirm it fails closed.
+
+### T10.6 — Publish v1.0 artifact and archive publication evidence
+
+Purpose:
+- Publish the v1.0 artifact through the channel selected by `ADR-0009`.
+- Tie the published artifact back to the passing release candidate evidence.
+
+Contract refs:
+- `contract.md` — §3.1 Guarantees of v1.0
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.5 Stable outputs
+
+Design refs:
+- `design.md` — §11 Dependencies and reproducibility
+
+Eval refs:
+- `evals.md` — §11 Gates de release
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T10.5.
+
+Implementation scope:
+- Publish the exact artifact validated by T10.3 and T10.5, or rebuild and reverify if the channel requires rebuilding.
+- Create the release tag or channel marker required by `ADR-0009`.
+- Archive publication evidence: artifact identifier, checksum, package/version URL or registry coordinate, release report link, and post-publish verification result.
+- Verify the published artifact can be discovered and installed according to the documented user flow where the channel permits it.
+
+Out of scope:
+- Publishing any artifact that differs from the validated release candidate without rerunning the required checks.
+- Changing product behavior, docs promise, or release-gate criteria during publication.
+- Claiming support for unvalidated platforms or package managers.
+
+Done when:
+- The selected distribution channel contains the v1.0 artifact.
+- Publication evidence links the artifact to the passing M9 release verdict and T10 dry-run/install reports.
+- Post-publish install or download verification passes, or the runbook records a channel-specific reason it cannot be performed immediately.
+- The release state records any deferred product questions as deferred, not silently open.
+
+Suggested verification:
+- Install or download the published artifact through the documented user flow.
+- Run the same representative command smoke tests used in T10.3.
+
 ## Technical spikes
 
 ### S1 — Parser profile and duplicate-key compatibility report
@@ -4413,6 +4714,12 @@ Done when:
 | release Gate E — Cross-platform | T9.3, T9.6 | M9 | release gate | Required suite on both supported platforms |
 | release Gate F — Performance | T9.4, T9.6 | M9 | release gate | `small` and `medium` budgets |
 | release Gate G — Release reproducibility | T9.5, T9.6 | M9 | release gate | Pinned deps, lockfile, goldens versioned |
+| Packaging and distribution decision | T10.1 | M10 | ADR | Accepted `ADR-0009` defines channel, artifact shape, visibility, and evidence retention |
+| Publishable package metadata | T10.2 | M10 | package check | Package metadata and package contents match `ADR-0009` |
+| Installed artifact behavior | T10.3 | M10 | artifact smoke | Installed CLI runs from packaged `dist/` artifact |
+| User-facing release docs | T10.4 | M10 | documentation check | Install/use docs preserve v1.0 scope and avoid pruning/deletion-safety claims |
+| Publication dry-run and runbook | T10.5 | M10 | publication check | Dry-run succeeds and runbook fails closed on missing release evidence |
+| Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9 and T10 verification reports |
 
 ## Agent execution protocol
 
