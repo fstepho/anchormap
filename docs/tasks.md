@@ -25,9 +25,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T9.4 — Implement release performance benchmarks` (`done`)
-- Next executable product task: `T9.5 — Implement dependency pinning and reproducibility audit`
-- Last completed task: `T9.4 — Implement release performance benchmarks`
+- Current active task: `T9.5 — Implement dependency pinning and reproducibility audit` (`done`)
+- Next executable product task: `T9.6 — Implement release gate aggregator and publication checklist artifacts`
+- Last completed task: `T9.5 — Implement dependency pinning and reproducibility audit`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -98,6 +98,7 @@
   - `T9.3 — Execute supported cross-platform matrix`
   - `S5 — Release benchmark feasibility baseline`
   - `T9.4 — Implement release performance benchmarks`
+  - `T9.5 — Implement dependency pinning and reproducibility audit`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

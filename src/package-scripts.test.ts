@@ -170,6 +170,11 @@ test("package.json exposes the stable repo-local check and harness command surfa
 		scripts["bench:validate:artifacts"],
 		"node scripts/validate-release-benchmark-report.mjs --require-supported-platform-artifacts reports/t9.4",
 	);
+	assert.equal(scripts["audit:reproducibility"], "node scripts/reproducibility-audit.mjs");
+	assert.equal(
+		scripts["audit:reproducibility:update"],
+		"node scripts/reproducibility-audit.mjs --write",
+	);
 	assert.equal(scripts.test, "npm run test:unit");
 	assert.equal(
 		scripts["test:docs"],
