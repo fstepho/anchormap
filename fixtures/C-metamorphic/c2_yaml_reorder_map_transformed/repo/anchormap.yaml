@@ -1,0 +1,8 @@
+mappings:
+  FR-014:
+    seed_files:
+      - src/old.ts
+spec_roots:
+  - specs
+product_root: src
+version: 1

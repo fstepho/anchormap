@@ -1,0 +1,19 @@
+{
+	"id": "c3_spec_noise_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C3 baseline scan fixture before adding spec noise without anchors.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c3", "m9"]
+}

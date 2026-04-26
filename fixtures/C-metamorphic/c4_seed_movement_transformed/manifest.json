@@ -1,0 +1,19 @@
+{
+	"id": "c4_seed_movement_transformed",
+	"family": "C-metamorphic",
+	"purpose": "C4 transformed scan fixture after deleting a stored seed file without updating YAML.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c4", "m9"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "c2_yaml_reorder_scan_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C2 baseline scan fixture with canonical YAML order.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c2", "m9"]
+}

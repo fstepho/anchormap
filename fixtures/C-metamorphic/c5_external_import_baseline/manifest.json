@@ -1,0 +1,19 @@
+{
+	"id": "c5_external_import_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C5 baseline scan fixture before adding a non-relative import.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c5", "m9"]
+}

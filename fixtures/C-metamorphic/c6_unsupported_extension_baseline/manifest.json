@@ -1,0 +1,19 @@
+{
+	"id": "c6_unsupported_extension_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C6 baseline scan fixture with a supported local target.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c6", "m9"]
+}

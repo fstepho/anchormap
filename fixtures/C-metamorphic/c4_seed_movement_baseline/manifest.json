@@ -1,0 +1,19 @@
+{
+	"id": "c4_seed_movement_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C4 baseline scan fixture before deleting a stored seed file.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan"],
+	"groups": ["c4", "m9"]
+}

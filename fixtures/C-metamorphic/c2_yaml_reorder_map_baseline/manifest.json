@@ -1,0 +1,31 @@
+{
+	"id": "c2_yaml_reorder_map_baseline",
+	"family": "C-metamorphic",
+	"purpose": "C2 baseline map fixture with canonical YAML order.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/new.ts",
+		"--seed",
+		"src/index.ts",
+		"--replace"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["metamorphic", "map"],
+	"groups": ["c2", "m9"]
+}

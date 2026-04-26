@@ -1,0 +1,8 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'specs'
+mappings:
+  'FR-014':
+    seed_files:
+      - 'src/index.ts'
