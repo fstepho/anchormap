@@ -25,7 +25,7 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `None recorded`
+- Current active task: `T9.3 — Execute supported cross-platform matrix`
 - Next executable product task after blocker clearance: `T9.3 — Execute supported cross-platform matrix`
 - Last completed task: `T9.2 — Implement determinism and isolation tests C7 through C12`
 - Completed tasks recorded here:
@@ -96,9 +96,9 @@
   - `T9.1 — Implement metamorphic tests C1 through C6`
   - `T9.2 — Implement determinism and isolation tests C7 through C12`
 - Blocked tasks:
-  - `None recorded`
+  - `T9.3 — Execute supported cross-platform matrix`: blocking `tooling problem`; native Linux x86_64 runner/evidence unavailable from the current Darwin arm64 autopilot session.
 - Open deviations:
-  - `None recorded`
+  - `T9.3`: blocking `tooling problem`; `T9.3` requires native Linux x86_64 matrix evidence and native Linux atomic-write/rename-boundary evidence, but the fresh implementation session ran on Darwin arm64.
 
 ## Execution principles
 
