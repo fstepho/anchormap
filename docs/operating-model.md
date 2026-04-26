@@ -1021,7 +1021,7 @@ Entrées autorisées exhaustives pour la bug-finding review :
 - une session interactive `codex` démarrée fraîchement pour la review, avec la
   review comme premier work step
 
-Sur le chemin `codex review`, l'autopilot peut rediriger stdout/stderr vers un
+Sur le chemin `codex review`, l'autopilot doit rediriger stdout/stderr vers un
 fichier temporaire hors repository et ne remonter au coordinateur qu'un footer
 borné de cette sortie. Le snippet opérateur correspondant vit dans
 `docs/agent-loop.md` pour éviter la duplication de recettes de commande.
@@ -1311,7 +1311,7 @@ Le mode `autopilot` :
 - en mode `autopilot`, lance les surfaces natives `codex review` avec
   `codex review --uncommitted`, `codex review --base <branch>` ou
   `codex review --commit <sha>` ; ce sont les seules commandes de review
-  autopilot autorisées ; le coordinateur peut rediriger leur stdout/stderr vers
+  autopilot autorisées ; le coordinateur doit rediriger leur stdout/stderr vers
   un transcript temporaire hors repository et ne consommer qu'un footer borné de
   la sortie native ;
 - peut effectuer jusqu'à cinq fresh review sessions pour une même tâche,

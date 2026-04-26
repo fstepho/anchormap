@@ -143,8 +143,9 @@ Operator checklist:
    `reasoning_effort`. `fork_context: true` is forbidden for autopilot
    implementation or rework.
 5. Use native `codex review --uncommitted`, `codex review --base <branch>`, or
-   `codex review --commit <sha>` for fresh review. Autopilot may run up to five
-   fresh review sessions total for one task.
+   `codex review --commit <sha>` for fresh review through the bounded-footer
+   command form below. Autopilot may run up to five fresh review sessions total
+   for one task.
 6. Retain across tasks only compact state allowed by §18.1: task ID, checks,
    verdict, findings count, finding titles and locations, review decision, stop
    reason, commit SHA, and next cursor.
@@ -161,7 +162,7 @@ Native review commands:
 - `codex review --commit <sha>`
 - fresh interactive `codex` when review is its first work step
 
-Autopilot may redirect native `codex review` stdout/stderr to a temporary file
+Autopilot must redirect native `codex review` stdout/stderr to a temporary file
 outside the repository and show only a bounded footer to the coordinator:
 
 ```sh
