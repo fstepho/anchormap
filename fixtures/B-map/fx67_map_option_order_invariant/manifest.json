@@ -1,13 +1,13 @@
 {
 	"id": "fx67_map_option_order_invariant",
 	"family": "B-map",
-	"purpose": "map raw argument validation remains invariant when supported options are permuted.",
+	"purpose": "Supported map option order permutations write the same canonical YAML bytes.",
 	"command": [
 		"node",
 		"dist/anchormap.js",
 		"map",
 		"--seed",
-		"./src//index.ts/",
+		"src/z.ts",
 		"--replace",
 		"--anchor",
 		"FR-014",
@@ -15,7 +15,7 @@
 		"src/index.ts"
 	],
 	"cwd": ".",
-	"exit_code": 4,
+	"exit_code": 0,
 	"stdout": {
 		"kind": "ignored"
 	},
@@ -23,8 +23,9 @@
 		"kind": "ignored"
 	},
 	"filesystem": {
-		"kind": "no_mutation"
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
 	},
-	"tags": ["cli_boundary", "map", "priority"],
+	"tags": ["map", "write", "golden"],
 	"groups": ["m8"]
 }
