@@ -46,6 +46,7 @@ ADRs courantes :
 - `ADR-0007` — Canonical JSON and YAML rendering (`Accepted`)
 - `ADR-0008` — Atomic config write path (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
+- `ADR-0011` — Release CLI Node launch profile (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -833,6 +834,8 @@ Décisions de design :
 
 - lockfile obligatoire ;
 - aucune plage `^` ou `~` sur les dépendances qui touchent au contrat ;
+- le chemin CLI de release mesure et publie le launcher `bin/anchormap` avec le
+  profil Node figé par `ADR-0011`, sans plafonnement old-space ;
 - les pins parser acceptés sont `commonmark@0.30.0` (`ADR-0004`),
   `yaml@2.8.3` (`ADR-0005`) et `typescript@6.0.3` (`ADR-0006`) ;
 - tests et goldens rejoués sur la matrice de plateformes supportées ;
@@ -877,6 +880,11 @@ Ordres de grandeur attendus :
 - fermeture : `O(M * (F + E_reachable))` dans la forme naïve, où `M` est le nombre de mappings `usable`
 
 Pour v1.0, la forme naïve est acceptable tant que les budgets de `evals.md` tiennent sur le corpus cible.
+
+Les mesures Gate F doivent utiliser le launcher de release défini par
+`ADR-0011`, qui ne plafonne pas l'old-space V8 ; les invocations directes de
+`node dist/anchormap.js` restent une surface de développement et de fixture, pas
+la surface de mesure release.
 
 Une optimisation de type mémoïsation de fermeture n’est acceptable que si :
 

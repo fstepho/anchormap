@@ -30,8 +30,6 @@ export interface ProductGraph {
 
 export interface ParsedProductFile {
 	readonly path: RepoPath;
-	readonly text: string;
-	readonly sourceFile: ts.SourceFile;
 	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
 	readonly unsupportedStaticEdgeInputs: readonly UnsupportedStaticEdgeInput[];
 }
@@ -113,12 +111,13 @@ export function buildProductGraph(
 			return parsed;
 		}
 
+		const supportedStaticEdgeInputs = extractSupportedStaticEdgeInputs(parsed.sourceFile);
+		const unsupportedStaticEdgeInputs = extractUnsupportedStaticEdgeInputs(parsed.sourceFile);
+
 		parsedFiles.push({
 			path: productFile,
-			text: read.text,
-			sourceFile: parsed.sourceFile,
-			supportedStaticEdgeInputs: extractSupportedStaticEdgeInputs(parsed.sourceFile),
-			unsupportedStaticEdgeInputs: extractUnsupportedStaticEdgeInputs(parsed.sourceFile),
+			supportedStaticEdgeInputs,
+			unsupportedStaticEdgeInputs,
 		});
 	}
 
@@ -162,8 +161,9 @@ export function parseTypeScriptProductText(
 }
 
 export function productGraphHasLocalDependencySyntax(productGraph: ProductGraph): boolean {
-	return productGraph.parsedFiles.some((file) =>
-		sourceFileHasLocalDependencySyntax(file.sourceFile),
+	return productGraph.parsedFiles.some(
+		(file) =>
+			file.supportedStaticEdgeInputs.length > 0 || file.unsupportedStaticEdgeInputs.length > 0,
 	);
 }
 

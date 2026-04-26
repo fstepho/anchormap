@@ -124,8 +124,8 @@ test("reads all product files through strict UTF-8 decoding and strips one initi
 	if (result.kind === "ok") {
 		assert.deepEqual(result.productGraph.productFiles, ["src/a.ts", "src/z.ts"]);
 		assert.deepEqual(
-			result.productGraph.parsedFiles.map((file) => file.text),
-			["export const a = 1;\n", "export const z = 1;\n"],
+			result.productGraph.parsedFiles.map((file) => file.path),
+			["src/a.ts", "src/z.ts"],
 		);
 		assert.deepEqual([...result.productGraph.edgesByImporter.keys()], ["src/a.ts", "src/z.ts"]);
 	}

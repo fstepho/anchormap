@@ -1,0 +1,36 @@
+{
+	"schema_version": 1,
+	"corpus_version": "release-benchmark-corpus-v1",
+	"corpora": [
+		{
+			"id": "small",
+			"product_files": 200,
+			"observed_anchors": 50,
+			"mapped_anchors": 10,
+			"supported_edges": 1500,
+			"gate": true,
+			"p95_wall_clock_ms_budget": 400,
+			"peak_rss_mib_budget": 120
+		},
+		{
+			"id": "medium",
+			"product_files": 1000,
+			"observed_anchors": 200,
+			"mapped_anchors": 40,
+			"supported_edges": 8000,
+			"gate": true,
+			"p95_wall_clock_ms_budget": 2000,
+			"peak_rss_mib_budget": 300
+		},
+		{
+			"id": "large",
+			"product_files": 5000,
+			"observed_anchors": 500,
+			"mapped_anchors": 50,
+			"supported_edges": 40000,
+			"gate": false,
+			"p95_wall_clock_ms_budget": null,
+			"peak_rss_mib_budget": null
+		}
+	]
+}

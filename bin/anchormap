@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_PATH=$0
+while [ -L "$SCRIPT_PATH" ]; do
+	SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
+	LINK_TARGET=$(readlink "$SCRIPT_PATH")
+	case "$LINK_TARGET" in
+		/*) SCRIPT_PATH=$LINK_TARGET ;;
+		*) SCRIPT_PATH=$SCRIPT_DIR/$LINK_TARGET ;;
+	esac
+done
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
+PACKAGE_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+exec node --no-opt --max-semi-space-size=1 --no-expose-wasm "$PACKAGE_DIR/dist/anchormap.js" "$@"

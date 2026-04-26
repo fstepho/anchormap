@@ -50,6 +50,7 @@ An ADR is usually not required for:
 | `ADR-0007` | Canonical JSON and YAML rendering | Accepted |
 | `ADR-0008` | Atomic config write path | Accepted |
 | `ADR-0010` | Source formatting and linting tool | Accepted |
+| `ADR-0011` | Release CLI Node launch profile | Accepted |
 
 Reserved next IDs for near-term stack closure:
 
