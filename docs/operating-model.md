@@ -1236,10 +1236,10 @@ tâche et au gate humain de commit. Il n'est actif que lorsque l'utilisateur le
 demande explicitement.
 
 Un run `autopilot` doit être lancé depuis une session Codex configurée pour
-router les approvals éligibles vers l'auto-reviewer, par exemple avec le profil
-CLI `codex -p autopilot -c mcp_servers.context7.enabled=false` ou un mode de
-permissions équivalent. Le mode ne doit pas dépendre d'approbations humaines
-répétées pour `codex review`, `git add` ou `git commit`.
+router les approvals éligibles vers l'auto-reviewer, avec les permissions de
+démarrage opératoires résumées dans `docs/agent-loop.md` ou un mode équivalent.
+Le mode ne doit pas dépendre d'approbations humaines répétées pour
+`codex review`, `git add` ou `git commit`.
 
 Le run `autopilot` est coordonné par une session mince. Cette session
 sélectionne les tâches, lance les sessions fraîches, route les review decisions,

@@ -114,10 +114,24 @@ chaining. The complete policy is `docs/operating-model.md` §18.1.
 
 Operator checklist:
 
-1. Start from an effective autopilot session, for example
-   `codex -p autopilot -c mcp_servers.context7.enabled=false`, or equivalent
-   Auto-review permissions for recurring `codex review`, `git add`, and
-   `git commit` approvals.
+1. Start from an effective autopilot session, or equivalent Auto-review
+   permissions for recurring `codex review`, `git add`, and `git commit`
+   approvals:
+
+   ```sh
+   codex -p autopilot \
+     --sandbox workspace-write \
+     --ask-for-approval on-request \
+     --add-dir /Users/fstepho/.codex \
+     -c approvals_reviewer='"auto_review"' \
+     -c sandbox_workspace_write.network_access=true \
+     -c mcp_servers.context7.enabled=false
+   ```
+
+   On macOS, if native `codex review` reports `sandbox-exec`,
+   `sandbox_apply`, `Operation not permitted`, or cannot inspect changes, treat
+   that review as invalid even with exit 0; retry once with targeted
+   escalation, then stop as `tooling problem` if still ineffective.
 2. Keep the coordinator context-thin: select tasks, launch fresh
    implementation/rework/review sessions, route decisions, apply transitions,
    and commit clean task diffs.
@@ -204,7 +218,8 @@ For harness and process work, the common command surface is:
 - `npm run workflow:preflight -- --task <task-id>`
 - `npm run workflow:preflight -- --process <surface> --stage review`
 - `codex`
-- `codex -p autopilot -c mcp_servers.context7.enabled=false exec`
+- `codex -p autopilot ...` (see `## Autopilot Checklist` for the effective
+  startup command)
 - `codex review --uncommitted`
 - `codex review --base <branch>`
 - `codex review --commit <sha>`
