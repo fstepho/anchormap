@@ -1,0 +1,19 @@
+{
+	"id": "c8_locale_collation_order",
+	"family": "C-metamorphic",
+	"purpose": "C8 scan fixture whose UTF-8 paths sort differently under locale collation and binary UTF-8 order.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["metamorphic", "scan", "locale"],
+	"groups": ["c8", "m9"]
+}
