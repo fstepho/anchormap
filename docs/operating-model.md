@@ -1023,16 +1023,8 @@ Entrées autorisées exhaustives pour la bug-finding review :
 
 Sur le chemin `codex review`, l'autopilot peut rediriger stdout/stderr vers un
 fichier temporaire hors repository et ne remonter au coordinateur qu'un footer
-borné de cette sortie, par exemple :
-
-```sh
-review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
-codex review --uncommitted >"$review_log" 2>&1
-review_rc=$?
-printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
-tail -n 220 "$review_log"
-exit "$review_rc"
-```
+borné de cette sortie. Le snippet opérateur correspondant vit dans
+`docs/agent-loop.md` pour éviter la duplication de recettes de commande.
 
 Cette forme reste une surface native `codex review`. La redirection ne doit pas
 devenir un wrapper de review : elle ne parse pas les findings, ne synthétise pas

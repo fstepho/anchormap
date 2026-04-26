@@ -1,102 +1,101 @@
 ---
 name: implement-task
-description: Implement exactly one task from docs/tasks.md when the user names a specific task ID (Tn.m product task or Sn spike, e.g. "T1.1", "T0.0a", "S3", "implement T2.3"). Product-task IDs may include a lowercase suffix (e.g. T0.0a). Spike IDs use the Sn form (e.g. S1-S6). Spike work is governed by docs/operating-model.md §17 - a spike produces a report, not hidden product code. Do not use for review, task-plan edits, picking the next task, or any request without an explicit task ID.
+description: Implement exactly one explicit task from docs/tasks.md when the user names a task ID (Tn.m, optional lowercase suffix such as T0.0a, or Sn spike). Use for bounded implementation only. Do not use for review, task-plan edits, picking the next task, or requests without an explicit task ID.
 ---
 
-You are the orchestrator for the target task.
+You are the orchestrator for one target task.
 
-1. Identify the task ID from the user's request. Accepted forms: `Tn.m` product task (optionally with a lowercase suffix, e.g. `T0.0a`) or `Sn` spike (e.g. `S3`). For spikes, apply the `docs/operating-model.md` §17 discipline: produce a bounded report with question, protocol, result, decision, and consequences - not hidden product implementation. If no explicit ID is provided, stop and ask.
-2. Read, in order:
-   - `docs/operating-model.md`
-   - `docs/tasks.md`
-3. Locate both:
-   - the task block under the heading `### <TASK_ID> ` (up to the next `### ` or `## `)
-   - the `## Execution State` section for current progress context
-4. Choose the reading mode:
-   - `standard` for ordinary bounded implementation: read only the `docs/contract.md`, `docs/design.md`, and `docs/evals.md` sections referenced by the task block.
-   - `critical` for parser, renderer, CLI boundary, filesystem mutation, packaging, test-harness behavior, repo-local review/orchestration mechanics, `docs/contract.md`, or `docs/evals.md`: establish authoritative coverage of the relevant `docs/contract.md`, `docs/design.md`, `docs/evals.md`, plus relevant accepted ADRs in `docs/adr/`. Full-document reading is appropriate when the task edits normative docs, section boundaries are unclear, references are incomplete, authorities conflict, or a concrete failure/review finding requires broader context; it is not required by default.
-5. If the task block does not provide enough contract/design/eval references to support standard mode, classify the gap before patching instead of guessing.
-6. Read `AGENTS.md` as an entry-point map only. If it conflicts with the normative docs above, the normative docs win.
-7. If a scope question remains open after the required reading, consult `docs/brief.md` to arbitrate product scope. Do not use it to invent behavior.
-8. Use `## Execution State` for orientation only. Do not switch tasks based on it. The explicit task ID is authoritative.
-9. Before the first implementation edit, ensure `docs/tasks.md` `## Execution State` identifies the target task in `Current active task`. Apply this routine start-of-task sync directly in the same bounded patch; do not bounce to `update-tasks` just for cursor alignment. If you edit `docs/tasks.md`, run `validate-tasks` before returning. Routine task cursor or task-state edits do not require `npm run test:docs` unless the same patch changes repo-local process-doc tooling or command-surface guidance.
+## Intake
 
-Before coding:
-- state the target task, the relevant contract/design/eval refs, and the smallest checks that should fail or pass
-- state the reading mode and the authority coverage used for that mode; after this statement, broaden reading only when a concrete signal requires it, such as ambiguity, missing references, conflicting docs, a failing check, a review finding, or an unexpectedly non-local invariant
-- state which repo-local static checks apply to the files you expect to touch, and which of them must pass before you return `needs_review`
-- choose applicable checks from the command surface in `docs/agent-loop.md`; prefer the targeted product, harness, docs, or fixture command for early iteration, then run the full applicable handoff checks before returning `needs_review`
-- state any `docs/brief.md` or `docs/adr/` refs used for scope or architectural binding when they are applicable to the task
-- if this is a process-doc or ADR task and the task block does not name contract/design/eval refs, identify the relevant operating-model and ADR refs instead, classify the change as process maintenance, and bound the files being changed
+1. Identify the task ID from the request. Accepted forms are `Tn.m`, optional
+   lowercase suffix, and `Sn`. If no explicit ID is provided, stop and ask.
+2. Read `docs/operating-model.md`, then `docs/tasks.md`.
+3. Locate `docs/tasks.md` `## Execution State` and the task block headed
+   `### <TASK_ID> `.
+4. Read `AGENTS.md` as an entry map only. Normative docs win on conflict.
 
-Execution model:
-- keep `docs/tasks.md` and the normative docs as the only source of truth
-- do not create a parallel planning system
-- implementation is local in the main agent by default
-- delegate only if the runtime explicitly provides subagents and the task is large or risky enough that a bounded subagent materially improves the result
-- if delegating, spawn at most one implementation subagent, keep the same sandbox and approval settings, pass `fork_context: false` explicitly when using `spawn_agent`, pass an explicit `reasoning_effort`, and restrict work to the target task
-- do not delegate implementation with a full-history fork or context-inheriting subagent; if a fresh task-scoped subagent cannot be launched, keep implementation local or return `blocked`
-- if an implementation subagent is alive, do not edit files in parallel in the main agent
-- if a subagent times out, either wait again or close it before making local edits
-- do not spawn a reviewer yet
-- do not commit from any implementation pass
-- if a delegated subagent hits a blocking issue, have it return a single classified deviation before more edits are attempted
-- treat the broader workflow state vocabulary as exactly: `implementing`, `needs_review`, `needs_rework`, `blocked`, `done`
-- for this skill's own final output, the only valid next states after an implementation pass are `needs_review` or `blocked`
-- do not return `needs_review` until the repo-local static checks applicable to the touched files have been run on the post-patch state and pass; when no such check exists for that surface, say so explicitly
-- if an applicable static check fails only with deterministic repo formatter or import-order diagnostics on files already touched by this task, apply the bounded mechanical formatter/import-order correction, rerun the failed check, and return `blocked` only if the check still fails, the formatter changes unrelated files, or any remaining diagnostic is not purely mechanical
-- routine `docs/tasks.md` execution-state edits for start-of-task alignment may be applied directly here
-- if the pass ends in `blocked` because of a structural task-plan problem or a classified deviation that must be recorded in `docs/tasks.md`, return a bounded hand-off for `update-tasks`; do not broaden scope by editing the task plan from this skill
-- do not mark the task `done` from this skill
+## Authority Coverage
 
-Constraints:
-- do not modify `docs/contract.md`
-- do not modify product scope
-- do not implement adjacent tasks
-- do not add behavior not required by the task
-- keep the patch minimal
-- add or update only tests/fixtures required by this task
-- preserve stdout/stderr/exit code discipline
-- preserve mutation policy
-- preserve the documentary hierarchy:
-  - `contract.md` for observable behavior
-  - `evals.md` for verification gates and fixtures
-  - `brief.md` for scope
-  - `design.md` for compatible implementation
-  - `operating-model.md` for production method
-- if a deviation is found, classify it before changing code, fixtures, or docs, using the `docs/operating-model.md` §10 taxonomy
+Use `docs/agent-loop.md` Reading Modes:
 
-Delegated-subagent contract (if used):
-- the subagent prompt must satisfy `docs/operating-model.md` §9.3 and include:
-  - the current phase
-  - the target task
-  - the allowed files or targeted components
-  - the forbidden changes
-  - the relevant contract sections
-  - any relevant `docs/brief.md` or accepted ADR refs when they materially bound scope or implementation strategy
-  - the expected fixtures or tests
-  - the expected output format
-  - the allowed freedom level
-  - the selected `reasoning_effort` and a short reason tied to the surface or invariant
-- implement the target task only
-- keep the patch minimal
-- add or update only tests/fixtures required by this task
-- run the smallest relevant check early
-- rerun the repo-local static checks applicable to the touched files before returning success to the orchestrator
-- stop on the first blocking failure, after applying the allowed bounded mechanical formatter/import-order correction when the failed check is purely auto-fixable on files already touched by the task
-- return to the orchestrator with:
-  1. files changed
-  2. behavior implemented
-  3. tests/fixtures run
-  4. risks
-  5. any spec ambiguity encountered
-  6. classification of any deviation per `docs/operating-model.md` §10
+- `standard`: read only the contract, design, and eval sections referenced by
+  the task block.
+- `critical`: establish authoritative coverage of the relevant contract,
+  design, eval, and accepted ADR authority.
 
-Orchestrator return:
+If a task block lacks enough traceability for the selected mode, classify the
+gap before patching. Consult `docs/brief.md` only to arbitrate an open scope
+question. For a spike, apply `docs/operating-model.md` §17 and produce the
+bounded report it requires, not hidden product implementation.
+
+For an explicit process-doc or ADR closure task whose task block names
+operating-model or ADR refs instead of product contract/design/eval refs,
+classify the pass as process maintenance, identify those operating-model/ADR
+refs as the binding authority, and bound the files being changed before
+patching.
+
+## Before Editing
+
+State:
+
+- target task and reading mode;
+- binding contract/design/eval refs, or operating-model/ADR refs for a
+  process-doc or ADR closure task;
+- smallest early check and full applicable handoff checks;
+- expected patch boundary.
+
+Before the first implementation edit, ensure `docs/tasks.md`
+`## Execution State` identifies the target task in `Current active task`.
+Apply that routine sync directly if needed. If you touch `docs/tasks.md`, run
+`validate-tasks` before returning.
+
+## Mutation Bounds
+
+- Do not modify `docs/contract.md`.
+- Do not modify product scope or implement adjacent tasks.
+- Do not add behavior without task, contract, and eval traceability.
+- Keep patches minimal and limited to code, tests, fixtures, or docs required
+  by the target task.
+- Preserve stdout/stderr/exit-code and filesystem-mutation discipline.
+- Do not commit and do not mark the task `done` from this skill.
+- Return `needs_review` only after applicable repo-local static checks pass on
+  the post-patch state, or explicitly state that no static check covers the
+  touched surface.
+
+If an applicable static check fails only with deterministic formatter or
+import-order diagnostics on files already touched by this task, apply the
+bounded mechanical correction and rerun that check. Return `blocked` only if
+the check still fails, the correction touches unrelated files, or the remaining
+diagnostic is not mechanical.
+
+## Delegation
+
+Implementation is local by default. Delegate only when the runtime provides a
+fresh task-scoped subagent and delegation materially helps.
+
+If using `spawn_agent`, pass `fork_context: false` and an explicit
+`reasoning_effort`. `fork_context: true` is forbidden for delegated
+implementation or rework. While a subagent is alive, do not edit files in
+parallel in the main agent. Close or wait for the subagent before local edits.
+
+The subagent prompt must name the task, allowed files or components, forbidden
+changes, relevant refs, expected checks, expected output, and selected
+`reasoning_effort`.
+
+## Blocked Path
+
+Classify every deviation with `docs/operating-model.md` §10 before further
+patching. If a structural task-plan change or classified deviation must be
+recorded in `docs/tasks.md`, return a bounded handoff for `update-tasks`
+instead of broadening this skill.
+
+## Return
+
 1. files changed
-2. relevant contract/design/eval refs identified before implementation, plus any `docs/brief.md` or ADR refs used for scope or architectural binding (or operating-model/ADR refs for a process-doc task)
+2. refs identified before implementation
 3. smallest checks selected
-4. implementation result
-5. current task state: `needs_review` or `blocked`
-6. execution-state update applied directly in `docs/tasks.md`, or bounded hand-off for `update-tasks` when structural task-plan maintenance is still required
-7. delegated subagent `reasoning_effort` when delegation used a level other than `medium`
+4. checks executed
+5. implementation result
+6. current task state: `needs_review` or `blocked`
+7. execution-state sync applied, or bounded handoff for `update-tasks`
+8. delegated subagent `reasoning_effort`, if non-default or relevant

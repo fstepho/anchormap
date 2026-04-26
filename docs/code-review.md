@@ -5,46 +5,33 @@ Status: helper note, durable repo-local guidance for fresh Codex review sessions
 Scope: one bounded task diff, or one bounded process-maintenance diff, at a time
 
 Precedence: if this file conflicts with `docs/operating-model.md`,
-`docs/contract.md`, `docs/design.md`, `docs/evals.md`, or `docs/tasks.md`, the
-normative documents win.
+`docs/contract.md`, `docs/design.md`, `docs/evals.md`, `docs/tasks.md`, or an
+accepted ADR, the authoritative document wins.
 
 ## Purpose
 
 This file captures the repo-specific review criteria that should stay durable
-across Codex review sessions.
-
-Keep this guidance here, with entry pointers from `AGENTS.md`, not in ad hoc
-runtime prompts.
+across fresh Codex review sessions. The full review protocol, authorized review
+surfaces, `review decision` artifact, and autopilot policy live in
+`docs/operating-model.md` §14.2 and §18.1.
 
 ## Review Input
 
 Review exactly one task-scoped cumulative diff, or one bounded
 process-maintenance diff that does not change runtime behavior.
 
-Read, in order:
-
-1. `docs/operating-model.md`
-2. `docs/contract.md`
-3. `docs/design.md`
-4. `docs/evals.md`
-5. `docs/tasks.md`
-
-Then identify:
+Identify:
 
 - the target task ID and relevant task block in `docs/tasks.md`, or the
   bounded process-maintenance surface;
 - the relevant contract, design, and eval references, or the relevant
   operating-model / ADR references for process maintenance;
-- the accepted ADRs when the diff touches parser, renderer, CLI boundary,
-  filesystem mutation, packaging, test-harness behavior, or repo-local
-  review/orchestration mechanics.
+- accepted ADRs when the changed surface requires critical authority coverage.
 
 If the review was launched without an explicit task ID, first determine whether
-the diff is a bounded process-maintenance diff. If it is, use that process
-surface as the review scope. Otherwise, use `docs/tasks.md`
-`## Execution State` -> `Current active task` as the task anchor. If neither a
-bounded process surface nor a usable active task can be identified, stop rather
-than guess.
+the diff is bounded process maintenance. If it is not, anchor on `docs/tasks.md`
+`## Execution State` -> `Current active task`. Stop instead of guessing when no
+bounded process surface or usable active task can be identified.
 
 ## Review Method
 
@@ -53,103 +40,45 @@ than guess.
 - Keep the review bounded to the target task or process-maintenance surface.
   Do not propose new product features.
 - List the new invariants introduced by the diff.
-- Map each new invariant to either:
-  - an existing repo check that already covers it; or
-  - a reviewer-derived falsification check.
+- Map each new invariant to an existing repo check or to a reviewer-derived
+  falsification check.
 - If a new invariant remains unchecked, the review is not clean.
-- For harness or tooling diffs, explicitly pressure-test:
-  - collision risk;
-  - rerun and overwrite behavior;
-  - isolation between runs, fixtures, or summaries;
-  - misleading or incomplete archived artifacts.
-- For repo-local review/orchestration diffs, explicitly pressure-test:
-  - whether `AGENTS.md` remains an entry map rather than a competing authority;
-  - whether detailed process rules live in `docs/operating-model.md`,
-    `docs/agent-loop.md`, or `docs/code-review.md` rather than being duplicated
-    in `AGENTS.md`;
-  - whether the standard path still identifies contract/design/eval refs before patching;
-  - whether critical surfaces still require authoritative coverage of the
-    relevant contract, design, eval, and accepted ADR authority without
-    imposing full-document rereading by default;
-  - whether process docs describe the intended stable rule instead of preserving
-    implementation scars, failed attempts, or post-mortem rationale that is not
-    needed to execute the workflow;
-  - whether fresh Codex review remains the only bug-finding review engine.
+- For harness or tooling diffs, pressure-test collision risk, rerun and
+  overwrite behavior, isolation between runs, and misleading or incomplete
+  archived artifacts.
+- For repo-local review/orchestration diffs, pressure-test whether:
+  - `AGENTS.md` remains an entry map rather than a competing authority;
+  - durable process rules still live in `docs/operating-model.md`,
+    `docs/agent-loop.md`, or `docs/code-review.md`;
+  - standard mode still identifies contract/design/eval refs before patching;
+  - critical surfaces still require authoritative coverage without imposing
+    full-document rereading by default;
+  - process docs describe stable rules instead of implementation scars;
+  - fresh Codex review remains the only bug-finding review engine.
 - Treat Biome `noExcessiveLinesPerFile` diagnostics as maintainability review
-  signals. For a modified file above its configured threshold, request a
-  bounded split or an explicit justification when the size reflects mixed
-  responsibilities or makes review non-local. Do not require out-of-scope
-  refactors only to reduce line count, and do not promote the rule from `warn`
-  to `error` until the repository has an explicit clean baseline for that
-  category.
+  signals. Request a bounded split or explicit justification only when file size
+  reflects mixed responsibilities or makes review non-local.
 
 ## Review Output
 
-A fresh Codex review session is the authoritative bug-finding pass.
+Keep the review output findings-focused and easy for the coordinator to route.
 
-Keep the review output bounded and findings-focused.
-
-Prefer output that makes the following easy to recover:
+Prefer output that exposes:
 
 - the target task ID or process-maintenance surface;
-- the review mode when it is clear from the surface;
-- the checks or falsification steps actually exercised;
+- the review mode when clear from the surface;
+- checks or falsification steps actually exercised;
 - findings with file and line references when applicable;
 - an explicit no-findings statement when the review is clean.
 
-Wait for the final reviewer verdict.
-Do not classify `tooling problem` from review silence alone while the review
-process is still alive.
+Wait for the final reviewer verdict. Do not classify `tooling problem` from
+review silence alone while the review process is still alive.
 
-After the findings are available, emit a `review decision` before any code
-change:
-
-- `clean verdict`
-- `actionable findings`
-- `blocked`
-
-The `review decision` records repo-local classification, `blocking` /
-`non-blocking`, and task-state routing as defined by
-`docs/operating-model.md` and `docs/agent-loop.md`.
-Its official home is the coordinator handoff or PR comment equivalent, except
-when a fresh interactive review session emits it directly.
-`docs/tasks.md` records only the resulting task-state or open-deviation effect
-when the loop requires it; it is not a full decision log.
-For a clean process-maintenance review, the routing must not mark any task
-done or update `docs/tasks.md` unless the maintenance explicitly changed the
-task plan.
-
-If the entry surface is a fresh interactive `codex` session, the same session
-may emit the `review decision`.
-
-If the entry surface is `codex review`, emit the `review decision` in the
-coordinator handoff or PR comment equivalent immediately after reading the
-review output.
-
-In autopilot, the only review commands are `codex review --uncommitted`,
-`codex review --base <branch>`, and `codex review --commit <sha>`. The
-coordinator may redirect stdout/stderr from those native commands to a temporary
-file outside the repository and read only a bounded footer, such as:
-
-```sh
-review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
-codex review --uncommitted >"$review_log" 2>&1
-review_rc=$?
-printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
-tail -n 220 "$review_log"
-exit "$review_rc"
-```
-
-This redirection is not a review wrapper, parser, or second reviewer engine. It
-must not synthesize findings or read Codex session files. If the bounded footer
-does not contain a usable native verdict or enough native finding detail for
-routing, stop instead of loading the complete transcript into the coordinator.
-After the decision, the coordinator must keep only compact review state:
-verdict, findings count, finding titles and locations, checks, stop reason, and
-the review decision. Full finding bodies are retained only for actionable
-findings and only until the corresponding rework handoff is complete. Complete
-redirected transcripts are temporary diagnostic artifacts outside the worktree,
-not repo state or normal coordinator context.
+For a fresh interactive `codex` review session, emit the `review decision`
+specified by `docs/operating-model.md` §14.2 after findings and before any code
+change. For `codex review`, provide the native findings and verdict; the
+coordinator emits the `review decision` in the handoff or PR comment
+equivalent.
 
 ## Non-Goals
 
