@@ -175,6 +175,7 @@ test("package.json exposes the stable repo-local check and harness command surfa
 		scripts["audit:reproducibility:update"],
 		"node scripts/reproducibility-audit.mjs --write",
 	);
+	assert.equal(scripts["release:gates"], "node scripts/release-gate-aggregator.mjs");
 	assert.equal(scripts.test, "npm run test:unit");
 	assert.equal(
 		scripts["test:docs"],
@@ -450,6 +451,26 @@ test("release benchmark validator rejects stale aggregates that differ from meas
 
 	assert.equal(result.status, 1);
 	assert.match(result.stderr, /small p95_wall_clock_ms does not match measured runs/);
+});
+
+test("release benchmark validator runs validation when invoked through a symlink", () => {
+	const tempDir = mkdtempSync(join(tmpdir(), "anchormap-bench-symlink-test-"));
+	const reportPath = join(tempDir, "gate-f-report.json");
+	const scriptSymlinkPath = join(tempDir, "validate-release-benchmark-report.mjs");
+	try {
+		symlinkSync(VALIDATE_BENCHMARK_REPORT_PATH, scriptSymlinkPath);
+		writeFileSync(reportPath, "{}\n", "utf8");
+
+		const result = spawnSync(process.execPath, [scriptSymlinkPath, reportPath], {
+			cwd: REPO_ROOT,
+			encoding: "utf8",
+		});
+
+		assert.equal(result.status, 1);
+		assert.match(result.stderr, /benchmark-report: schema_version must be 1/);
+	} finally {
+		rmSync(tempDir, { recursive: true, force: true });
+	}
 });
 
 test("release benchmark validator rejects forged gated corpus verdicts", () => {

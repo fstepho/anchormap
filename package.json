@@ -27,6 +27,7 @@
 		"bench:validate:artifacts": "node scripts/validate-release-benchmark-report.mjs --require-supported-platform-artifacts reports/t9.4",
 		"audit:reproducibility": "node scripts/reproducibility-audit.mjs",
 		"audit:reproducibility:update": "node scripts/reproducibility-audit.mjs --write",
+		"release:gates": "node scripts/release-gate-aggregator.mjs",
 		"check:goldens": "npm run test:fixtures -- --goldens-only",
 		"format": "biome format --write src package.json tsconfig.json biome.json",
 		"lint": "biome check src package.json tsconfig.json biome.json",
