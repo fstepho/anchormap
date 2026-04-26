@@ -107,4 +107,5 @@ jobs:
           path: |
             reports/t9.3/linux-x86_64/**
             fixtures/.runs/**
+          include-hidden-files: true
           if-no-files-found: error
