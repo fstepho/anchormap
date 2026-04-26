@@ -96,9 +96,9 @@
   - `T9.1 — Implement metamorphic tests C1 through C6`
   - `T9.2 — Implement determinism and isolation tests C7 through C12`
 - Blocked tasks:
-  - `T9.3 — Execute supported cross-platform matrix`: blocking `tooling problem`; native Linux x86_64 runner/evidence unavailable from the current Darwin arm64 autopilot session.
+  - `T9.3 — Execute supported cross-platform matrix`: blocking `tooling problem`; fresh native `codex review --commit 13069b5` was rejected by the approval reviewer before task completion.
 - Open deviations:
-  - `T9.3`: blocking `tooling problem`; `T9.3` requires native Linux x86_64 matrix evidence and native Linux atomic-write/rename-boundary evidence, but the fresh implementation session ran on Darwin arm64.
+  - `T9.3`: blocking `tooling problem`; Linux x86_64 CI evidence and macOS arm64 local checks passed, but the required fresh Codex review could not be launched because the approval reviewer rejected `codex review --commit 13069b5`.
 
 ## Execution principles
 
