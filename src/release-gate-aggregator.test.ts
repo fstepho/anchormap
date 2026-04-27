@@ -186,6 +186,72 @@ function createTempReleaseEvidence(): TempReleaseEvidence {
 	return { rootDir, fixturesRoot, evidenceDir, outDir };
 }
 
+function writePublicationEvidence(evidenceDir: string): void {
+	const tarballFile = "anchormap-1.0.0.tgz";
+	const npmIntegrity =
+		"sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+	const npmShasum = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+	const sha256 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+	writeJson(resolve(evidenceDir, "consumer-lockback.json"), {
+		schema_version: 1,
+		task: "T10.5",
+		package_name: "anchormap",
+		package_version: "1.0.0",
+		mechanism: "npm-shrinkwrap.json",
+		runtime_closure_matches_gate_g: true,
+		shrinkwrap: {
+			included_in_package: true,
+			path: "npm-shrinkwrap.json",
+		},
+	});
+	writeJson(resolve(evidenceDir, "t10.5-tarball-artifact.json"), {
+		schema_version: 1,
+		task: "T10.5",
+		package_name: "anchormap",
+		package_version: "1.0.0",
+		tarball_file: tarballFile,
+		included_files: ["package.json", "npm-shrinkwrap.json", "bin/anchormap", "dist/anchormap.js"],
+		npm_integrity: npmIntegrity,
+		npm_shasum: npmShasum,
+		sha256,
+		consumer_lockback_evidence: true,
+		release_evidence_links: {
+			m9_release_gate_report: "reports/t9.6/release-report.json",
+			t9_7_entropy_review: "reports/t9.7/entropy-review.json",
+			t10_3_installed_artifact_report: "reports/t10.3/installed-artifact-report.json",
+			checksum_evidence: "reports/t10.5/anchormap-1.0.0.sha256",
+		},
+	});
+	writeJson(resolve(evidenceDir, "t10.5-publication-dry-run.json"), {
+		schema_version: 1,
+		task: "T10.5",
+		status: "pass",
+		tarball_file: tarballFile,
+	});
+}
+
+function writeT10_6PublicationEvidence(evidenceDir: string): void {
+	const npmIntegrity =
+		"sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+	const npmShasum = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+	const sha256 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+	writeJson(resolve(evidenceDir, "t10.6-publication-evidence.json"), {
+		schema_version: 1,
+		task: "T10.6",
+		registry_coordinate: "anchormap@1.0.0",
+		tarball_file: "anchormap-1.0.0.tgz",
+		dist_integrity: npmIntegrity,
+		dist_shasum: npmShasum,
+		sha256,
+		t10_5_tarball_artifact_report: "reports/t9.6/artifacts/t10.5-tarball-artifact.json",
+		post_publish_install_verification: {
+			status: "pass",
+			report: "reports/t10.6/post-publish-install.json",
+		},
+		regenerated_tarball: false,
+	});
+}
+
 function writeFixtureManifest(fixturesRoot: string, fixture: ReleaseGateFixture): void {
 	writeJson(resolve(fixturesRoot, fixture.family, fixture.id, "manifest.json"), {
 		id: fixture.id,
@@ -269,7 +335,16 @@ test("release gate aggregator writes a deterministic passing release report and 
 			}>;
 			publication_checklist: {
 				verdict: string;
-				required_artifacts: Array<{ name: string; status: string }>;
+				pre_publication_required_artifacts: Array<{ name: string; status: string }>;
+				post_m9_publication_evidence_artifacts: Array<{ name: string; status: string }>;
+				post_publication_evidence_artifacts: Array<{ name: string; status: string }>;
+				publication_evidence: {
+					status: string;
+					consumer_lockback: { status: string };
+					t10_5_tarball_artifact: { status: string };
+					t10_5_publication_dry_run: { status: string };
+					t10_6_publication_evidence: { status: string };
+				};
 			};
 		}>(resolve(evidence.outDir, "release-report.json"));
 
@@ -294,7 +369,7 @@ test("release gate aggregator writes a deterministic passing release report and 
 		);
 		assert.equal(report.publication_checklist.verdict, "pass");
 		assert.deepEqual(
-			report.publication_checklist.required_artifacts.map((artifact) => [
+			report.publication_checklist.pre_publication_required_artifacts.map((artifact) => [
 				artifact.name,
 				artifact.status,
 			]),
@@ -309,6 +384,39 @@ test("release gate aggregator writes a deterministic passing release report and 
 				["entropy_review", "archived"],
 			],
 		);
+		assert.deepEqual(
+			report.publication_checklist.post_m9_publication_evidence_artifacts.map((artifact) => [
+				artifact.name,
+				artifact.status,
+			]),
+			[
+				["consumer_lockback", "pending"],
+				["t10_5_tarball_artifact", "pending"],
+				["t10_5_publication_dry_run", "pending"],
+				["t10_6_publication_evidence", "pending"],
+			],
+		);
+		assert.deepEqual(
+			report.publication_checklist.post_publication_evidence_artifacts,
+			report.publication_checklist.post_m9_publication_evidence_artifacts,
+		);
+		assert.equal(report.publication_checklist.publication_evidence.status, "pass");
+		assert.equal(
+			report.publication_checklist.publication_evidence.consumer_lockback.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_5_tarball_artifact.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_5_publication_dry_run.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_6_publication_evidence.status,
+			"pending",
+		);
 		assert.ok(
 			readFileSync(resolve(evidence.outDir, "release-report.md"), "utf8").includes("Gate A"),
 		);
@@ -316,6 +424,114 @@ test("release gate aggregator writes a deterministic passing release report and 
 			readFileSync(resolve(evidence.outDir, "artifacts", "fixture-report.json"), "utf8").includes(
 				"fx01_scan_min_clean",
 			),
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator validates present post-publication evidence without blocking pre-publication absence", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writePublicationEvidence(evidence.evidenceDir);
+		writeT10_6PublicationEvidence(evidence.evidenceDir);
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 0, result.stderr);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				post_m9_publication_evidence_artifacts: Array<{ name: string; status: string }>;
+				publication_evidence: {
+					status: string;
+					t10_6_publication_evidence: { status: string };
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		assert.equal(report.release_verdict, "pass");
+		assert.equal(report.publication_checklist.verdict, "pass");
+		assert.deepEqual(
+			report.publication_checklist.post_m9_publication_evidence_artifacts.map((artifact) => [
+				artifact.name,
+				artifact.status,
+			]),
+			[
+				["consumer_lockback", "archived"],
+				["t10_5_tarball_artifact", "archived"],
+				["t10_5_publication_dry_run", "archived"],
+				["t10_6_publication_evidence", "archived"],
+			],
+		);
+		assert.equal(report.publication_checklist.publication_evidence.status, "pass");
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_6_publication_evidence.status,
+			"pass",
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator keeps the M9 verdict independent of post-M9 publication evidence", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		rmSync(resolve(evidence.evidenceDir, "consumer-lockback.json"), { force: true });
+		rmSync(resolve(evidence.evidenceDir, "t10.5-tarball-artifact.json"), { force: true });
+		rmSync(resolve(evidence.evidenceDir, "t10.5-publication-dry-run.json"), { force: true });
+		rmSync(resolve(evidence.evidenceDir, "t10.6-publication-evidence.json"), { force: true });
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 0, result.stderr);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				missing_blocking_artifacts: string[];
+				post_m9_publication_evidence_artifacts: Array<{ name: string; status: string }>;
+				publication_evidence: {
+					status: string;
+					consumer_lockback: { status: string };
+					t10_5_tarball_artifact: { status: string };
+					t10_5_publication_dry_run: { status: string };
+					t10_6_publication_evidence: { status: string };
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+
+		assert.equal(report.release_verdict, "pass");
+		assert.equal(report.publication_checklist.verdict, "pass");
+		assert.deepEqual(report.publication_checklist.missing_blocking_artifacts, []);
+		assert.deepEqual(
+			report.publication_checklist.post_m9_publication_evidence_artifacts.map((artifact) => [
+				artifact.name,
+				artifact.status,
+			]),
+			[
+				["consumer_lockback", "pending"],
+				["t10_5_tarball_artifact", "pending"],
+				["t10_5_publication_dry_run", "pending"],
+				["t10_6_publication_evidence", "pending"],
+			],
+		);
+		assert.equal(report.publication_checklist.publication_evidence.status, "pass");
+		assert.equal(
+			report.publication_checklist.publication_evidence.consumer_lockback.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_5_tarball_artifact.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_5_publication_dry_run.status,
+			"pending",
+		);
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_6_publication_evidence.status,
+			"pending",
 		);
 	} finally {
 		rmSync(evidence.rootDir, { recursive: true, force: true });
@@ -1644,6 +1860,201 @@ test("release gate aggregator fails closed when entropy review reports unresolve
 		assert.ok(
 			report.publication_checklist.entropy_review.validation_errors.includes(
 				"entropy review release_candidate_review_set.unclassified_drift_remaining must be false",
+			),
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator validates present T10 package identity without requiring T10 evidence", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writePublicationEvidence(evidence.evidenceDir);
+		const lockbackPath = resolve(evidence.evidenceDir, "consumer-lockback.json");
+		const tarballPath = resolve(evidence.evidenceDir, "t10.5-tarball-artifact.json");
+		const lockback = readJson<Record<string, unknown>>(lockbackPath);
+		const tarball = readJson<Record<string, unknown>>(tarballPath);
+		lockback.package_name = "other";
+		tarball.package_version = "1.0.1";
+		writeJson(lockbackPath, lockback);
+		writeJson(tarballPath, tarball);
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				publication_evidence: {
+					status: string;
+					consumer_lockback: { status: string };
+					t10_5_tarball_artifact: { status: string };
+					validation_errors: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		const publicationEvidence = report.publication_checklist.publication_evidence;
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(report.publication_checklist.verdict, "fail");
+		assert.equal(publicationEvidence.status, "fail");
+		assert.equal(publicationEvidence.consumer_lockback.status, "fail");
+		assert.equal(publicationEvidence.t10_5_tarball_artifact.status, "fail");
+		assert.ok(
+			publicationEvidence.validation_errors.includes(
+				"consumer lockback package_name must be anchormap",
+			),
+		);
+		assert.ok(
+			publicationEvidence.validation_errors.includes(
+				"T10.5 tarball artifact package_version must be 1.0.0",
+			),
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator validates T10.6 package coordinate without owning artifact proof", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writePublicationEvidence(evidence.evidenceDir);
+		writeT10_6PublicationEvidence(evidence.evidenceDir);
+		const publicationPath = resolve(evidence.evidenceDir, "t10.6-publication-evidence.json");
+		const publication = readJson<Record<string, unknown>>(publicationPath);
+		publication.registry_coordinate = "other@1.0.0";
+		publication.tarball_file = "anchormap-1.0.0-rebuilt.tgz";
+		publication.dist_shasum = "cccccccccccccccccccccccccccccccccccccccc";
+		writeJson(publicationPath, publication);
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				publication_evidence: {
+					status: string;
+					t10_6_publication_evidence: { status: string };
+					validation_errors: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		const publicationEvidence = report.publication_checklist.publication_evidence;
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(report.publication_checklist.verdict, "fail");
+		assert.equal(publicationEvidence.status, "fail");
+		assert.equal(publicationEvidence.t10_6_publication_evidence.status, "fail");
+		assert.ok(
+			publicationEvidence.validation_errors.includes(
+				"T10.6 registry_coordinate package name must be anchormap",
+			),
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator leaves T10.5 implementation proof obligations to later tasks", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writePublicationEvidence(evidence.evidenceDir);
+		const tarballPath = resolve(evidence.evidenceDir, "t10.5-tarball-artifact.json");
+		const tarball = readJson<Record<string, unknown>>(tarballPath);
+		tarball.included_files = ["package.json"];
+		delete tarball.release_evidence_links;
+		writeJson(tarballPath, tarball);
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 0, result.stderr);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				publication_evidence: {
+					status: string;
+					t10_5_tarball_artifact: { status: string };
+					validation_errors: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		assert.equal(report.release_verdict, "pass");
+		assert.equal(report.publication_checklist.verdict, "pass");
+		assert.equal(report.publication_checklist.publication_evidence.status, "pass");
+		assert.equal(
+			report.publication_checklist.publication_evidence.t10_5_tarball_artifact.status,
+			"pass",
+		);
+		assert.deepEqual(report.publication_checklist.publication_evidence.validation_errors, []);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator records missing post-M9 publication artifacts as pending", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		rmSync(resolve(evidence.evidenceDir, "t10.5-publication-dry-run.json"), { force: true });
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 0, result.stderr);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				missing_blocking_artifacts: string[];
+				publication_evidence: {
+					status: string;
+					t10_5_publication_dry_run: { status: string };
+					validation_errors: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		const publicationEvidence = report.publication_checklist.publication_evidence;
+		assert.equal(report.release_verdict, "pass");
+		assert.equal(report.publication_checklist.verdict, "pass");
+		assert.deepEqual(report.publication_checklist.missing_blocking_artifacts, []);
+		assert.equal(publicationEvidence.status, "pass");
+		assert.equal(publicationEvidence.t10_5_publication_dry_run.status, "pending");
+		assert.deepEqual(publicationEvidence.validation_errors, []);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator fails present null post-M9 publication evidence", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writeJson(resolve(evidence.evidenceDir, "consumer-lockback.json"), null);
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				publication_evidence: {
+					status: string;
+					consumer_lockback: { status: string };
+					validation_errors: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(report.publication_checklist.verdict, "fail");
+		assert.equal(report.publication_checklist.publication_evidence.status, "fail");
+		assert.equal(
+			report.publication_checklist.publication_evidence.consumer_lockback.status,
+			"fail",
+		);
+		assert.ok(
+			report.publication_checklist.publication_evidence.validation_errors.includes(
+				"consumer lockback evidence must be a JSON object",
 			),
 		);
 	} finally {

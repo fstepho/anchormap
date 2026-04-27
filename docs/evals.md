@@ -651,7 +651,13 @@ Passe si et seulement si :
 
 ## 12. Checklist de publication technique
 
-La checklist suivante ne remplace pas les gates ; elle vérifie que les artefacts de preuve de release existent.
+La checklist suivante ne remplace pas les gates ; elle sépare les preuves
+obligatoires du verdict T9.6/M9 des preuves de publication produites ensuite
+en M10. Le verdict T9.6/M9 doit rester exécutable avant les artefacts T10.2,
+T10.5 et T10.6. L'absence de preuve T10 doit rester `pending` ou
+`not_applicable`, jamais un échec du verdict M9.
+
+Preuves obligatoires pour le verdict T9.6/M9 :
 
 - matrice supportée explicitée ;
 - rapport de résultats des fixtures B archivé, avec statut séparé pour B-decodage et B-cli ;
@@ -659,7 +665,43 @@ La checklist suivante ne remplace pas les gates ; elle vérifie que les artefact
 - rapports cross-platform archivés pour Linux x86_64 et macOS arm64 ;
 - résultats de performance `small`, `medium` et `large` archivés ;
 - audit des dépendances contractuelles archivé ;
-- liste des goldens modifiés depuis la release précédente archivée avec classification de chaque diff.
+- liste des goldens modifiés depuis la release précédente archivée avec classification de chaque diff ;
+- revue d'entropie T9.7 archivée, sans drift bloquant ou non classifié restant.
+
+Preuves de publication M10 représentées lorsqu'elles sont présentes :
+
+Le verdict T9.6/M9 ne réalise qu'un contrôle de cohérence minimal sur les
+preuves T10 fournies : identité/version du paquet sélectionné par `ADR-0009`.
+La preuve complète de fermeture runtime, de contenu du tarball, de lockback
+consommateur, d'installation depuis l'artefact, de correspondance entre
+artefacts T10.5/T10.6 et de publication appartient aux tâches T10.2, T10.3,
+T10.5 et T10.6, pas au verdict M9.
+
+- preuve de lockback consommateur archivée pour le paquet publié, incluant
+  `npm-shrinkwrap.json` ou le mécanisme équivalent sélectionné par `ADR-0009`
+  et montrant que la fermeture transitive runtime installée par un consommateur
+  public correspond au candidat Gate G/M9 ;
+- rapport d'artefact T10.5 archivé pour un tarball nommé produit par `npm pack`
+  ou l'équivalent sélectionné par `ADR-0009`, avec nom du fichier, version,
+  fichiers inclus conformes à la allowlist fermée d'`ADR-0009`, `integrity`
+  npm, `shasum` npm et SHA-256 recalculé depuis le fichier tarball ;
+- dry-run de publication T10.5 archivé comme preuve supplémentaire, sans
+  remplacer le tarball réutilisable ni sa preuve SHA-256, et exécuté sur le
+  même tarball nommé que les preuves d'artefact.
+
+Preuve post-publication attendue après publication :
+
+- preuve de publication T10.6 archivée avec coordonnée finale, `dist.integrity`,
+  `dist.shasum`, SHA-256, lien vers le rapport d'artefact T10.5 et résultat de
+  vérification d'installation post-publication ;
+- lorsque T10.6 publie le tarball validé par T10.5, `dist.integrity`,
+  `dist.shasum`, SHA-256 et version doivent correspondre au rapport d'artefact
+  T10.5 archivé ;
+- si T10.6 régénère un tarball, cette preuve inclut l'artefact tarball
+  régénéré avec version, `integrity` npm, `shasum` npm et SHA-256, ainsi que
+  les nouveaux package, install, checksum, lockback et dry-run de publication
+  pour ce tarball régénéré ; dans ce cas, les champs `dist.*`, SHA-256 et
+  version de publication doivent correspondre à l'artefact régénéré.
 
 ## 13. Résumé
 

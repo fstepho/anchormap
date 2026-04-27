@@ -25,9 +25,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T10.1 — Record packaging and distribution ADR` (`ready`)
-- Next executable product task: `T10.1 — Record packaging and distribution ADR`
-- Last completed task: `T9.7 — Run entropy review and repository drift audit`
+- Current active task: `T10.2 — Prepare publishable package metadata` (`ready`)
+- Next executable product task: `T10.2 — Prepare publishable package metadata`
+- Last completed task: `T10.1 — Record packaging and distribution ADR`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -101,6 +101,7 @@
   - `T9.5 — Implement dependency pinning and reproducibility audit`
   - `T9.6 — Implement release gate aggregator and publication checklist artifacts`
   - `T9.7 — Run entropy review and repository drift audit`
+  - `T10.1 — Record packaging and distribution ADR`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:
@@ -3829,9 +3830,10 @@ Dependencies:
 
 Implementation scope:
 - Update `package.json` metadata according to `ADR-0009`, including package visibility, `version`, `license`, `repository`, `engines`, `bin`, and publish allowlist fields as applicable.
+- Add the `npm-shrinkwrap.json` consumer lockback required by `ADR-0009`, derived from the same lockfile state as the Gate G/M9 candidate.
 - Preserve the published CLI entrypoint as compiled JavaScript under `dist/`.
 - Ensure published package contents exclude local-only harness artifacts unless `ADR-0009` explicitly requires them.
-- Keep runtime dependencies exact or lock-backed according to Gate G.
+- Keep runtime dependencies exact and keep transitive runtime dependencies lock-backed for public npm consumers according to Gate G and `ADR-0009`.
 - Update lockfile or package-manager metadata only where required by the metadata change.
 
 Out of scope:
@@ -3843,7 +3845,7 @@ Done when:
 - Package metadata matches `ADR-0009`.
 - `npm pack --dry-run` or the ADR-selected equivalent shows only expected package contents.
 - The package still builds from a clean checkout.
-- Gate G dependency and lockfile assumptions remain valid.
+- Gate G dependency and lockfile assumptions remain valid, and the publishable package contains the consumer lockback evidence required by `ADR-0009`.
 - No product behavior or eval acceptance criterion changed.
 
 Suggested verification:
@@ -3977,8 +3979,10 @@ Dependencies:
 - T10.4.
 
 Implementation scope:
-- Run the selected publication dry-run, such as `npm publish --dry-run`, GitHub release draft validation, or the equivalent chosen in `ADR-0009`.
-- Record artifact filename, package version, checksums, included files, and release evidence links.
+- Produce an actual reusable package tarball with `npm pack` or the equivalent selected in `ADR-0009`.
+- Record tarball filename, package version, included files, npm `integrity`, npm `shasum`, a separately computed SHA-256 checksum for the tarball file, consumer lockback evidence, and release evidence links.
+- Own the full tarball-content and runtime-closure proof for publication readiness, including rejecting tarballs that omit required compiled `dist/` modules or include files outside the `ADR-0009` package allowlist.
+- Run the selected publication dry-run against the same named tarball, such as `npm publish --dry-run <tarball>`, GitHub release draft validation, or the equivalent chosen in `ADR-0009`, as supplemental publication evidence.
 - Write a release runbook that names pre-publish checks, publish command, credential assumptions, post-publish verification, and rollback or deprecation procedure.
 - Confirm the runbook starts from a passing M9 release verdict and installed-artifact report.
 
@@ -3988,12 +3992,14 @@ Out of scope:
 - Adding broad CI or release automation unless `ADR-0009` explicitly requires it.
 
 Done when:
+- A named tarball artifact exists and its artifact report records filename, version, included files, npm `integrity`, npm `shasum`, SHA-256, and consumer lockback evidence.
 - Publication dry-run succeeds for the selected channel.
 - Runbook exists and is deterministic enough to follow without hidden chat context.
-- Dry-run output or report is archived as release evidence.
+- Tarball artifact evidence and dry-run output or report are archived as release evidence.
 - The runbook refuses publication if any M9 gate or T10 installed-artifact check is missing or failing.
 
 Suggested verification:
+- Execute the package tarball creation command from the runbook and recompute SHA-256 from the resulting file.
 - Execute the dry-run command from the runbook.
 - Intentionally point the runbook checklist at a missing artifact and confirm it fails closed.
 
@@ -4022,19 +4028,20 @@ Dependencies:
 - T10.5.
 
 Implementation scope:
-- Publish the exact artifact validated by T10.3 and T10.5, or rebuild and reverify if the channel requires rebuilding.
+- Publish the exact tarball artifact validated by T10.3 and T10.5, or create a new named tarball and rerun the required package, install, checksum, consumer lockback, and publication dry-run checks if the channel requires rebuilding.
 - Create the release tag or channel marker required by `ADR-0009`.
-- Archive publication evidence: artifact identifier, checksum, package/version URL or registry coordinate, release report link, and post-publish verification result.
+- Archive publication evidence: artifact identifier, npm `integrity`, npm `shasum`, SHA-256 checksum, package/version URL or registry coordinate, release report link, T10.5 tarball artifact report link, and post-publish verification result.
+- Verify the published package still contains the required compiled `dist/` runtime modules and no files outside the `ADR-0009` package allowlist.
 - Verify the published artifact can be discovered and installed according to the documented user flow where the channel permits it.
 
 Out of scope:
-- Publishing any artifact that differs from the validated release candidate without rerunning the required checks.
+- Publishing any artifact that differs from the validated tarball evidence without rerunning the required package, install, checksum, consumer lockback, and publication dry-run checks.
 - Changing product behavior, docs promise, or release-gate criteria during publication.
 - Claiming support for unvalidated platforms or package managers.
 
 Done when:
 - The selected distribution channel contains the v1.0 artifact.
-- Publication evidence links the artifact to the passing M9 release verdict and T10 dry-run/install reports.
+- Publication evidence links the artifact to the passing M9 release verdict, T10 installed-artifact report, T10.5 tarball artifact report, and checksum record.
 - Post-publish install or download verification passes, or the runbook records a channel-specific reason it cannot be performed immediately.
 - The release state records any deferred product questions as deferred, not silently open.
 
@@ -4726,8 +4733,8 @@ Done when:
 | Publishable package metadata | T10.2 | M10 | package check | Package metadata and package contents match `ADR-0009` |
 | Installed artifact behavior | T10.3 | M10 | artifact smoke | Installed CLI runs from packaged `dist/` artifact |
 | User-facing release docs | T10.4 | M10 | documentation check | Install/use docs preserve v1.0 scope and avoid pruning/deletion-safety claims |
-| Publication dry-run and runbook | T10.5 | M10 | publication check | Dry-run succeeds and runbook fails closed on missing release evidence |
-| Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9 and T10 verification reports |
+| Publication dry-run and runbook | T10.5 | M10 | publication check | Reusable tarball, npm integrity, shasum, SHA-256, dry-run, and runbook evidence are archived |
+| Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9, T10 install, T10.5 tarball, and checksum evidence |
 
 ## Agent execution protocol
 

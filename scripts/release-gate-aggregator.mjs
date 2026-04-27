@@ -17,6 +17,7 @@ import {
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultEvidenceDir = join("reports", "t9.6", "evidence");
 const defaultOutDir = join("reports", "t9.6");
+const optionalEvidenceMissing = Symbol("optionalEvidenceMissing");
 const requiredBFamilies = [
 	"B-cli",
 	"B-config",
@@ -75,6 +76,10 @@ const artifactInputs = [
 	["performance_report", "performance-report.json", "performanceReport"],
 	["dependency_audit", "dependency-audit.json", "dependencyAudit"],
 	["golden_diffs", "golden-diffs.json", "goldenDiffs"],
+	["consumer_lockback", "consumer-lockback.json", "consumerLockback"],
+	["t10_5_tarball_artifact", "t10.5-tarball-artifact.json", "t10_5TarballArtifact"],
+	["t10_5_publication_dry_run", "t10.5-publication-dry-run.json", "t10_5PublicationDryRun"],
+	["t10_6_publication_evidence", "t10.6-publication-evidence.json", "t10_6PublicationEvidence"],
 	[
 		"entropy_review",
 		"entropy-review.json",
@@ -82,6 +87,14 @@ const artifactInputs = [
 		join("reports", "t9.7", "entropy-review.json"),
 	],
 ];
+const postM9PublicationArtifactNames = new Set([
+	"consumer_lockback",
+	"t10_5_tarball_artifact",
+	"t10_5_publication_dry_run",
+	"t10_6_publication_evidence",
+]);
+const expectedPackageName = "anchormap";
+const expectedPackageVersion = "1.0.0";
 const allowedGoldenDiffClassifications = new Set([
 	"bug d'implémentation",
 	"ambiguïté du contrat",
@@ -197,6 +210,13 @@ function readJson(path, label, errors) {
 		errors.push(`invalid ${label} JSON: ${path}: ${error.message}`);
 		return null;
 	}
+}
+
+function readOptionalJson(path, label, errors) {
+	if (!existsSync(path)) {
+		return optionalEvidenceMissing;
+	}
+	return readJson(path, label, errors);
 }
 
 function compareStrings(left, right) {
@@ -929,10 +949,13 @@ function evaluateChecklist(
 	goldenDiffs,
 	invalidLevelBManifests,
 	entropyReviewValidation,
+	publicationEvidenceValidation,
 ) {
 	const missingArtifacts = artifactResults
-		.filter((artifact) => artifact.status !== "archived")
+		.filter((artifact) => artifact.required && artifact.status !== "archived")
 		.map((artifact) => artifact.name);
+	const requiredArtifacts = artifactResults.filter((artifact) => artifact.required);
+	const postM9PublicationArtifacts = artifactResults.filter((artifact) => !artifact.required);
 	const normalizedGoldenDiffs = normalizeGoldenDiffs(goldenDiffs);
 	const invalidGoldenDiffPaths = normalizedGoldenDiffs.filter((diff) => diff.path === null);
 	const unclassifiedGoldenDiffs = normalizedGoldenDiffs.filter(
@@ -947,11 +970,16 @@ function evaluateChecklist(
 			invalidGoldenDiffPaths.length === 0 &&
 			unclassifiedGoldenDiffs.length === 0 &&
 			invalidLevelBManifests.length === 0 &&
-			entropyReviewValidation.status === "pass"
+			entropyReviewValidation.status === "pass" &&
+			publicationEvidenceValidation.status === "pass"
 				? "pass"
 				: "fail",
-		required_artifacts: artifactResults,
+		required_artifacts: requiredArtifacts,
+		pre_publication_required_artifacts: requiredArtifacts,
+		post_m9_publication_evidence_artifacts: postM9PublicationArtifacts,
+		post_publication_evidence_artifacts: postM9PublicationArtifacts,
 		entropy_review: entropyReviewValidation,
+		publication_evidence: publicationEvidenceValidation,
 		golden_diffs: normalizedGoldenDiffs.map((diff) => ({
 			path: diff.path,
 			classification: diff.classification,
@@ -966,6 +994,210 @@ function evaluateChecklist(
 		})),
 		invalid_level_b_fixture_manifests: invalidLevelBManifests,
 	};
+}
+
+function validatePublicationEvidence(reports) {
+	const validationErrors = [];
+	const result = {
+		status: "pass",
+		validation_errors: validationErrors,
+		consumer_lockback: {
+			status: isOptionalEvidenceMissing(reports.consumerLockback) ? "pending" : "pass",
+		},
+		t10_5_tarball_artifact: {
+			status: isOptionalEvidenceMissing(reports.t10_5TarballArtifact) ? "pending" : "pass",
+		},
+		t10_5_publication_dry_run: {
+			status: isOptionalEvidenceMissing(reports.t10_5PublicationDryRun) ? "pending" : "pass",
+		},
+		t10_6_publication_evidence: { status: "pending" },
+	};
+
+	if (!isOptionalEvidenceMissing(reports.consumerLockback)) {
+		validatePublicationPackageIdentity(
+			reports.consumerLockback,
+			"consumer lockback",
+			result.consumer_lockback,
+			validationErrors,
+		);
+	}
+	if (!isOptionalEvidenceMissing(reports.t10_5TarballArtifact)) {
+		validateT10_5ArtifactIdentity(
+			reports.t10_5TarballArtifact,
+			result.t10_5_tarball_artifact,
+			validationErrors,
+		);
+	}
+	if (!isOptionalEvidenceMissing(reports.t10_5PublicationDryRun)) {
+		validateT10_5DryRunCoherence(
+			reports.t10_5PublicationDryRun,
+			reports.t10_5TarballArtifact,
+			result.t10_5_publication_dry_run,
+			validationErrors,
+		);
+	}
+	if (!isOptionalEvidenceMissing(reports.t10_6PublicationEvidence)) {
+		result.t10_6_publication_evidence = { status: "pass" };
+		validateT10_6PublicationCoherence(
+			reports.t10_6PublicationEvidence,
+			result.t10_6_publication_evidence,
+			validationErrors,
+		);
+	}
+
+	if (validationErrors.length > 0) {
+		result.status = "fail";
+	}
+	return result;
+}
+
+function isOptionalEvidenceMissing(value) {
+	return value === optionalEvidenceMissing;
+}
+
+function validatePublicationPackageIdentity(report, label, result, validationErrors) {
+	if (!isJsonObject(report)) {
+		failPublicationEvidence(result, validationErrors, `${label} evidence must be a JSON object`);
+		return;
+	}
+	if (!isNonEmptyString(report.package_name)) {
+		failPublicationEvidence(result, validationErrors, `${label} requires package_name`);
+	} else if (report.package_name !== expectedPackageName) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			`${label} package_name must be ${expectedPackageName}`,
+		);
+	}
+	if (!isNonEmptyString(report.package_version)) {
+		failPublicationEvidence(result, validationErrors, `${label} requires package_version`);
+	} else if (report.package_version !== expectedPackageVersion) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			`${label} package_version must be ${expectedPackageVersion}`,
+		);
+	}
+}
+
+function validateT10_5ArtifactIdentity(report, result, validationErrors) {
+	if (!isJsonObject(report)) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.5 tarball artifact report must be a JSON object",
+		);
+		return;
+	}
+	validatePublicationPackageIdentity(report, "T10.5 tarball artifact", result, validationErrors);
+	validateArtifactChecksumShape(report, "T10.5 tarball artifact", result, validationErrors);
+	if (!isNonEmptyString(report.tarball_file)) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.5 tarball artifact requires tarball_file",
+		);
+	}
+}
+
+function validateT10_5DryRunCoherence(report, tarballReport, result, validationErrors) {
+	if (!isJsonObject(report)) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.5 publication dry-run report must be a JSON object",
+		);
+		return;
+	}
+	if (!isNonEmptyString(report.tarball_file)) {
+		failPublicationEvidence(result, validationErrors, "T10.5 publication dry-run requires tarball_file");
+	}
+	if (isJsonObject(tarballReport)) {
+		validateSameNamedArtifact(
+			report,
+			tarballReport,
+			"T10.5 publication dry-run",
+			"T10.5 tarball artifact",
+			result,
+			validationErrors,
+		);
+	}
+}
+
+function validateT10_6PublicationCoherence(report, result, validationErrors) {
+	if (!isJsonObject(report)) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.6 publication evidence must be a JSON object",
+		);
+		return;
+	}
+	if (!isNonEmptyString(report.registry_coordinate)) {
+		failPublicationEvidence(result, validationErrors, "T10.6 publication evidence requires registry_coordinate");
+	} else {
+		const coordinate = parseNpmRegistryCoordinate(report.registry_coordinate);
+		if (coordinate === null) {
+			failPublicationEvidence(
+				result,
+				validationErrors,
+				"T10.6 registry_coordinate must be an npm package coordinate",
+			);
+		} else {
+			if (coordinate.packageName !== expectedPackageName) {
+				failPublicationEvidence(
+					result,
+					validationErrors,
+					`T10.6 registry_coordinate package name must be ${expectedPackageName}`,
+				);
+			}
+			if (coordinate.version !== expectedPackageVersion) {
+				failPublicationEvidence(
+					result,
+					validationErrors,
+					`T10.6 registry_coordinate package version must be ${expectedPackageVersion}`,
+				);
+			}
+		}
+	}
+	validateArtifactChecksumShape(report, "T10.6 publication evidence", result, validationErrors);
+}
+
+function failPublicationEvidence(result, validationErrors, message) {
+	result.status = "fail";
+	validationErrors.push(message);
+}
+
+function validateArtifactChecksumShape(report, label, result, validationErrors) {
+	if (Object.hasOwn(report, "npm_integrity") && !isNpmIntegrity(report.npm_integrity)) {
+		failPublicationEvidence(result, validationErrors, `${label} npm_integrity must be valid`);
+	}
+	if (Object.hasOwn(report, "dist_integrity") && !isNpmIntegrity(report.dist_integrity)) {
+		failPublicationEvidence(result, validationErrors, `${label} dist_integrity must be valid`);
+	}
+	if (Object.hasOwn(report, "npm_shasum") && !isSha1Hex(report.npm_shasum)) {
+		failPublicationEvidence(result, validationErrors, `${label} npm_shasum must be valid`);
+	}
+	if (Object.hasOwn(report, "dist_shasum") && !isSha1Hex(report.dist_shasum)) {
+		failPublicationEvidence(result, validationErrors, `${label} dist_shasum must be valid`);
+	}
+	if (Object.hasOwn(report, "sha256") && !isSha256Hex(report.sha256)) {
+		failPublicationEvidence(result, validationErrors, `${label} sha256 must be valid`);
+	}
+}
+
+function validateSameNamedArtifact(left, right, leftLabel, rightLabel, result, validationErrors) {
+	if (
+		isNonEmptyString(left.tarball_file) &&
+		isNonEmptyString(right.tarball_file) &&
+		left.tarball_file !== right.tarball_file
+	) {
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			`${leftLabel} tarball_file must match ${rightLabel} tarball_file`,
+		);
+	}
 }
 
 function validateEntropyReview(entropyReview) {
@@ -1118,6 +1350,38 @@ function isNonEmptyString(value) {
 	return typeof value === "string" && value.trim().length > 0;
 }
 
+function parseNpmRegistryCoordinate(value) {
+	if (!isNonEmptyString(value)) {
+		return null;
+	}
+	const separatorIndex = value.lastIndexOf("@");
+	if (separatorIndex <= 0 || separatorIndex === value.length - 1) {
+		return null;
+	}
+	const packageName = value.slice(0, separatorIndex);
+	const version = value.slice(separatorIndex + 1);
+	if (!isNonEmptyString(packageName) || !isSemver(version)) {
+		return null;
+	}
+	return { packageName, version };
+}
+
+function isSemver(value) {
+	return isNonEmptyString(value) && /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/u.test(value);
+}
+
+function isNpmIntegrity(value) {
+	return isNonEmptyString(value) && /^sha\d+-[A-Za-z0-9+/]+={0,2}$/u.test(value);
+}
+
+function isSha1Hex(value) {
+	return isNonEmptyString(value) && /^[a-f0-9]{40}$/iu.test(value);
+}
+
+function isSha256Hex(value) {
+	return isNonEmptyString(value) && /^[a-f0-9]{64}$/iu.test(value);
+}
+
 function normalizeGoldenDiffs(goldenDiffs) {
 	return goldenDiffs.map((diff, index) => normalizeGoldenDiff(diff, index));
 }
@@ -1151,13 +1415,17 @@ function archiveInputs(options, errors) {
 	const artifactsDir = join(options.outDir, "artifacts");
 	mkdirSync(artifactsDir, { recursive: true });
 	return artifactInputs.map(([name, defaultFilename, optionName]) => {
+		const required = !postM9PublicationArtifactNames.has(name);
 		const source = resolve(options[optionName]);
 		const destination = join(artifactsDir, defaultFilename);
 		if (!existsSync(source)) {
-			errors.push(`missing ${name}: ${source}`);
+			if (required) {
+				errors.push(`missing ${name}: ${source}`);
+			}
 			return {
 				name,
-				status: "missing",
+				required,
+				status: required ? "missing" : "pending",
 				source: relativePath(options.repoRoot, source),
 				archived_path: relativePath(options.repoRoot, destination),
 			};
@@ -1167,6 +1435,7 @@ function archiveInputs(options, errors) {
 				errors.push(`invalid ${name}: ${source}: artifact path is not a file`);
 				return {
 					name,
+					required,
 					status: "invalid",
 					source: relativePath(options.repoRoot, source),
 					archived_path: relativePath(options.repoRoot, destination),
@@ -1177,6 +1446,7 @@ function archiveInputs(options, errors) {
 			errors.push(`unable to archive ${name}: ${source}: ${error.code ?? "copy_failed"}`);
 			return {
 				name,
+				required,
 				status: "invalid",
 				source: relativePath(options.repoRoot, source),
 				archived_path: relativePath(options.repoRoot, destination),
@@ -1184,6 +1454,7 @@ function archiveInputs(options, errors) {
 		}
 		return {
 			name,
+			required,
 			status: "archived",
 			source: relativePath(options.repoRoot, source),
 			archived_path: relativePath(options.repoRoot, destination),
@@ -1207,6 +1478,22 @@ function buildReport(options) {
 		performance: readJson(options.performanceReport, "performance report", errors),
 		dependencyAudit: readJson(options.dependencyAudit, "dependency audit", errors),
 		goldenDiffs: readJson(options.goldenDiffs, "golden diffs", errors),
+		consumerLockback: readOptionalJson(options.consumerLockback, "consumer lockback", errors),
+		t10_5TarballArtifact: readOptionalJson(
+			options.t10_5TarballArtifact,
+			"T10.5 tarball artifact",
+			errors,
+		),
+		t10_5PublicationDryRun: readOptionalJson(
+			options.t10_5PublicationDryRun,
+			"T10.5 publication dry-run",
+			errors,
+		),
+		t10_6PublicationEvidence: readOptionalJson(
+			options.t10_6PublicationEvidence,
+			"T10.6 publication evidence",
+			errors,
+		),
 		entropyReview: readJson(options.entropyReview, "entropy review", errors),
 	};
 	const goldenDiffs = Array.isArray(reports.goldenDiffs) ? reports.goldenDiffs : [];
@@ -1214,6 +1501,7 @@ function buildReport(options) {
 		errors.push("golden diffs report must be a JSON array");
 	}
 	const entropyReviewValidation = validateEntropyReview(reports.entropyReview);
+	const publicationEvidenceValidation = validatePublicationEvidence(reports);
 
 	const artifactResults = archiveInputs(options, errors);
 	const gates = [
@@ -1230,6 +1518,7 @@ function buildReport(options) {
 		goldenDiffs,
 		fixtureIndexResult.invalidLevelBManifests,
 		entropyReviewValidation,
+		publicationEvidenceValidation,
 	);
 	const verdict =
 		errors.length === 0 &&
@@ -1275,6 +1564,9 @@ function renderMarkdownReport(report) {
 	lines.push("", "## Publication Checklist", "");
 	lines.push(`Checklist verdict: ${report.publication_checklist.verdict}`);
 	for (const artifact of report.publication_checklist.required_artifacts) {
+		lines.push(`- ${artifact.name}: ${artifact.status} (${artifact.archived_path})`);
+	}
+	for (const artifact of report.publication_checklist.post_publication_evidence_artifacts) {
 		lines.push(`- ${artifact.name}: ${artifact.status} (${artifact.archived_path})`);
 	}
 	lines.push("", "## Golden Diffs", "");

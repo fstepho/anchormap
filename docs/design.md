@@ -45,6 +45,7 @@ ADRs courantes :
 - `ADR-0006` — TypeScript parser and graph subset (`Accepted`)
 - `ADR-0007` — Canonical JSON and YAML rendering (`Accepted`)
 - `ADR-0008` — Atomic config write path (`Accepted`)
+- `ADR-0009` — Packaging and distribution (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 - `ADR-0011` — Release CLI Node launch profile (`Accepted`)
 
