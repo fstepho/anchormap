@@ -1,0 +1,138 @@
+{
+	"schema_version": 1,
+	"task": "T9.7",
+	"report_version": "entropy-review-v1",
+	"review_mode": "critical",
+	"authority_refs": [
+		"docs/contract.md section 4.1",
+		"docs/contract.md section 4.8",
+		"docs/contract.md section 12.6",
+		"docs/design.md section 3",
+		"docs/design.md section 10",
+		"docs/design.md section 11",
+		"docs/evals.md section 2",
+		"docs/evals.md section 7",
+		"docs/evals.md section 11",
+		"docs/operating-model.md section 10",
+		"docs/operating-model.md section 14",
+		"docs/operating-model.md section 19.3",
+		"docs/adr/0001-runtime-and-package-manager.md",
+		"docs/adr/0003-test-runner-and-fixture-harness.md",
+		"docs/adr/0010-source-formatting-and-linting-tool.md"
+	],
+	"review_scope": [
+		"src/",
+		"scripts/",
+		"fixtures/",
+		"docs/adr/",
+		"docs/operating-model.md",
+		"docs/agent-loop.md",
+		"docs/tasks.md",
+		"docs/code-review.md",
+		"AGENTS.md",
+		"reports/",
+		"bench/reports/"
+	],
+	"checks": [
+		{
+			"name": "sh scripts/lint-tasks.sh",
+			"status": "pass",
+			"purpose": "Validate the T9.7 execution-state sync and open-deviation structure."
+		},
+		{
+			"name": "npm run check:docs",
+			"status": "pass",
+			"purpose": "Confirm the M1 documentation consistency check remains green."
+		},
+		{
+			"name": "bounded entropy review searches",
+			"status": "completed",
+			"purpose": "Search for duplicate helper candidates, hidden metadata files, stale ADR references, obsolete docs, weak fixtures, golden drift markers, and unresolved deviation notes."
+		},
+		{
+			"name": "node --test dist/release-gate-aggregator.test.js",
+			"status": "pass",
+			"purpose": "Verify release gate reports archive entropy_review and keep existing release gate behavior stable."
+		},
+		{
+			"name": "npm run lint",
+			"status": "pass",
+			"purpose": "Run the configured source lint surface for touched TypeScript files."
+		},
+		{
+			"name": "npm run test:docs",
+			"status": "pass",
+			"purpose": "Run the documented process and package-script consistency checks."
+		},
+		{
+			"name": "npm test",
+			"status": "pass",
+			"purpose": "Run the full configured unit suite after the release gate aggregator change."
+		},
+		{
+			"name": "git diff --check",
+			"status": "pass",
+			"purpose": "Check the patch for whitespace errors."
+		}
+	],
+	"summary": {
+		"findings_count": 2,
+		"blocking_findings_remaining": 0,
+		"unclassified_drift_remaining": false
+	},
+	"findings": [
+		{
+			"id": "T9.7-F1",
+			"title": "macOS metadata files were present in the repository tree",
+			"primary_classification": "tooling problem",
+			"blocking_status": "non bloquant",
+			"severity": "low",
+			"evidence": [
+				".DS_Store",
+				"docs/.DS_Store"
+			],
+			"follow_up_disposition": "fix now",
+			"resolution": "Removed the metadata files from the release candidate tree.",
+			"residual_risk": "None after removal; these files are not product inputs or release evidence."
+		},
+		{
+			"id": "T9.7-F2",
+			"title": "Release gate report did not archive the entropy review artifact",
+			"primary_classification": "tooling problem",
+			"blocking_status": "bloquant",
+			"severity": "medium",
+			"evidence": [
+				"scripts/release-gate-aggregator.mjs artifact inputs lacked entropy_review before this task"
+			],
+			"follow_up_disposition": "fix now",
+			"resolution": "Added entropy_review as a required archived artifact sourced from reports/t9.7/entropy-review.json.",
+			"residual_risk": "Release gates still require the ordinary T9.6 evidence set before a passing release verdict can be produced."
+		}
+	],
+	"reviewed_no_action": [
+		{
+			"surface": "duplicated helper candidates",
+			"disposition": "no action",
+			"reason": "Repeated helper names are test-local or script-local and do not create shared hidden behavior."
+		},
+		{
+			"surface": "ADR register and references",
+			"disposition": "no action",
+			"reason": "Accepted ADR files match the register; ADR-0009 remains an explicitly reserved M10 slot, not a stale accepted reference."
+		},
+		{
+			"surface": "fixtures and goldens",
+			"disposition": "no action",
+			"reason": "The corpus contains 107 manifests and 28 stdout goldens; release gate checks cover stale fixture and golden records, and no unclassified golden drift marker was found."
+		},
+		{
+			"surface": "task/process deviations",
+			"disposition": "no action",
+			"reason": "docs/tasks.md records no blocked tasks and no open deviations."
+		}
+	],
+	"release_candidate_review_set": {
+		"unclassified_drift_remaining": false,
+		"release_verdict_reference": "scripts/release-gate-aggregator.mjs archives entropy_review into reports/t9.6/artifacts/entropy-review.json and lists it in release-report.json and release-report.md."
+	}
+}

@@ -168,6 +168,20 @@ function createTempReleaseEvidence(): TempReleaseEvidence {
 		gate_g_dependency_verdict: "pass",
 	});
 	writeJson(resolve(evidenceDir, "golden-diffs.json"), []);
+	writeJson(resolve(rootDir, "reports", "t9.7", "entropy-review.json"), {
+		schema_version: 1,
+		task: "T9.7",
+		report_version: "entropy-review-v1",
+		summary: {
+			findings_count: 0,
+			blocking_findings_remaining: 0,
+			unclassified_drift_remaining: false,
+		},
+		findings: [],
+		release_candidate_review_set: {
+			unclassified_drift_remaining: false,
+		},
+	});
 
 	return { rootDir, fixturesRoot, evidenceDir, outDir };
 }
@@ -292,6 +306,7 @@ test("release gate aggregator writes a deterministic passing release report and 
 				["performance_report", "archived"],
 				["dependency_audit", "archived"],
 				["golden_diffs", "archived"],
+				["entropy_review", "archived"],
 			],
 		);
 		assert.ok(
@@ -1496,6 +1511,141 @@ test("release gate aggregator rejects unsupported golden diff classifications", 
 				classification: "todo",
 			},
 		]);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator semantically validates the entropy review artifact", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writeJson(resolve(evidence.rootDir, "reports", "t9.7", "entropy-review.json"), {
+			schema_version: 1,
+			task: "T9.7",
+			report_version: "entropy-review-v1",
+			summary: {
+				findings_count: 1,
+				blocking_findings_remaining: 0,
+				unclassified_drift_remaining: false,
+			},
+			findings: [
+				{
+					id: "T9.7-F1",
+					title: "Finding with incomplete required review routing fields",
+					primary_classification: "todo",
+					blocking_status: "unknown",
+				},
+			],
+			release_candidate_review_set: {
+				unclassified_drift_remaining: false,
+			},
+		});
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				entropy_review: {
+					status: string;
+					validation_errors: string[];
+					findings_with_unsupported_primary_classification: Array<{
+						finding: string;
+						primary_classification: string;
+					}>;
+					findings_with_unsupported_blocking_status: Array<{
+						finding: string;
+						blocking_status: string;
+					}>;
+					findings_missing_follow_up_disposition: string[];
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(report.publication_checklist.verdict, "fail");
+		assert.equal(report.publication_checklist.entropy_review.status, "fail");
+		assert.ok(
+			report.publication_checklist.entropy_review.validation_errors.includes(
+				"entropy review findings use unsupported primary_classification",
+			),
+		);
+		assert.deepEqual(
+			report.publication_checklist.entropy_review.findings_with_unsupported_primary_classification,
+			[
+				{
+					finding: "T9.7-F1",
+					primary_classification: "todo",
+				},
+			],
+		);
+		assert.deepEqual(
+			report.publication_checklist.entropy_review.findings_with_unsupported_blocking_status,
+			[
+				{
+					finding: "T9.7-F1",
+					blocking_status: "unknown",
+				},
+			],
+		);
+		assert.deepEqual(
+			report.publication_checklist.entropy_review.findings_missing_follow_up_disposition,
+			["T9.7-F1"],
+		);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator fails closed when entropy review reports unresolved drift", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		writeJson(resolve(evidence.rootDir, "reports", "t9.7", "entropy-review.json"), {
+			schema_version: 1,
+			task: "T9.7",
+			report_version: "entropy-review-v1",
+			summary: {
+				findings_count: 0,
+				blocking_findings_remaining: 1,
+				unclassified_drift_remaining: false,
+			},
+			findings: [],
+			release_candidate_review_set: {
+				unclassified_drift_remaining: true,
+			},
+		});
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			publication_checklist: {
+				verdict: string;
+				entropy_review: {
+					status: string;
+					validation_errors: string[];
+					blocking_findings_remaining: number | null;
+					unclassified_drift_remaining: boolean | null;
+				};
+			};
+		}>(resolve(evidence.outDir, "release-report.json"));
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(report.publication_checklist.verdict, "fail");
+		assert.equal(report.publication_checklist.entropy_review.status, "fail");
+		assert.equal(report.publication_checklist.entropy_review.blocking_findings_remaining, 1);
+		assert.equal(report.publication_checklist.entropy_review.unclassified_drift_remaining, true);
+		assert.ok(
+			report.publication_checklist.entropy_review.validation_errors.includes(
+				"entropy review summary.blocking_findings_remaining must be 0",
+			),
+		);
+		assert.ok(
+			report.publication_checklist.entropy_review.validation_errors.includes(
+				"entropy review release_candidate_review_set.unclassified_drift_remaining must be false",
+			),
+		);
 	} finally {
 		rmSync(evidence.rootDir, { recursive: true, force: true });
 	}

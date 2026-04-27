@@ -75,6 +75,12 @@ const artifactInputs = [
 	["performance_report", "performance-report.json", "performanceReport"],
 	["dependency_audit", "dependency-audit.json", "dependencyAudit"],
 	["golden_diffs", "golden-diffs.json", "goldenDiffs"],
+	[
+		"entropy_review",
+		"entropy-review.json",
+		"entropyReview",
+		join("reports", "t9.7", "entropy-review.json"),
+	],
 ];
 const allowedGoldenDiffClassifications = new Set([
 	"bug d'implémentation",
@@ -82,6 +88,16 @@ const allowedGoldenDiffClassifications = new Set([
 	"fixture incorrecte",
 	"changement volontaire de contrat",
 ]);
+const allowedEntropyReviewClassifications = new Set([
+	"contract violation",
+	"spec ambiguity",
+	"design gap",
+	"eval defect",
+	"product question",
+	"tooling problem",
+	"out-of-scope discovery",
+]);
+const allowedEntropyReviewBlockingStatuses = new Set(["bloquant", "non bloquant"]);
 
 function parseArgs(argv) {
 	const options = {
@@ -126,8 +142,8 @@ function parseArgs(argv) {
 		failUsage(`release-gates: invalid argument ${arg}`);
 	}
 
-	for (const [, defaultFilename, optionName] of artifactInputs) {
-		options[optionName] ??= join(options.evidenceDir, defaultFilename);
+	for (const [, defaultFilename, optionName, defaultSource] of artifactInputs) {
+		options[optionName] ??= defaultSource ?? join(options.evidenceDir, defaultFilename);
 	}
 
 	const resolvedRepoRoot = resolve(options.repoRoot);
@@ -908,7 +924,12 @@ function evaluateGateG(dependencyAudit) {
 	return gate("G", "Reproductibilité de release", checks);
 }
 
-function evaluateChecklist(artifactResults, goldenDiffs, invalidLevelBManifests) {
+function evaluateChecklist(
+	artifactResults,
+	goldenDiffs,
+	invalidLevelBManifests,
+	entropyReviewValidation,
+) {
 	const missingArtifacts = artifactResults
 		.filter((artifact) => artifact.status !== "archived")
 		.map((artifact) => artifact.name);
@@ -925,10 +946,12 @@ function evaluateChecklist(artifactResults, goldenDiffs, invalidLevelBManifests)
 			missingArtifacts.length === 0 &&
 			invalidGoldenDiffPaths.length === 0 &&
 			unclassifiedGoldenDiffs.length === 0 &&
-			invalidLevelBManifests.length === 0
+			invalidLevelBManifests.length === 0 &&
+			entropyReviewValidation.status === "pass"
 				? "pass"
 				: "fail",
 		required_artifacts: artifactResults,
+		entropy_review: entropyReviewValidation,
 		golden_diffs: normalizedGoldenDiffs.map((diff) => ({
 			path: diff.path,
 			classification: diff.classification,
@@ -943,6 +966,135 @@ function evaluateChecklist(artifactResults, goldenDiffs, invalidLevelBManifests)
 		})),
 		invalid_level_b_fixture_manifests: invalidLevelBManifests,
 	};
+}
+
+function validateEntropyReview(entropyReview) {
+	const validationErrors = [];
+	const result = {
+		status: "pass",
+		validation_errors: validationErrors,
+		findings_count: 0,
+		findings_missing_primary_classification: [],
+		findings_with_unsupported_primary_classification: [],
+		findings_missing_blocking_status: [],
+		findings_with_unsupported_blocking_status: [],
+		findings_missing_follow_up_disposition: [],
+		blocking_findings_remaining: null,
+		unclassified_drift_remaining: null,
+	};
+
+	if (!isJsonObject(entropyReview)) {
+		validationErrors.push("entropy review must be a JSON object");
+		result.status = "fail";
+		return result;
+	}
+
+	if (entropyReview.schema_version !== 1) {
+		validationErrors.push("entropy review schema_version must be 1");
+	}
+	if (entropyReview.task !== "T9.7") {
+		validationErrors.push("entropy review task must be T9.7");
+	}
+	if (entropyReview.report_version !== "entropy-review-v1") {
+		validationErrors.push("entropy review report_version must be entropy-review-v1");
+	}
+
+	if (!Array.isArray(entropyReview.findings)) {
+		validationErrors.push("entropy review findings must be an array");
+	} else {
+		result.findings_count = entropyReview.findings.length;
+		for (const [index, finding] of entropyReview.findings.entries()) {
+			validateEntropyReviewFinding(finding, index, result);
+		}
+	}
+
+	const summary = entropyReview.summary;
+	if (!isJsonObject(summary)) {
+		validationErrors.push("entropy review summary must be a JSON object");
+	} else {
+		result.blocking_findings_remaining = Number.isInteger(summary.blocking_findings_remaining)
+			? summary.blocking_findings_remaining
+			: null;
+		if (result.blocking_findings_remaining !== 0) {
+			validationErrors.push("entropy review summary.blocking_findings_remaining must be 0");
+		}
+		if (summary.unclassified_drift_remaining !== false) {
+			validationErrors.push("entropy review summary.unclassified_drift_remaining must be false");
+		}
+	}
+
+	const reviewSet = entropyReview.release_candidate_review_set;
+	if (!isJsonObject(reviewSet)) {
+		validationErrors.push("entropy review release_candidate_review_set must be a JSON object");
+	} else {
+		result.unclassified_drift_remaining =
+			typeof reviewSet.unclassified_drift_remaining === "boolean"
+				? reviewSet.unclassified_drift_remaining
+				: null;
+		if (result.unclassified_drift_remaining !== false) {
+			validationErrors.push(
+				"entropy review release_candidate_review_set.unclassified_drift_remaining must be false",
+			);
+		}
+	}
+
+	if (result.findings_missing_primary_classification.length > 0) {
+		validationErrors.push("entropy review findings require primary_classification");
+	}
+	if (result.findings_with_unsupported_primary_classification.length > 0) {
+		validationErrors.push("entropy review findings use unsupported primary_classification");
+	}
+	if (result.findings_missing_blocking_status.length > 0) {
+		validationErrors.push("entropy review findings require blocking_status");
+	}
+	if (result.findings_with_unsupported_blocking_status.length > 0) {
+		validationErrors.push("entropy review findings use unsupported blocking_status");
+	}
+	if (result.findings_missing_follow_up_disposition.length > 0) {
+		validationErrors.push("entropy review findings require follow_up_disposition");
+	}
+
+	result.status = validationErrors.length === 0 ? "pass" : "fail";
+	return result;
+}
+
+function validateEntropyReviewFinding(finding, index, result) {
+	const label = entropyReviewFindingLabel(finding, index);
+	const primaryClassification = normalizeEntropyReviewText(finding?.primary_classification);
+	if (primaryClassification === null) {
+		result.findings_missing_primary_classification.push(label);
+	} else if (!allowedEntropyReviewClassifications.has(primaryClassification)) {
+		result.findings_with_unsupported_primary_classification.push({
+			finding: label,
+			primary_classification: primaryClassification,
+		});
+	}
+
+	const blockingStatus = normalizeEntropyReviewText(finding?.blocking_status);
+	if (blockingStatus === null) {
+		result.findings_missing_blocking_status.push(label);
+	} else if (!allowedEntropyReviewBlockingStatuses.has(blockingStatus)) {
+		result.findings_with_unsupported_blocking_status.push({
+			finding: label,
+			blocking_status: blockingStatus,
+		});
+	}
+
+	if (normalizeEntropyReviewText(finding?.follow_up_disposition) === null) {
+		result.findings_missing_follow_up_disposition.push(label);
+	}
+}
+
+function entropyReviewFindingLabel(finding, index) {
+	return isNonEmptyString(finding?.id) ? finding.id.trim() : `#${index}`;
+}
+
+function normalizeEntropyReviewText(value) {
+	return isNonEmptyString(value) ? value.trim() : null;
+}
+
+function isJsonObject(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function check(id, passed, details = {}) {
@@ -1055,11 +1207,13 @@ function buildReport(options) {
 		performance: readJson(options.performanceReport, "performance report", errors),
 		dependencyAudit: readJson(options.dependencyAudit, "dependency audit", errors),
 		goldenDiffs: readJson(options.goldenDiffs, "golden diffs", errors),
+		entropyReview: readJson(options.entropyReview, "entropy review", errors),
 	};
 	const goldenDiffs = Array.isArray(reports.goldenDiffs) ? reports.goldenDiffs : [];
 	if (reports.goldenDiffs !== null && !Array.isArray(reports.goldenDiffs)) {
 		errors.push("golden diffs report must be a JSON array");
 	}
+	const entropyReviewValidation = validateEntropyReview(reports.entropyReview);
 
 	const artifactResults = archiveInputs(options, errors);
 	const gates = [
@@ -1075,6 +1229,7 @@ function buildReport(options) {
 		artifactResults,
 		goldenDiffs,
 		fixtureIndexResult.invalidLevelBManifests,
+		entropyReviewValidation,
 	);
 	const verdict =
 		errors.length === 0 &&
@@ -1086,7 +1241,7 @@ function buildReport(options) {
 	return {
 		schema_version: 1,
 		task: "T9.6",
-		report_version: "release-gate-report-v1",
+		report_version: "release-gate-report-v2",
 		release_verdict: verdict,
 		gates,
 		publication_checklist: checklist,
