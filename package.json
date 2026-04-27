@@ -1,18 +1,39 @@
 {
 	"name": "anchormap",
-	"private": true,
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "Local deterministic structural traceability CLI for narrow-scope TypeScript repositories.",
+	"license": "UNLICENSED",
+	"private": false,
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"bin": {
 		"anchormap": "bin/anchormap"
 	},
 	"files": [
+		"npm-shrinkwrap.json",
 		"bin/anchormap",
-		"dist/"
+		"dist/anchormap.js",
+		"dist/cli/command-args.js",
+		"dist/cli/commands.js",
+		"dist/domain/anchor-id.js",
+		"dist/domain/canonical-order.js",
+		"dist/domain/finding.js",
+		"dist/domain/repo-path.js",
+		"dist/domain/scan-engine.js",
+		"dist/domain/scan-result.js",
+		"dist/infra/config-io.js",
+		"dist/infra/config-yaml-render.js",
+		"dist/infra/product-files.js",
+		"dist/infra/repo-fs.js",
+		"dist/infra/spec-index.js",
+		"dist/infra/ts-graph.js",
+		"dist/render/render-json.js"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/fstepho/anchormap.git"
+		"url": "git+https://github.com/fstepho/anchormap.git"
 	},
 	"packageManager": "npm@11.11.1",
 	"engines": {

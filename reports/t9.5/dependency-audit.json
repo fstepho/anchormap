@@ -3,12 +3,12 @@
 	"task": "T9.5",
 	"release_candidate": {
 		"package_name": "anchormap",
-		"package_version": "0.0.0",
+		"package_version": "1.0.0",
 		"package_manager": "npm@11.11.1",
 		"node_engine": ">=22.0.0",
 		"lockfile": "package-lock.json",
 		"lockfile_version": 3,
-		"lockfile_sha256": "224a16edd6a5a1097a6c38e56f2e82bbb6d91357f7e2c8b807c93de96cfb8c01"
+		"lockfile_sha256": "af2fa42f1cb6632e5d7801e771028a4abfbff3398da48383e04a37f565a12f60"
 	},
 	"contract_dependency_policy": {
 		"floating_semver_ranges_rejected": true,

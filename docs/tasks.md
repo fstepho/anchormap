@@ -25,9 +25,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T10.2 — Prepare publishable package metadata` (`ready`)
-- Next executable product task: `T10.2 — Prepare publishable package metadata`
-- Last completed task: `T10.1 — Record packaging and distribution ADR`
+- Current active task: `T10.3 — Verify installed artifact behavior` (`ready`)
+- Next executable product task: `T10.3 — Verify installed artifact behavior`
+- Last completed task: `T10.2 — Prepare publishable package metadata`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -102,6 +102,7 @@
   - `T9.6 — Implement release gate aggregator and publication checklist artifacts`
   - `T9.7 — Run entropy review and repository drift audit`
   - `T10.1 — Record packaging and distribution ADR`
+  - `T10.2 — Prepare publishable package metadata`
 - Blocked tasks:
   - `None recorded`
 - Open deviations:

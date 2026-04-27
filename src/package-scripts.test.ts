@@ -16,6 +16,8 @@ import { test } from "node:test";
 
 const REPO_ROOT = resolve(__dirname, "..");
 const PACKAGE_JSON_PATH = resolve(REPO_ROOT, "package.json");
+const PACKAGE_LOCK_PATH = resolve(REPO_ROOT, "package-lock.json");
+const NPM_SHRINKWRAP_PATH = resolve(REPO_ROOT, "npm-shrinkwrap.json");
 const RELEASE_LAUNCHER_PATH = resolve(REPO_ROOT, "bin", "anchormap");
 const T9_3_CROSS_PLATFORM_WORKFLOW_PATH = resolve(
 	REPO_ROOT,
@@ -31,10 +33,46 @@ const VALIDATE_BENCHMARK_REPORT_PATH = resolve(
 const RELEASE_BENCHMARK_PATH = resolve(REPO_ROOT, "scripts", "release-benchmark.mjs");
 
 interface PackageJson {
+	name?: string;
+	version?: string;
+	license?: string;
+	private?: boolean;
 	bin?: Record<string, string>;
 	files?: string[];
+	publishConfig?: Record<string, string>;
+	engines?: Record<string, string>;
 	scripts?: Record<string, string>;
 }
+
+interface PackageLockJson {
+	packages?: Record<
+		string,
+		{
+			devDependencies?: Record<string, string>;
+		}
+	>;
+}
+
+const EXPECTED_PACKAGE_FILES = [
+	"npm-shrinkwrap.json",
+	"bin/anchormap",
+	"dist/anchormap.js",
+	"dist/cli/command-args.js",
+	"dist/cli/commands.js",
+	"dist/domain/anchor-id.js",
+	"dist/domain/canonical-order.js",
+	"dist/domain/finding.js",
+	"dist/domain/repo-path.js",
+	"dist/domain/scan-engine.js",
+	"dist/domain/scan-result.js",
+	"dist/infra/config-io.js",
+	"dist/infra/config-yaml-render.js",
+	"dist/infra/product-files.js",
+	"dist/infra/repo-fs.js",
+	"dist/infra/spec-index.js",
+	"dist/infra/ts-graph.js",
+	"dist/render/render-json.js",
+];
 
 interface BenchmarkRunRecord {
 	wall_clock_ms: number;
@@ -78,6 +116,10 @@ interface BenchmarkReport {
 
 function loadPackageJson(): PackageJson {
 	return JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8")) as PackageJson;
+}
+
+function loadPackageLockJson(path: string): PackageLockJson {
+	return JSON.parse(readFileSync(path, "utf8")) as PackageLockJson;
 }
 
 function loadBenchmarkReport(): BenchmarkReport {
@@ -151,10 +193,21 @@ test("package.json exposes the stable repo-local check and harness command surfa
 	const packageJson = loadPackageJson();
 	const scripts = packageJson.scripts ?? {};
 
+	assert.equal(packageJson.name, "anchormap");
+	assert.equal(packageJson.version, "1.0.0");
+	assert.equal(packageJson.license, "UNLICENSED");
+	assert.equal(packageJson.private, false);
+	assert.deepEqual(packageJson.publishConfig, {
+		access: "public",
+		registry: "https://registry.npmjs.org/",
+	});
+	assert.deepEqual(packageJson.engines, {
+		node: ">=22.0.0",
+	});
 	assert.deepEqual(packageJson.bin, {
 		anchormap: "bin/anchormap",
 	});
-	assert.deepEqual(packageJson.files, ["bin/anchormap", "dist/"]);
+	assert.deepEqual(packageJson.files, EXPECTED_PACKAGE_FILES);
 	assert.match(
 		readFileSync(RELEASE_LAUNCHER_PATH, "utf8"),
 		/node --no-opt --max-semi-space-size=1 --no-expose-wasm/,
@@ -213,12 +266,27 @@ test("release package contents include launcher and compiled CLI target", () => 
 			files: Array<{ path: string }>;
 		}>;
 		const packedFiles = packResult.files.map((file) => file.path).sort();
+		const expectedPackedFiles = ["package.json", ...EXPECTED_PACKAGE_FILES].sort();
 
-		assert.ok(packedFiles.includes("bin/anchormap"));
-		assert.ok(packedFiles.includes("dist/anchormap.js"));
+		assert.deepEqual(packedFiles, expectedPackedFiles);
+		assert.ok(!packedFiles.some((path) => path.includes(".test.")));
+		assert.ok(!packedFiles.some((path) => path.startsWith("dist/harness/")));
 	} finally {
 		rmSync(tempDir, { recursive: true, force: true });
 	}
+});
+
+test("npm shrinkwrap mirrors the full root package lock state", () => {
+	const packageLock = loadPackageLockJson(PACKAGE_LOCK_PATH);
+	const shrinkwrap = loadPackageLockJson(NPM_SHRINKWRAP_PATH);
+
+	assert.deepEqual(shrinkwrap, packageLock);
+	assert.deepEqual(shrinkwrap.packages?.[""]?.devDependencies, {
+		"@biomejs/biome": "2.4.12",
+		"@types/node": "25.6.0",
+	});
+	assert.ok(shrinkwrap.packages?.["node_modules/@biomejs/biome"]);
+	assert.ok(shrinkwrap.packages?.["node_modules/@types/node"]);
 });
 
 test("release launcher resolves the package dist path through a bin symlink", () => {
