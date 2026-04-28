@@ -2,7 +2,7 @@
 
 - Task: `T9.4`
 - Corpus version: `release-benchmark-corpus-v1`
-- Generated at UTC: `2026-04-28T21:43:30.364Z`
+- Generated at UTC: `2026-04-28T21:42:20.274Z`
 - Release build command: `npm run build`
 - CLI: `bin/anchormap`
 - Node flags: `--no-opt --max-semi-space-size=1 --no-expose-wasm`
@@ -14,13 +14,13 @@
 
 ## Reference Machine
 
-- Platform: linux
-- Architecture: x64
+- Platform: darwin
+- Architecture: arm64
 - Supported platform: yes
-- OS release: 6.17.0-1010-azure
-- CPU: AMD EPYC 9V74 80-Core Processor
-- CPU count: 2
-- Memory: 7938 MiB
+- OS release: 24.6.0
+- CPU: Apple M1 (Virtual)
+- CPU count: 3
+- Memory: 7168 MiB
 - Node: v22.22.2
 - npm: 10.9.7
 
@@ -28,8 +28,8 @@
 
 | Corpus | Product files | Anchors | Supported edges | p95 wall-clock | Peak RSS | Verdict |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| `small` | 200 | 50 | 1500 | 132.564 ms | 53.527 MiB | pass |
-| `medium` | 1000 | 200 | 8000 | 217.692 ms | 56.684 MiB | pass |
-| `large` | 5000 | 500 | 40000 | 623.539 ms | 71.328 MiB | informational |
+| `small` | 200 | 50 | 1500 | 160.607 ms | 49.547 MiB | pass |
+| `medium` | 1000 | 200 | 8000 | 297.418 ms | 52.703 MiB | pass |
+| `large` | 5000 | 500 | 40000 | 764.312 ms | 69.234 MiB | informational |
 
 `large` is archived for trend tracking only and is excluded from pass/fail.

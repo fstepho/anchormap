@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"task": "T9.6",
 	"report_version": "release-gate-report-v2",
-	"release_verdict": "fail",
+	"release_verdict": "pass",
 	"gates": [
 		{
 			"id": "A",
@@ -206,7 +206,7 @@
 		{
 			"id": "F",
 			"name": "Performance",
-			"status": "fail",
+			"status": "pass",
 			"checks": [
 				{
 					"id": "supported_platform_benchmark_reports_present",
@@ -217,13 +217,8 @@
 				},
 				{
 					"id": "gate_f_benchmark_reports_validated",
-					"status": "fail",
-					"validation_errors": [
-						{
-							"platform": "linux:x64",
-							"error": "benchmark-report: Gate F verdict must pass"
-						}
-					]
+					"status": "pass",
+					"validation_errors": []
 				},
 				{
 					"id": "gate_f_report_evaluable",
@@ -231,11 +226,11 @@
 				},
 				{
 					"id": "gate_f_verdict_passed",
-					"status": "fail"
+					"status": "pass"
 				},
 				{
 					"id": "small_benchmark_passed",
-					"status": "fail"
+					"status": "pass"
 				},
 				{
 					"id": "medium_benchmark_passed",

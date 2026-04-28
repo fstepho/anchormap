@@ -624,12 +624,5 @@
 			"large"
 		],
 		"large_excluded_from_pass_fail": true
-	},
-	"source": {
-		"run_url": "https://github.com/fstepho/anchormap/actions/runs/25079078944",
-		"head_sha": "f45f9ae8ba792756f0b18507a60b7a1e85749caa",
-		"archived_json": "reports/t9.6/evidence/macos-arm64/t9.4/gate-f-report.json",
-		"archived_markdown": "reports/t9.6/evidence/macos-arm64/t9.4/gate-f-report.md",
-		"benchmark_log": "reports/t9.6/evidence/macos-arm64/t9.4/bench-release.log"
 	}
 }

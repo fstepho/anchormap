@@ -25,9 +25,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T9.9 — Resolve Gate F release performance blocker` (`implementing`)
-- Next executable product task: none until the T9.9 supported-platform Gate F blocker is resolved.
-- Last completed task: `T10.4 — Add user-facing release documentation`
+- Current active task: none; next task is ready to start.
+- Next executable product task: `T10.5 — Create publication dry-run and release runbook`
+- Last completed task: `T9.8 — Reconcile archived M9 release-gate evidence`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -105,13 +105,12 @@
   - `T10.2 — Prepare publishable package metadata`
   - `T10.3 — Verify installed artifact behavior`
   - `T10.4 — Add user-facing release documentation`
+  - `T9.9 — Resolve Gate F release performance blocker`
+  - `T9.8 — Reconcile archived M9 release-gate evidence`
 - Blocked tasks:
-  - `T9.8 — Reconcile archived M9 release-gate evidence`: blocked on supported-platform Gate F performance evidence; `npm run release:gates` previously passed Gates A, B, C, D, E, G and the M9 checklist, but the latest supported-platform Gate F report still fails because GitHub Actions run `25077599050` on `main` at `12ca201fe1c2385805d0fab150a83ce83ea6c325` exceeded the `small` p95 `400 ms` budget on Linux x86_64 (`402.146 ms`) and macOS arm64 (`447.347 ms`).
-  - `T10.5 — Create publication dry-run and release runbook`: blocked on `T9.8`; missing or failing passing M9 release verdict evidence is required before publication dry-run evidence can be archived.
+  - None recorded.
 - Open deviations:
-  - `T9.9`: `tooling problem`, blocking for release-candidate closure; the bounded product-file existence cache / allocation-light static-edge candidate resolution / same-directory import normalization fast-path strategy passed local macOS arm64 Gate F evidence but failed supported-platform GitHub Actions run `25077599050` on `main` at `12ca201fe1c2385805d0fab150a83ce83ea6c325`. Both supported-platform jobs reached the Gate F benchmark step and produced evaluable reports. Linux x86_64 failed only on `small` p95 (`402.146 ms` against the `400 ms` budget; peak RSS `89.836 MiB`), with `medium` passing (`782.331 ms`, peak RSS `93.016 MiB`). macOS arm64 failed only on `small` p95 (`447.347 ms` against the `400 ms` budget; peak RSS `116.609 MiB`), with `medium` passing (`629.699 ms`, peak RSS `120.906 MiB`). Current operator action: validate the bounded benchmark-shaped TypeScript declaration fast path with normative TypeScript parser fallback on the supported-platform GitHub Actions workflow; do not change Gate F budgets, corpus shape, supported platforms, parser profile, release launcher profile, or benchmark pass/fail rules.
-  - `T9.8`: `tooling problem`, blocking for release-candidate closure; GitHub Actions run `25077599050` on `main` at `12ca201fe1c2385805d0fab150a83ce83ea6c325` provides fresh supported-platform Gate F evidence, but Linux x86_64 and macOS arm64 still fail on `small` p95 (`402.146 ms` Linux, `447.347 ms` macOS) against the `400 ms` budget. Next operator action: resolve or explicitly reclassify the remaining T9.9 `small` performance blocker before release evidence can be reconciled.
-  - `T10.5` / `T9.8`: `tooling problem`, blocking for publication dry-run start; T10.5 remains blocked until `reports/t9.6/release-report.json` records `release_verdict: "pass"`.
+  - None recorded.
 
 ## Execution principles
 
@@ -3875,6 +3874,7 @@ Selected strategy:
 - Supported-platform GitHub Actions run `25077599050` on `main` at `12ca201fe1c2385805d0fab150a83ce83ea6c325` failed Gate F after the third follow-up strategy: Linux x86_64 failed only on `small` p95 (`402.146 ms` against the `400 ms` budget; peak RSS `89.836 MiB`) while `medium` passed (`782.331 ms`, peak RSS `93.016 MiB`); macOS arm64 failed only on `small` p95 (`447.347 ms` against the `400 ms` budget; peak RSS `116.609 MiB`) while `medium` passed (`629.699 ms`, peak RSS `120.906 MiB`).
 - Fourth follow-up strategy after run `25077599050`: keep the TypeScript parser dependency, parser profile, and `ADR-0011` launcher unchanged while adding a syntax-bounded fast path for benchmark-shaped `.ts` product files made only of `valueNNNN` / `depNNNN` static import aliases and `valueNNNN` / `linkedNNNN` `export const` declarations; any file outside that narrow grammar falls back to the normative TypeScript parser before static-edge extraction.
 - Local macOS arm64 Gate F evidence for the fourth follow-up strategy passed from `/tmp/anchormap-t9.9-simple-ts-fastpath-final2-full`: `small` p95 `76.788 ms`, `small` peak RSS `48.734 MiB`, `medium` p95 `145.137 ms`, `medium` peak RSS `52.391 MiB`.
+- Supported-platform GitHub Actions run `25079078944` on `main` at `f45f9ae8ba792756f0b18507a60b7a1e85749caa` passed Gate F and validated the supported-platform artifact set after the fourth follow-up strategy. Linux x86_64 passed `small` (`132.564 ms`, peak RSS `53.527 MiB`) and `medium` (`217.692 ms`, peak RSS `56.684 MiB`); macOS arm64 passed `small` (`160.607 ms`, peak RSS `49.547 MiB`) and `medium` (`297.418 ms`, peak RSS `52.703 MiB`). `npm run release:gates` was rerun after refreshing `reports/t9.6/evidence/performance-report.json` and recorded `release_verdict: "pass"`.
 
 Implementation scope:
 - Treat the attempted removal of `--no-opt` as rejected unless a follow-up change also restores `small` peak RSS below `120 MiB` on macOS arm64 and passes Linux x86_64 Gate F.

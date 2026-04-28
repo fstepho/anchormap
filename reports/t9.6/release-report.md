@@ -2,7 +2,7 @@
 
 Task: T9.6
 Report version: release-gate-report-v2
-Release verdict: fail
+Release verdict: pass
 
 ## Gates
 
@@ -11,7 +11,7 @@ Release verdict: fail
 - Gate C: pass - Codes de sortie, préconditions et priorité
 - Gate D: pass - Déterminisme et isolation
 - Gate E: pass - Cross-platform
-- Gate F: fail - Performance
+- Gate F: pass - Performance
 - Gate G: pass - Reproductibilité de release
 
 ## Publication Checklist
