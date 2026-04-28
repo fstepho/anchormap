@@ -280,7 +280,7 @@ test("release package contents include launcher and compiled CLI target", () => 
 			files: Array<{ path: string }>;
 		}>;
 		const packedFiles = packResult.files.map((file) => file.path).sort();
-		const expectedPackedFiles = ["package.json", ...EXPECTED_PACKAGE_FILES].sort();
+		const expectedPackedFiles = ["README.md", "package.json", ...EXPECTED_PACKAGE_FILES].sort();
 
 		assert.deepEqual(packedFiles, expectedPackedFiles);
 		assert.ok(!packedFiles.some((path) => path.includes(".test.")));
