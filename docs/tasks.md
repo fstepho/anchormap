@@ -25,8 +25,8 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T9.8 — Reconcile archived M9 release-gate evidence` (`blocked`)
-- Next executable product task: none until the T9.8 Linux x86_64 Gate F blocker is resolved.
+- Current active task: `T9.9 — Resolve Gate F release performance blocker` (`blocked`)
+- Next executable product task: none until the T9.9 performance-strategy blocker is resolved.
 - Last completed task: `T10.4 — Add user-facing release documentation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -106,9 +106,11 @@
   - `T10.3 — Verify installed artifact behavior`
   - `T10.4 — Add user-facing release documentation`
 - Blocked tasks:
+  - `T9.9 — Resolve Gate F release performance blocker`: blocked because the first bounded launch-profile retune, removing `--no-opt` from the release launcher, improves macOS arm64 `small` p95 to `241.362 ms` but raises `small` peak RSS to `127.781 MiB`, above the `120 MiB` Gate F budget.
   - `T9.8 — Reconcile archived M9 release-gate evidence`: blocked on Linux x86_64 Gate F performance evidence; `npm run release:gates` now passes Gates A, B, C, D, E, G and the M9 checklist, but Gate F fails because the real Linux x86_64 benchmark report records `small` p95 `579.85 ms` against the `400 ms` budget.
   - `T10.5 — Create publication dry-run and release runbook`: blocked on `T9.8`; missing or failing passing M9 release verdict evidence is required before publication dry-run evidence can be archived.
 - Open deviations:
+  - `T9.9`: `tooling problem`, blocking for release-candidate closure; the first launch-profile retune was tested locally on macOS arm64 and failed Gate F RSS for `small` (`127.781 MiB` observed, `120 MiB` budget) even though p95 improved. Next operator action: choose a new bounded optimization strategy that preserves both p95 and RSS budgets, or reclassify the Gate F reference-machine/budget calibration through the eval change process.
   - `T9.8`: `tooling problem`, blocking for release-candidate closure; GitHub Actions run `25070900274` on `main` at `63f69ace4ad2a5a8d3843e6f0dac7ea4f383368e` provides Linux x86_64 Gate E evidence, but its Gate F report fails on `small` p95 `579.85 ms` against the `400 ms` budget. Next operator action: diagnose or optimize the release benchmark `small` corpus on native Linux x86_64, or explicitly reclassify the Gate F budget through the eval change process before publication work resumes.
   - `T10.5` / `T9.8`: `tooling problem`, blocking for publication dry-run start; T10.5 remains blocked until `reports/t9.6/release-report.json` records `release_verdict: "pass"`.
 
@@ -3824,6 +3826,74 @@ Suggested verification:
 - Run `npm run release:gates`.
 - Inspect `reports/t9.6/release-report.json` and `reports/t9.6/release-report.md`.
 - Confirm every required artifact listed by the release report is present, archived, or has a classified blocker.
+
+### T9.9 — Resolve Gate F release performance blocker
+
+Purpose:
+- Resolve the remaining `T9.8` Gate F blocker without weakening performance budgets or changing observable CLI behavior.
+- Diagnose the release performance failure and identify a bounded strategy so the measured release CLI can satisfy Gate F on Linux x86_64 and macOS arm64.
+- Refresh M9 performance evidence only from real supported-platform benchmark runs.
+
+Contract refs:
+- `contract.md` — §4.1 Determinism
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §11 Dependencies and reproducibility
+- `design.md` — §13 Complexity and budgets
+
+Eval refs:
+- `evals.md` — §10 Performance and resources
+- `evals.md` — Gate F — Performance
+- `evals.md` — §11 Gates de release
+
+ADR refs:
+- `docs/adr/0011-release-cli-node-launch-profile.md`
+
+Operating-model refs:
+- `operating-model.md` — §8.2 Changement de design
+- `operating-model.md` — §8.6 Architectural Decision Records
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T9.8 blocked-state evidence.
+- ADR-0011.
+
+Implementation scope:
+- Treat the attempted removal of `--no-opt` as rejected unless a follow-up change also restores `small` peak RSS below `120 MiB` on macOS arm64 and passes Linux x86_64 Gate F.
+- Compare supported-platform benchmark artifacts and local macOS arm64 measurements to isolate whether the blocker is startup time, parser memory, corpus shape, runner environment, or reference-machine calibration.
+- Choose one bounded optimization or one explicit eval-change path before changing runtime behavior again.
+- If the selected strategy changes the release launcher profile, update the benchmark runner, benchmark validator, package-script tests, and ADR-0011 to agree on that profile.
+- Do not change Gate F budgets, corpus shape, supported platforms, or benchmark pass/fail rules.
+- Rerun Gate F locally on macOS arm64 and through the existing Linux x86_64 GitHub Actions workflow for any candidate runtime strategy.
+- If both supported-platform Gate F reports pass, refresh `reports/t9.6/evidence/performance-report.json` and rerun `npm run release:gates`.
+
+Out of scope:
+- Changing `docs/contract.md`.
+- Changing `docs/evals.md` budgets or corpus definitions.
+- Adding an old-space cap or a new runtime dependency.
+- Parser replacement, cache introduction, or broad scan-engine optimization.
+- Publication dry-run, tarball evidence, or release publication.
+
+Done when:
+- The chosen bounded strategy is recorded and either implemented successfully or classified as the remaining blocker.
+- If the release launcher profile changes, the release launcher, benchmark runner, benchmark validator, tests, and ADR-0011 all name the same launch profile.
+- macOS arm64 Gate F passes with the chosen strategy.
+- Linux x86_64 Gate F passes from real supported-platform evidence, or the remaining blocker is classified explicitly.
+- `npm run release:gates` has been rerun after evidence refresh.
+- If `release_verdict: "pass"`, the `T9.8` and `T10.5` blockers are cleared in `## Execution State`.
+
+Blocks:
+- T9.8
+- T10.5
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `npm run test:product`.
+- Run `npm run bench:release`.
+- Run `.github/workflows/t9-3-cross-platform-linux.yml` on `main`.
+- Run `npm run release:gates`.
 
 ## M10 — Packaging, distribution, and publication
 
