@@ -1,0 +1,118 @@
+{
+	"task": "T10.3",
+	"verdict": "pass",
+	"pack": {
+		"command": "npm pack --pack-destination <temp-pack-dir> --json",
+		"status": 0,
+		"signal": null,
+		"timed_out": false,
+		"error": null,
+		"timeout_ms": 30000,
+		"stdout": null,
+		"stderr": null,
+		"metadata_error": null
+	},
+	"package": {
+		"id": "anchormap@1.0.0",
+		"name": "anchormap",
+		"version": "1.0.0",
+		"filename": "anchormap-1.0.0.tgz",
+		"integrity": "sha512-T/SLFRcMrPIOneHf3V8Kw8ef2RZwOmIWeoBR9pPtCTa+tIbZQgj/YVs2TSF2hET97yGIkFu+S3EpgNFZiQi8pg==",
+		"shasum": "982bc65a91ce9072fdfbe77d603cd256397c30f4",
+		"files": [
+			"bin/anchormap",
+			"dist/anchormap.js",
+			"dist/cli/command-args.js",
+			"dist/cli/commands.js",
+			"dist/domain/anchor-id.js",
+			"dist/domain/canonical-order.js",
+			"dist/domain/finding.js",
+			"dist/domain/repo-path.js",
+			"dist/domain/scan-engine.js",
+			"dist/domain/scan-result.js",
+			"dist/infra/config-io.js",
+			"dist/infra/config-yaml-render.js",
+			"dist/infra/product-files.js",
+			"dist/infra/repo-fs.js",
+			"dist/infra/spec-index.js",
+			"dist/infra/ts-graph.js",
+			"dist/render/render-json.js",
+			"npm-shrinkwrap.json",
+			"package.json"
+		]
+	},
+	"consumer_install": {
+		"command": "npm install <local tarball:anchormap-1.0.0.tgz> --ignore-scripts --no-audit --no-fund",
+		"status": 0,
+		"signal": null,
+		"timed_out": false,
+		"error": null,
+		"timeout_ms": 30000,
+		"stdout": null,
+		"stderr": null,
+		"package_lock_present": true
+	},
+	"installed_binary": {
+		"invocation": "node_modules/.bin/anchormap",
+		"present": true,
+		"link_target": "../anchormap/bin/anchormap",
+		"realpath_within_package": true
+	},
+	"runtime_source_check": {
+		"compiled_dist_entry_present": true,
+		"typescript_source_absent": true,
+		"unexpected_source_files": []
+	},
+	"commands": {
+		"init": {
+			"status": 0,
+			"signal": null,
+			"timed_out": false,
+			"error": null,
+			"timeout_ms": 30000,
+			"stdout": "",
+			"stderr": "",
+			"anchormap_yaml": "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n"
+		},
+		"map": {
+			"status": 0,
+			"signal": null,
+			"timed_out": false,
+			"error": null,
+			"timeout_ms": 30000,
+			"stdout": "",
+			"stderr": "",
+			"anchormap_yaml": "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings:\n  'AM-001':\n    seed_files:\n      - 'src/index.ts'\n"
+		},
+		"scan_json": {
+			"status": 0,
+			"signal": null,
+			"timed_out": false,
+			"error": null,
+			"timeout_ms": 30000,
+			"stdout": "{\"schema_version\":1,\"config\":{\"version\":1,\"product_root\":\"src\",\"spec_roots\":[\"specs\"],\"ignore_roots\":[]},\"analysis_health\":\"clean\",\"observed_anchors\":{\"AM-001\":{\"spec_path\":\"specs/requirements.md\",\"mapping_state\":\"usable\"}},\"stored_mappings\":{\"AM-001\":{\"state\":\"usable\",\"seed_files\":[\"src/index.ts\"],\"reached_files\":[\"src/index.ts\"]}},\"files\":{\"src/index.ts\":{\"covering_anchor_ids\":[\"AM-001\"],\"supported_local_targets\":[]}},\"findings\":[]}\n",
+			"stderr": ""
+		}
+	},
+	"checks": {
+		"node_options_unset": true,
+		"npm_pack_exit_zero": true,
+		"npm_pack_metadata_valid": true,
+		"consumer_install_exit_zero": true,
+		"installed_binary_present": true,
+		"package_name": true,
+		"package_version": true,
+		"bin_resolves_to_installed_package": true,
+		"bin_points_at_release_launcher": true,
+		"compiled_dist_entry_present": true,
+		"typescript_source_absent": true,
+		"shrinkwrap_present": true,
+		"init_exit_zero": true,
+		"init_canonical_yaml": true,
+		"map_exit_zero": true,
+		"map_canonical_yaml": true,
+		"scan_json_exit_zero": true,
+		"scan_json_stderr_empty": true,
+		"scan_json_matches_expected": true
+	}
+}
