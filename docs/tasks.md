@@ -25,8 +25,8 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T9.8 — Reconcile archived M9 release-gate evidence` (`ready`)
-- Next executable product task: `T9.8 — Reconcile archived M9 release-gate evidence`
+- Current active task: `T9.8 — Reconcile archived M9 release-gate evidence` (`blocked`)
+- Next executable product task: none until the T9.8 Linux x86_64 Gate F blocker is resolved.
 - Last completed task: `T10.4 — Add user-facing release documentation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -106,9 +106,11 @@
   - `T10.3 — Verify installed artifact behavior`
   - `T10.4 — Add user-facing release documentation`
 - Blocked tasks:
+  - `T9.8 — Reconcile archived M9 release-gate evidence`: blocked on Linux x86_64 Gate F performance evidence; `npm run release:gates` now passes Gates A, B, C, D, E, G and the M9 checklist, but Gate F fails because the real Linux x86_64 benchmark report records `small` p95 `579.85 ms` against the `400 ms` budget.
   - `T10.5 — Create publication dry-run and release runbook`: blocked on `T9.8`; missing or failing passing M9 release verdict evidence is required before publication dry-run evidence can be archived.
 - Open deviations:
-  - `T10.5` / `T9.8`: `tooling problem`, blocking for release-candidate closure; `npm run release:gates` currently reports `release verdict: fail` because required M9 release evidence inputs are missing or failing.
+  - `T9.8`: `tooling problem`, blocking for release-candidate closure; GitHub Actions run `25070900274` on `main` at `63f69ace4ad2a5a8d3843e6f0dac7ea4f383368e` provides Linux x86_64 Gate E evidence, but its Gate F report fails on `small` p95 `579.85 ms` against the `400 ms` budget. Next operator action: diagnose or optimize the release benchmark `small` corpus on native Linux x86_64, or explicitly reclassify the Gate F budget through the eval change process before publication work resumes.
+  - `T10.5` / `T9.8`: `tooling problem`, blocking for publication dry-run start; T10.5 remains blocked until `reports/t9.6/release-report.json` records `release_verdict: "pass"`.
 
 ## Execution principles
 

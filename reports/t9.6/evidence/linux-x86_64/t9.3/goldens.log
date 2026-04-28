@@ -1,0 +1,45 @@
+
+> anchormap@1.0.0 check:goldens
+> npm run test:fixtures -- --goldens-only
+
+
+> anchormap@1.0.0 test:fixtures
+> npm run build && node dist/harness/fixture-runner.js --goldens-only
+
+
+> anchormap@1.0.0 build
+> npm run clean && tsc -p tsconfig.json
+
+
+> anchormap@1.0.0 clean
+> node -e "require('node:fs').rmSync('dist', { recursive: true, force: true })"
+
+PASS fx71_cli_scan_option_order_invariant
+PASS fx41_repo_noise_outside_scope_ignored
+PASS fx01_scan_min_clean
+PASS fx02_scan_two_anchors_overlap
+PASS fx03_scan_unmapped_anchor
+PASS fx04_scan_stale_mapping
+PASS fx05_scan_broken_seed
+PASS fx06_scan_clean_untraced
+PASS fx06a_scan_unmapped_anchor_suppresses_untraced
+PASS fx07_scan_degraded_suppresses_untraced
+PASS fx08_scan_no_untraced_without_usable_mapping
+PASS fx09_scan_findings_canonical_order
+PASS fx10_scan_closed_objects
+PASS c1_filesystem_order_baseline
+PASS c1_filesystem_order_transformed
+PASS c2_yaml_reorder_scan_baseline
+PASS c2_yaml_reorder_scan_transformed
+PASS c3_spec_noise_baseline
+PASS c3_spec_noise_transformed
+PASS c4_seed_movement_baseline
+PASS c4_seed_movement_transformed
+PASS c5_external_import_baseline
+PASS c5_external_import_transformed
+PASS c6_unsupported_extension_baseline
+PASS c6_unsupported_extension_transformed
+PASS c8_locale_collation_order
+PASS harness_schema_success
+PASS harness_smoke_scan_success
+SUMMARY total=28 passed=28 failed=0 artifacts=.tmp/fixture-runs/goldens-all/run-0001 summary=.tmp/fixture-runs/goldens-all/run-0001/summary.txt

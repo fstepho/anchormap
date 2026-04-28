@@ -1,0 +1,486 @@
+{
+	"total_count": 28,
+	"passed_count": 28,
+	"failed_count": 0,
+	"exit_code": 0,
+	"total_duration_ms": 3394.706625,
+	"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/summary.txt",
+	"records": [
+		{
+			"fixture_id": "fx71_cli_scan_option_order_invariant",
+			"family": "B-cli",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 128.54275,
+			"harness_duration_ms": 132.587666,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-cli/fx71_cli_scan_option_order_invariant",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-cli/fx71_cli_scan_option_order_invariant/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-cli/fx71_cli_scan_option_order_invariant/summary.txt"
+		},
+		{
+			"fixture_id": "fx41_repo_noise_outside_scope_ignored",
+			"family": "B-repo",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 121.557125,
+			"harness_duration_ms": 124.682917,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/summary.txt"
+		},
+		{
+			"fixture_id": "fx01_scan_min_clean",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.02125,
+			"harness_duration_ms": 128.620125,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx01_scan_min_clean",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx01_scan_min_clean/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx01_scan_min_clean/summary.txt"
+		},
+		{
+			"fixture_id": "fx02_scan_two_anchors_overlap",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 127.787,
+			"harness_duration_ms": 130.7505,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx02_scan_two_anchors_overlap",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx02_scan_two_anchors_overlap/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx02_scan_two_anchors_overlap/summary.txt"
+		},
+		{
+			"fixture_id": "fx03_scan_unmapped_anchor",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 123.649167,
+			"harness_duration_ms": 126.216,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx03_scan_unmapped_anchor",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx03_scan_unmapped_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx03_scan_unmapped_anchor/summary.txt"
+		},
+		{
+			"fixture_id": "fx04_scan_stale_mapping",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 122.199625,
+			"harness_duration_ms": 124.740959,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx04_scan_stale_mapping",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx04_scan_stale_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx04_scan_stale_mapping/summary.txt"
+		},
+		{
+			"fixture_id": "fx05_scan_broken_seed",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 124.279333,
+			"harness_duration_ms": 126.601292,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx05_scan_broken_seed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx05_scan_broken_seed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx05_scan_broken_seed/summary.txt"
+		},
+		{
+			"fixture_id": "fx06_scan_clean_untraced",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 124.781291,
+			"harness_duration_ms": 127.362875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06_scan_clean_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06_scan_clean_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06_scan_clean_untraced/summary.txt"
+		},
+		{
+			"fixture_id": "fx06a_scan_unmapped_anchor_suppresses_untraced",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 124.923042,
+			"harness_duration_ms": 127.8995,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/summary.txt"
+		},
+		{
+			"fixture_id": "fx07_scan_degraded_suppresses_untraced",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 123.010417,
+			"harness_duration_ms": 125.698875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/summary.txt"
+		},
+		{
+			"fixture_id": "fx08_scan_no_untraced_without_usable_mapping",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 123.988791,
+			"harness_duration_ms": 126.43325,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/summary.txt"
+		},
+		{
+			"fixture_id": "fx09_scan_findings_canonical_order",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.95325,
+			"harness_duration_ms": 130.253625,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx09_scan_findings_canonical_order",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx09_scan_findings_canonical_order/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx09_scan_findings_canonical_order/summary.txt"
+		},
+		{
+			"fixture_id": "fx10_scan_closed_objects",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 125.094375,
+			"harness_duration_ms": 127.485792,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx10_scan_closed_objects",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx10_scan_closed_objects/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/B-scan/fx10_scan_closed_objects/summary.txt"
+		},
+		{
+			"fixture_id": "c1_filesystem_order_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 133.520083,
+			"harness_duration_ms": 136.690125,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c1_filesystem_order_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.5005,
+			"harness_duration_ms": 129.333667,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c1_filesystem_order_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c2_yaml_reorder_scan_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 125.199625,
+			"harness_duration_ms": 127.78325,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c2_yaml_reorder_scan_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.192375,
+			"harness_duration_ms": 128.7685,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c3_spec_noise_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 123.27475,
+			"harness_duration_ms": 125.481334,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c3_spec_noise_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 125.279791,
+			"harness_duration_ms": 127.8705,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c3_spec_noise_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c4_seed_movement_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.007375,
+			"harness_duration_ms": 128.480625,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c4_seed_movement_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 124.088375,
+			"harness_duration_ms": 126.33225,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c4_seed_movement_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c5_external_import_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 123.987167,
+			"harness_duration_ms": 126.399875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c5_external_import_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 125.882584,
+			"harness_duration_ms": 128.345292,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c5_external_import_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c6_unsupported_extension_baseline",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 125.194292,
+			"harness_duration_ms": 127.604291,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_baseline/summary.txt"
+		},
+		{
+			"fixture_id": "c6_unsupported_extension_transformed",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 124.022,
+			"harness_duration_ms": 126.568708,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c6_unsupported_extension_transformed/summary.txt"
+		},
+		{
+			"fixture_id": "c8_locale_collation_order",
+			"family": "C-metamorphic",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.971958,
+			"harness_duration_ms": 129.414875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c8_locale_collation_order",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c8_locale_collation_order/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/C-metamorphic/c8_locale_collation_order/summary.txt"
+		},
+		{
+			"fixture_id": "harness_schema_success",
+			"family": "harness-schema",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 25.817541,
+			"harness_duration_ms": 28.234291,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "captured",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-schema/harness_schema_success",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-schema/harness_schema_success/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-schema/harness_schema_success/summary.txt"
+		},
+		{
+			"fixture_id": "harness_smoke_scan_success",
+			"family": "harness-smoke",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 24.808209,
+			"harness_duration_ms": 27.036416,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "captured",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-smoke/harness_smoke_scan_success",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-smoke/harness_smoke_scan_success/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0014/fixtures/harness-smoke/harness_smoke_scan_success/summary.txt"
+		}
+	]
+}

@@ -1,0 +1,100 @@
+
+> anchormap@1.0.0 test:metamorphic
+> npm run build && node --test "dist/harness/metamorphic-fixtures.test.js"
+
+
+> anchormap@1.0.0 build
+> npm run clean && tsc -p tsconfig.json
+
+
+> anchormap@1.0.0 clean
+> node -e "require('node:fs').rmSync('dist', { recursive: true, force: true })"
+
+TAP version 13
+# Subtest: C1 filesystem order invariance: baseline=c1_filesystem_order_baseline transformed=c1_filesystem_order_transformed oracle=scan stdout bytes equal
+ok 1 - C1 filesystem order invariance: baseline=c1_filesystem_order_baseline transformed=c1_filesystem_order_transformed oracle=scan stdout bytes equal
+  ---
+  duration_ms: 570.514408
+  type: 'test'
+  ...
+# Subtest: C2 YAML editorial reorder invariance: baseline=c2_yaml_reorder_scan_baseline transformed=c2_yaml_reorder_scan_transformed oracle=scan stdout bytes equal
+ok 2 - C2 YAML editorial reorder invariance: baseline=c2_yaml_reorder_scan_baseline transformed=c2_yaml_reorder_scan_transformed oracle=scan stdout bytes equal
+  ---
+  duration_ms: 558.670013
+  type: 'test'
+  ...
+# Subtest: C2 YAML editorial reorder invariance: baseline=c2_yaml_reorder_map_baseline transformed=c2_yaml_reorder_map_transformed oracle=map YAML bytes equal
+ok 3 - C2 YAML editorial reorder invariance: baseline=c2_yaml_reorder_map_baseline transformed=c2_yaml_reorder_map_transformed oracle=map YAML bytes equal
+  ---
+  duration_ms: 556.455819
+  type: 'test'
+  ...
+# Subtest: C3 spec noise invariance: baseline=c3_spec_noise_baseline transformed=c3_spec_noise_transformed oracle=scan stdout bytes equal
+ok 4 - C3 spec noise invariance: baseline=c3_spec_noise_baseline transformed=c3_spec_noise_transformed oracle=scan stdout bytes equal
+  ---
+  duration_ms: 550.041421
+  type: 'test'
+  ...
+# Subtest: C4 seed movement: baseline=c4_seed_movement_baseline transformed=c4_seed_movement_transformed oracle=exact contracted degradation
+ok 5 - C4 seed movement: baseline=c4_seed_movement_baseline transformed=c4_seed_movement_transformed oracle=exact contracted degradation
+  ---
+  duration_ms: 561.905325
+  type: 'test'
+  ...
+# Subtest: C5 external import addition: baseline=c5_external_import_baseline transformed=c5_external_import_transformed oracle=scan stdout bytes equal
+ok 6 - C5 external import addition: baseline=c5_external_import_baseline transformed=c5_external_import_transformed oracle=scan stdout bytes equal
+  ---
+  duration_ms: 559.388204
+  type: 'test'
+  ...
+# Subtest: C6 unsupported extension conversion: baseline=c6_unsupported_extension_baseline transformed=c6_unsupported_extension_transformed oracle=exact contracted edge loss
+ok 7 - C6 unsupported extension conversion: baseline=c6_unsupported_extension_baseline transformed=c6_unsupported_extension_transformed oracle=exact contracted edge loss
+  ---
+  duration_ms: 564.420373
+  type: 'test'
+  ...
+# Subtest: C7 deterministic reruns: every successful scan --json fixture has 20 process-isolated byte-identical stdout reruns and empty stderr
+ok 8 - C7 deterministic reruns: every successful scan --json fixture has 20 process-isolated byte-identical stdout reruns and empty stderr
+  ---
+  duration_ms: 145667.465055
+  type: 'test'
+  ...
+# Subtest: C8 locale independence: representative JSON and YAML fixtures are byte-identical under C and UTF-8 locales
+ok 9 - C8 locale independence: representative JSON and YAML fixtures are byte-identical under C and UTF-8 locales
+  ---
+  duration_ms: 1680.617919
+  type: 'test'
+  ...
+# Subtest: C9 Git independence: representative JSON and YAML fixtures are byte-identical with and without Git metadata
+ok 10 - C9 Git independence: representative JSON and YAML fixtures are byte-identical with and without Git metadata
+  ---
+  duration_ms: 1154.419582
+  type: 'test'
+  ...
+# Subtest: C10 time and timezone independence: representative JSON and YAML fixtures are byte-identical under changed TZ and fixed Date preloads
+ok 11 - C10 time and timezone independence: representative JSON and YAML fixtures are byte-identical under changed TZ and fixed Date preloads
+  ---
+  duration_ms: 1124.220257
+  type: 'test'
+  ...
+# Subtest: C11 no network or non-contract environment source of truth: representative scan fixtures do not vary with network blocked or env changed
+ok 12 - C11 no network or non-contract environment source of truth: representative scan fixtures do not vary with network blocked or env changed
+  ---
+  duration_ms: 2671.813722
+  type: 'test'
+  ...
+# Subtest: C12 no persistent cache and no scan writes: representative scan fixtures leave repository and sandboxed cache dirs unchanged with byte-identical output
+ok 13 - C12 no persistent cache and no scan writes: representative scan fixtures leave repository and sandboxed cache dirs unchanged with byte-identical output
+  ---
+  duration_ms: 1678.728735
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157972.734424

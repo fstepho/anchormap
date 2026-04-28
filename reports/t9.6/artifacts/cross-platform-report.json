@@ -1,0 +1,43 @@
+{
+	"schema_version": 1,
+	"task": "T9.3",
+	"report_version": "cross-platform-report-v1",
+	"locally_reproducible_evidence": {
+		"platform": "darwin",
+		"arch": "arm64",
+		"fixture_report": "reports/t9.6/evidence/fixture-report.json",
+		"golden_report": "reports/t9.6/evidence/golden-report.json",
+		"metamorphic_report": "reports/t9.6/evidence/metamorphic-report.json"
+	},
+	"platforms": [
+		{
+			"platform": "darwin",
+			"arch": "arm64",
+			"label": "macOS arm64",
+			"verdict": "pass",
+			"source": "locally regenerated on this host",
+			"fixture_report": "reports/t9.6/evidence/fixture-report.json",
+			"golden_report": "reports/t9.6/evidence/golden-report.json",
+			"metamorphic_report": "reports/t9.6/evidence/metamorphic-report.json"
+		},
+		{
+			"platform": "linux",
+			"arch": "x64",
+			"label": "Linux x86_64",
+			"verdict": "pass",
+			"source": "GitHub Actions workflow_dispatch run 25070900274 on main at 63f69ace4ad2a5a8d3843e6f0dac7ea4f383368e",
+			"run_url": "https://github.com/fstepho/anchormap/actions/runs/25070900274",
+			"fixture_log": "reports/t9.6/evidence/linux-x86_64/t9.3/level-b-fixtures.log",
+			"golden_log": "reports/t9.6/evidence/linux-x86_64/t9.3/goldens.log",
+			"metamorphic_log": "reports/t9.6/evidence/linux-x86_64/t9.3/c1-c12.log",
+			"atomic_write_probe_log": "reports/t9.6/evidence/linux-x86_64/t9.3/atomic-write-rename-boundary.log",
+			"toolchain": "reports/t9.6/evidence/linux-x86_64/t9.3/toolchain.txt",
+			"uname": "reports/t9.6/evidence/linux-x86_64/t9.3/uname.txt",
+			"fixture_run_artifact_hashes": "reports/t9.6/evidence/linux-x86_64/t9.3/fixture-run-artifacts.sha256"
+		}
+	],
+	"gate_e": {
+		"verdict": "pass",
+		"source": "GitHub Actions run 25070900274 plus locally regenerated macOS arm64 evidence"
+	}
+}

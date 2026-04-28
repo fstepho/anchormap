@@ -1,0 +1,93 @@
+{
+	"schema_version": 1,
+	"task": "T9.2",
+	"report_version": "metamorphic-report-v1",
+	"command": "node --test --test-reporter=tap --test-reporter-destination=reports/t9.6/evidence/metamorphic-node-test.tap dist/harness/metamorphic-fixtures.test.js",
+	"platform": {
+		"platform": "darwin",
+		"arch": "arm64"
+	},
+	"raw_tap": "reports/t9.6/evidence/metamorphic-node-test.tap",
+	"summary": {
+		"tests": 13,
+		"pass": 13,
+		"fail": 0
+	},
+	"cases": [
+		{
+			"case": "C1",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C2",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 2
+		},
+		{
+			"case": "C3",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C4",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C5",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C6",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C7",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C8",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C9",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C10",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C11",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		},
+		{
+			"case": "C12",
+			"status": "pass",
+			"source": "reports/t9.6/evidence/metamorphic-node-test.tap",
+			"test_count": 1
+		}
+	],
+	"gate_d": {
+		"verdict": "pass"
+	}
+}

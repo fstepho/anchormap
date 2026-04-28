@@ -1,0 +1,508 @@
+{
+	"schema_version": 1,
+	"task": "T9.6",
+	"report_version": "release-gate-report-v2",
+	"release_verdict": "fail",
+	"gates": [
+		{
+			"id": "A",
+			"name": "Couverture du contrat observable",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "current_level_b_fixture_manifests_valid",
+					"status": "pass",
+					"invalid_manifests": []
+				},
+				{
+					"id": "level_b_fixture_report_passed",
+					"status": "pass",
+					"scoped_record_count": 59,
+					"failed_scoped_record_count": 0
+				},
+				{
+					"id": "level_b_fixture_report_matches_current_manifests",
+					"status": "pass",
+					"expected_count": 59,
+					"actual_count": 59,
+					"total_count": 79,
+					"passed_count": 79
+				},
+				{
+					"id": "level_b_fixture_report_records_well_formed",
+					"status": "pass",
+					"malformed_record_count": 0
+				},
+				{
+					"id": "level_b_fixture_report_has_no_duplicate_records",
+					"status": "pass",
+					"duplicate_fixtures": []
+				},
+				{
+					"id": "level_b_fixture_report_has_no_stale_records",
+					"status": "pass",
+					"stale_or_unknown_fixtures": []
+				},
+				{
+					"id": "all_required_b_families_present",
+					"status": "pass",
+					"missing_families": []
+				},
+				{
+					"id": "all_level_b_fixture_manifests_passed",
+					"status": "pass",
+					"missing_fixtures": []
+				}
+			]
+		},
+		{
+			"id": "B",
+			"name": "Schéma machine, goldens et ordre canonique",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "json_and_stdout_golden_report_passed",
+					"status": "pass"
+				},
+				{
+					"id": "golden_report_matches_current_stdout_golden_manifests",
+					"status": "pass",
+					"missing_stdout_golden_fixtures": [],
+					"expected_count": 28,
+					"actual_count": 28,
+					"total_count": 28,
+					"passed_count": 28
+				},
+				{
+					"id": "golden_report_records_well_formed",
+					"status": "pass",
+					"malformed_record_count": 0
+				},
+				{
+					"id": "golden_report_has_no_duplicate_records",
+					"status": "pass",
+					"duplicate_fixtures": []
+				},
+				{
+					"id": "golden_report_has_no_stale_records",
+					"status": "pass",
+					"stale_or_unknown_fixtures": []
+				},
+				{
+					"id": "json_goldens_present",
+					"status": "pass",
+					"json_golden_count": 28
+				},
+				{
+					"id": "yaml_goldens_present",
+					"status": "pass",
+					"yaml_golden_count": 9
+				},
+				{
+					"id": "yaml_expected_file_fixtures_passed",
+					"status": "pass",
+					"missing_yaml_expected_file_fixtures": []
+				},
+				{
+					"id": "all_level_b_fixture_oracles_passed",
+					"status": "pass",
+					"scoped_record_count": 59,
+					"failed_scoped_record_count": 0
+				},
+				{
+					"id": "golden_diff_paths_present",
+					"status": "pass",
+					"invalid_path_count": 0,
+					"invalid_golden_diff_indexes": []
+				},
+				{
+					"id": "golden_diffs_classified",
+					"status": "pass",
+					"unclassified_count": 0,
+					"unsupported_classification_count": 0,
+					"unsupported_classifications": []
+				}
+			]
+		},
+		{
+			"id": "C",
+			"name": "Codes de sortie, préconditions et priorité",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "b_cli_fixtures_passed",
+					"status": "pass",
+					"scoped_record_count": 14,
+					"failed_scoped_record_count": 0
+				},
+				{
+					"id": "exit_codes_0_1_2_3_4_covered",
+					"status": "pass",
+					"missing_exit_codes": []
+				},
+				{
+					"id": "priority_fixtures_fx72_fx75_passed",
+					"status": "pass",
+					"missing_fixtures": []
+				},
+				{
+					"id": "cli_surface_fixtures_fx68_fx71_fx76_passed",
+					"status": "pass",
+					"missing_fixtures": []
+				},
+				{
+					"id": "scan_human_exit_modes_covered",
+					"status": "pass",
+					"missing_fixtures": []
+				}
+			]
+		},
+		{
+			"id": "D",
+			"name": "Déterminisme et isolation",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "c1_c12_cases_passed",
+					"status": "pass",
+					"missing_cases": []
+				},
+				{
+					"id": "c1_c12_cases_not_duplicated",
+					"status": "pass",
+					"duplicate_cases": []
+				},
+				{
+					"id": "c1_c12_cases_only_supported",
+					"status": "pass",
+					"unsupported_cases": []
+				},
+				{
+					"id": "metamorphic_report_verdict_passed",
+					"status": "pass"
+				}
+			]
+		},
+		{
+			"id": "E",
+			"name": "Cross-platform",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "supported_platform_matrix_passed",
+					"status": "pass",
+					"missing_or_failing_platforms": [],
+					"duplicate_supported_platforms": [],
+					"unsupported_platforms": [],
+					"platform_count": 2,
+					"expected_platform_count": 2
+				},
+				{
+					"id": "cross_platform_report_verdict_passed",
+					"status": "pass"
+				}
+			]
+		},
+		{
+			"id": "F",
+			"name": "Performance",
+			"status": "fail",
+			"checks": [
+				{
+					"id": "supported_platform_benchmark_reports_present",
+					"status": "pass",
+					"missing_platforms": [],
+					"duplicate_platforms": [],
+					"unsupported_reports": []
+				},
+				{
+					"id": "gate_f_benchmark_reports_validated",
+					"status": "fail",
+					"validation_errors": [
+						{
+							"platform": "linux:x64",
+							"error": "benchmark-report: Gate F verdict must pass"
+						}
+					]
+				},
+				{
+					"id": "gate_f_report_evaluable",
+					"status": "pass"
+				},
+				{
+					"id": "gate_f_verdict_passed",
+					"status": "fail"
+				},
+				{
+					"id": "small_benchmark_passed",
+					"status": "fail"
+				},
+				{
+					"id": "medium_benchmark_passed",
+					"status": "pass"
+				},
+				{
+					"id": "large_benchmark_archived_informational",
+					"status": "pass"
+				},
+				{
+					"id": "large_excluded_from_pass_fail",
+					"status": "pass"
+				}
+			]
+		},
+		{
+			"id": "G",
+			"name": "Reproductibilité de release",
+			"status": "pass",
+			"checks": [
+				{
+					"id": "dependency_audit_verdict_passed",
+					"status": "pass"
+				},
+				{
+					"id": "floating_semver_ranges_rejected",
+					"status": "pass"
+				},
+				{
+					"id": "lockfile_required",
+					"status": "pass"
+				},
+				{
+					"id": "lockfile_root_consistency_checked",
+					"status": "pass"
+				},
+				{
+					"id": "full_lockfile_hash_checked",
+					"status": "pass"
+				},
+				{
+					"id": "installed_parser_versions_checked",
+					"status": "pass"
+				},
+				{
+					"id": "versioned_goldens_checked_with_git",
+					"status": "pass"
+				},
+				{
+					"id": "goldens_versioned",
+					"status": "pass"
+				}
+			]
+		}
+	],
+	"publication_checklist": {
+		"verdict": "pass",
+		"required_artifacts": [
+			{
+				"name": "fixture_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/fixture-report.json",
+				"archived_path": "reports/t9.6/artifacts/fixture-report.json"
+			},
+			{
+				"name": "golden_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/golden-report.json",
+				"archived_path": "reports/t9.6/artifacts/golden-report.json"
+			},
+			{
+				"name": "metamorphic_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/metamorphic-report.json",
+				"archived_path": "reports/t9.6/artifacts/metamorphic-report.json"
+			},
+			{
+				"name": "cross_platform_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/cross-platform-report.json",
+				"archived_path": "reports/t9.6/artifacts/cross-platform-report.json"
+			},
+			{
+				"name": "performance_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/performance-report.json",
+				"archived_path": "reports/t9.6/artifacts/performance-report.json"
+			},
+			{
+				"name": "dependency_audit",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/dependency-audit.json",
+				"archived_path": "reports/t9.6/artifacts/dependency-audit.json"
+			},
+			{
+				"name": "golden_diffs",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/golden-diffs.json",
+				"archived_path": "reports/t9.6/artifacts/golden-diffs.json"
+			},
+			{
+				"name": "entropy_review",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.7/entropy-review.json",
+				"archived_path": "reports/t9.6/artifacts/entropy-review.json"
+			}
+		],
+		"pre_publication_required_artifacts": [
+			{
+				"name": "fixture_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/fixture-report.json",
+				"archived_path": "reports/t9.6/artifacts/fixture-report.json"
+			},
+			{
+				"name": "golden_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/golden-report.json",
+				"archived_path": "reports/t9.6/artifacts/golden-report.json"
+			},
+			{
+				"name": "metamorphic_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/metamorphic-report.json",
+				"archived_path": "reports/t9.6/artifacts/metamorphic-report.json"
+			},
+			{
+				"name": "cross_platform_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/cross-platform-report.json",
+				"archived_path": "reports/t9.6/artifacts/cross-platform-report.json"
+			},
+			{
+				"name": "performance_report",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/performance-report.json",
+				"archived_path": "reports/t9.6/artifacts/performance-report.json"
+			},
+			{
+				"name": "dependency_audit",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/dependency-audit.json",
+				"archived_path": "reports/t9.6/artifacts/dependency-audit.json"
+			},
+			{
+				"name": "golden_diffs",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.6/evidence/golden-diffs.json",
+				"archived_path": "reports/t9.6/artifacts/golden-diffs.json"
+			},
+			{
+				"name": "entropy_review",
+				"required": true,
+				"status": "archived",
+				"source": "reports/t9.7/entropy-review.json",
+				"archived_path": "reports/t9.6/artifacts/entropy-review.json"
+			}
+		],
+		"post_m9_publication_evidence_artifacts": [
+			{
+				"name": "consumer_lockback",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/consumer-lockback.json",
+				"archived_path": "reports/t9.6/artifacts/consumer-lockback.json"
+			},
+			{
+				"name": "t10_5_tarball_artifact",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.5-tarball-artifact.json",
+				"archived_path": "reports/t9.6/artifacts/t10.5-tarball-artifact.json"
+			},
+			{
+				"name": "t10_5_publication_dry_run",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.5-publication-dry-run.json",
+				"archived_path": "reports/t9.6/artifacts/t10.5-publication-dry-run.json"
+			},
+			{
+				"name": "t10_6_publication_evidence",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
+				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
+			}
+		],
+		"post_publication_evidence_artifacts": [
+			{
+				"name": "consumer_lockback",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/consumer-lockback.json",
+				"archived_path": "reports/t9.6/artifacts/consumer-lockback.json"
+			},
+			{
+				"name": "t10_5_tarball_artifact",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.5-tarball-artifact.json",
+				"archived_path": "reports/t9.6/artifacts/t10.5-tarball-artifact.json"
+			},
+			{
+				"name": "t10_5_publication_dry_run",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.5-publication-dry-run.json",
+				"archived_path": "reports/t9.6/artifacts/t10.5-publication-dry-run.json"
+			},
+			{
+				"name": "t10_6_publication_evidence",
+				"required": false,
+				"status": "pending",
+				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
+				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
+			}
+		],
+		"entropy_review": {
+			"status": "pass",
+			"validation_errors": [],
+			"findings_count": 2,
+			"findings_missing_primary_classification": [],
+			"findings_with_unsupported_primary_classification": [],
+			"findings_missing_blocking_status": [],
+			"findings_with_unsupported_blocking_status": [],
+			"findings_missing_follow_up_disposition": [],
+			"blocking_findings_remaining": 0,
+			"unclassified_drift_remaining": false
+		},
+		"publication_evidence": {
+			"status": "pass",
+			"validation_errors": [],
+			"consumer_lockback": {
+				"status": "pending"
+			},
+			"t10_5_tarball_artifact": {
+				"status": "pending"
+			},
+			"t10_5_publication_dry_run": {
+				"status": "pending"
+			},
+			"t10_6_publication_evidence": {
+				"status": "pending"
+			}
+		},
+		"golden_diffs": [],
+		"missing_blocking_artifacts": [],
+		"invalid_golden_diff_paths": [],
+		"unclassified_golden_diffs": [],
+		"unsupported_golden_diff_classifications": [],
+		"invalid_level_b_fixture_manifests": []
+	},
+	"input_errors": []
+}

@@ -1,0 +1,8 @@
+
+> anchormap@1.0.0 build
+> npm run clean && tsc -p tsconfig.json
+
+
+> anchormap@1.0.0 clean
+> node -e "require('node:fs').rmSync('dist', { recursive: true, force: true })"
+

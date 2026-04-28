@@ -1,0 +1,379 @@
+{
+	"schema_version": 1,
+	"task": "T9.5",
+	"release_candidate": {
+		"package_name": "anchormap",
+		"package_version": "1.0.0",
+		"package_manager": "npm@11.11.1",
+		"node_engine": ">=22.0.0",
+		"lockfile": "package-lock.json",
+		"lockfile_version": 3,
+		"lockfile_sha256": "af2fa42f1cb6632e5d7801e771028a4abfbff3398da48383e04a37f565a12f60"
+	},
+	"contract_dependency_policy": {
+		"floating_semver_ranges_rejected": true,
+		"lockfile_required": true,
+		"lockfile_root_consistency_checked": true,
+		"full_lockfile_hash_checked": true,
+		"installed_parser_versions_checked": true,
+		"versioned_goldens_checked_with_git": true
+	},
+	"contract_affecting_dependencies": [
+		{
+			"surface": "markdown_parsing",
+			"package_name": "commonmark",
+			"section": "dependencies",
+			"expected_version": "0.30.0",
+			"role": "MARKDOWN_PROFILE CommonMark 0.30 input parser",
+			"authority": [
+				"contract.md §1.1",
+				"ADR-0004",
+				"design.md §11"
+			],
+			"compatibility_evidence": [
+				"S1",
+				"T0.1",
+				"B-decodage",
+				"B-specs"
+			],
+			"package_spec": "0.30.0",
+			"lockfile_version": "0.30.0",
+			"installed_version": "0.30.0",
+			"lockfile_integrity": "sha512-j1yoUo4gxPND1JWV9xj5ELih0yMv1iCWDG6eEQIPLSWLxzCXiFoyS7kvB+WwU+tZMf4snwJMMtaubV0laFpiBA=="
+		},
+		{
+			"surface": "yaml_parsing",
+			"package_name": "yaml",
+			"section": "dependencies",
+			"expected_version": "2.8.3",
+			"role": "YAML_PROFILE YAML 1.2-compatible input parser wrapper",
+			"authority": [
+				"contract.md §1.1",
+				"ADR-0005",
+				"design.md §11"
+			],
+			"compatibility_evidence": [
+				"S1",
+				"T0.1",
+				"B-decodage",
+				"B-config",
+				"B-specs"
+			],
+			"package_spec": "2.8.3",
+			"lockfile_version": "2.8.3",
+			"installed_version": "2.8.3",
+			"lockfile_integrity": "sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg=="
+		},
+		{
+			"surface": "typescript_parsing",
+			"package_name": "typescript",
+			"section": "dependencies",
+			"expected_version": "6.0.3",
+			"role": "TS_PROFILE parser API and build compiler",
+			"authority": [
+				"contract.md §1.1",
+				"ADR-0006",
+				"design.md §11"
+			],
+			"compatibility_evidence": [
+				"S1",
+				"T0.1",
+				"B-decodage",
+				"B-graph"
+			],
+			"package_spec": "6.0.3",
+			"lockfile_version": "6.0.3",
+			"installed_version": "6.0.3",
+			"lockfile_integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="
+		}
+	],
+	"project_owned_contract_surfaces": [
+		{
+			"surface": "filesystem_enumeration",
+			"implementation": "project-owned node:fs traversal with canonical sorting",
+			"package_dependency": null,
+			"authority": [
+				"contract.md §4.1",
+				"contract.md §12.6",
+				"design.md §7.1",
+				"design.md §11"
+			]
+		},
+		{
+			"surface": "json_serialization",
+			"implementation": "project-owned closed-shape JSON renderer",
+			"package_dependency": null,
+			"authority": [
+				"contract.md §13.7",
+				"ADR-0007",
+				"design.md §5.7",
+				"design.md §11"
+			]
+		},
+		{
+			"surface": "yaml_canonical_writing",
+			"implementation": "project-owned closed-shape YAML writer",
+			"package_dependency": null,
+			"authority": [
+				"contract.md §7.5",
+				"ADR-0007",
+				"design.md §5.2",
+				"design.md §11"
+			]
+		},
+		{
+			"surface": "cli_parsing",
+			"implementation": "project-owned command parser and dispatcher",
+			"package_dependency": null,
+			"authority": [
+				"ADR-0002",
+				"contract.md §9",
+				"design.md §5.6"
+			]
+		},
+		{
+			"surface": "fixture_harness",
+			"implementation": "project-owned fixture harness on node:test",
+			"package_dependency": null,
+			"authority": [
+				"ADR-0003",
+				"evals.md §4.2",
+				"evals.md §6"
+			]
+		}
+	],
+	"root_package_dependencies": [
+		{
+			"section": "dependencies",
+			"package_name": "commonmark",
+			"package_spec": "0.30.0",
+			"lockfile_version": "0.30.0",
+			"dev": false,
+			"optional": false
+		},
+		{
+			"section": "dependencies",
+			"package_name": "typescript",
+			"package_spec": "6.0.3",
+			"lockfile_version": "6.0.3",
+			"dev": false,
+			"optional": false
+		},
+		{
+			"section": "dependencies",
+			"package_name": "yaml",
+			"package_spec": "2.8.3",
+			"lockfile_version": "2.8.3",
+			"dev": false,
+			"optional": false
+		},
+		{
+			"section": "devDependencies",
+			"package_name": "@biomejs/biome",
+			"package_spec": "2.4.12",
+			"lockfile_version": "2.4.12",
+			"dev": true,
+			"optional": false
+		},
+		{
+			"section": "devDependencies",
+			"package_name": "@types/node",
+			"package_spec": "25.6.0",
+			"lockfile_version": "25.6.0",
+			"dev": true,
+			"optional": false
+		}
+	],
+	"goldens": {
+		"versioned": true,
+		"count": 37,
+		"files": [
+			{
+				"path": "fixtures/B-cli/fx71_cli_scan_option_order_invariant/stdout.golden",
+				"bytes": 270,
+				"sha256": "ad4fbce37c98fece9bf07aa33e43f6f8f6c1cab2541d8d9fff44dff8c6fcb85a"
+			},
+			{
+				"path": "fixtures/B-init/fx54_init_success_minimal/expected/repo/anchormap.yaml",
+				"bytes": 68,
+				"sha256": "7781798248ef315a3b4a7b20ecfa473f710676c9200ca8bcbae31ba59ceba899"
+			},
+			{
+				"path": "fixtures/B-init/fx58a_init_option_order_invariant/expected/repo/anchormap.yaml",
+				"bytes": 132,
+				"sha256": "0b2c8b8cdda2fa3a953d60c2369ddcca76267fde80b54bd412ba5854c205c186"
+			},
+			{
+				"path": "fixtures/B-map/fx59_map_create/expected/repo/anchormap.yaml",
+				"bytes": 135,
+				"sha256": "5aeb67775443d621f81b2b97af6ab0e8d47dba630b7fa8ad3bc4629936f7494c"
+			},
+			{
+				"path": "fixtures/B-map/fx61_map_replace_ok/expected/repo/anchormap.yaml",
+				"bytes": 165,
+				"sha256": "9306dc5875075987ef6ffccce583b31dbd5eb266d7baabf285d2575d9c25d3f7"
+			},
+			{
+				"path": "fixtures/B-map/fx62_map_replace_create_if_absent/expected/repo/anchormap.yaml",
+				"bytes": 167,
+				"sha256": "6599281871f3139b8887a0e53c62db9ceeb8ff2df7972b7fa572c087793ce752"
+			},
+			{
+				"path": "fixtures/B-map/fx67_map_option_order_invariant/expected/repo/anchormap.yaml",
+				"bytes": 135,
+				"sha256": "5aeb67775443d621f81b2b97af6ab0e8d47dba630b7fa8ad3bc4629936f7494c"
+			},
+			{
+				"path": "fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/stdout.golden",
+				"bytes": 200,
+				"sha256": "e72da86e5fbdb3769973e23571f12e64a7f7372e6d0952651921d2a688634d1d"
+			},
+			{
+				"path": "fixtures/B-scan/fx01_scan_min_clean/stdout.golden",
+				"bytes": 439,
+				"sha256": "2b4186cbf86b1e150a20f4a5fa50c403e18955a3f5b048b79a62f045aa368b28"
+			},
+			{
+				"path": "fixtures/B-scan/fx02_scan_two_anchors_overlap/stdout.golden",
+				"bytes": 829,
+				"sha256": "fc1a82d019f4fe230cf7a4513a9a25f066b1e0c595a5eccfcfc0bbbdd15664eb"
+			},
+			{
+				"path": "fixtures/B-scan/fx03_scan_unmapped_anchor/stdout.golden",
+				"bytes": 388,
+				"sha256": "eed6affd97a5f499f23567b449c3d2ac65422cbea0877ead578d7e6ec62e8e1e"
+			},
+			{
+				"path": "fixtures/B-scan/fx04_scan_stale_mapping/stdout.golden",
+				"bytes": 400,
+				"sha256": "e4816190c362ce9c4d315ac3b3f4892fe1c4f8734ed354dfde78b066e4649670"
+			},
+			{
+				"path": "fixtures/B-scan/fx05_scan_broken_seed/stdout.golden",
+				"bytes": 501,
+				"sha256": "aab37e8fd200b821780dda000afd6b1df994834548bfd17a11a1c77f715963c6"
+			},
+			{
+				"path": "fixtures/B-scan/fx06_scan_clean_untraced/stdout.golden",
+				"bytes": 566,
+				"sha256": "deaf19eda34c798b909081a25c88bb80ede2c78111ba4b2e7574f5b339e8965c"
+			},
+			{
+				"path": "fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/stdout.golden",
+				"bytes": 630,
+				"sha256": "12224715ad1d947e1f9ed4584e69abe3120853a99b6013b4cdb836b39cbe275c"
+			},
+			{
+				"path": "fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/stdout.golden",
+				"bytes": 643,
+				"sha256": "a6ba6b3b35aee1be8881cea04c2b53a44762170f22834826bb3f152f11530df2"
+			},
+			{
+				"path": "fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/stdout.golden",
+				"bytes": 342,
+				"sha256": "2715d1723a81e6a6f64f25825ff74ae961375e076dd971a62cc18336c9fd903e"
+			},
+			{
+				"path": "fixtures/B-scan/fx09_scan_findings_canonical_order/stdout.golden",
+				"bytes": 1374,
+				"sha256": "921e8f1087b3dfcebef6728b3daef3fbccec213d50b486deaf306d5df04e7d82"
+			},
+			{
+				"path": "fixtures/B-scan/fx10_scan_closed_objects/stdout.golden",
+				"bytes": 530,
+				"sha256": "50e572fb6f92fa8403cdcabea781245b9fbb076e7799e97e699ca3fdb3f438d5"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c1_filesystem_order_baseline/stdout.golden",
+				"bytes": 644,
+				"sha256": "9e606a0ddb33f4ee767d6dea3dff77a6799c40ce1fb9909be8fb11aab1a968ae"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c1_filesystem_order_transformed/stdout.golden",
+				"bytes": 644,
+				"sha256": "9e606a0ddb33f4ee767d6dea3dff77a6799c40ce1fb9909be8fb11aab1a968ae"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c2_yaml_reorder_map_baseline/expected/repo/anchormap.yaml",
+				"bytes": 137,
+				"sha256": "5be67ea1a506cfa71f8669b2d4f90f48800b50872382c472eb44992ba1fbbae6"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c2_yaml_reorder_map_transformed/expected/repo/anchormap.yaml",
+				"bytes": 137,
+				"sha256": "5be67ea1a506cfa71f8669b2d4f90f48800b50872382c472eb44992ba1fbbae6"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/stdout.golden",
+				"bytes": 536,
+				"sha256": "d43cbccddb9d0498ba88a06de351e6fc2fc11164b0c9dcb18af772afbcd6cb88"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/stdout.golden",
+				"bytes": 536,
+				"sha256": "d43cbccddb9d0498ba88a06de351e6fc2fc11164b0c9dcb18af772afbcd6cb88"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c3_spec_noise_baseline/stdout.golden",
+				"bytes": 439,
+				"sha256": "2b4186cbf86b1e150a20f4a5fa50c403e18955a3f5b048b79a62f045aa368b28"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c3_spec_noise_transformed/stdout.golden",
+				"bytes": 439,
+				"sha256": "2b4186cbf86b1e150a20f4a5fa50c403e18955a3f5b048b79a62f045aa368b28"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c4_seed_movement_baseline/stdout.golden",
+				"bytes": 566,
+				"sha256": "41952fc8d5012668e13642d5a5fd0824cd43d0959d1011112f885144e75b2ced"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c4_seed_movement_transformed/stdout.golden",
+				"bytes": 498,
+				"sha256": "cdb00ecd156e6452055e4fbd69221a05dd56b5347a6581cb14999a45564a08ef"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c5_external_import_baseline/stdout.golden",
+				"bytes": 541,
+				"sha256": "01e1e87914c9e4131d22cd08fe2d3d2e065c64a25e6eaea8076a5d1246d96f07"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c5_external_import_transformed/stdout.golden",
+				"bytes": 541,
+				"sha256": "01e1e87914c9e4131d22cd08fe2d3d2e065c64a25e6eaea8076a5d1246d96f07"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c6_unsupported_extension_baseline/stdout.golden",
+				"bytes": 544,
+				"sha256": "84d5e025f789f1010e8e1445fd76eb6159c8d8cd3cf99481d5d07ba2ceb99e68"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c6_unsupported_extension_transformed/stdout.golden",
+				"bytes": 532,
+				"sha256": "714509d8354075acc431ec587b3c9ff23b5cb6ef9a0b7220b53a61d71410be14"
+			},
+			{
+				"path": "fixtures/C-metamorphic/c8_locale_collation_order/stdout.golden",
+				"bytes": 527,
+				"sha256": "65b50106e7e73bb0ad951bf0c5bf5a6adf580c2fe6eb089fbb7ca020e23873d4"
+			},
+			{
+				"path": "fixtures/harness-schema/harness_schema_success/stdout.golden",
+				"bytes": 12,
+				"sha256": "e5f1eb4d806641698a35efe20e098efd20d7d57a9b90ee69079d5bb650920726"
+			},
+			{
+				"path": "fixtures/harness-smoke/harness_smoke_init_write/expected/repo/anchormap.yaml",
+				"bytes": 64,
+				"sha256": "61ac56f23e8af3e0fc31889ac621c13bd16dc0dc24848bb72d5764a6ae38d2d9"
+			},
+			{
+				"path": "fixtures/harness-smoke/harness_smoke_scan_success/stdout.golden",
+				"bytes": 12,
+				"sha256": "e5f1eb4d806641698a35efe20e098efd20d7d57a9b90ee69079d5bb650920726"
+			}
+		]
+	},
+	"gate_g_dependency_verdict": "pass"
+}

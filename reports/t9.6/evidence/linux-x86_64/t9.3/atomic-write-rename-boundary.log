@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: loads exactly anchormap.yaml from the provided cwd
+ok 1 - loads exactly anchormap.yaml from the provided cwd
+  ---
+  duration_ms: 5.887385
+  type: 'test'
+  ...
+# Subtest: classifies missing anchormap.yaml as ConfigError
+ok 2 - classifies missing anchormap.yaml as ConfigError
+  ---
+  duration_ms: 0.415819
+  type: 'test'
+  ...
+# Subtest: does not search parent directories for anchormap.yaml
+ok 3 - does not search parent directories for anchormap.yaml
+  ---
+  duration_ms: 0.315227
+  type: 'test'
+  ...
+# Subtest: classifies unreadable anchormap.yaml reads as ConfigError
+ok 4 - classifies unreadable anchormap.yaml reads as ConfigError
+  ---
+  duration_ms: 0.175847
+  type: 'test'
+  ...
+# Subtest: classifies non-UTF-8 anchormap.yaml as ConfigError
+ok 5 - classifies non-UTF-8 anchormap.yaml as ConfigError
+  ---
+  duration_ms: 0.324331
+  type: 'test'
+  ...
+# Subtest: classifies invalid YAML as ConfigError
+ok 6 - classifies invalid YAML as ConfigError
+  ---
+  duration_ms: 1.697761
+  type: 'test'
+  ...
+# Subtest: classifies multidocument YAML as ConfigError
+ok 7 - classifies multidocument YAML as ConfigError
+  ---
+  duration_ms: 1.233908
+  type: 'test'
+  ...
+# Subtest: classifies root non-mapping YAML as ConfigError
+ok 8 - classifies root non-mapping YAML as ConfigError
+  ---
+  duration_ms: 0.708583
+  type: 'test'
+  ...
+# Subtest: classifies duplicate keys at any mapping depth as ConfigError
+ok 9 - classifies duplicate keys at any mapping depth as ConfigError
+  ---
+  duration_ms: 1.802619
+  type: 'test'
+  ...
+# Subtest: accepts explicit YAML 1.2 directives when otherwise valid
+ok 10 - accepts explicit YAML 1.2 directives when otherwise valid
+  ---
+  duration_ms: 0.989649
+  type: 'test'
+  ...
+# Subtest: classifies explicit non-1.2 YAML directives as ConfigError
+ok 11 - classifies explicit non-1.2 YAML directives as ConfigError
+  ---
+  duration_ms: 1.773977
+  type: 'test'
+  ...
+# Subtest: removes an initial BOM before YAML parsing
+ok 12 - removes an initial BOM before YAML parsing
+  ---
+  duration_ms: 0.404423
+  type: 'test'
+  ...
+# Subtest: loads a normalized Config model from anchormap.yaml
+ok 13 - loads a normalized Config model from anchormap.yaml
+  ---
+  duration_ms: 3.518398
+  type: 'test'
+  ...
+# Subtest: renders minimal config as canonical YAML with empty mappings
+ok 14 - renders minimal config as canonical YAML with empty mappings
+  ---
+  duration_ms: 0.76658
+  type: 'test'
+  ...
+# Subtest: renders canonical YAML with sorted roots, anchors, and seed files
+ok 15 - renders canonical YAML with sorted roots, anchors, and seed files
+  ---
+  duration_ms: 0.873242
+  type: 'test'
+  ...
+# Subtest: omits empty ignore_roots when rendering canonical YAML
+ok 16 - omits empty ignore_roots when rendering canonical YAML
+  ---
+  duration_ms: 0.481689
+  type: 'test'
+  ...
+# Subtest: doubles internal single quotes when rendering canonical YAML strings
+ok 17 - doubles internal single quotes when rendering canonical YAML strings
+  ---
+  duration_ms: 0.595812
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic writes complete canonical YAML through the same-directory temp path
+ok 18 - writeConfigAtomic writes complete canonical YAML through the same-directory temp path
+  ---
+  duration_ms: 2.203076
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic returns WriteError before temp reservation without touching disk
+ok 19 - writeConfigAtomic returns WriteError before temp reservation without touching disk
+  ---
+  duration_ms: 1.078213
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic cleans up an attempt-owned temp file after temp creation failure
+ok 20 - writeConfigAtomic cleans up an attempt-owned temp file after temp creation failure
+  ---
+  duration_ms: 1.094197
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic returns InternalError when cleanup unlink fails
+ok 21 - writeConfigAtomic returns InternalError when cleanup unlink fails
+  ---
+  duration_ms: 0.677976
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic returns InternalError when cleanup absence check fails
+ok 22 - writeConfigAtomic returns InternalError when cleanup absence check fails
+  ---
+  duration_ms: 0.775234
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic returns InternalError when cleanup close fails
+ok 23 - writeConfigAtomic returns InternalError when cleanup close fails
+  ---
+  duration_ms: 0.683195
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic preserves the initial target and cleans up before rename failures
+ok 24 - writeConfigAtomic preserves the initial target and cleans up before rename failures
+  ---
+  duration_ms: 1.877733
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic retries EEXIST candidates without deleting collision paths
+ok 25 - writeConfigAtomic retries EEXIST candidates without deleting collision paths
+  ---
+  duration_ms: 2.256257
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic preserves non-owned collisions while cleaning only the attempt-owned temp
+ok 26 - writeConfigAtomic preserves non-owned collisions while cleaning only the attempt-owned temp
+  ---
+  duration_ms: 0.697446
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic exhausts the 100-candidate EEXIST range without mutation
+ok 27 - writeConfigAtomic exhausts the 100-candidate EEXIST range without mutation
+  ---
+  duration_ms: 6.363826
+  type: 'test'
+  ...
+# Subtest: writeConfigAtomic performs no fallible filesystem step after successful rename
+ok 28 - writeConfigAtomic performs no fallible filesystem step after successful rename
+  ---
+  duration_ms: 0.786381
+  type: 'test'
+  ...
+# Subtest: loadConfig validates product_root and spec_roots as existing directories
+ok 29 - loadConfig validates product_root and spec_roots as existing directories
+  ---
+  duration_ms: 1.429435
+  type: 'test'
+  ...
+# Subtest: loadConfig classifies missing product_root as ConfigError
+ok 30 - loadConfig classifies missing product_root as ConfigError
+  ---
+  duration_ms: 0.782064
+  type: 'test'
+  ...
+# Subtest: loadConfig classifies non-directory product_root as ConfigError
+ok 31 - loadConfig classifies non-directory product_root as ConfigError
+  ---
+  duration_ms: 0.72691
+  type: 'test'
+  ...
+# Subtest: loadConfig classifies missing spec_root as ConfigError
+ok 32 - loadConfig classifies missing spec_root as ConfigError
+  ---
+  duration_ms: 0.567058
+  type: 'test'
+  ...
+# Subtest: loadConfig classifies non-directory spec_root as ConfigError
+ok 33 - loadConfig classifies non-directory spec_root as ConfigError
+  ---
+  duration_ms: 0.773631
+  type: 'test'
+  ...
+# Subtest: defaults absent optional ignore_roots and mappings to empty values
+ok 34 - defaults absent optional ignore_roots and mappings to empty values
+  ---
+  duration_ms: 0.382269
+  type: 'test'
+  ...
+# Subtest: classifies duplicate and overlapping spec_roots as ConfigError
+ok 35 - classifies duplicate and overlapping spec_roots as ConfigError
+  ---
+  duration_ms: 0.625918
+  type: 'test'
+  ...
+# Subtest: classifies duplicate and overlapping ignore_roots as ConfigError
+ok 36 - classifies duplicate and overlapping ignore_roots as ConfigError
+  ---
+  duration_ms: 0.676565
+  type: 'test'
+  ...
+# Subtest: loadConfig rejects existing ignore_roots outside product_root
+ok 37 - loadConfig rejects existing ignore_roots outside product_root
+  ---
+  duration_ms: 1.128359
+  type: 'test'
+  ...
+# Subtest: loadConfig accepts absent ignore_roots outside product_root
+ok 38 - loadConfig accepts absent ignore_roots outside product_root
+  ---
+  duration_ms: 0.711728
+  type: 'test'
+  ...
+# Subtest: loadConfig classifies schema validation failures as ConfigError
+ok 39 - loadConfig classifies schema validation failures as ConfigError
+  ---
+  duration_ms: 0.34312
+  type: 'test'
+  ...
+# Subtest: classifies unknown top-level fields as ConfigError
+ok 40 - classifies unknown top-level fields as ConfigError
+  ---
+  duration_ms: 0.371963
+  type: 'test'
+  ...
+# Subtest: classifies missing required config fields as ConfigError
+ok 41 - classifies missing required config fields as ConfigError
+  ---
+  duration_ms: 0.532746
+  type: 'test'
+  ...
+# Subtest: classifies non-integer or unsupported versions as ConfigError
+ok 42 - classifies non-integer or unsupported versions as ConfigError
+  ---
+  duration_ms: 1.017521
+  type: 'test'
+  ...
+# Subtest: classifies invalid product_root shapes and paths as ConfigError
+ok 43 - classifies invalid product_root shapes and paths as ConfigError
+  ---
+  duration_ms: 1.185295
+  type: 'test'
+  ...
+# Subtest: classifies invalid spec_roots shapes, emptiness, items, and paths as ConfigError
+ok 44 - classifies invalid spec_roots shapes, emptiness, items, and paths as ConfigError
+  ---
+  duration_ms: 1.547233
+  type: 'test'
+  ...
+# Subtest: classifies invalid ignore_roots shapes, items, and paths as ConfigError
+ok 45 - classifies invalid ignore_roots shapes, items, and paths as ConfigError
+  ---
+  duration_ms: 1.08987
+  type: 'test'
+  ...
+# Subtest: classifies invalid mappings shape and anchor keys as ConfigError
+ok 46 - classifies invalid mappings shape and anchor keys as ConfigError
+  ---
+  duration_ms: 1.180928
+  type: 'test'
+  ...
+# Subtest: classifies invalid mapping values and unknown mapping fields as ConfigError
+ok 47 - classifies invalid mapping values and unknown mapping fields as ConfigError
+  ---
+  duration_ms: 1.066635
+  type: 'test'
+  ...
+# Subtest: classifies invalid seed_files shape, emptiness, items, paths, and duplicates as ConfigError
+ok 48 - classifies invalid seed_files shape, emptiness, items, paths, and duplicates as ConfigError
+  ---
+  duration_ms: 1.428463
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 229.098139
