@@ -25,8 +25,8 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T10.5 — Create publication dry-run and release runbook` (`ready`)
-- Next executable product task: `T10.5 — Create publication dry-run and release runbook`
+- Current active task: `T9.8 — Reconcile archived M9 release-gate evidence` (`ready`)
+- Next executable product task: `T9.8 — Reconcile archived M9 release-gate evidence`
 - Last completed task: `T10.4 — Add user-facing release documentation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -106,9 +106,9 @@
   - `T10.3 — Verify installed artifact behavior`
   - `T10.4 — Add user-facing release documentation`
 - Blocked tasks:
-  - `None recorded`
+  - `T10.5 — Create publication dry-run and release runbook`: blocked on `T9.8`; missing or failing passing M9 release verdict evidence is required before publication dry-run evidence can be archived.
 - Open deviations:
-  - `None recorded`
+  - `T10.5` / `T9.8`: `tooling problem`, blocking for release-candidate closure; `npm run release:gates` currently reports `release verdict: fail` because required M9 release evidence inputs are missing or failing.
 
 ## Execution principles
 
@@ -3747,6 +3747,82 @@ Suggested verification:
 - Run the entropy review on a passing candidate.
 - Introduce one intentional stale doc or duplicate helper and confirm the review records it explicitly.
 
+### T9.8 — Reconcile archived M9 release-gate evidence
+
+Purpose:
+- Reconcile the documented M9 completion state with the release-gate evidence consumed by `T9.6`.
+- Restore or regenerate the mandatory M9 evidence inputs before publication dry-run work resumes.
+- Keep `T10.5` fail-closed until the M9 release verdict is passing or a precise remaining platform/tooling blocker is recorded.
+
+Contract refs:
+- `contract.md` — §4.1 Determinism
+- `contract.md` — §12.4 Supported platforms
+- `contract.md` — §12.6 No implicit data
+
+Design refs:
+- `design.md` — §10 Testability
+- `design.md` — §11 Dependencies and reproducibility
+- `design.md` — §12 Cross-platform considerations
+- `design.md` — §13 Complexity and budgets
+
+Eval refs:
+- `evals.md` — §9 Cross-platform matrix
+- `evals.md` — §10 Performance and resources
+- `evals.md` — §11 Gates de release
+- `evals.md` — §12 Technical publication checklist
+
+Operating-model refs:
+- `operating-model.md` — §8.4 Changement de tâches
+- `operating-model.md` — §10 Taxonomie des écarts
+- `operating-model.md` — §19.3 Release candidate
+
+Dependencies:
+- T9.6.
+- T9.7.
+
+Why now:
+- `T10.5` requires a passing M9 release verdict before publication dry-run evidence can be archived.
+- The current `npm run release:gates` report fails because mandatory inputs under `reports/t9.6/evidence/` are missing or failing.
+
+Implementation scope:
+- Inspect the current `reports/t9.6/release-report.json` and `release-report.md` diagnostics.
+- Restore or regenerate mandatory M9 evidence inputs consumed by `scripts/release-gate-aggregator.mjs`, including:
+  - fixture report
+  - golden report
+  - metamorphic report
+  - cross-platform report
+  - performance report
+  - dependency audit
+  - golden diffs classification
+  - entropy review linkage
+- Use real repo-local commands or archived platform evidence; do not synthesize pass reports.
+- Separate locally reproducible evidence from evidence that requires the supported Linux x86_64 or macOS arm64 platform.
+- Re-run `npm run release:gates` after evidence reconciliation.
+- If any required supported-platform evidence cannot be produced in the current environment, record the precise remaining blocker instead of weakening the gate.
+- Unblock `T10.5` only after `reports/t9.6/release-report.json` records `release_verdict: "pass"`.
+
+Out of scope:
+- Changing release gate acceptance criteria.
+- Fabricating evidence or accepting missing M9 artifacts.
+- Producing T10.5 tarball, publication dry-run, or runbook evidence.
+- Publishing to any external channel.
+- Changing runtime behavior, package metadata, or product scope.
+
+Done when:
+- Each mandatory M9 evidence input is either archived from a real passing source or has a classified remaining blocker.
+- `npm run release:gates` has been rerun after reconciliation.
+- If the release verdict passes, `T10.5` is no longer blocked on M9 evidence.
+- If the release verdict still fails, the failing gate, missing artifact, required platform, and next operator action are recorded explicitly.
+- No release gate is weakened and no publication evidence is created prematurely.
+
+Blocks:
+- T10.5
+
+Suggested verification:
+- Run `npm run release:gates`.
+- Inspect `reports/t9.6/release-report.json` and `reports/t9.6/release-report.md`.
+- Confirm every required artifact listed by the release report is present, archived, or has a classified blocker.
+
 ## M10 — Packaging, distribution, and publication
 
 ### T10.1 — Record packaging and distribution ADR
@@ -3980,6 +4056,7 @@ Dependencies:
 - T10.2.
 - T10.3.
 - T10.4.
+- T9.8.
 
 Implementation scope:
 - Produce an actual reusable package tarball with `npm pack` or the equivalent selected in `ADR-0009`.
