@@ -1,7 +1,7 @@
 # AnchorMap
 
-AnchorMap is a local deterministic structural traceability CLI for narrow-scope
-TypeScript repositories.
+AnchorMap is a local deterministic CLI for auditing structural traceability
+between formal spec anchors and supported TypeScript repositories.
 
 It shows what is observed in specs, what has been mapped explicitly by a human,
 what is structurally covered by supported local TypeScript edges, and whether
@@ -97,7 +97,7 @@ mappings: {}
 Add a human-approved mapping from an anchor to one or more seed files:
 
 ```sh
-anchormap map --anchor DOC.README.PRESENT --seed src/rules/readme.ts
+anchormap map --anchor DOC.README.PRESENT --seed src/index.ts
 ```
 
 Run the machine-readable scan:
@@ -109,6 +109,45 @@ anchormap scan --json
 `scan --json` writes one canonical JSON object to stdout on success. The root
 keys are `schema_version`, `config`, `analysis_health`, `observed_anchors`,
 `stored_mappings`, `files`, and `findings`.
+
+Formatted for readability, the example above reports:
+
+```json
+{
+  "schema_version": 1,
+  "config": {
+    "version": 1,
+    "product_root": "src",
+    "spec_roots": [".specify/specs"],
+    "ignore_roots": []
+  },
+  "analysis_health": "clean",
+  "observed_anchors": {
+    "DOC.README.PRESENT": {
+      "spec_path": ".specify/specs/requirements.md",
+      "mapping_state": "usable"
+    }
+  },
+  "stored_mappings": {
+    "DOC.README.PRESENT": {
+      "state": "usable",
+      "seed_files": ["src/index.ts"],
+      "reached_files": ["src/index.ts", "src/rules/readme.ts"]
+    }
+  },
+  "files": {
+    "src/index.ts": {
+      "covering_anchor_ids": ["DOC.README.PRESENT"],
+      "supported_local_targets": ["src/rules/readme.ts"]
+    },
+    "src/rules/readme.ts": {
+      "covering_anchor_ids": ["DOC.README.PRESENT"],
+      "supported_local_targets": []
+    }
+  },
+  "findings": []
+}
+```
 
 ## Commands
 
