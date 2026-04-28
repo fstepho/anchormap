@@ -413,10 +413,18 @@ function resolveSupportedStaticEdge(
 	| { kind: "supported_target"; target: RepoPath }
 	| { kind: "finding"; finding: Finding }
 	| { kind: "error"; error: ProductGraphError } {
-	const candidates = buildStaticEdgeResolutionCandidates(importer, edgeInput.specifier);
 	const existingCandidates: StaticEdgeResolutionCandidate[] = [];
 
-	for (const candidate of candidates) {
+	for (const definition of buildCandidateDefinitions(edgeInput.specifier)) {
+		const normalized = normalizeImportCandidate(importer, definition.specifier, definition.suffix);
+		if (normalized.kind === "outside_repo_root") {
+			continue;
+		}
+
+		const candidate: StaticEdgeResolutionCandidate = {
+			path: normalized.repoPath,
+			support: definition.support,
+		};
 		const exists = candidateExists(cwd, fs, candidateExistenceCache, candidate.path);
 		if (exists.kind === "error") {
 			return exists;

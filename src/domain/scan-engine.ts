@@ -187,9 +187,7 @@ function calculateReachedFiles(
 
 		reachedFiles.add(currentFile);
 
-		for (const targetFile of sortRepoPathsByUtf8(
-			productGraph.edgesByImporter.get(currentFile) ?? [],
-		)) {
+		for (const targetFile of productGraph.edgesByImporter.get(currentFile) ?? []) {
 			if (
 				productFiles.has(targetFile) &&
 				!reachedFiles.has(targetFile) &&
@@ -242,7 +240,7 @@ function buildCoveringAnchorIdsByFile(
 	return new Map(
 		[...coveringAnchorIdsByFile.entries()].map(([path, anchorIds]) => [
 			path,
-			sortAnchorIdsByUtf8(anchorIds),
+			anchorIds,
 		]),
 	);
 }

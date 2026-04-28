@@ -17,19 +17,19 @@ export function compareCanonicalTextByUtf8(left: string, right: string): number 
 }
 
 export function sortAnchorIdsByUtf8(anchorIds: readonly AnchorId[]): AnchorId[] {
-	return [...anchorIds].sort(compareCanonicalTextByUtf8);
+	return sortCanonicalTextByUtf8(anchorIds);
 }
 
 export function sortRepoPathsByUtf8(repoPaths: readonly RepoPath[]): RepoPath[] {
-	return [...repoPaths].sort(compareCanonicalTextByUtf8);
+	return sortCanonicalTextByUtf8(repoPaths);
 }
 
 export function normalizeAnchorIdsByUtf8(anchorIds: readonly AnchorId[]): AnchorId[] {
-	return uniqueByExactText(anchorIds).sort(compareCanonicalTextByUtf8);
+	return sortCanonicalTextByUtf8(uniqueByExactText(anchorIds));
 }
 
 export function normalizeRepoPathsByUtf8(repoPaths: readonly RepoPath[]): RepoPath[] {
-	return uniqueByExactText(repoPaths).sort(compareCanonicalTextByUtf8);
+	return sortCanonicalTextByUtf8(uniqueByExactText(repoPaths));
 }
 
 function uniqueByExactText<T extends string>(values: readonly T[]): T[] {
@@ -42,6 +42,35 @@ function uniqueByExactText<T extends string>(values: readonly T[]): T[] {
 	}
 
 	return [...deduplicated.values()];
+}
+
+function sortCanonicalTextByUtf8<T extends string>(values: readonly T[]): T[] {
+	const bytesByValue = new Map<string, readonly number[]>();
+
+	function bytes(value: string): readonly number[] {
+		const cached = bytesByValue.get(value);
+		if (cached !== undefined) {
+			return cached;
+		}
+		const computed = canonicalComparisonBytes(value);
+		bytesByValue.set(value, computed);
+		return computed;
+	}
+
+	return [...values].sort((left, right) => compareCanonicalBytes(bytes(left), bytes(right)));
+}
+
+function compareCanonicalBytes(leftBytes: readonly number[], rightBytes: readonly number[]): number {
+	const length = Math.min(leftBytes.length, rightBytes.length);
+
+	for (let index = 0; index < length; index += 1) {
+		const difference = leftBytes[index] - rightBytes[index];
+		if (difference !== 0) {
+			return difference;
+		}
+	}
+
+	return leftBytes.length - rightBytes.length;
 }
 
 function canonicalComparisonBytes(value: string): number[] {
