@@ -107,6 +107,14 @@ test("normalizes relative import candidates lexically from the importer director
 
 	assert.equal(result.kind, "repo_path");
 	assert.equal(repoPathToString(result.repoPath), "src/shared/model.ts");
+
+	const extraSlashResult = normalizeImportCandidate(importer, ".//shared/model", ".ts");
+	assert.equal(extraSlashResult.kind, "repo_path");
+	assert.equal(repoPathToString(extraSlashResult.repoPath), "src/features/shared/model.ts");
+
+	const trailingSlashResult = normalizeImportCandidate(importer, "./shared/model/");
+	assert.equal(trailingSlashResult.kind, "repo_path");
+	assert.equal(repoPathToString(trailingSlashResult.repoPath), "src/features/shared/model");
 });
 
 test("represents import candidates above repo root as nonexistent outside-root candidates", () => {

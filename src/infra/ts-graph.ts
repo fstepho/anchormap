@@ -80,7 +80,6 @@ export interface StaticEdgeResolutionCandidate {
 }
 
 type CandidateDefinition = {
-	readonly specifier: string;
 	readonly suffix: string;
 	readonly support: StaticEdgeResolutionCandidate["support"];
 };
@@ -217,8 +216,8 @@ export function buildStaticEdgeResolutionCandidates(
 	importer: RepoPath,
 	specifier: string,
 ): StaticEdgeResolutionCandidate[] {
-	return buildCandidateDefinitions(specifier).flatMap((definition) => {
-		const normalized = normalizeImportCandidate(importer, definition.specifier, definition.suffix);
+	return candidateDefinitionsForSpecifier(specifier).flatMap((definition) => {
+		const normalized = normalizeImportCandidate(importer, specifier, definition.suffix);
 		if (normalized.kind === "outside_repo_root") {
 			return [];
 		}
@@ -318,36 +317,49 @@ function isLocalDependencySpecifier(specifier: string): boolean {
 }
 
 function buildCandidateDefinitions(specifier: string): readonly CandidateDefinition[] {
+	return candidateDefinitionsForSpecifier(specifier);
+}
+
+const SUPPORTED_EXACT_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
+	{ suffix: "", support: "supported" },
+];
+const DIAGNOSTIC_EXACT_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
+	{ suffix: "", support: "diagnostic_only" },
+];
+const EXTENSIONLESS_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
+	{ suffix: ".ts", support: "supported" },
+	{ suffix: "/index.ts", support: "supported" },
+	{ suffix: ".tsx", support: "diagnostic_only" },
+	{ suffix: ".js", support: "diagnostic_only" },
+	{ suffix: ".d.ts", support: "diagnostic_only" },
+	{ suffix: "/index.tsx", support: "diagnostic_only" },
+	{ suffix: "/index.js", support: "diagnostic_only" },
+	{ suffix: "/index.d.ts", support: "diagnostic_only" },
+];
+const NO_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [];
+
+function candidateDefinitionsForSpecifier(specifier: string): readonly CandidateDefinition[] {
 	if (specifier.endsWith("/")) {
-		return [];
+		return NO_CANDIDATE_DEFINITIONS;
 	}
 
 	if (specifier.endsWith(".ts") && !specifier.endsWith(".d.ts")) {
-		return [{ specifier, suffix: "", support: "supported" }];
+		return SUPPORTED_EXACT_CANDIDATE_DEFINITIONS;
 	}
 
 	if (specifier.endsWith(".tsx") || specifier.endsWith(".js") || specifier.endsWith(".d.ts")) {
-		return [{ specifier, suffix: "", support: "diagnostic_only" }];
+		return DIAGNOSTIC_EXACT_CANDIDATE_DEFINITIONS;
 	}
 
-	if (lastPathSegment(specifier).includes(".")) {
-		return [];
+	if (lastPathSegmentHasDot(specifier)) {
+		return NO_CANDIDATE_DEFINITIONS;
 	}
 
-	return [
-		{ specifier, suffix: ".ts", support: "supported" },
-		{ specifier, suffix: "/index.ts", support: "supported" },
-		{ specifier, suffix: ".tsx", support: "diagnostic_only" },
-		{ specifier, suffix: ".js", support: "diagnostic_only" },
-		{ specifier, suffix: ".d.ts", support: "diagnostic_only" },
-		{ specifier, suffix: "/index.tsx", support: "diagnostic_only" },
-		{ specifier, suffix: "/index.js", support: "diagnostic_only" },
-		{ specifier, suffix: "/index.d.ts", support: "diagnostic_only" },
-	];
+	return EXTENSIONLESS_CANDIDATE_DEFINITIONS;
 }
 
-function lastPathSegment(path: string): string {
-	return path.slice(path.lastIndexOf("/") + 1);
+function lastPathSegmentHasDot(path: string): boolean {
+	return path.indexOf(".", path.lastIndexOf("/") + 1) !== -1;
 }
 
 function resolveSupportedStaticEdges(
@@ -364,7 +376,9 @@ function resolveSupportedStaticEdges(
 	| { kind: "error"; error: ProductGraphError } {
 	const edgesByImporter = new Map<RepoPath, readonly RepoPath[]>();
 	const findings: Finding[] = [];
-	const candidateExistenceCache = new Map<RepoPath, boolean>();
+	const candidateExistenceCache = new Map<RepoPath, boolean>(
+		parsedFiles.map((file) => [file.path, true]),
+	);
 
 	for (const file of parsedFiles) {
 		const supportedTargets = new Set<RepoPath>();
@@ -417,53 +431,53 @@ function resolveSupportedStaticEdge(
 	| { kind: "supported_target"; target: RepoPath }
 	| { kind: "finding"; finding: Finding }
 	| { kind: "error"; error: ProductGraphError } {
-	const existingCandidates: StaticEdgeResolutionCandidate[] = [];
+	let firstOutOfScopeTarget: RepoPath | undefined;
+	let firstUnsupportedTarget: RepoPath | undefined;
 
-	for (const definition of buildCandidateDefinitions(edgeInput.specifier)) {
-		const normalized = normalizeImportCandidate(importer, definition.specifier, definition.suffix);
+	for (const definition of candidateDefinitionsForSpecifier(edgeInput.specifier)) {
+		const normalized = normalizeImportCandidate(importer, edgeInput.specifier, definition.suffix);
 		if (normalized.kind === "outside_repo_root") {
 			continue;
 		}
 
-		const candidate: StaticEdgeResolutionCandidate = {
-			path: normalized.repoPath,
-			support: definition.support,
-		};
-		const exists = candidateExists(cwd, fs, candidateExistenceCache, candidate.path);
+		const candidatePath = normalized.repoPath;
+		const exists = candidateExists(cwd, fs, candidateExistenceCache, candidatePath);
 		if (exists.kind === "error") {
 			return exists;
 		}
 		if (exists.exists) {
-			if (candidate.support === "supported" && isInSupportedProductScope(config, candidate.path)) {
-				return { kind: "supported_target", target: candidate.path };
+			if (definition.support === "supported" && isInSupportedProductScope(config, candidatePath)) {
+				return { kind: "supported_target", target: candidatePath };
 			}
-			existingCandidates.push(candidate);
+			if (firstOutOfScopeTarget === undefined && isOutOfProductScope(config, candidatePath)) {
+				firstOutOfScopeTarget = candidatePath;
+			}
+			if (
+				firstUnsupportedTarget === undefined &&
+				definition.support === "diagnostic_only" &&
+				isInSupportedProductScope(config, candidatePath)
+			) {
+				firstUnsupportedTarget = candidatePath;
+			}
 		}
 	}
 
-	const outOfScopeTarget = existingCandidates.find((candidate) =>
-		isOutOfProductScope(config, candidate.path),
-	);
-	if (outOfScopeTarget !== undefined) {
+	if (firstOutOfScopeTarget !== undefined) {
 		return {
 			kind: "finding",
 			finding: createOutOfScopeStaticEdgeFinding({
 				importer,
-				target_path: outOfScopeTarget.path,
+				target_path: firstOutOfScopeTarget,
 			}),
 		};
 	}
 
-	const unsupportedTarget = existingCandidates.find(
-		(candidate) =>
-			candidate.support === "diagnostic_only" && isInSupportedProductScope(config, candidate.path),
-	);
-	if (unsupportedTarget !== undefined) {
+	if (firstUnsupportedTarget !== undefined) {
 		return {
 			kind: "finding",
 			finding: createUnsupportedLocalTargetFinding({
 				importer,
-				target_path: unsupportedTarget.path,
+				target_path: firstUnsupportedTarget,
 			}),
 		};
 	}

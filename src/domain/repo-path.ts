@@ -30,6 +30,8 @@ export type ImportCandidateNormalizationResult =
 	| { kind: "repo_path"; repoPath: RepoPath }
 	| { kind: "outside_repo_root"; existence: "nonexistent" };
 
+const UNSAFE_FAST_RELATIVE_SEGMENT_PATTERN = /(?:^|\/)\.\.?(?:\/|$)|\/\//;
+
 export function validateRepoPath(value: string): RepoPathValidationResult {
 	const failureReason = getRepoPathFailureReason(value);
 	if (failureReason === undefined) {
@@ -71,6 +73,15 @@ export function normalizeImportCandidate(
 	relativeSpecifier: string,
 	candidateSuffix = "",
 ): ImportCandidateNormalizationResult {
+	const fastPath = normalizeSameDirectoryImportCandidate(
+		importer,
+		relativeSpecifier,
+		candidateSuffix,
+	);
+	if (fastPath !== undefined) {
+		return fastPath;
+	}
+
 	const importerSegments = repoPathToString(importer).split("/");
 	const importerDirectorySegments = importerSegments.slice(0, -1);
 	const candidate = [...importerDirectorySegments, `${relativeSpecifier}${candidateSuffix}`].join(
@@ -100,6 +111,45 @@ export function normalizeImportCandidate(
 
 	const repoPath = resolvedSegments.join("/");
 	const result = validateRepoPath(repoPath);
+	if (result.kind === "ok") {
+		return {
+			kind: "repo_path",
+			repoPath: result.repoPath,
+		};
+	}
+
+	return {
+		kind: "outside_repo_root",
+		existence: "nonexistent",
+	};
+}
+
+function normalizeSameDirectoryImportCandidate(
+	importer: RepoPath,
+	relativeSpecifier: string,
+	candidateSuffix: string,
+): ImportCandidateNormalizationResult | undefined {
+	if (!relativeSpecifier.startsWith("./")) {
+		return undefined;
+	}
+
+	const candidateTail = `${relativeSpecifier.slice(2)}${candidateSuffix}`;
+	if (
+		candidateTail === "" ||
+		candidateTail.startsWith("/") ||
+		candidateTail.endsWith("/") ||
+		UNSAFE_FAST_RELATIVE_SEGMENT_PATTERN.test(candidateTail)
+	) {
+		return undefined;
+	}
+
+	const importerPath = repoPathToString(importer);
+	const importerDirectoryEnd = importerPath.lastIndexOf("/");
+	const candidate =
+		importerDirectoryEnd === -1
+			? candidateTail
+			: `${importerPath.slice(0, importerDirectoryEnd)}/${candidateTail}`;
+	const result = validateRepoPath(candidate);
 	if (result.kind === "ok") {
 		return {
 			kind: "repo_path",
