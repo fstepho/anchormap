@@ -153,7 +153,7 @@ export function parseTypeScriptProductText(
 		repoPathToString(path),
 		text,
 		ts.ScriptTarget.Latest,
-		true,
+		false,
 		ts.ScriptKind.TS,
 	) as ParsedSourceFile;
 
@@ -191,21 +191,25 @@ function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
 	const unsupportedStaticEdgeInputs: UnsupportedStaticEdgeInput[] = [];
 
-	function visit(node: ts.Node): void {
-		const supportedEdgeInput = supportedStaticEdgeInputFromNode(node);
-		if (supportedEdgeInput !== undefined) {
-			supportedStaticEdgeInputs.push(supportedEdgeInput);
-		}
-
+	function visitUnsupported(node: ts.Node): void {
 		const unsupportedEdgeInput = unsupportedStaticEdgeInputFromNode(node);
 		if (unsupportedEdgeInput !== undefined) {
 			unsupportedStaticEdgeInputs.push(unsupportedEdgeInput);
 		}
 
-		ts.forEachChild(node, visit);
+		ts.forEachChild(node, visitUnsupported);
 	}
 
-	visit(sourceFile);
+	for (const statement of sourceFile.statements) {
+		const supportedEdgeInput = supportedStaticEdgeInputFromNode(statement);
+		if (supportedEdgeInput !== undefined) {
+			supportedStaticEdgeInputs.push(supportedEdgeInput);
+			continue;
+		}
+
+		visitUnsupported(statement);
+	}
+
 	return { supportedStaticEdgeInputs, unsupportedStaticEdgeInputs };
 }
 

@@ -273,7 +273,7 @@ function validateScanJsonSuccessOutput(
 	if (!stdoutText.endsWith("\n")) {
 		return internalError("scan --json success stdout missing final newline");
 	}
-	if (stdoutText.slice(0, -1).includes("\n")) {
+	if (stdoutText.indexOf("\n") !== stdoutText.length - 1) {
 		return internalError("scan --json success stdout is not a single physical line");
 	}
 	return undefined;

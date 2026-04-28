@@ -7,6 +7,8 @@ import type {
 	StoredMappingView,
 } from "../domain/scan-result";
 
+const JSON_STRING_ESCAPE_PATTERN = /["\\\u0000-\u001f\ud800-\udfff]/;
+
 export function renderScanResultJson(result: ScanResultView): string {
 	return `${renderScanResultObject(result)}\n`;
 }
@@ -136,6 +138,10 @@ function renderNumber(value: 1): string {
 }
 
 function renderString(value: string): string {
+	if (!JSON_STRING_ESCAPE_PATTERN.test(value)) {
+		return `"${value}"`;
+	}
+
 	let rendered = '"';
 
 	for (let index = 0; index < value.length; index += 1) {
