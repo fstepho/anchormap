@@ -351,6 +351,58 @@ test("stores supported static edge inputs on parsed product files", () => {
 	}
 });
 
+test("resolves simple declaration-only product files without changing graph semantics", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				[
+					'import { value0001 as dep0001 } from "./dep";',
+					"",
+					"export const value0000 = 0;",
+					"export const linked0000 = [dep0001];",
+					"",
+				].join("\n"),
+			),
+			"src/dep.ts": bytes("export const value0001 = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		const indexFile = result.productGraph.parsedFiles.find((file) => file.path === "src/index.ts");
+		assert.deepEqual(indexFile?.supportedStaticEdgeInputs, [
+			{ syntaxKind: "import_declaration", specifier: "./dep" },
+		]);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("keeps simple-looking invalid TypeScript on the parser rejection path", () => {
+	const cases = [
+		"export const class = 1;\n",
+		'import { value0001 as class } from "./dep";\nexport const value0000 = 0;\n',
+		"export const value0000 = 08;\n",
+	];
+
+	for (const source of cases) {
+		const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes(source),
+			}),
+		});
+
+		assert.equal(result.kind, "error", source);
+		if (result.kind === "error") {
+			assert.equal(result.error.kind, "UnsupportedRepoError", source);
+		}
+	}
+});
+
 test("emits unsupported_static_edge for local require without resolving or adding edges", () => {
 	let existenceChecks = 0;
 	const readFile = createReadFileFs({

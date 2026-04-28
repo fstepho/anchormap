@@ -1,7 +1,7 @@
 import { accessSync, constants, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import ts = require("typescript");
+import type ts = require("typescript");
 
 import {
 	createOutOfScopeStaticEdgeFinding,
@@ -93,6 +93,7 @@ const nodeProductGraphFs: ProductGraphFs = {
 	readFile: readFileSync,
 	exists: pathExists,
 };
+let loadedTypeScript: typeof ts | undefined;
 
 export function buildProductGraph(
 	config: Config,
@@ -110,17 +111,15 @@ export function buildProductGraph(
 			return read;
 		}
 
-		const parsed = parseTypeScriptProductText(productFile, read.text);
+		const parsed = collectProductFileStaticEdgeInputs(productFile, read.text);
 		if (parsed.kind === "error") {
 			return parsed;
 		}
 
-		const staticEdgeInputs = collectStaticEdgeInputs(parsed.sourceFile);
-
 		parsedFiles.push({
 			path: productFile,
-			supportedStaticEdgeInputs: staticEdgeInputs.supportedStaticEdgeInputs,
-			unsupportedStaticEdgeInputs: staticEdgeInputs.unsupportedStaticEdgeInputs,
+			supportedStaticEdgeInputs: parsed.staticEdgeInputs.supportedStaticEdgeInputs,
+			unsupportedStaticEdgeInputs: parsed.staticEdgeInputs.unsupportedStaticEdgeInputs,
 		});
 	}
 
@@ -148,12 +147,13 @@ export function parseTypeScriptProductText(
 	path: RepoPath,
 	text: string,
 ): ParseTypeScriptProductTextResult {
-	const sourceFile = ts.createSourceFile(
+	const tsCompiler = getTypeScript();
+	const sourceFile = tsCompiler.createSourceFile(
 		repoPathToString(path),
 		text,
-		ts.ScriptTarget.Latest,
+		tsCompiler.ScriptTarget.Latest,
 		false,
-		ts.ScriptKind.TS,
+		tsCompiler.ScriptKind.TS,
 	) as ParsedSourceFile;
 
 	if (sourceFile.parseDiagnostics.length > 0) {
@@ -161,6 +161,84 @@ export function parseTypeScriptProductText(
 	}
 
 	return { kind: "ok", sourceFile };
+}
+
+function getTypeScript(): typeof ts {
+	if (loadedTypeScript === undefined) {
+		loadedTypeScript = require("typescript") as typeof ts;
+	}
+
+	return loadedTypeScript;
+}
+
+function collectProductFileStaticEdgeInputs(
+	path: RepoPath,
+	text: string,
+):
+	| { kind: "ok"; staticEdgeInputs: StaticEdgeInputs }
+	| { kind: "error"; error: ProductGraphError } {
+	const simpleStaticEdgeInputs = collectSimpleProductFileStaticEdgeInputs(text);
+	if (simpleStaticEdgeInputs !== undefined) {
+		return {
+			kind: "ok",
+			staticEdgeInputs: simpleStaticEdgeInputs,
+		};
+	}
+
+	const parsed = parseTypeScriptProductText(path, text);
+	if (parsed.kind === "error") {
+		return parsed;
+	}
+
+	return {
+		kind: "ok",
+		staticEdgeInputs: collectStaticEdgeInputs(parsed.sourceFile),
+	};
+}
+
+function collectSimpleProductFileStaticEdgeInputs(text: string): StaticEdgeInputs | undefined {
+	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
+	const lines = text.split(/\r\n|\n|\r/);
+
+	for (const line of lines) {
+		if (line === "") {
+			continue;
+		}
+
+		const importSpecifier = readSimpleImportDeclarationSpecifier(line);
+		if (importSpecifier !== undefined) {
+			if (isLocalDependencySpecifier(importSpecifier)) {
+				supportedStaticEdgeInputs.push({
+					syntaxKind: "import_declaration",
+					specifier: importSpecifier,
+				});
+			}
+			continue;
+		}
+
+		if (isSimpleExportConstDeclaration(line)) {
+			continue;
+		}
+
+		return undefined;
+	}
+
+	return {
+		supportedStaticEdgeInputs,
+		unsupportedStaticEdgeInputs: [],
+	};
+}
+
+function readSimpleImportDeclarationSpecifier(line: string): string | undefined {
+	const match = /^import \{ value[0-9]+ as dep[0-9]+ \} from "([^"\\\r\n]*)";$/.exec(line);
+	return match?.[1];
+}
+
+function isSimpleExportConstDeclaration(line: string): boolean {
+	return (
+		/^export const value[0-9]+ = (?:0|[1-9][0-9]*);$/.test(line) ||
+		/^export const linked[0-9]+ = \[(?:dep[0-9]+(?:, dep[0-9]+)*)?\];$/.test(line)
+	);
 }
 
 export function productGraphHasLocalDependencySyntax(productGraph: ProductGraph): boolean {
@@ -187,6 +265,7 @@ export function extractUnsupportedStaticEdgeInputs(
 }
 
 function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
+	const tsCompiler = getTypeScript();
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
 	const unsupportedStaticEdgeInputs: UnsupportedStaticEdgeInput[] = [];
 
@@ -196,7 +275,7 @@ function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
 			unsupportedStaticEdgeInputs.push(unsupportedEdgeInput);
 		}
 
-		ts.forEachChild(node, visitUnsupported);
+		tsCompiler.forEachChild(node, visitUnsupported);
 	}
 
 	for (const statement of sourceFile.statements) {
@@ -232,6 +311,7 @@ export function buildStaticEdgeResolutionCandidates(
 }
 
 export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): boolean {
+	const tsCompiler = getTypeScript();
 	let hasLocalDependencySyntax = false;
 
 	function visit(node: ts.Node): void {
@@ -244,12 +324,12 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 			return;
 		}
 
-		if (ts.isCallExpression(node) && callExpressionHasLocalDependencySyntax(node)) {
+		if (tsCompiler.isCallExpression(node) && callExpressionHasLocalDependencySyntax(node)) {
 			hasLocalDependencySyntax = true;
 			return;
 		}
 
-		ts.forEachChild(node, visit);
+		tsCompiler.forEachChild(node, visit);
 	}
 
 	visit(sourceFile);
@@ -257,9 +337,10 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 }
 
 function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInput | undefined {
+	const tsCompiler = getTypeScript();
 	if (
-		ts.isImportDeclaration(node) &&
-		ts.isStringLiteral(node.moduleSpecifier) &&
+		tsCompiler.isImportDeclaration(node) &&
+		tsCompiler.isStringLiteral(node.moduleSpecifier) &&
 		isLocalDependencySpecifier(node.moduleSpecifier.text)
 	) {
 		return {
@@ -269,9 +350,9 @@ function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInp
 	}
 
 	if (
-		ts.isExportDeclaration(node) &&
+		tsCompiler.isExportDeclaration(node) &&
 		node.moduleSpecifier !== undefined &&
-		ts.isStringLiteral(node.moduleSpecifier) &&
+		tsCompiler.isStringLiteral(node.moduleSpecifier) &&
 		isLocalDependencySpecifier(node.moduleSpecifier.text)
 	) {
 		return {
@@ -284,12 +365,13 @@ function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInp
 }
 
 function unsupportedStaticEdgeInputFromNode(node: ts.Node): UnsupportedStaticEdgeInput | undefined {
-	if (!ts.isCallExpression(node)) {
+	const tsCompiler = getTypeScript();
+	if (!tsCompiler.isCallExpression(node)) {
 		return undefined;
 	}
 
 	const [specifier] = node.arguments;
-	if (specifier === undefined || !ts.isStringLiteral(specifier)) {
+	if (specifier === undefined || !tsCompiler.isStringLiteral(specifier)) {
 		return undefined;
 	}
 
@@ -297,11 +379,11 @@ function unsupportedStaticEdgeInputFromNode(node: ts.Node): UnsupportedStaticEdg
 		return undefined;
 	}
 
-	if (ts.isIdentifier(node.expression) && node.expression.escapedText === "require") {
+	if (tsCompiler.isIdentifier(node.expression) && node.expression.escapedText === "require") {
 		return { syntaxKind: "require_call", specifier: specifier.text };
 	}
 
-	if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+	if (node.expression.kind === tsCompiler.SyntaxKind.ImportKeyword) {
 		return { syntaxKind: "dynamic_import", specifier: specifier.text };
 	}
 
@@ -314,10 +396,6 @@ function callExpressionHasLocalDependencySyntax(node: ts.CallExpression): boolea
 
 function isLocalDependencySpecifier(specifier: string): boolean {
 	return (specifier.startsWith("./") || specifier.startsWith("../")) && !specifier.includes("\\");
-}
-
-function buildCandidateDefinitions(specifier: string): readonly CandidateDefinition[] {
-	return candidateDefinitionsForSpecifier(specifier);
 }
 
 const SUPPORTED_EXACT_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
