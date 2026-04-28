@@ -85,6 +85,11 @@ type CandidateDefinition = {
 	readonly support: StaticEdgeResolutionCandidate["support"];
 };
 
+type StaticEdgeInputs = {
+	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
+	readonly unsupportedStaticEdgeInputs: readonly UnsupportedStaticEdgeInput[];
+};
+
 const nodeProductGraphFs: ProductGraphFs = {
 	readFile: readFileSync,
 	exists: pathExists,
@@ -111,13 +116,12 @@ export function buildProductGraph(
 			return parsed;
 		}
 
-		const supportedStaticEdgeInputs = extractSupportedStaticEdgeInputs(parsed.sourceFile);
-		const unsupportedStaticEdgeInputs = extractUnsupportedStaticEdgeInputs(parsed.sourceFile);
+		const staticEdgeInputs = collectStaticEdgeInputs(parsed.sourceFile);
 
 		parsedFiles.push({
 			path: productFile,
-			supportedStaticEdgeInputs,
-			unsupportedStaticEdgeInputs,
+			supportedStaticEdgeInputs: staticEdgeInputs.supportedStaticEdgeInputs,
+			unsupportedStaticEdgeInputs: staticEdgeInputs.unsupportedStaticEdgeInputs,
 		});
 	}
 
@@ -174,37 +178,35 @@ export function productGraphHasSupportedLocalDependencySyntax(productGraph: Prod
 export function extractSupportedStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
 ): SupportedStaticEdgeInput[] {
-	const edgeInputs: SupportedStaticEdgeInput[] = [];
-
-	function visit(node: ts.Node): void {
-		const edgeInput = supportedStaticEdgeInputFromNode(node);
-		if (edgeInput !== undefined) {
-			edgeInputs.push(edgeInput);
-		}
-
-		ts.forEachChild(node, visit);
-	}
-
-	visit(sourceFile);
-	return edgeInputs;
+	return [...collectStaticEdgeInputs(sourceFile).supportedStaticEdgeInputs];
 }
 
 export function extractUnsupportedStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
 ): UnsupportedStaticEdgeInput[] {
-	const edgeInputs: UnsupportedStaticEdgeInput[] = [];
+	return [...collectStaticEdgeInputs(sourceFile).unsupportedStaticEdgeInputs];
+}
+
+function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
+	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
+	const unsupportedStaticEdgeInputs: UnsupportedStaticEdgeInput[] = [];
 
 	function visit(node: ts.Node): void {
-		const edgeInput = unsupportedStaticEdgeInputFromNode(node);
-		if (edgeInput !== undefined) {
-			edgeInputs.push(edgeInput);
+		const supportedEdgeInput = supportedStaticEdgeInputFromNode(node);
+		if (supportedEdgeInput !== undefined) {
+			supportedStaticEdgeInputs.push(supportedEdgeInput);
+		}
+
+		const unsupportedEdgeInput = unsupportedStaticEdgeInputFromNode(node);
+		if (unsupportedEdgeInput !== undefined) {
+			unsupportedStaticEdgeInputs.push(unsupportedEdgeInput);
 		}
 
 		ts.forEachChild(node, visit);
 	}
 
 	visit(sourceFile);
-	return edgeInputs;
+	return { supportedStaticEdgeInputs, unsupportedStaticEdgeInputs };
 }
 
 export function buildStaticEdgeResolutionCandidates(
@@ -358,12 +360,20 @@ function resolveSupportedStaticEdges(
 	| { kind: "error"; error: ProductGraphError } {
 	const edgesByImporter = new Map<RepoPath, readonly RepoPath[]>();
 	const findings: Finding[] = [];
+	const candidateExistenceCache = new Map<RepoPath, boolean>();
 
 	for (const file of parsedFiles) {
 		const supportedTargets = new Set<RepoPath>();
 
 		for (const edgeInput of file.supportedStaticEdgeInputs) {
-			const resolution = resolveSupportedStaticEdge(config, cwd, fs, file.path, edgeInput);
+			const resolution = resolveSupportedStaticEdge(
+				config,
+				cwd,
+				fs,
+				candidateExistenceCache,
+				file.path,
+				edgeInput,
+			);
 			if (resolution.kind === "error") {
 				return resolution;
 			}
@@ -396,6 +406,7 @@ function resolveSupportedStaticEdge(
 	config: Config,
 	cwd: string,
 	fs: ProductGraphFs,
+	candidateExistenceCache: Map<RepoPath, boolean>,
 	importer: RepoPath,
 	edgeInput: SupportedStaticEdgeInput,
 ):
@@ -406,21 +417,16 @@ function resolveSupportedStaticEdge(
 	const existingCandidates: StaticEdgeResolutionCandidate[] = [];
 
 	for (const candidate of candidates) {
-		const exists = candidateExists(cwd, fs, candidate.path);
+		const exists = candidateExists(cwd, fs, candidateExistenceCache, candidate.path);
 		if (exists.kind === "error") {
 			return exists;
 		}
 		if (exists.exists) {
+			if (candidate.support === "supported" && isInSupportedProductScope(config, candidate.path)) {
+				return { kind: "supported_target", target: candidate.path };
+			}
 			existingCandidates.push(candidate);
 		}
-	}
-
-	const supportedTarget = existingCandidates.find(
-		(candidate) =>
-			candidate.support === "supported" && isInSupportedProductScope(config, candidate.path),
-	);
-	if (supportedTarget !== undefined) {
-		return { kind: "supported_target", target: supportedTarget.path };
 	}
 
 	const outOfScopeTarget = existingCandidates.find((candidate) =>
@@ -462,10 +468,18 @@ function resolveSupportedStaticEdge(
 function candidateExists(
 	cwd: string,
 	fs: ProductGraphFs,
+	candidateExistenceCache: Map<RepoPath, boolean>,
 	path: RepoPath,
 ): { kind: "ok"; exists: boolean } | { kind: "error"; error: ProductGraphError } {
+	const cached = candidateExistenceCache.get(path);
+	if (cached !== undefined) {
+		return { kind: "ok", exists: cached };
+	}
+
 	try {
-		return { kind: "ok", exists: fs.exists(join(cwd, repoPathToString(path))) };
+		const exists = fs.exists(join(cwd, repoPathToString(path)));
+		candidateExistenceCache.set(path, exists);
+		return { kind: "ok", exists };
 	} catch (error) {
 		return productGraphUnsupportedError(`cannot test existence for candidate ${path}`, error);
 	}

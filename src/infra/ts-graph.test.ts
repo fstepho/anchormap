@@ -464,6 +464,62 @@ test("resolves supported static edges with .ts before index.ts and deduplicates 
 	}
 });
 
+test("short-circuits extensionless resolution when the first supported candidate exists", () => {
+	const checkedPaths: string[] = [];
+	const readFile = createReadFileFs({
+		"src/index.ts": bytes("import './lib';\n"),
+		"src/lib.ts": bytes("export const lib = 1;\n"),
+	}).readFile;
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/lib.ts")], {
+		cwd: CWD,
+		fs: {
+			readFile,
+			exists(path: string): boolean {
+				checkedPaths.push(path);
+				assert.equal(path, `${CWD}/src/lib.ts`);
+				return true;
+			},
+		},
+	});
+
+	assert.equal(result.kind, "ok");
+	assert.deepEqual(checkedPaths, [`${CWD}/src/lib.ts`]);
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/lib.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("caches candidate existence across duplicate supported static edge inputs", () => {
+	let existenceChecks = 0;
+	const readFile = createReadFileFs({
+		"src/index.ts": bytes("import './lib';\nexport * from './lib';\n"),
+		"src/lib.ts": bytes("export const lib = 1;\n"),
+	}).readFile;
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/lib.ts")], {
+		cwd: CWD,
+		fs: {
+			readFile,
+			exists(path: string): boolean {
+				assert.equal(path, `${CWD}/src/lib.ts`);
+				existenceChecks += 1;
+				return true;
+			},
+		},
+	});
+
+	assert.equal(result.kind, "ok");
+	assert.equal(existenceChecks, 1);
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/lib.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
 test("normalizes product files, importers, and edges independent of discovery order", () => {
 	const files = {
 		"src/a.ts": bytes("import './c';\nimport './b';\n"),
