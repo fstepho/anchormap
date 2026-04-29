@@ -238,9 +238,6 @@ function buildCoveringAnchorIdsByFile(
 	}
 
 	return new Map(
-		[...coveringAnchorIdsByFile.entries()].map(([path, anchorIds]) => [
-			path,
-			anchorIds,
-		]),
+		[...coveringAnchorIdsByFile.entries()].map(([path, anchorIds]) => [path, anchorIds]),
 	);
 }

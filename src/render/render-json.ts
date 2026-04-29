@@ -7,8 +7,6 @@ import type {
 	StoredMappingView,
 } from "../domain/scan-result";
 
-const JSON_STRING_ESCAPE_PATTERN = /["\\\u0000-\u001f\ud800-\udfff]/;
-
 export function renderScanResultJson(result: ScanResultView): string {
 	return `${renderScanResultObject(result)}\n`;
 }
@@ -138,7 +136,7 @@ function renderNumber(value: 1): string {
 }
 
 function renderString(value: string): string {
-	if (!JSON_STRING_ESCAPE_PATTERN.test(value)) {
+	if (!requiresJsonStringEscaping(value)) {
 		return `"${value}"`;
 	}
 
@@ -182,4 +180,20 @@ function renderString(value: string): string {
 	}
 
 	return `${rendered}"`;
+}
+
+function requiresJsonStringEscaping(value: string): boolean {
+	for (let index = 0; index < value.length; index += 1) {
+		const codeUnit = value.charCodeAt(index);
+		if (
+			codeUnit === 0x22 ||
+			codeUnit === 0x5c ||
+			codeUnit <= 0x1f ||
+			(codeUnit >= 0xd800 && codeUnit <= 0xdfff)
+		) {
+			return true;
+		}
+	}
+
+	return false;
 }

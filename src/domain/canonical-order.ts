@@ -60,7 +60,10 @@ function sortCanonicalTextByUtf8<T extends string>(values: readonly T[]): T[] {
 	return [...values].sort((left, right) => compareCanonicalBytes(bytes(left), bytes(right)));
 }
 
-function compareCanonicalBytes(leftBytes: readonly number[], rightBytes: readonly number[]): number {
+function compareCanonicalBytes(
+	leftBytes: readonly number[],
+	rightBytes: readonly number[],
+): number {
 	const length = Math.min(leftBytes.length, rightBytes.length);
 
 	for (let index = 0; index < length; index += 1) {
