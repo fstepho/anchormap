@@ -4850,11 +4850,11 @@ Discovery:
 - Under the v1.0 contract, a relative `.js` specifier is diagnostic-only and is
   not resolved to a sibling `.ts` source file.
 
-Future decision required:
-- Decide whether a future AnchorMap version should support `.js` specifier to
-  `.ts` source resolution.
+Version target:
+- AnchorMap v1.1 will support a narrow `.js` specifier to `.ts` source
+  resolution rule.
 
-Required future planning before implementation:
+Required v1.1 planning before implementation:
 - Amend `brief.md` if TypeScript ESM source repositories become an intended
   segment.
 - Amend `contract.md` `TS_PROFILE` candidate resolution and diagnostic rules.
@@ -4862,6 +4862,25 @@ Required future planning before implementation:
   resolution, priority when both `.ts` and `.js` exist, and unresolved cases.
 - Amend `design.md` for `ts_graph` candidate construction.
 - Create or update an ADR that supersedes or extends `ADR-0006`.
+
+Planning result:
+- Decision: support a narrow v1.1 `.js -> .ts` source-candidate rule for
+  relative explicit `.js` specifiers in `.ts` source files.
+- Product planning: `brief.md` §6.4 records TypeScript ESM source repositories
+  as a v1.1 intended segment, without making `.js` a supported
+  `product_file`.
+- Contract planning: `contract.md` §10.2.1 defines the v1.1 candidate list,
+  priority rules, diagnostics, and non-goals.
+- Eval planning: `evals.md` §5.4.1 defines v1.1 B-graph fixtures
+  `fx38f`-`fx38l`.
+- Design planning: `design.md` §7.4.1 defines the v1.1 `ts_graph` candidate
+  construction branch and unchanged boundaries.
+- ADR: `ADR-0012` extends `ADR-0006` for v1.1 `.js` specifier source
+  resolution while preserving the parser profile and v1.0 product-file scope.
+
+Implementation remains out of scope for this planning entry. A v1.1 executable
+task chain must activate the planned rules, add runnable fixtures and goldens,
+and update runtime behavior in one bounded implementation pass.
 
 ### F2 — Anchor formats used by AnchorMap docs
 

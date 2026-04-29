@@ -154,6 +154,25 @@ Les imports non relatifs sont acceptés uniquement s'ils désignent des packages
 
 Tout dépôt nécessitant `baseUrl`, `paths`, `@/...`, `~/...`, `src/...` ou équivalent pour relier des fichiers produit locaux est rejeté du pilote v1.0.
 
+## 6.4 Segment v1.1 prévu : TypeScript ESM à specifiers `.js`
+
+AnchorMap v1.1 cible aussi les dépôts TypeScript mono-package qui écrivent
+leurs dépendances locales relatives au format runtime ESM, par exemple
+`import "./dep.js"` dans un fichier source `.ts`.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- les fichiers produit restent des sources `.ts` ;
+- `.js`, `.tsx` et `.d.ts` ne deviennent pas des fichiers produit supportés ;
+- aucune lecture de `tsconfig.json`, `package.json`, `baseUrl`, `paths`,
+  `exports`, conditions Node, cache ou environnement n'est utilisée comme
+  source de vérité ;
+- seuls les specifiers relatifs explicites terminés par `.js` peuvent être
+  interprétés comme des références vers une source `.ts` jumelle ;
+- les cas sans source `.ts` correspondante restent des dégradations explicites,
+  jamais des fallbacks silencieux vers du JavaScript runtime.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :

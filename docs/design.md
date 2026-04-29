@@ -48,6 +48,7 @@ ADRs courantes :
 - `ADR-0009` — Packaging and distribution (`Accepted`)
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 - `ADR-0011` — Release CLI Node launch profile (`Accepted`)
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -526,6 +527,34 @@ Choix de design :
 - granularité fichier uniquement ;
 - aucun symbole, aucune fonction, aucun call graph ;
 - aucun cache persistant.
+
+#### 7.4.1 Extension v1.1 planifiée : specifiers `.js` ESM
+
+Cette section décrit le design v1.1 prévu par `ADR-0012`. Elle ne modifie pas
+le design v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
+activé explicitement l'extension.
+
+Quand l'extension est active, `ts_graph` ajoute une branche distincte de
+construction de candidats pour les specifiers relatifs explicites terminés par
+`.js` :
+
+1. construire d'abord le candidat source obtenu en remplaçant le suffixe
+   terminal `.js` par `.ts` ;
+2. conserver ce candidat comme supporté seulement s'il ne se termine pas par
+   `.d.ts` ;
+3. construire ensuite le candidat exact `.js` comme diagnostic uniquement ;
+4. appliquer sans autre changement la classification ordonnée du contrat.
+
+Les autres frontières restent inchangées :
+
+- `discoverProductFiles` continue de retenir uniquement les fichiers `.ts` et
+  d'exclure `.d.ts`, `.tsx` et `.js` ;
+- `buildProductGraph` ne lit ni `tsconfig.json`, ni `package.json`, ni cache, ni
+  environnement pour résoudre un specifier ;
+- `ImportDeclaration` et `ExportDeclaration` restent les seules occurrences
+  syntaxiques supportées pour cette extension ;
+- `require("./x.js")` et `import("./x.js")` restent des formes reconnues mais
+  hors support, sans résolution de candidats.
 
 ### 7.5 Validation des mappings
 

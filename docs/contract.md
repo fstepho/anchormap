@@ -809,6 +809,55 @@ Conséquences explicites :
 - le cas 4 ne produit jamais `target_path` ;
 - pour un importeur donné, l'ensemble dédupliqué des cibles retenues par la règle 1 est exposé dans `files[importer].supported_local_targets`.
 
+#### 10.2.1 Extension v1.1 planifiée : specifiers `.js` vers sources `.ts`
+
+Cette section planifie une extension v1.1. Elle ne modifie pas le contrat
+runtime v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
+activé explicitement ces règles.
+
+Quand l'extension est active, le cas 2 de la section 10.2 est remplacé pour les
+specifiers terminés par `.js` uniquement.
+
+Cas 2a — specifier se terminant par `.tsx` ou `.d.ts` :
+
+1. candidat de diagnostic uniquement : la cible exacte.
+
+Cas 2b — specifier se terminant par `.js` :
+
+1. candidat supporté : la cible source obtenue en remplaçant le suffixe
+   terminal `.js` par `.ts`, sauf si cette cible se termine par `.d.ts` ;
+2. candidat de diagnostic uniquement : la cible exacte `.js`.
+
+Si le candidat source `.ts` du cas 2b se terminerait par `.d.ts`, il n'est pas
+un candidat supporté et il est traité comme candidat de diagnostic uniquement.
+
+La classification ordonnée reste celle de la section 10.2.
+
+Conséquences explicites de l'extension :
+
+- `import "./dep.js"` peut retenir `dep.ts` comme cible supportée ;
+- `export * from "./dep.js"` et les autres `ExportDeclaration` supportées
+  utilisent la même résolution ;
+- `import "./dir/index.js"` peut retenir `dir/index.ts` comme cible supportée ;
+- `import "./dir.js"` ne construit pas de candidat `dir/index.ts` ;
+- si `dep.ts` et `dep.js` existent tous les deux sous `product_root` et hors
+  `ignore_roots`, `dep.ts` gagne et aucun finding lié à `dep.js` n'est émis ;
+- si `dep.ts` n'existe pas mais `dep.js` existe sous `product_root` et hors
+  `ignore_roots`, l'occurrence produit `unsupported_local_target` avec
+  `target_path = "dep.js"` ;
+- si aucun candidat du cas 2b n'est retenu par les règles de classification,
+  l'occurrence produit `unresolved_static_edge` avec le specifier original,
+  par exemple `"./dep.js"`.
+
+Cette extension ne promet pas :
+
+- la prise en charge de `.js` comme `product_file` ;
+- la lecture de `tsconfig.json`, `package.json`, `baseUrl`, `paths`, `exports`
+  ou conditions Node ;
+- la résolution des imports non relatifs ;
+- la résolution de répertoires pour un specifier explicite `.js` autre que le
+  chemin écrit dans le specifier.
+
 ### 10.3 Ce qui ne produit pas de dépendance locale supportée
 
 Ne produisent pas de dépendance locale supportée :

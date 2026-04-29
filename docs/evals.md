@@ -226,6 +226,21 @@ Les états essentiels du schéma doivent être explicitement couverts ainsi :
 | `fx38d_graph_ts_profile_jsx_rejected` | JSX dans un fichier `.ts` sous `TS_PROFILE` sans JSX | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx38e_graph_required_existence_test_failure` | test d'existence ponctuel requis impossible pour un candidat de résolution | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 
+#### 5.4.1 Fixtures v1.1 planifiées pour specifiers `.js` ESM
+
+Ces fixtures planifient l'extension v1.1 définie par `ADR-0012`. Elles ne font
+pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx38f_graph_js_specifier_to_ts_source` | `import "./dep.js"` retient `dep.ts` | 0 | golden JSON exact ; `supported_local_targets = ["src/dep.ts"]` ; aucun finding pour `dep.js` |
+| `fx38g_graph_js_specifier_reexport_to_ts_source` | `export ... from "./dep.js"` retient `dep.ts` | 0 | golden JSON exact ; edge local pris en compte pour les formes de re-export supportées |
+| `fx38h_graph_js_specifier_explicit_index_source` | `import "./lib/index.js"` retient `lib/index.ts` | 0 | golden JSON exact ; aucun fallback implicite vers `lib.ts` ou `lib/index.js` |
+| `fx38i_graph_js_specifier_ts_source_wins_over_js` | `dep.ts` et `dep.js` existent tous les deux | 0 | golden JSON exact ; `dep.ts` est la cible supportée ; aucun `unsupported_local_target` pour `dep.js` |
+| `fx38j_graph_js_specifier_exact_js_without_ts` | seul `dep.js` existe pour un specifier `.js` | 0 | finding `unsupported_local_target` exact avec `target_path = "src/dep.js"` ; `analysis_health = degraded` |
+| `fx38k_graph_js_specifier_unresolved` | aucun candidat `.ts` ou `.js` n'existe | 0 | finding `unresolved_static_edge` exact avec `specifier = "./dep.js"` ; `analysis_health = degraded` |
+| `fx38l_graph_js_specifier_source_out_of_scope` | la source `.ts` jumelle existe hors `product_root` ou sous `ignore_roots` | 0 | finding `out_of_scope_static_edge` exact ; la cible `.js` ne masque pas la priorité out-of-scope |
+
 ### 5.5 Famille B-repo — limites de support du dépôt et découverte
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
