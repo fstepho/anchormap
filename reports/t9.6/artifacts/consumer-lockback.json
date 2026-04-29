@@ -1,0 +1,50 @@
+{
+	"schema_version": 1,
+	"task": "T10.5",
+	"package_name": "anchormap",
+	"package_version": "1.0.0",
+	"mechanism": "npm-shrinkwrap.json",
+	"runtime_closure_matches_gate_g": true,
+	"shrinkwrap": {
+		"included_in_package": true,
+		"path": "npm-shrinkwrap.json",
+		"sha256": "af2fa42f1cb6632e5d7801e771028a4abfbff3398da48383e04a37f565a12f60"
+	},
+	"package_lock_sha256": "af2fa42f1cb6632e5d7801e771028a4abfbff3398da48383e04a37f565a12f60",
+	"root_runtime_dependencies": {
+		"commonmark": "0.30.0",
+		"typescript": "6.0.3",
+		"yaml": "2.8.3"
+	},
+	"transitive_runtime_closure": {
+		"commonmark": {
+			"version": "0.30.0",
+			"integrity": "sha512-j1yoUo4gxPND1JWV9xj5ELih0yMv1iCWDG6eEQIPLSWLxzCXiFoyS7kvB+WwU+tZMf4snwJMMtaubV0laFpiBA=="
+		},
+		"entities": {
+			"version": "2.0.3",
+			"integrity": "sha512-MyoZ0jgnLvB2X3Lg5HqpFmn1kybDiIfEQmKzTb5apr51Rb+T3KdmMiqa70T+bhGnyv7bQ6WMj2QMHpGMmlrUYQ=="
+		},
+		"mdurl": {
+			"version": "1.0.1",
+			"integrity": "sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g=="
+		},
+		"minimist": {
+			"version": "1.2.8",
+			"integrity": "sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA=="
+		},
+		"string.prototype.repeat": {
+			"version": "0.2.0",
+			"integrity": "sha512-1BH+X+1hSthZFW+X+JaUkjkkUPwIlLEMJBLANN3hOob3RhEk5snLWNECDnYbgn/m5c5JV7Ersu1Yubaf+05cIA=="
+		},
+		"typescript": {
+			"version": "6.0.3",
+			"integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="
+		},
+		"yaml": {
+			"version": "2.8.3",
+			"integrity": "sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg=="
+		}
+	},
+	"failures": []
+}

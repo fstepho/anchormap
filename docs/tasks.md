@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none; next task is ready to start.
-- Next executable product task: `T10.5 — Create publication dry-run and release runbook`
-- Last completed task: `T9.8 — Reconcile archived M9 release-gate evidence`
+- Next executable product task: `T10.6 — Publish v1.0 artifact and archive publication evidence`
+- Last completed task: `T10.5 — Create publication dry-run and release runbook`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -107,6 +107,7 @@
   - `T10.4 — Add user-facing release documentation`
   - `T9.9 — Resolve Gate F release performance blocker`
   - `T9.8 — Reconcile archived M9 release-gate evidence`
+  - `T10.5 — Create publication dry-run and release runbook`
 - Blocked tasks:
   - None recorded.
 - Open deviations:

@@ -25,9 +25,9 @@ Checklist verdict: pass
 - dependency_audit: archived (reports/t9.6/artifacts/dependency-audit.json)
 - golden_diffs: archived (reports/t9.6/artifacts/golden-diffs.json)
 - entropy_review: archived (reports/t9.6/artifacts/entropy-review.json)
-- consumer_lockback: pending (reports/t9.6/artifacts/consumer-lockback.json)
-- t10_5_tarball_artifact: pending (reports/t9.6/artifacts/t10.5-tarball-artifact.json)
-- t10_5_publication_dry_run: pending (reports/t9.6/artifacts/t10.5-publication-dry-run.json)
+- consumer_lockback: archived (reports/t9.6/artifacts/consumer-lockback.json)
+- t10_5_tarball_artifact: archived (reports/t9.6/artifacts/t10.5-tarball-artifact.json)
+- t10_5_publication_dry_run: archived (reports/t9.6/artifacts/t10.5-publication-dry-run.json)
 - t10_6_publication_evidence: pending (reports/t9.6/artifacts/t10.6-publication-evidence.json)
 
 ## Golden Diffs

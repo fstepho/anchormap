@@ -2062,6 +2062,48 @@ test("release gate aggregator fails present null post-M9 publication evidence", 
 	}
 });
 
+for (const status of ["fail", "pending", "error", "pas"] as const) {
+	test(`release gate aggregator fails present post-M9 publication evidence status ${status}`, () => {
+		const evidence = createTempReleaseEvidence();
+		try {
+			writePublicationEvidence(evidence.evidenceDir);
+			const tarballPath = resolve(evidence.evidenceDir, "t10.5-tarball-artifact.json");
+			const tarball = readJson<Record<string, unknown>>(tarballPath);
+			tarball.status = status;
+			writeJson(tarballPath, tarball);
+
+			const result = runAggregator(evidence);
+			assert.equal(result.status, 1);
+
+			const report = readJson<{
+				release_verdict: string;
+				publication_checklist: {
+					verdict: string;
+					publication_evidence: {
+						status: string;
+						t10_5_tarball_artifact: { status: string };
+						validation_errors: string[];
+					};
+				};
+			}>(resolve(evidence.outDir, "release-report.json"));
+			assert.equal(report.release_verdict, "fail");
+			assert.equal(report.publication_checklist.verdict, "fail");
+			assert.equal(report.publication_checklist.publication_evidence.status, "fail");
+			assert.equal(
+				report.publication_checklist.publication_evidence.t10_5_tarball_artifact.status,
+				"fail",
+			);
+			assert.ok(
+				report.publication_checklist.publication_evidence.validation_errors.includes(
+					"T10.5 tarball artifact status must be pass when present",
+				),
+			);
+		} finally {
+			rmSync(evidence.rootDir, { recursive: true, force: true });
+		}
+	});
+}
+
 test("release gate aggregator fails closed for missing artifacts and unclassified golden diffs", () => {
 	const evidence = createTempReleaseEvidence();
 	try {

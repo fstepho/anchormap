@@ -408,21 +408,21 @@
 			{
 				"name": "consumer_lockback",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/consumer-lockback.json",
 				"archived_path": "reports/t9.6/artifacts/consumer-lockback.json"
 			},
 			{
 				"name": "t10_5_tarball_artifact",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.5-tarball-artifact.json",
 				"archived_path": "reports/t9.6/artifacts/t10.5-tarball-artifact.json"
 			},
 			{
 				"name": "t10_5_publication_dry_run",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.5-publication-dry-run.json",
 				"archived_path": "reports/t9.6/artifacts/t10.5-publication-dry-run.json"
 			},
@@ -438,21 +438,21 @@
 			{
 				"name": "consumer_lockback",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/consumer-lockback.json",
 				"archived_path": "reports/t9.6/artifacts/consumer-lockback.json"
 			},
 			{
 				"name": "t10_5_tarball_artifact",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.5-tarball-artifact.json",
 				"archived_path": "reports/t9.6/artifacts/t10.5-tarball-artifact.json"
 			},
 			{
 				"name": "t10_5_publication_dry_run",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.5-publication-dry-run.json",
 				"archived_path": "reports/t9.6/artifacts/t10.5-publication-dry-run.json"
 			},
@@ -480,13 +480,13 @@
 			"status": "pass",
 			"validation_errors": [],
 			"consumer_lockback": {
-				"status": "pending"
+				"status": "pass"
 			},
 			"t10_5_tarball_artifact": {
-				"status": "pending"
+				"status": "pass"
 			},
 			"t10_5_publication_dry_run": {
-				"status": "pending"
+				"status": "pass"
 			},
 			"t10_6_publication_evidence": {
 				"status": "pending"

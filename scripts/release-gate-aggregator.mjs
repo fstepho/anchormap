@@ -1060,6 +1060,7 @@ function validatePublicationPackageIdentity(report, label, result, validationErr
 		failPublicationEvidence(result, validationErrors, `${label} evidence must be a JSON object`);
 		return;
 	}
+	validatePublicationReportStatus(report, label, result, validationErrors);
 	if (!isNonEmptyString(report.package_name)) {
 		failPublicationEvidence(result, validationErrors, `${label} requires package_name`);
 	} else if (report.package_name !== expectedPackageName) {
@@ -1077,6 +1078,12 @@ function validatePublicationPackageIdentity(report, label, result, validationErr
 			validationErrors,
 			`${label} package_version must be ${expectedPackageVersion}`,
 		);
+	}
+}
+
+function validatePublicationReportStatus(report, label, result, validationErrors) {
+	if (Object.hasOwn(report, "status") && report.status !== "pass") {
+		failPublicationEvidence(result, validationErrors, `${label} status must be pass when present`);
 	}
 }
 
@@ -1109,8 +1116,13 @@ function validateT10_5DryRunCoherence(report, tarballReport, result, validationE
 		);
 		return;
 	}
+	validatePublicationReportStatus(report, "T10.5 publication dry-run", result, validationErrors);
 	if (!isNonEmptyString(report.tarball_file)) {
-		failPublicationEvidence(result, validationErrors, "T10.5 publication dry-run requires tarball_file");
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.5 publication dry-run requires tarball_file",
+		);
 	}
 	if (isJsonObject(tarballReport)) {
 		validateSameNamedArtifact(
@@ -1133,8 +1145,13 @@ function validateT10_6PublicationCoherence(report, result, validationErrors) {
 		);
 		return;
 	}
+	validatePublicationReportStatus(report, "T10.6 publication evidence", result, validationErrors);
 	if (!isNonEmptyString(report.registry_coordinate)) {
-		failPublicationEvidence(result, validationErrors, "T10.6 publication evidence requires registry_coordinate");
+		failPublicationEvidence(
+			result,
+			validationErrors,
+			"T10.6 publication evidence requires registry_coordinate",
+		);
 	} else {
 		const coordinate = parseNpmRegistryCoordinate(report.registry_coordinate);
 		if (coordinate === null) {

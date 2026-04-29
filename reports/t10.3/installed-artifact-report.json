@@ -17,9 +17,10 @@
 		"name": "anchormap",
 		"version": "1.0.0",
 		"filename": "anchormap-1.0.0.tgz",
-		"integrity": "sha512-T/SLFRcMrPIOneHf3V8Kw8ef2RZwOmIWeoBR9pPtCTa+tIbZQgj/YVs2TSF2hET97yGIkFu+S3EpgNFZiQi8pg==",
-		"shasum": "982bc65a91ce9072fdfbe77d603cd256397c30f4",
+		"integrity": "sha512-oOJLgzxPvCmddEqRQ9Mx5cJg4D1HVycQ3jwNXjk9mxVXPW2UjcHbLjYDWxqa5kjcFlRQEQmi2ihE0ARnZmznIA==",
+		"shasum": "32cb50240f10bd62db8cd8ad6aca1cd748671510",
 		"files": [
+			"README.md",
 			"bin/anchormap",
 			"dist/anchormap.js",
 			"dist/cli/command-args.js",
