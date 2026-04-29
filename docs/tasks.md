@@ -4834,6 +4834,76 @@ Done when:
 - Any consequence for design or tasks is reflected in repository docs.
 - Renderer tasks are no longer blocked on undocumented serializer strategy.
 
+## Future compatibility backlog
+
+This section records out-of-scope discoveries made after the v1.0 publication
+chain. Entries here are not executable product tasks until a future product
+change explicitly updates `brief.md`, `contract.md`, `evals.md`, `design.md`,
+and any affected ADRs.
+
+### F1 — TypeScript ESM `.js` specifier compatibility
+
+Discovery:
+- Real TypeScript source repositories may use runtime-style `.js` specifiers in
+  `.ts` source files, especially under Node ESM or `node16` / `nodenext`
+  TypeScript resolution.
+- Under the v1.0 contract, a relative `.js` specifier is diagnostic-only and is
+  not resolved to a sibling `.ts` source file.
+
+Future decision required:
+- Decide whether a future AnchorMap version should support `.js` specifier to
+  `.ts` source resolution.
+
+Required future planning before implementation:
+- Amend `brief.md` if TypeScript ESM source repositories become an intended
+  segment.
+- Amend `contract.md` `TS_PROFILE` candidate resolution and diagnostic rules.
+- Amend `evals.md` with fixtures for `.js -> .ts`, re-export forms, index
+  resolution, priority when both `.ts` and `.js` exist, and unresolved cases.
+- Amend `design.md` for `ts_graph` candidate construction.
+- Create or update an ADR that supersedes or extends `ADR-0006`.
+
+### F2 — Anchor formats used by AnchorMap docs
+
+Discovery:
+- The AnchorMap repository itself already uses stable-looking IDs in durable
+  docs, tasks, evals, and ADR references.
+- Some of those IDs are not valid v1.0 anchors because the supported formats are
+  limited to `SHORT_ID` and `DOTTED_ID`.
+- Examples include task or milestone-style IDs such as `T10.6`, `T0.0a`, `S5`,
+  and `M10`, which are meaningful in this repository but are not all accepted by
+  the current `AnchorId` grammar.
+- A temporary scan over `product_root = src` and `spec_roots = docs` can inspect
+  product files and TypeScript graph shape, but observes no anchors because the
+  existing AnchorMap doc IDs do not match the v1.0-supported anchor formats.
+
+Future decision required:
+- Decide whether a future AnchorMap version should extend the supported
+  `AnchorId` grammar so IDs already formatted in AnchorMap docs can be detected
+  when they appear in supported Markdown heading or YAML `id` anchor positions.
+
+Required future planning before implementation:
+- Amend `brief.md` if repository-native task, milestone, spike, or ADR IDs
+  become intended anchor inputs for supported repositories.
+- Amend `contract.md` to define the expanded `AnchorId` grammar exactly,
+  including accepted examples and rejected near-misses.
+- Amend `evals.md` with B-specs and B-config fixtures for every new accepted
+  anchor shape, including Markdown heading detection, YAML root `id`, mapping
+  keys, invalid map arguments, duplicate anchors, and canonical ordering.
+- Amend `design.md` for anchor validation and any canonical-ordering
+  consequences.
+- Add or update an ADR if the expanded grammar changes the accepted parser or
+  domain-model strategy.
+- Add a task chain only after the grammar and fixture matrix are explicit.
+
+Non-goals:
+- Do not infer anchors from prose, section numbers, filenames, or references;
+  detection still happens only in supported Markdown heading prefixes or YAML
+  root `id` values.
+- Do not add generated mappings, mapping candidates, or automatic ownership
+  inference.
+- Do not weaken the duplicate-anchor rule to make self-dogfooding easier.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
