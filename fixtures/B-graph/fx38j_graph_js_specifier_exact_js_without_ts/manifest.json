@@ -1,0 +1,19 @@
+{
+	"id": "fx38j_graph_js_specifier_exact_js_without_ts",
+	"family": "B-graph",
+	"purpose": "scan --json reports unsupported_local_target for exact dep.js when no dep.ts source candidate exists.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "unsupported-target", "scan", "golden"],
+	"groups": ["m11"]
+}

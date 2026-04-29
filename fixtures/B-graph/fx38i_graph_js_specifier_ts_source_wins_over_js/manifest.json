@@ -1,0 +1,19 @@
+{
+	"id": "fx38i_graph_js_specifier_ts_source_wins_over_js",
+	"family": "B-graph",
+	"purpose": "scan --json keeps dep.ts as the supported target when both dep.ts and dep.js exist.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "priority", "scan", "golden"],
+	"groups": ["m11"]
+}

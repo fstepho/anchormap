@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: T11.2 — Add v1.1 B-graph fixtures and goldens for `.js` specifiers
-- Last completed task: `T11.1 — Implement `.js` specifier source-candidate resolution`
+- Next executable product task: `T11.3 — Preserve scan and map graph-validation behavior under v1.1`
+- Last completed task: `T11.2 — Add v1.1 B-graph fixtures and goldens for `.js` specifiers`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -110,6 +110,7 @@
   - `T10.5 — Create publication dry-run and release runbook`
   - `T10.6 — Publish v1.0 artifact and archive publication evidence`
   - `T11.1 — Implement `.js` specifier source-candidate resolution`
+  - `T11.2 — Add v1.1 B-graph fixtures and goldens for `.js` specifiers`
 - Blocked tasks:
   - None recorded.
 - Open deviations:

@@ -1,0 +1,19 @@
+{
+	"id": "fx38g_graph_js_specifier_reexport_to_ts_source",
+	"family": "B-graph",
+	"purpose": "scan --json resolves supported export-star and named re-export .js declarations to distinct sibling .ts sources with exact stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "reexport", "scan", "golden"],
+	"groups": ["m11"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx38f_graph_js_specifier_to_ts_source",
+	"family": "B-graph",
+	"purpose": "scan --json resolves import './dep.js' to the sibling dep.ts source with exact stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "scan", "golden"],
+	"groups": ["m11"]
+}

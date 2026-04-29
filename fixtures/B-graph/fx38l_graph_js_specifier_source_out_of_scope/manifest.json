@@ -1,0 +1,19 @@
+{
+	"id": "fx38l_graph_js_specifier_source_out_of_scope",
+	"family": "B-graph",
+	"purpose": "scan --json reports out_of_scope_static_edge for the dep.ts source candidate before considering exact dep.js.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "out-of-scope", "scan", "golden"],
+	"groups": ["m11"]
+}

@@ -1,0 +1,4 @@
+version: 1
+product_root: src
+spec_roots:
+  - specs

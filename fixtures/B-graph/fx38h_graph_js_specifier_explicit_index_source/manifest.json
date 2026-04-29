@@ -1,0 +1,19 @@
+{
+	"id": "fx38h_graph_js_specifier_explicit_index_source",
+	"family": "B-graph",
+	"purpose": "scan --json resolves import './lib/index.js' to lib/index.ts without falling back to lib.ts or lib/index.js.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "js-specifier", "index", "scan", "golden"],
+	"groups": ["m11"]
+}
