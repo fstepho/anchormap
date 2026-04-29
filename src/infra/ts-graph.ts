@@ -80,6 +80,7 @@ export interface StaticEdgeResolutionCandidate {
 }
 
 type CandidateDefinition = {
+	readonly specifier?: string;
 	readonly suffix: string;
 	readonly support: StaticEdgeResolutionCandidate["support"];
 };
@@ -296,7 +297,11 @@ export function buildStaticEdgeResolutionCandidates(
 	specifier: string,
 ): StaticEdgeResolutionCandidate[] {
 	return candidateDefinitionsForSpecifier(specifier).flatMap((definition) => {
-		const normalized = normalizeImportCandidate(importer, specifier, definition.suffix);
+		const normalized = normalizeImportCandidate(
+			importer,
+			definition.specifier ?? specifier,
+			definition.suffix,
+		);
 		if (normalized.kind === "outside_repo_root") {
 			return [];
 		}
@@ -425,8 +430,20 @@ function candidateDefinitionsForSpecifier(specifier: string): readonly Candidate
 		return SUPPORTED_EXACT_CANDIDATE_DEFINITIONS;
 	}
 
-	if (specifier.endsWith(".tsx") || specifier.endsWith(".js") || specifier.endsWith(".d.ts")) {
+	if (specifier.endsWith(".tsx") || specifier.endsWith(".d.ts")) {
 		return DIAGNOSTIC_EXACT_CANDIDATE_DEFINITIONS;
+	}
+
+	if (specifier.endsWith(".js")) {
+		const sourceSpecifier = replaceTerminalJsExtensionWithTs(specifier);
+		return [
+			{
+				specifier: sourceSpecifier,
+				suffix: "",
+				support: sourceSpecifier.endsWith(".d.ts") ? "diagnostic_only" : "supported",
+			},
+			{ suffix: "", support: "diagnostic_only" },
+		];
 	}
 
 	if (lastPathSegmentHasDot(specifier)) {
@@ -438,6 +455,10 @@ function candidateDefinitionsForSpecifier(specifier: string): readonly Candidate
 
 function lastPathSegmentHasDot(path: string): boolean {
 	return path.indexOf(".", path.lastIndexOf("/") + 1) !== -1;
+}
+
+function replaceTerminalJsExtensionWithTs(specifier: string): string {
+	return `${specifier.slice(0, -".js".length)}.ts`;
 }
 
 function resolveSupportedStaticEdges(
@@ -513,7 +534,11 @@ function resolveSupportedStaticEdge(
 	let firstUnsupportedTarget: RepoPath | undefined;
 
 	for (const definition of candidateDefinitionsForSpecifier(edgeInput.specifier)) {
-		const normalized = normalizeImportCandidate(importer, edgeInput.specifier, definition.suffix);
+		const normalized = normalizeImportCandidate(
+			importer,
+			definition.specifier ?? edgeInput.specifier,
+			definition.suffix,
+		);
 		if (normalized.kind === "outside_repo_root") {
 			continue;
 		}

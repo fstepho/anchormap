@@ -263,7 +263,12 @@ test("builds local static edge candidates exactly by supported specifier shape",
 		{ path: "src/features/view.tsx", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./compiled.js"), [
+		{ path: "src/features/compiled.ts", support: "supported" },
 		{ path: "src/features/compiled.js", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./types.d.js"), [
+		{ path: "src/features/types.d.ts", support: "diagnostic_only" },
+		{ path: "src/features/types.d.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./types.d.ts"), [
 		{ path: "src/features/types.d.ts", support: "diagnostic_only" },
@@ -280,6 +285,21 @@ test("builds local static edge candidates exactly by supported specifier shape",
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./model.json"), []);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./model/"), []);
+});
+
+test("builds explicit .js static edge candidates with source .ts before exact .js", () => {
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./dep.js"), [
+		{ path: "src/features/dep.ts", support: "supported" },
+		{ path: "src/features/dep.js", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./dir/index.js"), [
+		{ path: "src/features/dir/index.ts", support: "supported" },
+		{ path: "src/features/dir/index.js", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "./dir.js"), [
+		{ path: "src/features/dir.ts", support: "supported" },
+		{ path: "src/features/dir.js", support: "diagnostic_only" },
+	]);
 });
 
 test("omits outside-root static edge candidates before existence testing", () => {
@@ -690,6 +710,164 @@ test("falls back to index.ts when extensionless .ts candidate is absent", () => 
 			"src/lib/index.ts",
 		]);
 		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("resolves explicit .js import declarations to sibling .ts source files", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './dep.js';\n"),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("resolves explicit .js export declarations to sibling .ts source files", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("export * from './dep.js';\nexport { dep } from './dep.js';\n"),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("resolves explicit .js specifiers to .ts when both source and exact .js exist", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './dep.js';\n"),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+			"src/dep.js": bytes("export const dep = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("emits unsupported_local_target for exact .js when no .ts source candidate is retained", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './dep.js';\n"),
+			"src/dep.js": bytes("export const dep = 1;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unsupported_local_target",
+				importer: "src/index.ts",
+				target_path: "src/dep.js",
+			},
+		]);
+	}
+});
+
+test("emits unresolved_static_edge with original explicit .js specifier when no candidate exists", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import './dep.js';\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./dep.js",
+			},
+		]);
+	}
+});
+
+test("emits out_of_scope_static_edge for explicit .js source .ts candidate before exact .js", () => {
+	const result = buildProductGraph(
+		config({ ignoreRoots: ["src/generated"] }),
+		[repoPath("src/index.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import './generated/dep.js';\nexport * from '../shared/dep.js';\n"),
+				"src/generated/dep.ts": bytes("export const ignored = 1;\n"),
+				"src/generated/dep.js": bytes("export const ignored = 1;\n"),
+				"shared/dep.ts": bytes("export const outside = 1;\n"),
+				"shared/dep.js": bytes("export const outside = 1;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "out_of_scope_static_edge",
+				importer: "src/index.ts",
+				target_path: "shared/dep.ts",
+			},
+			{
+				kind: "out_of_scope_static_edge",
+				importer: "src/index.ts",
+				target_path: "src/generated/dep.ts",
+			},
+		]);
+	}
+});
+
+test("does not fall back from explicit ./dir.js specifiers to ./dir/index.ts", () => {
+	const result = buildProductGraph(
+		config(),
+		[repoPath("src/index.ts"), repoPath("src/dir/index.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import './dir.js';\n"),
+				"src/dir/index.ts": bytes("export const dep = 1;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "./dir.js",
+			},
+		]);
 	}
 });
 
