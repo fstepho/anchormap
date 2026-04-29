@@ -122,7 +122,7 @@ Operator checklist:
    codex -p autopilot \
      --sandbox workspace-write \
      --ask-for-approval on-request \
-     --add-dir /Users/fstepho/.codex \
+     --add-dir <USER_HOME>/.codex \
      -c approvals_reviewer='"auto_review"' \
      -c sandbox_workspace_write.network_access=true \
      -c mcp_servers.context7.enabled=false
