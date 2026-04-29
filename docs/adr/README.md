@@ -53,6 +53,7 @@ An ADR is usually not required for:
 | `ADR-0010` | Source formatting and linting tool | Accepted |
 | `ADR-0011` | Release CLI Node launch profile | Accepted |
 | `ADR-0012` | TypeScript ESM `.js` specifier source resolution | Accepted |
+| `ADR-0013` | AnchorMap documentation anchor formats | Accepted |
 
 ## Template
 

@@ -173,6 +173,26 @@ contraintes suivantes :
 - les cas sans source `.ts` correspondante restent des dégradations explicites,
   jamais des fallbacks silencieux vers du JavaScript runtime.
 
+## 6.5 Segment v1.1 prévu : formats d'anchors documentaires AnchorMap
+
+AnchorMap v1.1 cible aussi les dépôts dont les specs supportées utilisent des
+identifiants documentaires courts déjà stables, en particulier les formats
+employés par les docs AnchorMap pour les tâches, jalons, spikes et ADR.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- les anchors restent des identifiants formels détectés uniquement dans les
+  positions supportées : préfixe de heading ATX Markdown ou `id` racine YAML ;
+- les références dans le prose, les numéros de section et les noms de fichiers
+  ne deviennent pas des sources d'anchors ;
+- les règles de doublon, de mapping explicite et de tri canonique restent
+  inchangées ;
+- le format étendu est une grammaire fermée, pas une inférence de conventions
+  propres à un dépôt ;
+- l'extension ne crée aucun mapping, candidat de mapping ou lien de propriété
+  automatiquement.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :

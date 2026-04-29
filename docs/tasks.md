@@ -153,6 +153,7 @@
 | M9 — Cross-platform, determinism, performance and release gates | Stabilize, measure, and validate without adding product capability | Metamorphic suite, reruns, platform matrix, benchmarks, dependency audit, release reports | C1–C12; Gates A–G; performance `small`/`medium`; reproducibility audit | M1–M8 done | Release gates pass on Linux x86_64 and macOS arm64; performance and reproducibility artifacts are archived |
 | M10 — Packaging, distribution, and publication | Turn a passing release candidate into a distributable v1.0 artifact without changing product behavior | Packaging ADR, publishable package metadata, install-artifact checks, user docs, publication runbook, published artifact evidence | Post-gate artifact verification; release checklist continuity | M9 done | `ADR-0009` is accepted, the packaged artifact installs and runs from `dist/`, user-facing docs preserve the v1.0 promise, and the selected distribution channel contains the published v1.0 artifact |
 | M11 — v1.1 TypeScript ESM `.js` specifier compatibility | Activate the planned `.js -> .ts` source-candidate rule without adopting full TypeScript or Node resolution | `ts_graph` candidate rule, B-graph fixtures/goldens, scan/map graph validation continuity, v1.1 release-readiness evidence | B-graph `fx38f`–`fx38l`; existing B-graph/B-map graph-validation regressions; docs/ADR consistency | F1 planning complete; M10 done | Explicit relative `.js` specifiers can resolve to sibling `.ts` sources, diagnostic-only `.js` behavior remains explicit when no source exists, and v1.1 gates preserve v1.0 determinism boundaries |
+| M12 — v1.1 AnchorMap documentation anchor formats | Activate the planned repository-documentation `AnchorId` grammar without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22i` plus `fx19a`; B-config `fx49a`; B-map `fx59a`, `fx63a`, `fx64a`; docs/ADR consistency | F2 planning complete; M11 done | Task, milestone, spike, and ADR-style anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
 
 ## Milestone dependency graph
 
@@ -172,6 +173,7 @@ M1 Fixture harness
                     -> M9 Cross-platform, determinism, performance and release gates
                        -> M10 Packaging, distribution, and publication
                           -> M11 v1.1 TypeScript ESM .js specifier compatibility
+                             -> M12 v1.1 AnchorMap documentation anchor formats
 ```
 
 ## M1 — Fixture harness
@@ -5085,6 +5087,249 @@ Suggested verification:
 - Run `npm run test:fixtures -- --family B-graph`.
 - Run `npm run test:metamorphic`.
 
+## M12 — v1.1 AnchorMap documentation anchor formats
+
+M12 activates the v1.1 planning recorded in F2 and `ADR-0013`.
+
+### T12.1 — Implement repository-documentation AnchorId validation
+
+Purpose:
+- Activate the v1.1 `AnchorId` grammar for task, milestone, spike, and ADR-style
+  documentation anchors.
+
+Contract refs:
+- `contract.md` — §6.1 Anchor ID
+- `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §8 Détection des anchors
+- `contract.md` — §9.2 `anchormap map`
+
+Design refs:
+- `design.md` — §6.2 `AnchorId`
+- `design.md` — §6.2.1 v1.1 documentation anchor formats
+- `design.md` — §7.2 Spec indexing
+- `design.md` — §7.2.1 v1.1 documentation anchor observation
+
+Eval refs:
+- `evals.md` — §5.3.1 v1.1 planned documentation anchor fixtures
+  (runnable fixture materialization belongs to T12.2 and T12.3)
+
+ADR refs:
+- `ADR-0013` — AnchorMap documentation anchor formats
+
+Operating-model refs:
+- `operating-model.md` — §11 Contrôle du scope
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T3.1.
+- T11.4.
+- F2 planning complete.
+
+Implementation scope:
+- Extend `AnchorId` validation with the closed grammar branches for `TASK_ID`,
+  `MILESTONE_ID`, `SPIKE_ID`, and `ADR_ID`.
+- Update Markdown anchor prefix extraction so any pre-validation matcher stays
+  aligned with the extended `AnchorId` grammar.
+- Preserve existing `SHORT_ID` and `DOTTED_ID` acceptance.
+- Reject documented near-misses, including lowercase prefixes, missing task
+  minor numbers, uppercase task suffixes, milestone dotted forms, spike IDs with
+  leading zeroes, and malformed ADR IDs.
+- Preserve binary UTF-8 ordering and opaque string handling after validation.
+- Add focused unit tests for accepted and rejected grammar branches.
+
+Out of scope:
+- Inferring anchors from prose, filenames, links, section numbers, or references.
+- Changing Markdown or YAML parser profiles.
+- Creating mappings or mapping candidates automatically.
+- Weakening duplicate-anchor or map validation rules.
+
+Done when:
+- `T10.6`, `T0.0a`, `M10`, `S5`, and `ADR-0012` validate as `AnchorId`.
+- Markdown ATX heading prefix extraction can reach validation for all new
+  accepted formats.
+- The documented invalid near-misses fail validation.
+- Existing v1.0 anchor formats remain valid.
+- Unit tests cover old and new grammar branches without requiring the future
+  T12.2/T12.3 fixture corpus.
+
+Suggested verification:
+- Run `npm run test:unit`.
+- Run targeted `AnchorId` unit tests.
+
+### T12.2 — Add v1.1 B-spec fixtures and goldens for documentation anchors
+
+Purpose:
+- Materialize the planned v1.1 B-spec fixture matrix for repository-native
+  documentation anchors.
+
+Contract refs:
+- `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §8 Détection des anchors
+- `contract.md` — §13.3 `observed_anchors`
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §7.2 Spec indexing
+- `design.md` — §7.2.1 v1.1 documentation anchor observation
+- `design.md` — §10.2 Boundary tests
+
+Eval refs:
+- `evals.md` — `fx22g_specs_repo_native_markdown_ids`
+- `evals.md` — `fx22h_specs_repo_native_yaml_root_ids`
+- `evals.md` — `fx22i_specs_repo_native_rejected_near_misses`
+- `evals.md` — `fx19a_specs_duplicate_repo_native_anchor`
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T12.1.
+
+Implementation scope:
+- Add runnable B-spec fixtures for Markdown ATX detection of task, task-suffix,
+  milestone, spike, and ADR anchor IDs.
+- Add runnable B-spec fixtures for YAML root `id` detection of the same accepted
+  shapes.
+- Add a fixture proving invalid near-misses do not produce anchors.
+- Add a duplicate-anchor failure fixture using a repository-native anchor shape.
+- Add exact `scan --json` goldens for successful fixtures.
+
+Out of scope:
+- Detecting anchors outside supported Markdown/YAML positions.
+- Rebaselining unrelated B-specs, B-scan, or YAML goldens.
+- Weakening v1.0 fixture oracles.
+
+Done when:
+- `fx22g`, `fx22h`, `fx22i`, and `fx19a` exist with matching manifests.
+- Goldens expose the expected `observed_anchors` and canonical ordering.
+- The duplicate repository-native anchor fixture exits `3` with empty stdout.
+- Existing B-spec fixtures still pass.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --fixture fx22g_specs_repo_native_markdown_ids`.
+- Run `npm run test:fixtures -- --family B-specs`.
+- Run `npm run check:goldens -- --fixture fx22g_specs_repo_native_markdown_ids`
+  and the other new golden fixtures.
+
+### T12.3 — Preserve config and map behavior for documentation anchors
+
+Purpose:
+- Ensure repository-native anchors work through config loading, `map`, mutation
+  boundaries, and canonical YAML ordering without changing validation priority.
+
+Contract refs:
+- `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §7 `anchormap.yaml`
+- `contract.md` — §9.2 `anchormap map`
+- `contract.md` — §12.2 Mutation policy
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §6.2.1 v1.1 documentation anchor formats
+- `design.md` — §7.5 Mapping validation
+- `design.md` — §8.3 Config write boundary
+- `design.md` — §9.3 `map`
+
+Eval refs:
+- `evals.md` — `fx49a_config_mapping_repo_native_anchor_keys`
+- `evals.md` — `fx59a_map_create_repo_native_anchor_mapping`
+- `evals.md` — `fx63a_map_invalid_repo_native_anchor_near_miss`
+- `evals.md` — `fx64a_map_repo_native_anchor_not_observed`
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T12.2.
+
+Implementation scope:
+- Add config fixture coverage for repository-native mapping keys.
+- Add `map` fixture coverage for creating a mapping with an observed
+  repository-native anchor.
+- Add `map` fixture coverage for invalid near-miss anchor arguments and valid
+  but unobserved repository-native anchors.
+- Confirm successful YAML writes sort repository-native anchors with the same
+  canonical binary UTF-8 ordering used elsewhere.
+- Confirm all non-zero `map` outcomes preserve the initial config bytes and
+  leave no temp or auxiliary files.
+
+Out of scope:
+- Adding new CLI options or commands.
+- Changing `anchormap.yaml` shape.
+- Changing seed validation, graph validation, or reachability behavior.
+
+Done when:
+- `fx49a`, `fx59a`, `fx63a`, and `fx64a` exist with matching manifests.
+- Successful config and map fixtures expose exact JSON/YAML goldens.
+- Invalid and unobserved anchor cases exit `4` without mutation.
+- Existing B-config and B-map fixtures still pass.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --fixture fx49a_config_mapping_repo_native_anchor_keys`.
+- Run `npm run test:fixtures -- --fixture fx59a_map_create_repo_native_anchor_mapping`.
+- Run `npm run test:fixtures -- --family B-map`.
+
+### T12.4 — Close v1.1 documentation anchor release readiness
+
+Purpose:
+- Prove the v1.1 documentation anchor capability is release-ready without
+  weakening v1.0 gates or expanding anchor observation surfaces.
+
+Contract refs:
+- `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §13 `scan --json` schema
+
+Design refs:
+- `design.md` — §6.2.1 v1.1 documentation anchor formats
+- `design.md` — §7.2.1 v1.1 documentation anchor observation
+- `design.md` — §13 Complexity and budgets
+
+Eval refs:
+- `evals.md` — §5.3.1, §5.6.1, and §5.7.1 v1.1 planned fixtures
+- `evals.md` — C2, C3, C7, C8
+- `evals.md` — Gates A–G
+
+ADR refs:
+- `ADR-0013` — AnchorMap documentation anchor formats
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T12.3.
+
+Implementation scope:
+- Run repo-local static checks applicable to runtime, fixtures, docs, and
+  package metadata touched by M12.
+- Run B-specs, B-config, B-map, and relevant metamorphic regressions.
+- Update release-facing documentation or package metadata only if required by
+  the v1.1 release process.
+- Archive any v1.1 release-readiness evidence required by existing release-gate
+  scripts.
+
+Out of scope:
+- Publishing a package unless a later task explicitly scopes publication.
+- Accepting arbitrary headings, prose references, filenames, or generated
+  anchors.
+- Changing performance budgets to make the release pass.
+
+Done when:
+- Prior M12 tasks T12.1-T12.3 are complete.
+- Applicable repo-local static checks pass.
+- New v1.1 B-specs, B-config, and B-map fixtures pass.
+- Relevant metamorphic checks show no determinism, canonical-order, or scope
+  regression.
+- Any required v1.1 release-readiness artifact is present and points to passing
+  evidence.
+
+Suggested verification:
+- Run `npm run lint`.
+- Run `npm run test:unit`.
+- Run `npm run test:product`.
+- Run `npm run test:fixtures -- --family B-specs`.
+- Run `npm run test:fixtures -- --family B-map`.
+- Run `npm run test:metamorphic`.
+
 ## Future compatibility backlog
 
 This section records out-of-scope discoveries made after the v1.0 publication
@@ -5151,12 +5396,11 @@ Discovery:
   product files and TypeScript graph shape, but observes no anchors because the
   existing AnchorMap doc IDs do not match the v1.0-supported anchor formats.
 
-Future decision required:
-- Decide whether a future AnchorMap version should extend the supported
-  `AnchorId` grammar so IDs already formatted in AnchorMap docs can be detected
-  when they appear in supported Markdown heading or YAML `id` anchor positions.
+Version target:
+- AnchorMap v1.1 will support a closed repository-documentation `AnchorId`
+  grammar for task, milestone, spike, and ADR-style IDs.
 
-Required future planning before implementation:
+Required v1.1 planning before implementation:
 - Amend `brief.md` if repository-native task, milestone, spike, or ADR IDs
   become intended anchor inputs for supported repositories.
 - Amend `contract.md` to define the expanded `AnchorId` grammar exactly,
@@ -5169,6 +5413,31 @@ Required future planning before implementation:
 - Add or update an ADR if the expanded grammar changes the accepted parser or
   domain-model strategy.
 - Add a task chain only after the grammar and fixture matrix are explicit.
+
+Planning result:
+- Decision: support a closed v1.1 repository-documentation anchor grammar for
+  `TASK_ID`, `MILESTONE_ID`, `SPIKE_ID`, and `ADR_ID`, while preserving existing
+  `SHORT_ID` and `DOTTED_ID` formats.
+- Product planning: `brief.md` §6.5 records documentation-style anchors as a
+  v1.1 intended segment, without inferring anchors from prose or references.
+- Contract planning: `contract.md` §6.1.1 defines the v1.1 grammar, accepted
+  examples, rejected near-misses, unchanged observation surfaces, and unchanged
+  duplicate/mapping/canonical-order rules.
+- Eval planning: `evals.md` §§5.3.1, 5.6.1, and 5.7.1 define v1.1 B-specs,
+  B-config, and B-map fixtures for documentation anchors.
+- Design planning: `design.md` §§6.2.1 and 7.2.1 define the v1.1 validator
+  extension and unchanged spec observation boundaries.
+- ADR: `ADR-0013` records the v1.1 documentation anchor format decision while
+  preserving the Markdown and YAML parser profiles selected by `ADR-0004` and
+  `ADR-0005`.
+
+Implementation remains out of scope for this planning entry. A v1.1 executable
+task chain must activate the planned validator rules, add runnable fixtures and
+goldens, and update runtime behavior in one bounded implementation pass.
+
+Promotion:
+- F2 has been promoted to executable v1.1 task chain `T12.1`–`T12.4` under
+  M12.
 
 Non-goals:
 - Do not infer anchors from prose, section numbers, filenames, or references;
@@ -5203,6 +5472,7 @@ Non-goals:
 | B-specs `fx16`–`fx18` | T5.3, T5.4, T5.5 | M5 | fixture | YAML root `id` behavior |
 | B-specs `fx19`–`fx22` | T5.3, T5.4, T5.5 | M5 | fixture | Duplicate anchors and invalid YAML specs |
 | B-specs `fx22a`–`fx22f` | T5.1, T5.2, T5.3, T5.5 | M5 | fixture | Spec read/decode/BOM failures and successes |
+| B-specs `fx22g`–`fx22i` plus `fx19a` | T12.1, T12.2 | M12 | fixture/golden | v1.1 documentation anchor detection, invalid near-misses, and duplicates |
 | B-graph `fx23`–`fx26` | T6.3, T6.4, T6.6 | M6 | fixture/golden | Supported import/export syntax |
 | B-graph `fx27`–`fx31` | T6.4, T6.6 | M6 | fixture/golden | Resolution priority and classified diagnostics |
 | B-graph `fx32`–`fx33` | T6.5, T6.6 | M6 | fixture/golden | Unsupported local `require` and dynamic import |
@@ -5213,9 +5483,11 @@ Non-goals:
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
+| B-config `fx49a` | T12.1, T12.3 | M12 | fixture/golden | v1.1 documentation anchor mapping keys and canonical ordering |
 | B-config `fx50`–`fx53` | T4.3, T4.7 | M4 | fixture | Path invariants and root relationships |
 | B-init `fx54`–`fx58a` | T2.3, T4.4, T4.5, T4.6 | M2, M4 | fixture/golden | Init success, create-only, args, dirs, duplicate roots, option order |
 | B-map `fx59`–`fx62` | T8.2, T8.3, T8.4, T8.6 | M8 | fixture/golden | Create, replace guard, replace OK, replace creates if absent |
+| B-map `fx59a`, `fx63a`, `fx64a` | T12.1, T12.3 | M12 | fixture/golden | v1.1 documentation anchor map creation, invalid args, and unobserved anchors |
 | B-map `fx63`–`fx67` | T8.1, T8.2, T8.3, T8.5, T8.6 | M8 | fixture | Anchor/seed validation and option order |
 | B-map `fx67a`–`fx67d` | T4.7, T5.5, T6.7, T8.2, T8.3, T8.5 | M4–M8 | fixture | Config/spec/product/existence failures with no mutation |
 | B-cli `fx68`–`fx70` | T2.1, T2.2, T2.5 | M2 | fixture | Unknown command, unknown option, invalid combinations |

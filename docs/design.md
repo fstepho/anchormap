@@ -49,6 +49,7 @@ ADRs courantes :
 - `ADR-0010` — Source formatting and linting tool (`Accepted`)
 - `ADR-0011` — Release CLI Node launch profile (`Accepted`)
 - `ADR-0012` — TypeScript ESM `.js` specifier source resolution (`Accepted`)
+- `ADR-0013` — AnchorMap documentation anchor formats (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -348,6 +349,26 @@ Types minimum à exposer en interne :
 - string opaque validée à la frontière d’entrée ;
 - aucune logique métier ne manipule une anchor non validée.
 
+#### 6.2.1 Extension v1.1 planifiée : formats documentaires
+
+Cette section décrit le design v1.1 prévu par `ADR-0013`. Elle ne modifie pas
+le design v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
+activé explicitement l'extension.
+
+Quand l'extension est active, le validateur `AnchorId` ajoute aux formats v1.0
+les branches fermées suivantes :
+
+- task : `T<major>.<minor>` avec suffixe alphabétique minuscule optionnel ;
+- milestone : `M<number>` ;
+- spike : `S<number>` ;
+- ADR : `ADR-` suivi de quatre chiffres.
+
+Les nombres utilisent une forme décimale sans zéro initial, sauf la valeur
+unique `0`. Le validateur reste le seul point de construction des anchors.
+
+Les comparateurs et projections ne changent pas : toutes les anchors, anciennes
+et nouvelles, sont triées comme chaînes validées selon l'ordre binaire UTF-8.
+
 ### 6.3 `RepoPath`
 
 - chemin relatif à la racine du dépôt ;
@@ -483,6 +504,28 @@ Ensuite :
 
 - insérer dans `observedAnchors` ;
 - échouer immédiatement si l’anchor est déjà présente.
+
+#### 7.2.1 Extension v1.1 planifiée : observation des anchors documentaires
+
+L'extension `ADR-0013` ne change pas les surfaces d'observation. Elle remplace
+uniquement l'appel au validateur `AnchorId` par le profil étendu lorsque la
+tâche v1.1 correspondante active l'extension.
+
+Le chemin Markdown doit aussi garder l'extraction de préfixe alignée avec le
+validateur étendu. Toute regex ou prévalidation utilisée avant `validateAnchorId`
+doit soit être centralisée derrière le validateur, soit être étendue à partir de
+la même grammaire fermée pour éviter qu'un heading valide soit écarté avant
+validation.
+
+Conséquences :
+
+- les headings ATX Markdown restent la seule surface Markdown supportée ;
+- les specs YAML continuent de produire une anchor uniquement depuis `id`
+  racine scalaire ;
+- les références dans le prose, les filenames, les liens et les numéros de
+  section restent ignorés ;
+- la détection de doublons continue de s'appliquer après validation et avant
+  toute construction de scan ou de map.
 
 ### 7.3 Découverte des `product_files`
 

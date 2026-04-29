@@ -235,6 +235,48 @@ Exemples valides :
 
 Toute autre forme est hors support.
 
+#### 6.1.1 Extension v1.1 planifiée : formats documentaires AnchorMap
+
+Cette section planifie une extension v1.1. Elle ne modifie pas le contrat
+runtime v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
+activé explicitement ces règles.
+
+Quand l'extension est active, les formats v1.0 restent supportés et les formats
+additionnels suivants sont aussi des `AnchorId` valides :
+
+- `TASK_ID = ^T(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)([a-z])?$`
+- `MILESTONE_ID = ^M(0|[1-9][0-9]*)$`
+- `SPIKE_ID = ^S(0|[1-9][0-9]*)$`
+- `ADR_ID = ^ADR-[0-9]{4}$`
+
+Exemples additionnels valides :
+
+- `T10.6`
+- `T0.0a`
+- `M10`
+- `S5`
+- `ADR-0012`
+
+Exemples explicitement invalides :
+
+- `t10.6`
+- `T10`
+- `T10.`
+- `T10.6A`
+- `M10.1`
+- `S05`
+- `ADR-12`
+- `ADR0012`
+
+Les surfaces d'observation restent inchangées : une anchor est détectée
+seulement en préfixe de heading ATX Markdown supporté ou dans une valeur scalaire
+`id` à la racine d'une spec YAML supportée. Les références dans le prose, les
+numéros de section, les filenames et les liens ne produisent jamais d'anchor.
+
+Les règles de doublon, de validation des clés `mappings`, de validation
+`map --anchor`, de tri canonique et de sérialisation JSON/YAML restent celles du
+contrat existant, appliquées à l'ensemble étendu des `AnchorId`.
+
 ### 6.2 Anchor occurrence
 
 Une occurrence d'anchor est une observation de scan d'une anchor dans une spec supportée.

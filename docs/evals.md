@@ -200,6 +200,18 @@ Les états essentiels du schéma doivent être explicitement couverts ainsi :
 | `fx22e_specs_yaml_non_utf8` | fichier YAML requis non décodable en UTF-8 strict | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx22f_specs_yaml_bom_initial` | fichier YAML avec BOM UTF-8 initial et `id` racine | 0 | anchor détectée ; golden JSON exact |
 
+#### 5.3.1 Fixtures v1.1 planifiées pour formats d'anchors documentaires
+
+Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
+pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx22g_specs_repo_native_markdown_ids` | headings ATX avec `TASK_ID`, `MILESTONE_ID`, `SPIKE_ID` et `ADR_ID` | 0 | anchors `T10.6`, `T0.0a`, `M10`, `S5` et `ADR-0012` détectées ; golden JSON exact |
+| `fx22h_specs_repo_native_yaml_root_ids` | specs YAML avec `id` racine pour chaque nouveau format documentaire | 0 | anchors documentaires détectées ; golden JSON exact |
+| `fx22i_specs_repo_native_rejected_near_misses` | formes proches invalides, dont `t10.6`, `T10`, `T10.6A`, `M10.1`, `S05`, `ADR-12` et `ADR0012` | 0 | aucune anchor issue des formes invalides ; golden JSON exact |
+| `fx19a_specs_duplicate_repo_native_anchor` | duplicate anchor documentaire entre specs | 3 | `scan --json` échec ; `stdout` vide |
+
 ### 5.4 Famille B-graph — graphe statique, résolution et classification
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
@@ -276,6 +288,15 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 | `fx52_config_roots_overlap` | `spec_roots` ou `ignore_roots` dupliqués/chevauchants | 2 | `scan --json` échec ; `stdout` vide |
 | `fx53_config_ignore_root_outside_product_root` | `ignore_root` existant hors `product_root` | 2 | `scan --json` échec ; `stdout` vide |
 
+#### 5.6.1 Fixtures v1.1 planifiées pour anchors documentaires en config
+
+Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
+pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx49a_config_mapping_repo_native_anchor_keys` | `mappings` accepte les nouveaux formats documentaires comme clés | 0 | golden JSON exact ; mappings valides visibles et triés canoniquement |
+
 ### 5.7 Famille B-init / B-map — commandes d'écriture et effets de fichier
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
@@ -299,6 +320,17 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 | `fx67b_map_spec_read_or_decode_failure_code3` | `map` avec spec illisible ou non UTF-8 pendant l'indexation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx67c_map_product_read_decode_or_parse_failure_code3` | `map` avec `product_file` illisible, non UTF-8 ou non parsable pendant la validation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx67d_map_required_existence_test_failure_code3` | `map` avec test d'existence ponctuel requis impossible | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
+
+#### 5.7.1 Fixtures v1.1 planifiées pour `map` et anchors documentaires
+
+Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
+pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx59a_map_create_repo_native_anchor_mapping` | `map` crée un mapping pour une anchor documentaire observée | 0 | `anchormap.yaml` final exact ; clé documentaire triée canoniquement |
+| `fx63a_map_invalid_repo_native_anchor_near_miss` | `--anchor` rejette les formes proches invalides | 4 | aucun changement de fichier |
+| `fx64a_map_repo_native_anchor_not_observed` | anchor documentaire valide mais absente des specs courantes | 4 | aucun changement de fichier |
 
 ### 5.8 Famille B-cli — surface CLI, échecs machine et priorité des codes
 
