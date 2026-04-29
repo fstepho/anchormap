@@ -1021,6 +1021,23 @@ Entrées autorisées exhaustives pour la bug-finding review :
 - une session interactive `codex` démarrée fraîchement pour la review, avec la
   review comme premier work step
 
+Ces entrées restent les seules surfaces de review. Sur macOS, lorsqu'une
+session coordinatrice déjà sandboxée déclenche un échec de sandbox imbriqué
+dans `codex review` (`sandbox-exec`, `sandbox_apply`,
+`Operation not permitted`, ou impossibilité explicite d'inspecter le diff), une
+relance native `codex review` peut ajouter uniquement l'override de sandbox
+nécessaire à la session review interne :
+
+- `codex review -c sandbox_mode='"danger-full-access"' --uncommitted`
+- `codex review -c sandbox_mode='"danger-full-access"' --base <branch>`
+- `codex review -c sandbox_mode='"danger-full-access"' --commit <sha>`
+
+Cet override ne change pas la surface reviewée, ne remplace pas la fresh review
+Codex, n'autorise pas un second moteur de review, et ne peut être utilisé que si
+le diff reste borné à la tâche ou à la maintenance process reviewée. Si cette
+relance ne produit pas un verdict natif exploitable, ou si l'approval attendue
+est refusée, la boucle s'arrête avec une classification `tooling problem`.
+
 Sur le chemin `codex review`, l'autopilot doit rediriger stdout/stderr vers un
 fichier temporaire hors repository et ne remonter au coordinateur qu'un footer
 borné de cette sortie. Le snippet opérateur correspondant vit dans
@@ -1124,10 +1141,12 @@ Règles :
 - en autopilot, les commandes natives `codex review --uncommitted`,
   `codex review --base <branch>` et `codex review --commit <sha>` peuvent
   rediriger stdout/stderr vers un transcript temporaire hors repository et
-  afficher seulement `review_log`, `review_exit` et un footer borné ; si ce
-  footer ne contient pas un verdict natif exploitable ou les détails natifs
-  nécessaires pour router les findings actionnables, la boucle s'arrête au lieu
-  de lire le transcript complet dans le coordinateur ;
+  afficher seulement `review_log`, `review_exit` et un footer borné ; la variante
+  macOS avec `-c sandbox_mode='"danger-full-access"'` est autorisée uniquement
+  dans le cas de sandbox imbriqué décrit plus haut ; si ce footer ne contient
+  pas un verdict natif exploitable ou les détails natifs nécessaires pour router
+  les findings actionnables, la boucle s'arrête au lieu de lire le transcript
+  complet dans le coordinateur ;
 - une session interactive `codex` n'est autorisée comme surface de review que si elle est fraîche et que la review est son premier work step ;
 - la review decision consomme les findings de review et les mappe vers l'état de boucle ; elle vit dans le handoff du coordinateur ou commentaire PR équivalent, sauf sur le chemin interactif frais où la session de review peut l'émettre directement ; elle ne remplace pas la review et ne produit pas de finding nouveau ;
 - aucune modification de code n'est autorisée avant que la review decision soit explicite ;

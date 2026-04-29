@@ -74,6 +74,12 @@ Prefer output that exposes:
 Wait for the final reviewer verdict. Do not classify `tooling problem` from
 review silence alone while the review process is still alive.
 
+Do not treat a native review as clean merely because `codex review` exits 0. If
+the footer says the review could not inspect the bounded diff, or reports
+`sandbox-exec`, `sandbox_apply`, or `Operation not permitted`, the review is
+invalid and must be routed by `docs/operating-model.md` §14.2 instead of
+emitting a clean verdict.
+
 For a fresh interactive `codex` review session, emit the `review decision`
 specified by `docs/operating-model.md` §14.2 after findings and before any code
 change. For `codex review`, provide the native findings and verdict; the
