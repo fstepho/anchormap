@@ -25,8 +25,8 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: none; all recorded product tasks are complete.
-- Next executable product task: None — v1.0 publication task chain complete.
+- Current active task: none.
+- Next executable product task: T11.1 — Implement `.js` specifier source-candidate resolution
 - Last completed task: `T10.6 — Publish v1.0 artifact and archive publication evidence`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -152,6 +152,7 @@
 | M8 — Map command | Implement explicit human mapping creation/replacement with strict validation and atomic rewrite | `map` orchestration, seed validation, replace guard, canonical config update | B-map `fx59`–`fx67d`; B-decodage map fixtures `fx00m`–`fx00o`; YAML goldens | M4–M7 done | `map` creates/replaces only allowed mappings; all failure paths preserve initial config and temp-file absence |
 | M9 — Cross-platform, determinism, performance and release gates | Stabilize, measure, and validate without adding product capability | Metamorphic suite, reruns, platform matrix, benchmarks, dependency audit, release reports | C1–C12; Gates A–G; performance `small`/`medium`; reproducibility audit | M1–M8 done | Release gates pass on Linux x86_64 and macOS arm64; performance and reproducibility artifacts are archived |
 | M10 — Packaging, distribution, and publication | Turn a passing release candidate into a distributable v1.0 artifact without changing product behavior | Packaging ADR, publishable package metadata, install-artifact checks, user docs, publication runbook, published artifact evidence | Post-gate artifact verification; release checklist continuity | M9 done | `ADR-0009` is accepted, the packaged artifact installs and runs from `dist/`, user-facing docs preserve the v1.0 promise, and the selected distribution channel contains the published v1.0 artifact |
+| M11 — v1.1 TypeScript ESM `.js` specifier compatibility | Activate the planned `.js -> .ts` source-candidate rule without adopting full TypeScript or Node resolution | `ts_graph` candidate rule, B-graph fixtures/goldens, scan/map graph validation continuity, v1.1 release-readiness evidence | B-graph `fx38f`–`fx38l`; existing B-graph/B-map graph-validation regressions; docs/ADR consistency | F1 planning complete; M10 done | Explicit relative `.js` specifiers can resolve to sibling `.ts` sources, diagnostic-only `.js` behavior remains explicit when no source exists, and v1.1 gates preserve v1.0 determinism boundaries |
 
 ## Milestone dependency graph
 
@@ -170,6 +171,7 @@ M1 Fixture harness
                  -> M8 Map command
                     -> M9 Cross-platform, determinism, performance and release gates
                        -> M10 Packaging, distribution, and publication
+                          -> M11 v1.1 TypeScript ESM .js specifier compatibility
 ```
 
 ## M1 — Fixture harness
@@ -4834,6 +4836,255 @@ Done when:
 - Any consequence for design or tasks is reflected in repository docs.
 - Renderer tasks are no longer blocked on undocumented serializer strategy.
 
+## M11 — v1.1 TypeScript ESM `.js` specifier compatibility
+
+M11 activates the v1.1 planning recorded in F1 and `ADR-0012`.
+
+### T11.1 — Implement `.js` specifier source-candidate resolution
+
+Purpose:
+- Activate the v1.1 candidate rule for explicit relative `.js` specifiers in
+  supported TypeScript import/export declarations.
+
+Contract refs:
+- `contract.md` — §10.1 Supported syntax forms
+- `contract.md` — §10.2 Candidate resolution and classification order
+- `contract.md` — §10.2.1 v1.1 `.js` specifier source resolution
+- `contract.md` — §10.3 What does not produce a supported local dependency
+- `contract.md` — §11 Findings
+
+Design refs:
+- `design.md` — §5.4 `ts_graph`
+- `design.md` — §7.4 TypeScript graph construction
+- `design.md` — §7.4.1 v1.1 `.js` ESM specifier extension
+- `design.md` — §10.1 Module tests
+
+Eval refs:
+- `evals.md` — §5.4.1 v1.1 planned fixture matrix for `.js` ESM specifiers
+  (runnable fixture materialization belongs to T11.2)
+
+ADR refs:
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+
+Operating-model refs:
+- `operating-model.md` — §11 Contrôle du scope
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T6.4.
+- F1 planning complete.
+
+Implementation scope:
+- Add a distinct candidate-definition branch for explicit relative `.js`
+  specifiers.
+- Build the sibling source candidate by replacing the terminal `.js` with
+  `.ts`.
+- Evaluate the `.ts` source candidate before the exact `.js` diagnostic
+  candidate.
+- Preserve the existing ordered classification rules for supported,
+  out-of-scope, unsupported-local-target, and unresolved outcomes.
+- Preserve existing handling for `.tsx`, `.d.ts`, extensionless specifiers,
+  unsupported explicit extensions, and trailing slash specifiers.
+- Add focused unit tests for candidate lists and classification priority.
+
+Out of scope:
+- Reading `tsconfig.json`, `package.json`, package exports, Node conditions,
+  cache, Git, clock, or environment for resolution.
+- Supporting `.js` as a `product_file`.
+- Resolving non-relative imports.
+- Directory fallback from `./dir.js` to `./dir/index.ts`.
+- Supporting local `require("./x.js")` or dynamic `import("./x.js")` as graph
+  edges.
+
+Done when:
+- `import "./dep.js"` can retain `dep.ts` as a supported target.
+- Supported `ExportDeclaration` forms use the same `.js -> .ts` source
+  candidate rule.
+- `dep.ts` wins when both `dep.ts` and `dep.js` exist in supported scope.
+- Exact `.js` remains `unsupported_local_target` when no source `.ts` candidate
+  is retained and the `.js` file exists in supported scope.
+- Missing `.js` source and runtime candidates produce `unresolved_static_edge`
+  with the original specifier.
+- Out-of-scope and ignored `.ts` source candidates retain the contract
+  classification priority.
+- Focused unit tests cover the new candidate construction and classification
+  priority branches without requiring the future T11.2 fixture corpus.
+
+Suggested verification:
+- Run `npm run test:product`.
+- Run targeted `ts_graph` unit tests for candidate construction and
+  classification.
+
+### T11.2 — Add v1.1 B-graph fixtures and goldens for `.js` specifiers
+
+Purpose:
+- Materialize the v1.1 fixture matrix from `evals.md` §5.4.1 as runnable
+  harness fixtures with exact scan goldens.
+
+Contract refs:
+- `contract.md` — §10.2.1 v1.1 `.js` specifier source resolution
+- `contract.md` — §13.5 `files`
+- `contract.md` — §13.6 `findings`
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §7.4.1 v1.1 `.js` ESM specifier extension
+- `design.md` — §10.2 Boundary tests
+
+Eval refs:
+- `evals.md` — `fx38f_graph_js_specifier_to_ts_source`
+- `evals.md` — `fx38g_graph_js_specifier_reexport_to_ts_source`
+- `evals.md` — `fx38h_graph_js_specifier_explicit_index_source`
+- `evals.md` — `fx38i_graph_js_specifier_ts_source_wins_over_js`
+- `evals.md` — `fx38j_graph_js_specifier_exact_js_without_ts`
+- `evals.md` — `fx38k_graph_js_specifier_unresolved`
+- `evals.md` — `fx38l_graph_js_specifier_source_out_of_scope`
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T11.1.
+
+Implementation scope:
+- Add fixtures `fx38f` through `fx38l` under the B-graph family.
+- Add exact `stdout.golden` files for every successful `scan --json` fixture.
+- Cover import, re-export, explicit `index.js`, `.ts` priority over `.js`,
+  exact `.js` unsupported target, unresolved `.js`, and out-of-scope or ignored
+  source `.ts` candidate behavior.
+- Ensure fixture manifests use no-mutation scan oracle rules.
+- Keep fixture repositories minimal and reviewable.
+
+Out of scope:
+- Adding JavaScript product files as supported graph nodes.
+- Rebaselining unrelated B-graph, B-scan, or metamorphic goldens.
+- Weakening any v1.0 fixture oracle.
+
+Done when:
+- All `fx38f`–`fx38l` fixture IDs exist and match their manifests.
+- Goldens expose exact `supported_local_targets`, findings, and
+  `analysis_health` required by `evals.md`.
+- Existing B-graph fixtures still pass.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --fixture fx38f_graph_js_specifier_to_ts_source`.
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run check:goldens -- --fixture fx38f_graph_js_specifier_to_ts_source`
+  and the other new golden fixtures.
+
+### T11.3 — Preserve scan and map graph-validation behavior under v1.1
+
+Purpose:
+- Ensure the v1.1 graph change remains confined to graph edges/findings and
+  does not change command failure, stdout, stderr, or mutation guarantees.
+
+Contract refs:
+- `contract.md` — §9.2.3 `map` rules
+- `contract.md` — §9.3.3 What scan computes
+- `contract.md` — §10.2.1 v1.1 `.js` specifier source resolution
+- `contract.md` — §10.5 Parse failures
+- `contract.md` — §13.8 Exit codes
+
+Design refs:
+- `design.md` — §4.1 Pipeline logical de `scan`
+- `design.md` — §4.2 Pipeline logical de `map`
+- `design.md` — §7.4.1 v1.1 `.js` ESM specifier extension
+- `design.md` — §9.4 Classification by command
+
+Eval refs:
+- `evals.md` — B-graph `fx23`–`fx38l`
+- `evals.md` — B-map `fx67c`–`fx67d`
+- `evals.md` — B-decodage map product fixtures
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T11.2.
+
+Implementation scope:
+- Run regression checks that exercise `scan --json` and `map` graph validation
+  after the v1.1 candidate rule is active.
+- Confirm graph findings still degrade `scan` without changing `map` exit code
+  or mutation behavior.
+- Confirm unsupported local `require` and dynamic `import` with `.js` specifiers
+  still emit `unsupported_static_edge` and do not resolve candidates.
+
+Out of scope:
+- Adding new CLI commands or options.
+- Changing human terminal text contracts.
+- Changing map YAML shape.
+
+Done when:
+- `scan --json` v1.1 fixtures pass with exact goldens.
+- `map` product read/decode/parse/existence failure fixtures still preserve
+  initial config bytes.
+- Unsupported local dynamic forms remain recognized-but-unsupported rather than
+  resolved.
+
+Suggested verification:
+- Run `npm run test:product`.
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run test:fixtures -- --fixture fx67c_map_product_read_decode_or_parse_failure_code3`.
+- Run `npm run test:fixtures -- --fixture fx67d_map_required_existence_test_failure_code3`.
+
+### T11.4 — Close v1.1 `.js` specifier release readiness
+
+Purpose:
+- Prove the v1.1 `.js` specifier capability is release-ready without weakening
+  v1.0 gates or documentation boundaries.
+
+Contract refs:
+- `contract.md` — §10.2.1 v1.1 `.js` specifier source resolution
+- `contract.md` — §13 `scan --json` schema
+
+Design refs:
+- `design.md` — §7.4.1 v1.1 `.js` ESM specifier extension
+- `design.md` — §13 Complexity and budgets
+
+Eval refs:
+- `evals.md` — B-graph `fx23`–`fx38l`
+- `evals.md` — C1, C5, C6, C7
+- `evals.md` — Gates A–G
+
+ADR refs:
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+
+Operating-model refs:
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T11.3.
+
+Implementation scope:
+- Run the repo-local static checks applicable to runtime, fixtures, docs, and
+  package metadata touched by M11.
+- Run B-graph and relevant metamorphic regressions.
+- Update release-facing documentation or package metadata only if required by
+  the v1.1 release process.
+- Archive any v1.1 release-readiness evidence required by existing release-gate
+  scripts.
+
+Out of scope:
+- Publishing a package unless a later task explicitly scopes publication.
+- Broadening TypeScript or Node module resolution beyond `ADR-0012`.
+- Changing performance budgets to make the release pass.
+
+Done when:
+- Prior M11 tasks T11.1-T11.3 are complete.
+- Applicable repo-local static checks pass.
+- B-graph `fx23`–`fx38l` pass.
+- Relevant metamorphic checks show no determinism or scope regression.
+- Any required v1.1 release-readiness artifact is present and points to passing
+  evidence.
+
+Suggested verification:
+- Run `npm run lint`.
+- Run `npm run test:unit`.
+- Run `npm run test:product`.
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run test:metamorphic`.
+
 ## Future compatibility backlog
 
 This section records out-of-scope discoveries made after the v1.0 publication
@@ -4881,6 +5132,10 @@ Planning result:
 Implementation remains out of scope for this planning entry. A v1.1 executable
 task chain must activate the planned rules, add runnable fixtures and goldens,
 and update runtime behavior in one bounded implementation pass.
+
+Promotion:
+- F1 has been promoted to executable v1.1 task chain `T11.1`–`T11.4` under
+  M11.
 
 ### F2 — Anchor formats used by AnchorMap docs
 
@@ -4954,6 +5209,7 @@ Non-goals:
 | B-graph `fx34` | T6.3, T6.6 | M6 | fixture/golden | Non-relative imports ignored |
 | B-graph `fx35`–`fx36` | T3.3, T6.6, T7.3 | M6, M7 | fixture/golden | Finding dedup and graph cycles |
 | B-graph `fx37`–`fx38e` | T6.2, T6.4, T6.7 | M6 | fixture | Parse failures, outside-root candidates, existence-test failures |
+| B-graph `fx38f`–`fx38l` | T11.1, T11.2, T11.3 | M11 | fixture/golden | v1.1 explicit `.js` specifier source-candidate resolution |
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
