@@ -130,10 +130,9 @@ Operator checklist:
 
    On macOS, if native `codex review` reports `sandbox-exec`,
    `sandbox_apply`, `Operation not permitted`, or cannot inspect changes, treat
-   that review as invalid even with exit 0; retry once with targeted
-   escalation or with the documented nested-sandbox override from
-   `docs/operating-model.md` §14.2, then stop as `tooling problem` if still
-   ineffective.
+   that review as invalid even with exit 0; retry once only if the local
+   approval policy permits targeted execution of the same native review command,
+   then stop as `tooling problem` if the retry is denied or still ineffective.
 2. Keep the coordinator context-thin: select tasks, launch fresh
    implementation/rework/review sessions, route decisions, apply transitions,
    and commit clean task diffs.
@@ -169,23 +168,15 @@ fail to inspect any changes because the review session cannot apply its own
 Seatbelt sandbox. The failure may still exit 0. Invalid footer signals include
 `sandbox-exec`, `sandbox_apply`, `Operation not permitted`, or a statement that
 no staged, unstaged, or untracked changes could be inspected because shell
-commands failed before execution. In that case, the only documented retry from
-the same coordinator is still native `codex review`, with the inner review
-sandbox disabled:
-
-```sh
-review_log="$(mktemp "/tmp/anchormap-codex-review.XXXXXX")"
-codex review -c sandbox_mode='"danger-full-access"' --uncommitted >"$review_log" 2>&1
-review_rc=$?
-printf 'review_log: %s\nreview_exit: %s\nreview_footer:\n' "$review_log" "$review_rc"
-tail -n 220 "$review_log"
-exit "$review_rc"
-```
-
-Use the matching `--base <branch>` or `--commit <sha>` form when the worktree is
-not exactly the bounded review surface. If this retry is denied or still cannot
-inspect the diff, stop as `tooling problem`. Do not read the full transcript in
-the coordinator except for tooling diagnosis after stopping.
+commands failed before execution. The documented in-session retry is the same
+native `codex review` command, launched through a targeted approval or prefix
+rule that lets the command run outside the coordinator sandbox while preserving
+the review session's normal sandbox. Use the matching `--base <branch>` or
+`--commit <sha>` form when the worktree is not exactly the bounded review
+surface. If the retry is denied or still cannot inspect the diff, stop as
+`tooling problem`; do not keep trying variants from the coordinator. Do not read
+the full transcript in the coordinator except for tooling diagnosis after
+stopping.
 
 Autopilot must redirect native `codex review` stdout/stderr to a temporary file
 outside the repository and show only a bounded footer to the coordinator:
