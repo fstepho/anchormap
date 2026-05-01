@@ -284,6 +284,71 @@ test("extracts supported anchors from ATX Markdown headings", () => {
 	}
 });
 
+test("extracts repository documentation anchors from ATX Markdown heading prefixes", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["repo-docs.md"],
+			},
+			files: {
+				"specs/repo-docs.md": Buffer.from(
+					[
+						"# T10.6 Implement docs anchors",
+						"## T0.0a: Bootstrap task suffix",
+						"### M10 - Release milestone",
+						"#### S5 Spike report",
+						"##### ADR-0012",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["ADR-0012", "specs/repo-docs.md", "markdown"],
+			["M10", "specs/repo-docs.md", "markdown"],
+			["S5", "specs/repo-docs.md", "markdown"],
+			["T0.0a", "specs/repo-docs.md", "markdown"],
+			["T10.6", "specs/repo-docs.md", "markdown"],
+		]);
+	}
+});
+
+test("rejects near-miss repository documentation anchors from ATX Markdown prefixes", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["near-misses.md"],
+			},
+			files: {
+				"specs/near-misses.md": Buffer.from(
+					[
+						"# t10.6 Lowercase prefix",
+						"## T10 Missing minor",
+						"### T10. Missing minor digits",
+						"#### T10.6A Uppercase suffix",
+						"##### M10.1 Milestone dotted form",
+						"###### S05 Spike leading zero",
+						"# ADR-12 Malformed ADR",
+						"## ADR0012 Malformed ADR",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.specIndex.anchorOccurrences, []);
+	}
+});
+
 test("normalizes Markdown heading inline text according to the contract", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
 		cwd: CWD,

@@ -2,7 +2,7 @@ import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMap, isScalar, parseAllDocuments, type YAMLMap } from "yaml";
 
-import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
+import { ANCHOR_ID_PATTERN_SOURCE, type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { compareCanonicalTextByUtf8 } from "../domain/canonical-order";
 import {
 	compareRepoPathsByUtf8,
@@ -96,7 +96,7 @@ const SPEC_EXTENSIONS = new Map<string, SpecSourceKind>([
 	[".yaml", "yaml"],
 ]);
 
-const ANCHOR_PREFIX_PATTERN = /^(?:[A-Z]+-[0-9]{3}|[A-Z][A-Z0-9]*(?:\.[A-Z][A-Z0-9]*)+)(?=$|[ :-])/;
+const ANCHOR_PREFIX_PATTERN = new RegExp(`^(?:${ANCHOR_ID_PATTERN_SOURCE})(?=$|[ :-])`);
 
 const nodeSpecIndexFs: SpecIndexFs = {
 	lstat: lstatSync,
