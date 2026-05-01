@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: `T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments`
-- Last completed task: `T12.1 — Implement repository-documentation AnchorId validation`
+- Next executable product task: `T12.2 — Add v1.1 B-spec fixtures and goldens for extended anchors`
+- Last completed task: `T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -114,6 +114,7 @@
   - `T11.3 — Preserve scan and map graph-validation behavior under v1.1`
   - `T11.4 — Close v1.1 `.js` specifier release readiness`
   - `T12.1 — Implement repository-documentation AnchorId validation`
+  - `T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments`
 - Blocked tasks:
   - None recorded.
 - Open deviations:
@@ -5202,8 +5203,12 @@ Implementation scope:
   aligned with the extended dotted grammar.
 - Preserve existing `SHORT_ID`, underscore-free `DOTTED_ID`, `TASK_ID`,
   `MILESTONE_ID`, `SPIKE_ID`, and `ADR_ID` acceptance.
-- Reject dotted near-misses, including lowercase segments, leading underscores,
-  empty segments, hyphenated segments, and single-segment non-dotted labels.
+- Reject dotted near-misses in whole-value `AnchorId` validation contexts,
+  including lowercase segments, leading underscores, empty segments, hyphenated
+  segments, and single-segment non-dotted labels.
+- Preserve Markdown prefix semantics: a valid dotted prefix followed by `-`
+  produces the valid prefix anchor rather than rejecting the heading based on
+  the following title text.
 - Preserve binary UTF-8 ordering and opaque string handling after validation.
 - Add focused unit tests for accepted and rejected dotted grammar branches.
 
@@ -5219,7 +5224,9 @@ Done when:
   `REL.PR_TITLE.CONVENTIONAL_COMMITS` validate as `AnchorId`.
 - Markdown ATX heading prefix extraction can reach validation for dotted IDs
   containing underscores.
-- Documented dotted near-misses fail validation.
+- Documented dotted near-misses fail whole-value `AnchorId` validation.
+- Markdown ATX headings with dotted IDs followed immediately by `-` still
+  produce the dotted prefix anchor.
 - Existing v1.0 and T12.1 anchor formats remain valid.
 - Unit tests cover old and new dotted grammar branches without requiring the
   future T12.2/T12.3 fixture corpus.
@@ -5268,10 +5275,13 @@ Implementation scope:
   milestone, spike, and ADR anchor IDs.
 - Add runnable B-spec fixtures for YAML root `id` detection of the same accepted
   shapes.
-- Add a fixture proving invalid near-misses do not produce anchors.
+- Add a fixture proving invalid near-misses do not produce anchors in
+  unambiguous Markdown prefix cases and whole-value YAML root `id` cases.
 - Add a duplicate-anchor failure fixture using a repository-native anchor shape.
 - Add equivalent Markdown, YAML root `id`, rejected-near-miss, and duplicate
-  fixtures for dotted anchors with `SCREAMING_SNAKE` segments.
+  fixtures for dotted anchors with `SCREAMING_SNAKE` segments; hyphenated
+  dotted near-misses belong in whole-value YAML/root-ID coverage because
+  Markdown treats `-` after a valid prefix as a delimiter.
 - Add exact `scan --json` goldens for successful fixtures.
 
 Out of scope:

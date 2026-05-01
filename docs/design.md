@@ -530,6 +530,12 @@ doit soit être centralisée derrière le validateur, soit être étendue à par
 la même grammaire fermée pour éviter qu'un heading valide soit écarté avant
 validation.
 
+L'extraction Markdown reste une extraction de préfixe : lorsqu'un préfixe
+`AnchorId` validé est suivi d'un délimiteur contractuel, y compris `-`, le
+heading produit cette anchor. Les near-misses hyphenated dotted sont rejetés
+par validation de valeur entière dans les surfaces qui consomment un `AnchorId`
+complet, pas par inspection du titre Markdown après le délimiteur.
+
 Conséquences :
 
 - les headings ATX Markdown restent la seule surface Markdown supportée ;

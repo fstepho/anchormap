@@ -570,12 +570,19 @@ Une occurrence est détectée si ce texte commence par une anchor supportée imm
 - `:`
 - `-`
 
+Cette règle est une règle de préfixe. Lorsque le préfixe validé est suivi de
+`-`, le tiret est traité comme délimiteur Markdown, y compris si le texte qui
+suit ressemble à un segment d'anchor. Les formes d'anchor invalides restent
+rejetées dans les contextes où l'AnchorId est la valeur entière, comme `id`
+YAML, les clés `mappings`, et l'argument `map --anchor`.
+
 Exemples supportés :
 
 ```md
 ## FR-014 Validate changelog format
 ## FR-014: Validate changelog format
 ## DOC.README.PRESENT - README present
+## DOC.README.PRESENT-README
 ```
 
 Exemple hors support :

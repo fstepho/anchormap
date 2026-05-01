@@ -264,7 +264,8 @@ function readAnchorPrefix(text: string): AnchorId | undefined {
 		return undefined;
 	}
 
-	const result = validateAnchorId(match[0]);
+	const anchorText = match[0];
+	const result = validateAnchorId(anchorText);
 	if (result.kind === "validation_failure") {
 		return undefined;
 	}

@@ -214,7 +214,7 @@ pas implémentée et activée.
 | `fx19a_specs_duplicate_repo_native_anchor` | duplicate anchor documentaire entre specs | 3 | `scan --json` échec ; `stdout` vide |
 | `fx22j_specs_screaming_snake_dotted_markdown_ids` | headings ATX avec segments `DOTTED_ID` en `SCREAMING_SNAKE` | 0 | anchors `DOC.README.SECTIONS_MIN`, `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB` et `REL.PR_TITLE.CONVENTIONAL_COMMITS` détectées ; golden JSON exact |
 | `fx22k_specs_screaming_snake_dotted_yaml_root_ids` | specs YAML avec `id` racine utilisant des segments `DOTTED_ID` en `SCREAMING_SNAKE` | 0 | anchors dotted avec underscores détectées ; golden JSON exact |
-| `fx22l_specs_screaming_snake_dotted_rejected_near_misses` | formes proches invalides, dont `_DOC.README`, `DOC._README`, `DOC.README_`, `doc.README.SECTIONS_MIN` et `DOC.README.SECTIONS-MIN` | 0 | aucune anchor issue des formes invalides ; golden JSON exact |
+| `fx22l_specs_screaming_snake_dotted_rejected_near_misses` | formes proches invalides, dont `_DOC.README`, `DOC._README`, `DOC.README_`, `doc.README.SECTIONS_MIN` et `DOC.README.SECTIONS-MIN` en contexte AnchorId entier | 0 | aucune anchor issue des formes invalides dans les contextes où l'AnchorId est la valeur entière ; golden JSON exact |
 | `fx19b_specs_duplicate_screaming_snake_dotted_anchor` | duplicate anchor dotted avec underscore entre specs | 3 | `scan --json` échec ; `stdout` vide |
 
 ### 5.4 Famille B-graph — graphe statique, résolution et classification

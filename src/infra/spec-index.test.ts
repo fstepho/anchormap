@@ -261,7 +261,7 @@ test("extracts supported anchors from ATX Markdown headings", () => {
 				"specs/anchors.md": Buffer.from(
 					[
 						"# AA-001",
-						"## DOC.README.PRESENT Readme present",
+						"## DOC.README.PRESENT-README",
 						"### BB-002: Colon suffix",
 						"#### CC-003- Dash suffix",
 						"##### DD-004_not-supported",
@@ -294,7 +294,7 @@ test("extracts repository documentation anchors from ATX Markdown heading prefix
 			files: {
 				"specs/repo-docs.md": Buffer.from(
 					[
-						"# T10.6 Implement docs anchors",
+						"# T10.6-Implement docs anchors",
 						"## T0.0a: Bootstrap task suffix",
 						"### M10 - Release milestone",
 						"#### S5 Spike report",
@@ -318,6 +318,36 @@ test("extracts repository documentation anchors from ATX Markdown heading prefix
 	}
 });
 
+test("extracts SCREAMING_SNAKE dotted anchors from ATX Markdown heading prefixes", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["dotted.md"],
+			},
+			files: {
+				"specs/dotted.md": Buffer.from(
+					[
+						"# DOC.README.SECTIONS_MIN-Title",
+						"## OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB-TITLE",
+						"### REL.PR_TITLE.CONVENTIONAL_COMMITS: Title policy",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["DOC.README.SECTIONS_MIN", "specs/dotted.md", "markdown"],
+			["OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB", "specs/dotted.md", "markdown"],
+			["REL.PR_TITLE.CONVENTIONAL_COMMITS", "specs/dotted.md", "markdown"],
+		]);
+	}
+});
+
 test("rejects near-miss repository documentation anchors from ATX Markdown prefixes", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
 		cwd: CWD,
@@ -336,6 +366,35 @@ test("rejects near-miss repository documentation anchors from ATX Markdown prefi
 						"###### S05 Spike leading zero",
 						"# ADR-12 Malformed ADR",
 						"## ADR0012 Malformed ADR",
+						"",
+					].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.specIndex.anchorOccurrences, []);
+	}
+});
+
+test("rejects near-miss SCREAMING_SNAKE dotted anchors from ATX Markdown prefixes", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["near-misses.md"],
+			},
+			files: {
+				"specs/near-misses.md": Buffer.from(
+					[
+						"# _DOC.README Leading underscore",
+						"## DOC._README Segment leading underscore",
+						"### DOC..README Empty segment",
+						"#### DOC.README_ Trailing underscore",
+						"##### doc.README.SECTIONS_MIN Lowercase segment",
+						"# DOC Single segment non-dotted label",
 						"",
 					].join("\n"),
 				),
@@ -433,6 +492,7 @@ test("extracts YAML anchors only from a valid root string id", () => {
 			directories: {
 				specs: [
 					"root.yaml",
+					"dotted.yaml",
 					"profile.yaml",
 					"nested.yml",
 					"no-id.yaml",
@@ -442,6 +502,7 @@ test("extracts YAML anchors only from a valid root string id", () => {
 			},
 			files: {
 				"specs/root.yaml": Buffer.from("id: YAML.ROOT.ID\ntitle: Root id\n"),
+				"specs/dotted.yaml": Buffer.from("id: DOC.README.SECTIONS_MIN\ntitle: Dotted id\n"),
 				"specs/profile.yaml": Buffer.from("%YAML 1.2\n---\nid: YAML.PROFILE.OK\nflag: on\n"),
 				"specs/nested.yml": Buffer.from("feature:\n  id: NEST-001\n"),
 				"specs/no-id.yaml": Buffer.from("title: No root id\n"),
@@ -454,6 +515,7 @@ test("extracts YAML anchors only from a valid root string id", () => {
 	assert.equal(result.kind, "ok");
 	if (result.kind === "ok") {
 		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
+			["DOC.README.SECTIONS_MIN", "specs/dotted.yaml", "yaml"],
 			["YAML.PROFILE.OK", "specs/profile.yaml", "yaml"],
 			["YAML.ROOT.ID", "specs/root.yaml", "yaml"],
 		]);
