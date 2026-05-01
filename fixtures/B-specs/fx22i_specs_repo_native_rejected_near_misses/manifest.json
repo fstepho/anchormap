@@ -1,0 +1,19 @@
+{
+	"id": "fx22i_specs_repo_native_rejected_near_misses",
+	"family": "B-specs",
+	"purpose": "scan --json rejects repository-native near-miss anchors in Markdown prefix positions and whole-value YAML root id positions.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["specs", "near-miss", "extended-anchor", "scan", "golden"],
+	"groups": ["m12"]
+}

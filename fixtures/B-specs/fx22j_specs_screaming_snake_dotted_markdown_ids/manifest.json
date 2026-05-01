@@ -1,0 +1,19 @@
+{
+	"id": "fx22j_specs_screaming_snake_dotted_markdown_ids",
+	"family": "B-specs",
+	"purpose": "scan --json observes SCREAMING_SNAKE dotted anchors from Markdown ATX headings with exact stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["specs", "markdown", "screaming-snake", "scan", "golden"],
+	"groups": ["m12"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx22g_specs_repo_native_markdown_ids",
+	"family": "B-specs",
+	"purpose": "scan --json observes task, task suffix, milestone, spike, and ADR anchors from Markdown ATX headings with exact stdout and no mutation.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["specs", "markdown", "extended-anchor", "scan", "golden"],
+	"groups": ["m12"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx22l_specs_screaming_snake_dotted_rejected_near_misses",
+	"family": "B-specs",
+	"purpose": "scan --json rejects SCREAMING_SNAKE dotted near-miss anchors in Markdown prefix positions and whole-value YAML root id positions.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["specs", "near-miss", "screaming-snake", "scan", "golden"],
+	"groups": ["m12"]
+}
