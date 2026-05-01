@@ -179,6 +179,11 @@ AnchorMap v1.1 cible aussi les dépôts dont les specs supportées utilisent des
 identifiants documentaires courts déjà stables, en particulier les formats
 employés par les docs AnchorMap pour les tâches, jalons, spikes et ADR.
 
+AnchorMap v1.1 cible également les dépôts dont les IDs de règle ou de politique
+utilisent des segments dotted en `SCREAMING_SNAKE`, par exemple
+`DOC.README.SECTIONS_MIN`, `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB` ou
+`REL.PR_TITLE.CONVENTIONAL_COMMITS`.
+
 Cette extension reste dans le périmètre produit seulement si elle conserve les
 contraintes suivantes :
 

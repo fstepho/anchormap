@@ -50,6 +50,7 @@ ADRs courantes :
 - `ADR-0011` — Release CLI Node launch profile (`Accepted`)
 - `ADR-0012` — TypeScript ESM `.js` specifier source resolution (`Accepted`)
 - `ADR-0013` — AnchorMap documentation anchor formats (`Accepted`)
+- `ADR-0014` — SCREAMING_SNAKE dotted anchor segments (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -369,6 +370,18 @@ unique `0`. Le validateur reste le seul point de construction des anchors.
 Les comparateurs et projections ne changent pas : toutes les anchors, anciennes
 et nouvelles, sont triées comme chaînes validées selon l'ordre binaire UTF-8.
 
+#### 6.2.2 Extension v1.1 planifiée : segments dotted `SCREAMING_SNAKE`
+
+Cette section décrit le design v1.1 prévu par `ADR-0014`. Elle ne modifie pas
+le design runtime tant que la tâche d'implémentation v1.1 correspondante n'a pas
+activé explicitement l'extension.
+
+Quand l'extension est active, le validateur `AnchorId` accepte des segments
+`DOTTED_ID` en majuscules, chiffres et underscores, par exemple
+`DOC.README.SECTIONS_MIN`, tout en rejetant les segments qui commencent par
+underscore, finissent par underscore, contiennent un tiret, ou utilisent des
+minuscules.
+
 ### 6.3 `RepoPath`
 
 - chemin relatif à la racine du dépôt ;
@@ -505,11 +518,11 @@ Ensuite :
 - insérer dans `observedAnchors` ;
 - échouer immédiatement si l’anchor est déjà présente.
 
-#### 7.2.1 Extension v1.1 planifiée : observation des anchors documentaires
+#### 7.2.1 Extension v1.1 planifiée : observation des anchors étendues
 
-L'extension `ADR-0013` ne change pas les surfaces d'observation. Elle remplace
-uniquement l'appel au validateur `AnchorId` par le profil étendu lorsque la
-tâche v1.1 correspondante active l'extension.
+Les extensions `ADR-0013` et `ADR-0014` ne changent pas les surfaces
+d'observation. Elles remplacent uniquement l'appel au validateur `AnchorId` par
+le profil étendu lorsque la tâche v1.1 correspondante active l'extension.
 
 Le chemin Markdown doit aussi garder l'extraction de préfixe alignée avec le
 validateur étendu. Toute regex ou prévalidation utilisée avant `validateAnchorId`

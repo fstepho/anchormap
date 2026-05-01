@@ -26,7 +26,7 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: `T12.2 — Add v1.1 B-spec fixtures and goldens for documentation anchors`
+- Next executable product task: `T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments`
 - Last completed task: `T12.1 — Implement repository-documentation AnchorId validation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -158,7 +158,7 @@
 | M9 — Cross-platform, determinism, performance and release gates | Stabilize, measure, and validate without adding product capability | Metamorphic suite, reruns, platform matrix, benchmarks, dependency audit, release reports | C1–C12; Gates A–G; performance `small`/`medium`; reproducibility audit | M1–M8 done | Release gates pass on Linux x86_64 and macOS arm64; performance and reproducibility artifacts are archived |
 | M10 — Packaging, distribution, and publication | Turn a passing release candidate into a distributable v1.0 artifact without changing product behavior | Packaging ADR, publishable package metadata, install-artifact checks, user docs, publication runbook, published artifact evidence | Post-gate artifact verification; release checklist continuity | M9 done | `ADR-0009` is accepted, the packaged artifact installs and runs from `dist/`, user-facing docs preserve the v1.0 promise, and the selected distribution channel contains the published v1.0 artifact |
 | M11 — v1.1 TypeScript ESM `.js` specifier compatibility | Activate the planned `.js -> .ts` source-candidate rule without adopting full TypeScript or Node resolution | `ts_graph` candidate rule, B-graph fixtures/goldens, scan/map graph validation continuity, v1.1 release-readiness evidence | B-graph `fx38f`–`fx38l`; existing B-graph/B-map graph-validation regressions; docs/ADR consistency | F1 planning complete; M10 done | Explicit relative `.js` specifiers can resolve to sibling `.ts` sources, diagnostic-only `.js` behavior remains explicit when no source exists, and v1.1 gates preserve v1.0 determinism boundaries |
-| M12 — v1.1 AnchorMap documentation anchor formats | Activate the planned repository-documentation `AnchorId` grammar without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22i` plus `fx19a`; B-config `fx49a`; B-map `fx59a`, `fx63a`, `fx64a`; docs/ADR consistency | F2 planning complete; M11 done | Task, milestone, spike, and ADR-style anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
+| M12 — v1.1 AnchorMap extended anchor formats | Activate the planned repository-documentation `AnchorId` grammar and `SCREAMING_SNAKE` dotted segments without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22l` plus `fx19a`–`fx19b`; B-config `fx49a`–`fx49b`; B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b`; docs/ADR consistency | F2/F3 planning complete; M11 done | Task, milestone, spike, ADR-style, and `SCREAMING_SNAKE` dotted anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
 
 ## Milestone dependency graph
 
@@ -178,7 +178,7 @@ M1 Fixture harness
                     -> M9 Cross-platform, determinism, performance and release gates
                        -> M10 Packaging, distribution, and publication
                           -> M11 v1.1 TypeScript ESM .js specifier compatibility
-                             -> M12 v1.1 AnchorMap documentation anchor formats
+                             -> M12 v1.1 AnchorMap extended anchor formats
 ```
 
 ## M1 — Fixture harness
@@ -1151,7 +1151,8 @@ Dependencies:
 
 Implementation scope:
 - Validate `SHORT_ID = ^[A-Z]+-[0-9]{3}$`.
-- Validate `DOTTED_ID = ^[A-Z][A-Z0-9]*(\.[A-Z][A-Z0-9]*)+$`.
+- Validate the M3-era `DOTTED_ID` grammar; v1.1 underscore support is handled
+  by `T12.1a`.
 - Reject every other form.
 - Expose an opaque `AnchorId` value to downstream modules.
 - Add pure unit tests for valid and invalid examples.
@@ -5092,9 +5093,9 @@ Suggested verification:
 - Run `npm run test:fixtures -- --family B-graph`.
 - Run `npm run test:metamorphic`.
 
-## M12 — v1.1 AnchorMap documentation anchor formats
+## M12 — v1.1 AnchorMap extended anchor formats
 
-M12 activates the v1.1 planning recorded in F2 and `ADR-0013`.
+M12 activates the v1.1 planning recorded in F2/F3, `ADR-0013`, and `ADR-0014`.
 
 ### T12.1 — Implement repository-documentation AnchorId validation
 
@@ -5161,21 +5162,89 @@ Suggested verification:
 - Run `npm run test:unit`.
 - Run targeted `AnchorId` unit tests.
 
-### T12.2 — Add v1.1 B-spec fixtures and goldens for documentation anchors
+### T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments
+
+Purpose:
+- Activate the v1.1 `DOTTED_ID` grammar that accepts underscores inside dotted
+  segments for rule and policy IDs.
+
+Contract refs:
+- `contract.md` — §6.1 Anchor ID
+- `contract.md` — §6.1.2 v1.1 SCREAMING_SNAKE dotted segments
+- `contract.md` — §8 Détection des anchors
+- `contract.md` — §9.2 `anchormap map`
+
+Design refs:
+- `design.md` — §6.2 `AnchorId`
+- `design.md` — §6.2.2 v1.1 SCREAMING_SNAKE dotted segments
+- `design.md` — §7.2 Spec indexing
+- `design.md` — §7.2.1 v1.1 extended anchor observation
+
+Eval refs:
+- `evals.md` — §5.3.1 v1.1 planned documentation and dotted-anchor fixtures
+  (runnable fixture materialization belongs to T12.2 and T12.3)
+
+ADR refs:
+- `ADR-0014` — SCREAMING_SNAKE dotted anchor segments
+
+Operating-model refs:
+- `operating-model.md` — §11 Contrôle du scope
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T12.1.
+- F3 planning complete.
+
+Implementation scope:
+- Extend `DOTTED_ID` validation so every segment matches
+  `[A-Z]([A-Z0-9_]*[A-Z0-9])?`.
+- Update Markdown anchor prefix extraction so any pre-validation matcher stays
+  aligned with the extended dotted grammar.
+- Preserve existing `SHORT_ID`, underscore-free `DOTTED_ID`, `TASK_ID`,
+  `MILESTONE_ID`, `SPIKE_ID`, and `ADR_ID` acceptance.
+- Reject dotted near-misses, including lowercase segments, leading underscores,
+  empty segments, hyphenated segments, and single-segment non-dotted labels.
+- Preserve binary UTF-8 ordering and opaque string handling after validation.
+- Add focused unit tests for accepted and rejected dotted grammar branches.
+
+Out of scope:
+- Adding a new finding kind for unsupported anchor-like text.
+- Inferring anchors from prose, filenames, links, section numbers, or
+  references.
+- Changing Markdown or YAML parser profiles.
+- Creating mappings or mapping candidates automatically.
+
+Done when:
+- `DOC.README.SECTIONS_MIN`, `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB`, and
+  `REL.PR_TITLE.CONVENTIONAL_COMMITS` validate as `AnchorId`.
+- Markdown ATX heading prefix extraction can reach validation for dotted IDs
+  containing underscores.
+- Documented dotted near-misses fail validation.
+- Existing v1.0 and T12.1 anchor formats remain valid.
+- Unit tests cover old and new dotted grammar branches without requiring the
+  future T12.2/T12.3 fixture corpus.
+
+Suggested verification:
+- Run `npm run test:unit`.
+- Run targeted `AnchorId` and spec-index unit tests.
+
+### T12.2 — Add v1.1 B-spec fixtures and goldens for extended anchors
 
 Purpose:
 - Materialize the planned v1.1 B-spec fixture matrix for repository-native
-  documentation anchors.
+  documentation anchors and `SCREAMING_SNAKE` dotted anchors.
 
 Contract refs:
 - `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §6.1 Anchor ID
+- `contract.md` — §6.1.2 v1.1 SCREAMING_SNAKE dotted segments
 - `contract.md` — §8 Détection des anchors
 - `contract.md` — §13.3 `observed_anchors`
 - `contract.md` — §13.7 Canonical JSON serialization
 
 Design refs:
 - `design.md` — §7.2 Spec indexing
-- `design.md` — §7.2.1 v1.1 documentation anchor observation
+- `design.md` — §7.2.1 v1.1 extended anchor observation
 - `design.md` — §10.2 Boundary tests
 
 Eval refs:
@@ -5183,12 +5252,16 @@ Eval refs:
 - `evals.md` — `fx22h_specs_repo_native_yaml_root_ids`
 - `evals.md` — `fx22i_specs_repo_native_rejected_near_misses`
 - `evals.md` — `fx19a_specs_duplicate_repo_native_anchor`
+- `evals.md` — `fx22j_specs_screaming_snake_dotted_markdown_ids`
+- `evals.md` — `fx22k_specs_screaming_snake_dotted_yaml_root_ids`
+- `evals.md` — `fx22l_specs_screaming_snake_dotted_rejected_near_misses`
+- `evals.md` — `fx19b_specs_duplicate_screaming_snake_dotted_anchor`
 
 Operating-model refs:
 - `operating-model.md` — §19.1 Tâche
 
 Dependencies:
-- T12.1.
+- T12.1a.
 
 Implementation scope:
 - Add runnable B-spec fixtures for Markdown ATX detection of task, task-suffix,
@@ -5197,6 +5270,8 @@ Implementation scope:
   shapes.
 - Add a fixture proving invalid near-misses do not produce anchors.
 - Add a duplicate-anchor failure fixture using a repository-native anchor shape.
+- Add equivalent Markdown, YAML root `id`, rejected-near-miss, and duplicate
+  fixtures for dotted anchors with `SCREAMING_SNAKE` segments.
 - Add exact `scan --json` goldens for successful fixtures.
 
 Out of scope:
@@ -5205,9 +5280,11 @@ Out of scope:
 - Weakening v1.0 fixture oracles.
 
 Done when:
-- `fx22g`, `fx22h`, `fx22i`, and `fx19a` exist with matching manifests.
+- `fx22g`, `fx22h`, `fx22i`, `fx19a`, `fx22j`, `fx22k`, `fx22l`, and `fx19b`
+  exist with matching manifests.
 - Goldens expose the expected `observed_anchors` and canonical ordering.
-- The duplicate repository-native anchor fixture exits `3` with empty stdout.
+- The duplicate repository-native and dotted-with-underscore anchor fixtures
+  exit `3` with empty stdout.
 - Existing B-spec fixtures still pass.
 
 Suggested verification:
@@ -5216,14 +5293,17 @@ Suggested verification:
 - Run `npm run check:goldens -- --fixture fx22g_specs_repo_native_markdown_ids`
   and the other new golden fixtures.
 
-### T12.3 — Preserve config and map behavior for documentation anchors
+### T12.3 — Preserve config and map behavior for extended anchors
 
 Purpose:
-- Ensure repository-native anchors work through config loading, `map`, mutation
-  boundaries, and canonical YAML ordering without changing validation priority.
+- Ensure repository-native and `SCREAMING_SNAKE` dotted anchors work through
+  config loading, `map`, mutation boundaries, and canonical YAML ordering
+  without changing validation priority.
 
 Contract refs:
 - `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §6.1 Anchor ID
+- `contract.md` — §6.1.2 v1.1 SCREAMING_SNAKE dotted segments
 - `contract.md` — §7 `anchormap.yaml`
 - `contract.md` — §9.2 `anchormap map`
 - `contract.md` — §12.2 Mutation policy
@@ -5240,6 +5320,10 @@ Eval refs:
 - `evals.md` — `fx59a_map_create_repo_native_anchor_mapping`
 - `evals.md` — `fx63a_map_invalid_repo_native_anchor_near_miss`
 - `evals.md` — `fx64a_map_repo_native_anchor_not_observed`
+- `evals.md` — `fx49b_config_mapping_screaming_snake_dotted_anchor_keys`
+- `evals.md` — `fx59b_map_create_screaming_snake_dotted_anchor_mapping`
+- `evals.md` — `fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss`
+- `evals.md` — `fx64b_map_screaming_snake_dotted_anchor_not_observed`
 
 Operating-model refs:
 - `operating-model.md` — §19.1 Tâche
@@ -5253,8 +5337,11 @@ Implementation scope:
   repository-native anchor.
 - Add `map` fixture coverage for invalid near-miss anchor arguments and valid
   but unobserved repository-native anchors.
-- Confirm successful YAML writes sort repository-native anchors with the same
-  canonical binary UTF-8 ordering used elsewhere.
+- Add equivalent config and `map` fixture coverage for dotted anchors with
+  `SCREAMING_SNAKE` segments.
+- Confirm successful YAML writes sort repository-native and
+  dotted-with-underscore anchors with the same canonical binary UTF-8 ordering
+  used elsewhere.
 - Confirm all non-zero `map` outcomes preserve the initial config bytes and
   leave no temp or auxiliary files.
 
@@ -5264,7 +5351,8 @@ Out of scope:
 - Changing seed validation, graph validation, or reachability behavior.
 
 Done when:
-- `fx49a`, `fx59a`, `fx63a`, and `fx64a` exist with matching manifests.
+- `fx49a`, `fx49b`, `fx59a`, `fx59b`, `fx63a`, `fx63b`, `fx64a`, and `fx64b`
+  exist with matching manifests.
 - Successful config and map fixtures expose exact JSON/YAML goldens.
 - Invalid and unobserved anchor cases exit `4` without mutation.
 - Existing B-config and B-map fixtures still pass.
@@ -5274,19 +5362,22 @@ Suggested verification:
 - Run `npm run test:fixtures -- --fixture fx59a_map_create_repo_native_anchor_mapping`.
 - Run `npm run test:fixtures -- --family B-map`.
 
-### T12.4 — Close v1.1 documentation anchor release readiness
+### T12.4 — Close v1.1 extended anchor release readiness
 
 Purpose:
-- Prove the v1.1 documentation anchor capability is release-ready without
-  weakening v1.0 gates or expanding anchor observation surfaces.
+- Prove the v1.1 extended anchor capability is release-ready without weakening
+  v1.0 gates or expanding anchor observation surfaces.
 
 Contract refs:
+- `contract.md` — §6.1 Anchor ID
 - `contract.md` — §6.1.1 v1.1 AnchorMap documentation anchor formats
+- `contract.md` — §6.1.2 v1.1 SCREAMING_SNAKE dotted segments
 - `contract.md` — §13 `scan --json` schema
 
 Design refs:
+- `design.md` — §6.2 `AnchorId`
 - `design.md` — §6.2.1 v1.1 documentation anchor formats
-- `design.md` — §7.2.1 v1.1 documentation anchor observation
+- `design.md` — §7.2.1 v1.1 extended anchor observation
 - `design.md` — §13 Complexity and budgets
 
 Eval refs:
@@ -5296,6 +5387,7 @@ Eval refs:
 
 ADR refs:
 - `ADR-0013` — AnchorMap documentation anchor formats
+- `ADR-0014` — SCREAMING_SNAKE dotted anchor segments
 
 Operating-model refs:
 - `operating-model.md` — §19.1 Tâche
@@ -5319,7 +5411,7 @@ Out of scope:
 - Changing performance budgets to make the release pass.
 
 Done when:
-- Prior M12 tasks T12.1-T12.3 are complete.
+- Prior M12 tasks T12.1-T12.3, including T12.1a, are complete.
 - Applicable repo-local static checks pass.
 - New v1.1 B-specs, B-config, and B-map fixtures pass.
 - Relevant metamorphic checks show no determinism, canonical-order, or scope
@@ -5452,6 +5544,65 @@ Non-goals:
   inference.
 - Do not weaken the duplicate-anchor rule to make self-dogfooding easier.
 
+### F3 — SCREAMING_SNAKE dotted anchor segments
+
+Discovery:
+- Supported TypeScript spec repositories may use stable policy or rule IDs whose
+  dotted segments are `SCREAMING_SNAKE`.
+- Examples include `DOC.README.SECTIONS_MIN`,
+  `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB`,
+  `REL.PR_TITLE.CONVENTIONAL_COMMITS`, `NAV.MODULE_MAP.DISCOVERABLE`, and
+  `SETUP.RUN_ENTRYPOINT.DISCOVERABLE`.
+- Under the previous `DOTTED_ID` grammar, these headings and YAML root IDs were
+  unsupported because `_` was excluded from each dotted segment.
+- The affected IDs are still formal, human-authored anchors in supported anchor
+  positions; accepting them does not require prose inference or a new finding
+  class.
+
+Version target:
+- AnchorMap v1.1 will support underscores inside `DOTTED_ID` segments.
+
+Required v1.1 planning before implementation:
+- Amend `brief.md` if `SCREAMING_SNAKE` dotted IDs become intended anchor inputs
+  for supported repositories.
+- Amend `contract.md` to define the broadened `DOTTED_ID` grammar exactly.
+- Amend `evals.md` with B-specs, B-config, and B-map fixtures for accepted
+  dotted IDs with underscores, rejected near-misses, duplicates, invalid map
+  arguments, unobserved anchors, and canonical ordering.
+- Amend `design.md` for validator and Markdown prefix-extraction alignment.
+- Add or update an ADR for the expanded formal anchor grammar.
+- Add a task-chain dependency so implementation precedes runnable fixture
+  materialization.
+
+Planning result:
+- Decision: support `DOTTED_ID` segments matching
+  `[A-Z]([A-Z0-9_]*[A-Z0-9])?`, while preserving `SHORT_ID` and the T12.1
+  documentation anchor formats.
+- Product planning: `brief.md` §6.5 records `SCREAMING_SNAKE` dotted IDs as a
+  v1.1 intended segment.
+- Contract planning: `contract.md` §6.1.2 defines the planned expanded
+  `DOTTED_ID` grammar, accepted examples, and rejected near-misses.
+- Eval planning: `evals.md` §§5.3.1, 5.6.1, and 5.7.1 define v1.1 B-specs,
+  B-config, and B-map fixtures for dotted anchors with underscores.
+- Design planning: `design.md` §§6.2 and 7.2.1 define validator and prefix
+  extraction alignment for the expanded grammar.
+- ADR: `ADR-0014` records the `SCREAMING_SNAKE` dotted segment decision while
+  preserving the Markdown and YAML parser profiles selected by `ADR-0004` and
+  `ADR-0005`.
+
+Implementation remains out of scope for this planning entry. A v1.1 executable
+task must activate the broadened dotted validator branch, add focused unit
+coverage, and keep fixture materialization in the existing M12 fixture tasks.
+
+Promotion:
+- F3 has been promoted to executable v1.1 task `T12.1a` under M12.
+
+Non-goals:
+- Do not add a finding kind for unsupported anchor-like headings in this change.
+- Do not infer anchors from prose, section numbers, filenames, or references.
+- Do not accept lowercase, leading-underscore, empty-segment, or hyphenated
+  dotted segments.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -5477,7 +5628,7 @@ Non-goals:
 | B-specs `fx16`–`fx18` | T5.3, T5.4, T5.5 | M5 | fixture | YAML root `id` behavior |
 | B-specs `fx19`–`fx22` | T5.3, T5.4, T5.5 | M5 | fixture | Duplicate anchors and invalid YAML specs |
 | B-specs `fx22a`–`fx22f` | T5.1, T5.2, T5.3, T5.5 | M5 | fixture | Spec read/decode/BOM failures and successes |
-| B-specs `fx22g`–`fx22i` plus `fx19a` | T12.1, T12.2 | M12 | fixture/golden | v1.1 documentation anchor detection, invalid near-misses, and duplicates |
+| B-specs `fx22g`–`fx22l` plus `fx19a`–`fx19b` | T12.1, T12.1a, T12.2 | M12 | fixture/golden | v1.1 documentation and `SCREAMING_SNAKE` dotted anchor detection, invalid near-misses, and duplicates |
 | B-graph `fx23`–`fx26` | T6.3, T6.4, T6.6 | M6 | fixture/golden | Supported import/export syntax |
 | B-graph `fx27`–`fx31` | T6.4, T6.6 | M6 | fixture/golden | Resolution priority and classified diagnostics |
 | B-graph `fx32`–`fx33` | T6.5, T6.6 | M6 | fixture/golden | Unsupported local `require` and dynamic import |
@@ -5488,11 +5639,11 @@ Non-goals:
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
-| B-config `fx49a` | T12.1, T12.3 | M12 | fixture/golden | v1.1 documentation anchor mapping keys and canonical ordering |
+| B-config `fx49a`–`fx49b` | T12.1, T12.1a, T12.3 | M12 | fixture/golden | v1.1 documentation and `SCREAMING_SNAKE` dotted anchor mapping keys and canonical ordering |
 | B-config `fx50`–`fx53` | T4.3, T4.7 | M4 | fixture | Path invariants and root relationships |
 | B-init `fx54`–`fx58a` | T2.3, T4.4, T4.5, T4.6 | M2, M4 | fixture/golden | Init success, create-only, args, dirs, duplicate roots, option order |
 | B-map `fx59`–`fx62` | T8.2, T8.3, T8.4, T8.6 | M8 | fixture/golden | Create, replace guard, replace OK, replace creates if absent |
-| B-map `fx59a`, `fx63a`, `fx64a` | T12.1, T12.3 | M12 | fixture/golden | v1.1 documentation anchor map creation, invalid args, and unobserved anchors |
+| B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b` | T12.1, T12.1a, T12.3 | M12 | fixture/golden | v1.1 documentation and `SCREAMING_SNAKE` dotted anchor map creation, invalid args, and unobserved anchors |
 | B-map `fx63`–`fx67` | T8.1, T8.2, T8.3, T8.5, T8.6 | M8 | fixture | Anchor/seed validation and option order |
 | B-map `fx67a`–`fx67d` | T4.7, T5.5, T6.7, T8.2, T8.3, T8.5 | M4–M8 | fixture | Config/spec/product/existence failures with no mutation |
 | B-cli `fx68`–`fx70` | T2.1, T2.2, T2.5 | M2 | fixture | Unknown command, unknown option, invalid combinations |

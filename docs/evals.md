@@ -200,10 +200,11 @@ Les états essentiels du schéma doivent être explicitement couverts ainsi :
 | `fx22e_specs_yaml_non_utf8` | fichier YAML requis non décodable en UTF-8 strict | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx22f_specs_yaml_bom_initial` | fichier YAML avec BOM UTF-8 initial et `id` racine | 0 | anchor détectée ; golden JSON exact |
 
-#### 5.3.1 Fixtures v1.1 planifiées pour formats d'anchors documentaires
+#### 5.3.1 Fixtures v1.1 planifiées pour formats d'anchors étendus
 
-Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
-pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+Ces fixtures planifient les extensions v1.1 définies par `ADR-0013` et
+`ADR-0014`. Elles ne font pas partie du gate v1.0 tant que l'extension n'est
+pas implémentée et activée.
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
@@ -211,6 +212,10 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 | `fx22h_specs_repo_native_yaml_root_ids` | specs YAML avec `id` racine pour chaque nouveau format documentaire | 0 | anchors documentaires détectées ; golden JSON exact |
 | `fx22i_specs_repo_native_rejected_near_misses` | formes proches invalides, dont `t10.6`, `T10`, `T10.6A`, `M10.1`, `S05`, `ADR-12` et `ADR0012` | 0 | aucune anchor issue des formes invalides ; golden JSON exact |
 | `fx19a_specs_duplicate_repo_native_anchor` | duplicate anchor documentaire entre specs | 3 | `scan --json` échec ; `stdout` vide |
+| `fx22j_specs_screaming_snake_dotted_markdown_ids` | headings ATX avec segments `DOTTED_ID` en `SCREAMING_SNAKE` | 0 | anchors `DOC.README.SECTIONS_MIN`, `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB` et `REL.PR_TITLE.CONVENTIONAL_COMMITS` détectées ; golden JSON exact |
+| `fx22k_specs_screaming_snake_dotted_yaml_root_ids` | specs YAML avec `id` racine utilisant des segments `DOTTED_ID` en `SCREAMING_SNAKE` | 0 | anchors dotted avec underscores détectées ; golden JSON exact |
+| `fx22l_specs_screaming_snake_dotted_rejected_near_misses` | formes proches invalides, dont `_DOC.README`, `DOC._README`, `DOC.README_`, `doc.README.SECTIONS_MIN` et `DOC.README.SECTIONS-MIN` | 0 | aucune anchor issue des formes invalides ; golden JSON exact |
+| `fx19b_specs_duplicate_screaming_snake_dotted_anchor` | duplicate anchor dotted avec underscore entre specs | 3 | `scan --json` échec ; `stdout` vide |
 
 ### 5.4 Famille B-graph — graphe statique, résolution et classification
 
@@ -290,12 +295,14 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 
 #### 5.6.1 Fixtures v1.1 planifiées pour anchors documentaires en config
 
-Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
-pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+Ces fixtures planifient les extensions v1.1 définies par `ADR-0013` et
+`ADR-0014`. Elles ne font pas partie du gate v1.0 tant que l'extension n'est
+pas implémentée et activée.
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
 | `fx49a_config_mapping_repo_native_anchor_keys` | `mappings` accepte les nouveaux formats documentaires comme clés | 0 | golden JSON exact ; mappings valides visibles et triés canoniquement |
+| `fx49b_config_mapping_screaming_snake_dotted_anchor_keys` | `mappings` accepte les anchors dotted avec segments `SCREAMING_SNAKE` comme clés | 0 | golden JSON exact ; mappings valides visibles et triés canoniquement |
 
 ### 5.7 Famille B-init / B-map — commandes d'écriture et effets de fichier
 
@@ -323,14 +330,18 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 
 #### 5.7.1 Fixtures v1.1 planifiées pour `map` et anchors documentaires
 
-Ces fixtures planifient l'extension v1.1 définie par `ADR-0013`. Elles ne font
-pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée.
+Ces fixtures planifient les extensions v1.1 définies par `ADR-0013` et
+`ADR-0014`. Elles ne font pas partie du gate v1.0 tant que l'extension n'est
+pas implémentée et activée.
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
 | `fx59a_map_create_repo_native_anchor_mapping` | `map` crée un mapping pour une anchor documentaire observée | 0 | `anchormap.yaml` final exact ; clé documentaire triée canoniquement |
 | `fx63a_map_invalid_repo_native_anchor_near_miss` | `--anchor` rejette les formes proches invalides | 4 | aucun changement de fichier |
 | `fx64a_map_repo_native_anchor_not_observed` | anchor documentaire valide mais absente des specs courantes | 4 | aucun changement de fichier |
+| `fx59b_map_create_screaming_snake_dotted_anchor_mapping` | `map` crée un mapping pour une anchor dotted avec underscore observée | 0 | `anchormap.yaml` final exact ; clé dotted triée canoniquement |
+| `fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss` | `--anchor` rejette les formes dotted proches invalides | 4 | aucun changement de fichier |
+| `fx64b_map_screaming_snake_dotted_anchor_not_observed` | anchor dotted avec underscore valide mais absente des specs courantes | 4 | aucun changement de fichier |
 
 ### 5.8 Famille B-cli — surface CLI, échecs machine et priorité des codes
 

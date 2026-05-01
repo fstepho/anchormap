@@ -277,6 +277,34 @@ Les règles de doublon, de validation des clés `mappings`, de validation
 `map --anchor`, de tri canonique et de sérialisation JSON/YAML restent celles du
 contrat existant, appliquées à l'ensemble étendu des `AnchorId`.
 
+#### 6.1.2 Extension v1.1 planifiée : segments dotted `SCREAMING_SNAKE`
+
+Cette section planifie une extension v1.1. Elle ne modifie pas le contrat
+runtime tant que la tâche d'implémentation v1.1 correspondante n'a pas activé
+explicitement ces règles.
+
+Quand l'extension est active, le format `DOTTED_ID` devient :
+
+- `DOTTED_ID = ^[A-Z]([A-Z0-9_]*[A-Z0-9])?(\.[A-Z]([A-Z0-9_]*[A-Z0-9])?)+$`
+
+Exemples additionnels valides :
+
+- `DOC.README.SECTIONS_MIN`
+- `OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB`
+- `REL.PR_TITLE.CONVENTIONAL_COMMITS`
+
+Exemples explicitement invalides :
+
+- `_DOC.README`
+- `DOC._README`
+- `DOC.README_`
+- `doc.README.SECTIONS_MIN`
+- `DOC.README.SECTIONS-MIN`
+
+Les surfaces d'observation, les règles de doublon, de validation des clés
+`mappings`, de validation `map --anchor`, de tri canonique et de sérialisation
+JSON/YAML restent inchangées.
+
 ### 6.2 Anchor occurrence
 
 Une occurrence d'anchor est une observation de scan d'une anchor dans une spec supportée.
