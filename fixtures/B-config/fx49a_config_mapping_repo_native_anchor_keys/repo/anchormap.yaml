@@ -1,0 +1,14 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'specs'
+mappings:
+  'T10.6':
+    seed_files:
+      - 'src/index.ts'
+  'ADR-0012':
+    seed_files:
+      - 'src/index.ts'
+  'M10':
+    seed_files:
+      - 'src/index.ts'

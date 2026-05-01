@@ -1,0 +1,27 @@
+{
+	"id": "fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss",
+	"family": "B-map",
+	"purpose": "map rejects a SCREAMING_SNAKE dotted near-miss anchor argument before config or repository access.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"DOC.README_",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "map", "priority", "v1_1"],
+	"groups": ["m12"]
+}

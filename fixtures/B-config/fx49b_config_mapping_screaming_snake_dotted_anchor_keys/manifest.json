@@ -1,0 +1,19 @@
+{
+	"id": "fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
+	"family": "B-config",
+	"purpose": "scan --json accepts SCREAMING_SNAKE dotted mapping keys and renders them in canonical order.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["config", "scan", "json", "golden", "v1_1"],
+	"groups": ["m12"]
+}

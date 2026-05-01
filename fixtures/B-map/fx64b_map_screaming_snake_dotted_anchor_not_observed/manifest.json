@@ -1,0 +1,27 @@
+{
+	"id": "fx64b_map_screaming_snake_dotted_anchor_not_observed",
+	"family": "B-map",
+	"purpose": "map with a valid but unobserved SCREAMING_SNAKE dotted anchor exits 4 and preserves anchormap.yaml.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"DOC.README.SECTIONS_MIN",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "specs", "precondition", "v1_1"],
+	"groups": ["m12"]
+}

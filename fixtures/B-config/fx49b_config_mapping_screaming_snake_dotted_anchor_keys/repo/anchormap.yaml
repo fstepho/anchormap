@@ -1,0 +1,14 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'specs'
+mappings:
+  'REL.PR_TITLE.CONVENTIONAL_COMMITS':
+    seed_files:
+      - 'src/index.ts'
+  'DOC.README.SECTIONS_MIN':
+    seed_files:
+      - 'src/index.ts'
+  'OWN.CODEOWNERS.FILE_SIZE_UNDER_3MB':
+    seed_files:
+      - 'src/index.ts'

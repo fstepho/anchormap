@@ -1,0 +1,19 @@
+{
+	"id": "fx63a_map_invalid_repo_native_anchor_near_miss",
+	"family": "B-map",
+	"purpose": "map rejects a repository-native near-miss anchor argument before config or repository access.",
+	"command": ["node", "dist/anchormap.js", "map", "--anchor", "T10.6A", "--seed", "src/index.ts"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary", "map", "priority", "v1_1"],
+	"groups": ["m12"]
+}

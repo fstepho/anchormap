@@ -1,0 +1,27 @@
+{
+	"id": "fx64a_map_repo_native_anchor_not_observed",
+	"family": "B-map",
+	"purpose": "map with a valid but unobserved repository-native anchor exits 4 and preserves anchormap.yaml.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"T10.6",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "specs", "precondition", "v1_1"],
+	"groups": ["m12"]
+}

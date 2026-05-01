@@ -1,0 +1,30 @@
+{
+	"id": "fx59a_map_create_repo_native_anchor_mapping",
+	"family": "B-map",
+	"purpose": "map creates a mapping for an observed repository-native anchor and writes exact canonical YAML.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"T10.6",
+		"--seed",
+		"src/z.ts",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "write", "golden", "v1_1"],
+	"groups": ["m12"]
+}

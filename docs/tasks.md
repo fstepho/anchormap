@@ -26,8 +26,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: `T12.3 — Preserve config and map behavior for extended anchors`
-- Last completed task: `T12.2 — Add v1.1 B-spec fixtures and goldens for extended anchors`
+- Next executable product task: `T12.4 — Close v1.1 extended anchor release readiness`
+- Last completed task: `T12.3 — Preserve config and map behavior for extended anchors`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -116,6 +116,7 @@
   - `T12.1 — Implement repository-documentation AnchorId validation`
   - `T12.1a — Implement SCREAMING_SNAKE dotted AnchorId segments`
   - `T12.2 — Add v1.1 B-spec fixtures and goldens for extended anchors`
+  - `T12.3 — Preserve config and map behavior for extended anchors`
 - Blocked tasks:
   - None recorded.
 - Open deviations:

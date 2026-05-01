@@ -1,0 +1,30 @@
+{
+	"id": "fx59b_map_create_screaming_snake_dotted_anchor_mapping",
+	"family": "B-map",
+	"purpose": "map creates a mapping for an observed SCREAMING_SNAKE dotted anchor and writes exact canonical YAML.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"DOC.README.SECTIONS_MIN",
+		"--seed",
+		"src/z.ts",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "write", "golden", "v1_1"],
+	"groups": ["m12"]
+}
