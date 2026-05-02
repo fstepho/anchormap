@@ -1,0 +1,61 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'dogfood/specs'
+mappings:
+  'CLI.COMMANDS':
+    seed_files:
+      - 'src/bootstrap.ts'
+      - 'src/cli/command-args.ts'
+  'CONFIG.YAML_STATE':
+    seed_files:
+      - 'src/infra/repo-fs.ts'
+      - 'src/infra/repo-fs.test.ts'
+  'GRAPH.LOCAL_TS_REACHABILITY':
+    seed_files:
+      - 'src/domain/repo-path.test.ts'
+      - 'src/infra/ts-graph.ts'
+  'HARNESS.FIXTURE_ORACLES':
+    seed_files:
+      - 'src/harness/fixture-filesystem-oracle.ts'
+      - 'src/harness/fixture-filesystem-oracle.test.ts'
+      - 'src/harness/fixture-manifest.test.ts'
+      - 'src/harness/fixture-output-oracle.ts'
+      - 'src/harness/fixture-output-oracle.test.ts'
+      - 'src/harness/fixture-process.test.ts'
+      - 'src/harness/fixture-run-artifacts.test.ts'
+      - 'src/harness/fixture-runner.ts'
+      - 'src/harness/fixture-sandbox.test.ts'
+  'RENDER.JSON_CANONICAL':
+    seed_files:
+      - 'src/render/render-json.ts'
+  'SCAN.COVERAGE_FINDINGS':
+    seed_files:
+      - 'src/domain/finding.ts'
+      - 'src/domain/finding.test.ts'
+      - 'src/domain/scan-engine.test.ts'
+      - 'src/domain/scan-result.ts'
+      - 'src/domain/scan-result.test.ts'
+  'SPEC.ANCHOR_DISCOVERY':
+    seed_files:
+      - 'src/domain/anchor-id.ts'
+  'VERIFY.FIXTURE_HARNESS':
+    seed_files:
+      - 'src/harness/fixture-runner-cli.test.ts'
+      - 'src/harness/fixture-runner.test.ts'
+      - 'src/harness/harness-smoke-fixtures.test.ts'
+      - 'src/harness/metamorphic-fixtures.test.ts'
+  'VERIFY.PROCESS_GUARDRAILS':
+    seed_files:
+      - 'src/harness/docs-consistency.test.ts'
+      - 'src/harness/lint-tasks-fixture.test.ts'
+      - 'src/harness/workflow-preflight-fixture.test.ts'
+  'VERIFY.RELEASE_READINESS':
+    seed_files:
+      - 'src/package-scripts.test.ts'
+      - 'src/release-gate-aggregator.test.ts'
+      - 'src/reproducibility-audit.test.ts'
+  'VERIFY.UNIT_BOUNDARIES':
+    seed_files:
+      - 'src/domain/anchor-id.test.ts'
+      - 'src/render/render-json.test.ts'
