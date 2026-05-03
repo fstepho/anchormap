@@ -129,6 +129,15 @@ function observedAnchorView(
 	return occurrenceView([...observedAnchors.values()]);
 }
 
+function occurrenceStatusView(
+	occurrences: readonly SpecAnchorOccurrence[],
+): ReadonlyArray<readonly [string, string]> {
+	return occurrences.map((occurrence) => [
+		anchorIdToString(occurrence.anchorId),
+		occurrence.status,
+	]);
+}
+
 test("discovers supported spec files under configured roots in stable order", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs", "docs"]), {
 		cwd: CWD,
@@ -247,6 +256,57 @@ test("classifies duplicate anchors within one Markdown spec file as UnsupportedR
 	assert.equal(result.kind, "error");
 	if (result.kind === "error") {
 		assert.equal(result.error.kind, "UnsupportedRepoError");
+	}
+});
+
+test("classifies anchors from draft Markdown spec files as draft", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["scaffold.md"],
+			},
+			files: {
+				"specs/scaffold.md": Buffer.from(
+					["", "<!-- anchormap: draft -->", "", "# DRAFT.ONLY.ANCHOR", ""].join("\n"),
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceStatusView(result.specIndex.anchorOccurrences), [
+			["DRAFT.ONLY.ANCHOR", "draft"],
+		]);
+		assert.equal(result.specIndex.activeAnchors.size, 0);
+		assert.equal([...result.specIndex.draftAnchors.values()][0]?.status, "draft");
+		assert.equal([...result.specIndex.observedAnchors.values()][0]?.status, "draft");
+	}
+});
+
+test("lets active anchors override duplicate draft anchors", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["active.md", "draft-a.md", "draft-b.md"],
+			},
+			files: {
+				"specs/active.md": Buffer.from("# SAME.ANCHOR\n"),
+				"specs/draft-a.md": Buffer.from("<!-- anchormap: draft -->\n\n# SAME.ANCHOR\n"),
+				"specs/draft-b.md": Buffer.from("<!-- anchormap: draft -->\n\n# SAME.ANCHOR\n"),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(observedAnchorView(result.specIndex.observedAnchors), [
+			["SAME.ANCHOR", "specs/active.md", "markdown"],
+		]);
+		assert.equal([...result.specIndex.activeAnchors.values()][0]?.status, "active");
+		assert.equal([...result.specIndex.draftAnchors.values()][0]?.status, "draft");
 	}
 });
 

@@ -219,8 +219,8 @@ Responsabilités :
 - parser Markdown et YAML avec les règles figées de la release sur le texte déjà décodé ;
 - appliquer les profils parser de `ADR-0004` et `ADR-0005` ;
 - extraire les anchors supportées ;
-- détecter les doublons d’anchors ;
-- produire l’index des anchors observées.
+- détecter les doublons d'active anchors ;
+- produire l'index des active anchors et des draft anchors observées.
 
 API cible :
 
@@ -231,19 +231,25 @@ Structure cible :
 ```text
 SpecIndex {
   observedAnchors: Map<AnchorId, SpecOccurrence>
+  activeAnchors: Map<AnchorId, SpecOccurrence>
+  draftAnchors: Map<AnchorId, SpecOccurrence>
 }
 
 SpecOccurrence {
   anchorId: AnchorId
   specPath: RepoPath
   sourceKind: "markdown" | "yaml"
+  status: "active" | "draft"
 }
 ```
 
 Décisions clés :
 
 - tous les YAML découverts sous `spec_roots` doivent être valides, même s’ils n’exposent pas d’anchor ;
-- toute spec illisible, non décodable en UTF-8 strict, invalide selon son profil, ou portant une anchor dupliquée provoque `UnsupportedRepoError` ;
+- toute spec illisible, non décodable en UTF-8 strict, invalide selon son profil, ou portant une active anchor dupliquée provoque `UnsupportedRepoError` ;
+- les Markdown dont la première ligne non vide est le marqueur draft produisent
+  des draft anchors ; les doublons draft ne bloquent pas, et une active anchor
+  du même ID gagne pour les comportements trusted ;
 - aucune donnée issue des specs n’est persistée.
 
 ### 5.4 `ts_graph`
@@ -322,7 +328,7 @@ Responsabilités :
 - dériver des `AnchorId` mécaniques depuis chemin module et nom exporté ;
 - désambiguïser mécaniquement les collisions internes ;
 - détecter les collisions avec les anchors déjà observées ;
-- rendre le Markdown de brouillon stable ;
+- rendre le Markdown de brouillon stable avec le marqueur draft de fichier ;
 - écrire le fichier `--output` en create-only avec cleanup sur échec.
 
 Décisions clés :
@@ -336,6 +342,8 @@ Décisions clés :
 - une collision finale résiduelle après suffixe reste une précondition
   utilisateur de code `4`, jamais une erreur interne ;
 - le renderer Markdown est fermé et project-owned.
+- le fichier généré est un draft spec file jusqu'à retrait explicite du marqueur
+  par un humain.
 
 ### 5.6 `commands`
 
@@ -378,7 +386,7 @@ Décisions clés :
 - `render` ne trie rien, ne déduplique rien et ne normalise aucun chemin ;
 - le JSON est généré à partir d’un modèle déjà trié et normalisé ;
 - le JSON canonique est rendu par un encoder custom selon `ADR-0007`, pas par `JSON.stringify` ;
-- pour `schema_version = 2`, `traceability_metrics` est rendu entre `files`
+- pour `schema_version = 3`, `traceability_metrics` est rendu entre `files`
   et `findings`, selon l'ordre exact du contrat ;
 - `render` retourne des bytes ou des strings en mémoire ; `commands` reste seul owner de `stdout` / `stderr` ;
 - tout échec de sérialisation d’un `ScanResult` valide remonte comme `InternalError`.
@@ -902,7 +910,9 @@ Règle d’application : une précondition utilisateur déjà décidable à part
   - chaque seed doit avoir une forme admissible de `product_file` (`.ts`, hors `.d.ts`, hors `.tsx`, hors `.js`) ;
   - chaque seed doit exister comme fichier par un test ponctuel borné ; une absence produit `UsageError`, une impossibilité d’effectuer le test produit `UnsupportedRepoError` ;
 - indexer les specs courantes ;
-- vérifier que l’anchor demandée est présente dans `SpecIndex` ;
+- vérifier que l’anchor demandée est présente comme active anchor dans
+  `SpecIndex` ;
+- refuser une anchor présente uniquement comme draft anchor avec `UsageError` ;
 - découvrir les `product_files` ;
 - vérifier que chaque seed appartient à l’ensemble trié des `product_files` découverts ;
 - appeler `ts_graph.buildProductGraph(config, fs, productFiles)` pour effectuer avant commit les lectures, décodages, parsings et tests d’existence requis sur les `product_files` ;
@@ -917,7 +927,8 @@ Règle d’application : une précondition utilisateur déjà décidable à part
 - charger et valider `anchormap.yaml` ;
 - construire `SpecIndex` ;
 - découvrir les `product_files` et construire `ProductGraph` ;
-- exécuter `scan_engine` ;
+- exécuter `scan_engine`, qui traite les draft anchors comme observées mais non
+  trusted ;
 - construire puis écrire soit le JSON canonique, soit le texte humain.
 
 #### `scaffold`

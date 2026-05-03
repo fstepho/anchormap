@@ -84,6 +84,7 @@ const SCAFFOLD_KIND_SUFFIX: Record<ScaffoldExportKind, string> = {
 	type: "TYPE",
 	variable: "VARIABLE",
 };
+const SCAFFOLD_DRAFT_MARKER = "<!-- anchormap: draft -->";
 
 export function buildScaffoldMarkdown(
 	config: Config,
@@ -269,7 +270,7 @@ export function buildScaffoldAnchorId(
 }
 
 export function renderScaffoldMarkdown(candidates: readonly ScaffoldExportCandidate[]): string {
-	return candidates
+	const sections = candidates
 		.map((candidate) =>
 			[
 				`# ${candidate.anchorId}`,
@@ -280,6 +281,8 @@ export function renderScaffoldMarkdown(candidates: readonly ScaffoldExportCandid
 			].join("\n"),
 		)
 		.join("\n");
+
+	return [SCAFFOLD_DRAFT_MARKER, "", sections].join("\n");
 }
 
 function readProductFile(

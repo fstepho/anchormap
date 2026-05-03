@@ -43,23 +43,29 @@ function emptySpecIndex(): SpecIndex {
 	return {
 		specFiles: [],
 		observedAnchors: new Map(),
+		activeAnchors: new Map(),
+		draftAnchors: new Map(),
 		anchorOccurrences: [],
 	};
 }
 
 function specIndexWithAnchors(anchors: readonly AnchorId[]): SpecIndex {
+	const activeAnchors = new Map(
+		anchors.map((id) => [
+			id,
+			{
+				anchorId: id,
+				specPath: repoPath("specs/existing.md"),
+				sourceKind: "markdown" as const,
+				status: "active" as const,
+			},
+		]),
+	);
 	return {
 		specFiles: [],
-		observedAnchors: new Map(
-			anchors.map((id) => [
-				id,
-				{
-					anchorId: id,
-					specPath: repoPath("specs/existing.md"),
-					sourceKind: "markdown",
-				},
-			]),
-		),
+		observedAnchors: activeAnchors,
+		activeAnchors,
+		draftAnchors: new Map(),
 		anchorOccurrences: [],
 	};
 }
@@ -208,6 +214,8 @@ test("renders scaffold markdown byte-for-byte", () => {
 			},
 		]),
 		[
+			"<!-- anchormap: draft -->",
+			"",
 			"# AUTH.TOKEN.VERIFY_TOKEN",
 			"<!-- anchormap scaffold: source=src/auth/token.ts export=verifyToken kind=function -->",
 			"",
@@ -237,6 +245,8 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 		assert.equal(
 			success.markdown,
 			[
+				"<!-- anchormap: draft -->",
+				"",
 				"# AUTH.TOKEN.VERIFY_TOKEN",
 				"<!-- anchormap scaffold: source=src/auth/token.ts export=verifyToken kind=function -->",
 				"",
@@ -281,6 +291,8 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 		assert.equal(
 			duplicate.markdown,
 			[
+				"<!-- anchormap: draft -->",
+				"",
 				"# COLLISION.FOO_BAR.VARIABLE",
 				"<!-- anchormap scaffold: source=src/collision.ts export=fooBar kind=variable -->",
 				"",
@@ -315,6 +327,8 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 		assert.equal(
 			mixedKindCollision.markdown,
 			[
+				"<!-- anchormap: draft -->",
+				"",
 				"# DOMAIN.SCAN_RESULT.ANALYSIS_HEALTH.FUNCTION",
 				"<!-- anchormap scaffold: source=src/domain/scan-result.ts export=analysisHealth kind=function -->",
 				"",

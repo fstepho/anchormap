@@ -1,3 +1,5 @@
+<!-- anchormap: draft -->
+
 # AUTH.TOKEN.VERIFY_TOKEN
 <!-- anchormap scaffold: source=src/auth/token.ts export=verifyToken kind=function -->
 

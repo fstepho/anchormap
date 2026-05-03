@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -66,6 +66,10 @@
       "spec_path": "docs/adr/0014-screaming-snake-dotted-anchor-segments.md",
       "mapping_state": "absent"
     },
+    "ADR-0015": {
+      "spec_path": "docs/adr/0015-deterministic-typescript-export-scaffold.md",
+      "mapping_state": "absent"
+    },
     "M1": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
@@ -83,6 +87,10 @@
       "mapping_state": "absent"
     },
     "M13": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "M14": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
     },
@@ -279,6 +287,18 @@
       "mapping_state": "absent"
     },
     "T13.4": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T14.1": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T14.2": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T14.3": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
     },
@@ -547,6 +567,7 @@
         "src/infra/config-io.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -853,6 +874,30 @@
         "src/domain/repo-path.ts"
       ]
     },
+    "src/infra/scaffold.test.ts": {
+      "covering_anchor_ids": [],
+      "supported_local_targets": [
+        "src/domain/anchor-id.ts",
+        "src/domain/repo-path.ts",
+        "src/infra/config-io.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts"
+      ]
+    },
+    "src/infra/scaffold.ts": {
+      "covering_anchor_ids": [],
+      "supported_local_targets": [
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/repo-path.ts",
+        "src/infra/config-io.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts"
+      ]
+    },
     "src/infra/spec-index.test.ts": {
       "covering_anchor_ids": [],
       "supported_local_targets": [
@@ -921,12 +966,14 @@
   },
   "traceability_metrics": {
     "summary": {
-      "product_file_count": 58,
+      "product_file_count": 60,
       "stored_mapping_count": 0,
       "usable_mapping_count": 0,
-      "observed_anchor_count": 121,
+      "observed_anchor_count": 126,
+      "active_anchor_count": 126,
+      "draft_anchor_count": 0,
       "covered_product_file_count": 0,
-      "uncovered_product_file_count": 58,
+      "uncovered_product_file_count": 60,
       "directly_seeded_product_file_count": 0,
       "single_cover_product_file_count": 0,
       "multi_cover_product_file_count": 0
@@ -1044,6 +1091,14 @@
         "unique_reached_file_count": 0,
         "shared_reached_file_count": 0
       },
+      "ADR-0015": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
       "M1": {
         "seed_file_count": 0,
         "direct_seed_file_count": 0,
@@ -1077,6 +1132,14 @@
         "shared_reached_file_count": 0
       },
       "M13": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M14": {
         "seed_file_count": 0,
         "direct_seed_file_count": 0,
         "reached_file_count": 0,
@@ -1469,6 +1532,30 @@
         "shared_reached_file_count": 0
       },
       "T13.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T14.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T14.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T14.3": {
         "seed_file_count": 0,
         "direct_seed_file_count": 0,
         "reached_file_count": 0,
@@ -1961,6 +2048,10 @@
     },
     {
       "kind": "unmapped_anchor",
+      "anchor_id": "ADR-0015"
+    },
+    {
+      "kind": "unmapped_anchor",
       "anchor_id": "M1"
     },
     {
@@ -1978,6 +2069,10 @@
     {
       "kind": "unmapped_anchor",
       "anchor_id": "M13"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "M14"
     },
     {
       "kind": "unmapped_anchor",
@@ -2174,6 +2269,18 @@
     {
       "kind": "unmapped_anchor",
       "anchor_id": "T13.4"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T14.1"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T14.2"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T14.3"
     },
     {
       "kind": "unmapped_anchor",

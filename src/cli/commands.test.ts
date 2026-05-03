@@ -815,6 +815,8 @@ test("default scaffold handler writes create-only markdown without mutating conf
 		assert.equal(
 			readFileSync(join(cwd, "specs", "generated.md"), "utf8"),
 			[
+				"<!-- anchormap: draft -->",
+				"",
 				"# AUTH.TOKEN.VERIFY_TOKEN",
 				"<!-- anchormap scaffold: source=src/auth/token.ts export=verifyToken kind=function -->",
 				"",
@@ -1191,6 +1193,40 @@ test("default map handler rejects anchors absent from current specs with code 4"
 		assert.equal(exitCode, 4);
 		assert.equal(stdout.read(), "");
 		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("default map handler rejects draft-only anchors with code 4", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"), { recursive: true });
+		mkdirSync(join(cwd, "specs"), { recursive: true });
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(
+			join(cwd, "specs", "generated.md"),
+			"<!-- anchormap: draft -->\n\n# DRAFT.ONLY.ANCHOR\n",
+		);
+		writeFileSync(join(cwd, "src", "index.ts"), "export {};\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(
+			["map", "--anchor", "DRAFT.ONLY.ANCHOR", "--seed", "src/index.ts"],
+			{
+				cwd,
+				stdout: stdout.writer,
+				stderr: stderr.writer,
+			},
+		);
+
+		assert.equal(exitCode, 4);
+		assert.equal(stdout.read(), "");
+		assert.match(stderr.read(), /draft/);
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
 		assertNoAnchormapTemps(cwd);
 	} finally {
@@ -1609,7 +1645,7 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 2,
+			schema_version: 3,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1730,7 +1766,7 @@ test("scan --json renders unsupported local require and dynamic import findings"
 			assert.equal(exitCode, 0, testCase.name);
 			assert.equal(stderr.read(), "", testCase.name);
 			assert.deepEqual(JSON.parse(stdout.read()), {
-				schema_version: 2,
+				schema_version: 3,
 				config: {
 					version: 1,
 					product_root: "src",
@@ -1793,7 +1829,7 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 2,
+			schema_version: 3,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1866,7 +1902,7 @@ test("scan --json renders usable mapping reachability through supported graph ed
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 2,
+			schema_version: 3,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1945,7 +1981,7 @@ test("scan --json renders observed anchors without stored mappings", () => {
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 2,
+			schema_version: 3,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -2018,7 +2054,7 @@ test("scan --json renders stale stored mappings without evaluating seeds", () =>
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 2,
+			schema_version: 3,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -2096,6 +2132,8 @@ function traceabilityMetrics(input: {
 	readonly storedMappingCount?: number;
 	readonly usableMappingCount?: number;
 	readonly observedAnchorCount?: number;
+	readonly activeAnchorCount?: number;
+	readonly draftAnchorCount?: number;
 	readonly coveredProductFileCount?: number;
 	readonly uncoveredProductFileCount?: number;
 	readonly directlySeededProductFileCount?: number;
@@ -2109,6 +2147,9 @@ function traceabilityMetrics(input: {
 			stored_mapping_count: input.storedMappingCount ?? 0,
 			usable_mapping_count: input.usableMappingCount ?? 0,
 			observed_anchor_count: input.observedAnchorCount ?? 0,
+			active_anchor_count:
+				input.activeAnchorCount ?? (input.observedAnchorCount ?? 0) - (input.draftAnchorCount ?? 0),
+			draft_anchor_count: input.draftAnchorCount ?? 0,
 			covered_product_file_count: input.coveredProductFileCount ?? 0,
 			uncovered_product_file_count: input.uncoveredProductFileCount ?? 0,
 			directly_seeded_product_file_count: input.directlySeededProductFileCount ?? 0,

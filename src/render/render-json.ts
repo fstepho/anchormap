@@ -75,6 +75,8 @@ function renderTraceabilitySummary(summary: TraceabilitySummaryView): string {
 		["stored_mapping_count", renderNumber(summary.stored_mapping_count)],
 		["usable_mapping_count", renderNumber(summary.usable_mapping_count)],
 		["observed_anchor_count", renderNumber(summary.observed_anchor_count)],
+		["active_anchor_count", renderNumber(summary.active_anchor_count)],
+		["draft_anchor_count", renderNumber(summary.draft_anchor_count)],
 		["covered_product_file_count", renderNumber(summary.covered_product_file_count)],
 		["uncovered_product_file_count", renderNumber(summary.uncovered_product_file_count)],
 		[

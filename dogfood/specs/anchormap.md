@@ -76,3 +76,45 @@ Authority: `docs/evals.md` Gates A-G; `docs/release-runbook.md`; `docs/adr/0009-
 Non-normative dogfood trace spec.
 
 Authority: `docs/operating-model.md`; `docs/agent-loop.md`; `docs/code-review.md`.
+
+## CLI.COMMANDS.RUN_ANCHORMAP - CLI command dispatch
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§9.2-9.4, 12; `docs/design.md` §§5.6, 9.5.
+
+## DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE - Scan state assembly
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§6.11-6.12, 9.3, 13; `docs/design.md` §§5.5, 7.5-7.6.1.
+
+## DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE - Observed anchor state model
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§6.11, 13.3; `docs/design.md` §§5.5, 7.5.
+
+## INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN - Scaffold draft construction
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §9.4; `docs/design.md` §§4.4, 5.5.1.
+
+## INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY - Scaffold create-only write boundary
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§9.4, 12; `docs/design.md` §§4.4, 5.5.1, 8.
+
+## INFRA.SPEC_INDEX.BUILD_SPEC_INDEX - Active and draft spec index
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §8; `docs/design.md` §§5.3, 7.2.
+
+## RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON - Canonical scan JSON rendering
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§13.3-13.7; `docs/design.md` §§5.7, 6.5.

@@ -1,3 +1,5 @@
+<!-- anchormap: draft -->
+
 # COLLISION.FOO_BAR.VARIABLE
 <!-- anchormap scaffold: source=src/collision.ts export=fooBar kind=variable -->
 

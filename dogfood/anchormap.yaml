@@ -7,10 +7,19 @@ mappings:
     seed_files:
       - 'src/anchormap.ts'
       - 'src/cli/command-args.ts'
+  'CLI.COMMANDS.RUN_ANCHORMAP':
+    seed_files:
+      - 'src/cli/commands.ts'
   'CONFIG.YAML_STATE':
     seed_files:
       - 'src/infra/repo-fs.ts'
       - 'src/infra/repo-fs.test.ts'
+  'DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE':
+    seed_files:
+      - 'src/domain/scan-engine.ts'
+  'DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE':
+    seed_files:
+      - 'src/domain/scan-result.ts'
   'GRAPH.LOCAL_TS_REACHABILITY':
     seed_files:
       - 'src/domain/repo-path.test.ts'
@@ -26,7 +35,19 @@ mappings:
       - 'src/harness/fixture-run-artifacts.test.ts'
       - 'src/harness/fixture-runner.ts'
       - 'src/harness/fixture-sandbox.test.ts'
+  'INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN':
+    seed_files:
+      - 'src/infra/scaffold.ts'
+  'INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY':
+    seed_files:
+      - 'src/infra/scaffold.ts'
+  'INFRA.SPEC_INDEX.BUILD_SPEC_INDEX':
+    seed_files:
+      - 'src/infra/spec-index.ts'
   'RENDER.JSON_CANONICAL':
+    seed_files:
+      - 'src/render/render-json.ts'
+  'RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON':
     seed_files:
       - 'src/render/render-json.ts'
   'SCAN.COVERAGE_FINDINGS':

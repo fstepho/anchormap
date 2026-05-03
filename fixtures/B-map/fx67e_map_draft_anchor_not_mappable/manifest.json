@@ -1,0 +1,27 @@
+{
+	"id": "fx67e_map_draft_anchor_not_mappable",
+	"family": "B-map",
+	"purpose": "map with an anchor present only in a draft spec exits 4 and preserves anchormap.yaml.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"DRAFT.ONLY.ANCHOR",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "specs", "precondition", "draft"],
+	"groups": ["m14"]
+}

@@ -1326,7 +1326,7 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 2,
+		schema_version: 3,
 		config: {
 			version: 1,
 			product_root: "src",
@@ -1359,6 +1359,8 @@ mappings:
 				stored_mapping_count: 1,
 				usable_mapping_count: 1,
 				observed_anchor_count: 1,
+				active_anchor_count: 1,
+				draft_anchor_count: 0,
 				covered_product_file_count: 1,
 				uncovered_product_file_count: 0,
 				directly_seeded_product_file_count: 1,
@@ -1545,7 +1547,7 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 2,
+		schema_version: 3,
 		config: {
 			version: 1,
 			product_root: "src",
@@ -1578,6 +1580,8 @@ mappings:
 				stored_mapping_count: 1,
 				usable_mapping_count: 1,
 				observed_anchor_count: 1,
+				active_anchor_count: 1,
+				draft_anchor_count: 0,
 				covered_product_file_count: 1,
 				uncovered_product_file_count: 0,
 				directly_seeded_product_file_count: 1,

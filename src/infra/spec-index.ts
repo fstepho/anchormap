@@ -43,6 +43,7 @@ interface CommonmarkWalkerEvent {
 const commonmark = require("commonmark") as CommonmarkModule;
 
 export type SpecSourceKind = "markdown" | "yaml";
+export type SpecAnchorStatus = "active" | "draft";
 
 export interface SpecFile {
 	readonly path: RepoPath;
@@ -54,11 +55,14 @@ export interface SpecAnchorOccurrence {
 	readonly anchorId: AnchorId;
 	readonly specPath: RepoPath;
 	readonly sourceKind: SpecSourceKind;
+	readonly status: SpecAnchorStatus;
 }
 
 export interface SpecIndex {
 	readonly specFiles: readonly SpecFile[];
 	readonly observedAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
+	readonly activeAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
+	readonly draftAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
 	readonly anchorOccurrences: readonly SpecAnchorOccurrence[];
 }
 
@@ -96,6 +100,7 @@ const SPEC_EXTENSIONS = new Map<string, SpecSourceKind>([
 	[".yaml", "yaml"],
 ]);
 
+const DRAFT_MARKER = "<!-- anchormap: draft -->";
 const ANCHOR_PREFIX_PATTERN = new RegExp(`^(?:${ANCHOR_ID_PATTERN_SOURCE})(?=$|[ :-])`);
 
 const nodeSpecIndexFs: SpecIndexFs = {
@@ -112,7 +117,6 @@ export function buildSpecIndex(
 	const fs = options.fs ?? nodeSpecIndexFs;
 	const files: SpecFile[] = [];
 	const anchorOccurrences: SpecAnchorOccurrence[] = [];
-	const observedAnchors = new Map<AnchorId, SpecAnchorOccurrence>();
 	const seenLowercasePaths = options.inspectedPathCaseIndex ?? new Map<string, RepoPath>();
 
 	for (const specRoot of config.specRoots) {
@@ -131,43 +135,65 @@ export function buildSpecIndex(
 			if (extracted.kind === "error") {
 				return extracted;
 			}
-			for (const occurrence of extracted.occurrences) {
-				const inserted = insertObservedAnchor(observedAnchors, occurrence);
-				if (inserted.kind === "error") {
-					return inserted;
-				}
-				anchorOccurrences.push(occurrence);
-			}
+			anchorOccurrences.push(...extracted.occurrences);
 		}
 	}
 
 	const sortedAnchorOccurrences = anchorOccurrences.sort(compareSpecAnchorOccurrences);
+	const indexedAnchors = indexAnchorOccurrences(sortedAnchorOccurrences);
+	if (indexedAnchors.kind === "error") {
+		return indexedAnchors;
+	}
 
 	return {
 		kind: "ok",
 		specIndex: {
 			specFiles: files.sort((left, right) => compareRepoPathsByUtf8(left.path, right.path)),
-			observedAnchors: new Map(
-				sortedAnchorOccurrences.map((occurrence) => [occurrence.anchorId, occurrence]),
-			),
+			observedAnchors: indexedAnchors.observedAnchors,
+			activeAnchors: indexedAnchors.activeAnchors,
+			draftAnchors: indexedAnchors.draftAnchors,
 			anchorOccurrences: sortedAnchorOccurrences,
 		},
 	};
 }
 
-function insertObservedAnchor(
-	observedAnchors: Map<AnchorId, SpecAnchorOccurrence>,
-	occurrence: SpecAnchorOccurrence,
-): { kind: "ok" } | { kind: "error"; error: SpecIndexError } {
-	const existing = observedAnchors.get(occurrence.anchorId);
-	if (existing !== undefined) {
-		return specUnsupportedError(
-			`duplicate spec anchor ${occurrence.anchorId} in ${existing.specPath} and ${occurrence.specPath}`,
-		);
+function indexAnchorOccurrences(occurrences: readonly SpecAnchorOccurrence[]):
+	| {
+			kind: "ok";
+			observedAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
+			activeAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
+			draftAnchors: ReadonlyMap<AnchorId, SpecAnchorOccurrence>;
+	  }
+	| { kind: "error"; error: SpecIndexError } {
+	const activeAnchors = new Map<AnchorId, SpecAnchorOccurrence>();
+	const draftAnchors = new Map<AnchorId, SpecAnchorOccurrence>();
+
+	for (const occurrence of occurrences) {
+		if (occurrence.status === "draft") {
+			if (!draftAnchors.has(occurrence.anchorId)) {
+				draftAnchors.set(occurrence.anchorId, occurrence);
+			}
+			continue;
+		}
+
+		const existing = activeAnchors.get(occurrence.anchorId);
+		if (existing !== undefined) {
+			return specUnsupportedError(
+				`duplicate spec anchor ${occurrence.anchorId} in ${existing.specPath} and ${occurrence.specPath}`,
+			);
+		}
+
+		activeAnchors.set(occurrence.anchorId, occurrence);
 	}
 
-	observedAnchors.set(occurrence.anchorId, occurrence);
-	return { kind: "ok" };
+	const observedAnchors = new Map(activeAnchors);
+	for (const [anchorId, occurrence] of draftAnchors) {
+		if (!observedAnchors.has(anchorId)) {
+			observedAnchors.set(anchorId, occurrence);
+		}
+	}
+
+	return { kind: "ok", observedAnchors, activeAnchors, draftAnchors };
 }
 
 function extractSpecAnchorOccurrences(
@@ -184,6 +210,7 @@ function extractSpecAnchorOccurrences(
 
 function extractMarkdownAnchorOccurrences(file: SpecFile): readonly SpecAnchorOccurrence[] {
 	const sourceLines = splitMarkdownSourceLines(file.text);
+	const status: SpecAnchorStatus = isDraftMarkdownSpecFile(sourceLines) ? "draft" : "active";
 	const document = new commonmark.Parser({ smart: false }).parse(file.text);
 	const walker = document.walker();
 	const occurrences: SpecAnchorOccurrence[] = [];
@@ -210,11 +237,23 @@ function extractMarkdownAnchorOccurrences(file: SpecFile): readonly SpecAnchorOc
 			anchorId,
 			specPath: file.path,
 			sourceKind: "markdown",
+			status,
 		});
 		event = walker.next();
 	}
 
 	return occurrences;
+}
+
+function isDraftMarkdownSpecFile(sourceLines: readonly string[]): boolean {
+	for (const line of sourceLines) {
+		if (line.trim() === "") {
+			continue;
+		}
+		return line === DRAFT_MARKER;
+	}
+
+	return false;
 }
 
 function splitMarkdownSourceLines(text: string): readonly string[] {
@@ -295,6 +334,7 @@ function extractYamlAnchorOccurrences(
 				anchorId: id,
 				specPath: file.path,
 				sourceKind: "yaml",
+				status: "active",
 			},
 		],
 	};

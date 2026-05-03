@@ -16,7 +16,7 @@ export interface ConfigView {
 	readonly ignore_roots: readonly RepoPath[];
 }
 
-export type ObservedAnchorMappingState = "absent" | "usable" | "invalid";
+export type ObservedAnchorMappingState = "absent" | "usable" | "invalid" | "draft";
 
 export interface ObservedAnchorView {
 	readonly spec_path: RepoPath;
@@ -41,6 +41,8 @@ export interface TraceabilitySummaryView {
 	readonly stored_mapping_count: number;
 	readonly usable_mapping_count: number;
 	readonly observed_anchor_count: number;
+	readonly active_anchor_count: number;
+	readonly draft_anchor_count: number;
 	readonly covered_product_file_count: number;
 	readonly uncovered_product_file_count: number;
 	readonly directly_seeded_product_file_count: number;
@@ -68,7 +70,7 @@ export type FilesView = Readonly<Record<RepoPath, FileView>>;
 export type FindingsView = readonly Finding[];
 
 export interface ScanResultView {
-	readonly schema_version: 2;
+	readonly schema_version: 3;
 	readonly config: ConfigView;
 	readonly analysis_health: AnalysisHealth;
 	readonly observed_anchors: ObservedAnchorsView;
@@ -157,7 +159,7 @@ export function createScanResultView<const Input extends ScanResultViewFields>(
 	fields: NoExtraFields<Input, ScanResultViewFields>,
 ): ScanResultView {
 	return {
-		schema_version: 2,
+		schema_version: 3,
 		config: fields.config,
 		analysis_health: analysisHealth(fields.findings),
 		observed_anchors: sortRecordByUtf8Key(fields.observed_anchors),

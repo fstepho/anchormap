@@ -1,7 +1,7 @@
 {
 	"id": "fx81_scaffold_generated_anchor_collision",
 	"family": "B-scaffold",
-	"purpose": "scaffold writes deterministic Markdown when two same-kind exports produce the same generated base anchor.",
+	"purpose": "scaffold writes deterministic draft Markdown when two same-kind exports produce the same generated base anchor.",
 	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
 	"cwd": ".",
 	"exit_code": 0,

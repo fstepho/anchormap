@@ -38,6 +38,7 @@ export interface ScanEngineInput {
 
 export function runScanEngine(input: ScanEngineInput): ScanResultView {
 	const observedAnchorIds = new Set(input.specIndex.observedAnchors.keys());
+	const activeAnchorIds = new Set(input.specIndex.activeAnchors.keys());
 	const productFiles = new Set(input.productGraph.productFiles);
 	const usableMappingIds = new Set<AnchorId>();
 	const invalidMappingIds = new Set<AnchorId>();
@@ -49,7 +50,7 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 			let state: StoredMappingState;
 			let invalidSeedFiles: readonly RepoPath[] = [];
 
-			if (!observedAnchorIds.has(anchorId)) {
+			if (!activeAnchorIds.has(anchorId)) {
 				state = "stale";
 				mappingFindings.push(createStaleMappingAnchorFinding({ anchor_id: anchorId }));
 			} else {
@@ -91,11 +92,14 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 	const coveringAnchorIdsByFile = buildCoveringAnchorIdsByFile(reachedFilesByMapping);
 	const observed_anchors = Object.fromEntries(
 		sortedObservedAnchorEntries(input.specIndex.observedAnchors).map(([anchorId, anchor]) => {
-			const mapping_state = usableMappingIds.has(anchorId)
-				? "usable"
-				: invalidMappingIds.has(anchorId)
-					? "invalid"
-					: "absent";
+			const mapping_state =
+				anchor.status === "draft"
+					? "draft"
+					: usableMappingIds.has(anchorId)
+						? "usable"
+						: invalidMappingIds.has(anchorId)
+							? "invalid"
+							: "absent";
 
 			if (mapping_state === "absent") {
 				mappingFindings.push(createUnmappedAnchorFinding({ anchor_id: anchorId }));
@@ -122,6 +126,7 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 	const traceability_metrics = buildTraceabilityMetrics({
 		config: input.config,
 		observedAnchorIds,
+		activeAnchorIds,
 		stored_mappings,
 		files,
 		reachedFilesByMapping,
@@ -132,7 +137,7 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 		...untracedProductFileFindings({
 			baseFindings,
 			files,
-			observedAnchorIds,
+			activeAnchorIds,
 			usableMappingIds,
 		}),
 	]);
@@ -154,6 +159,7 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 function buildTraceabilityMetrics(input: {
 	readonly config: Config;
 	readonly observedAnchorIds: ReadonlySet<AnchorId>;
+	readonly activeAnchorIds: ReadonlySet<AnchorId>;
 	readonly stored_mappings: StoredMappingsView;
 	readonly files: FilesView;
 	readonly reachedFilesByMapping: ReadonlyMap<AnchorId, readonly RepoPath[]>;
@@ -242,6 +248,7 @@ function buildTraceabilityMetrics(input: {
 	);
 
 	const productFileCount = Object.keys(input.files).length;
+	const activeAnchorCount = input.activeAnchorIds.size;
 
 	return createTraceabilityMetricsView({
 		summary: {
@@ -251,6 +258,8 @@ function buildTraceabilityMetrics(input: {
 				(storedMapping) => storedMapping.state === "usable",
 			).length,
 			observed_anchor_count: input.observedAnchorIds.size,
+			active_anchor_count: activeAnchorCount,
+			draft_anchor_count: input.observedAnchorIds.size - activeAnchorCount,
 			covered_product_file_count: coveredProductFileCount,
 			uncovered_product_file_count: productFileCount - coveredProductFileCount,
 			directly_seeded_product_file_count: directlySeededFiles.size,
@@ -264,14 +273,14 @@ function buildTraceabilityMetrics(input: {
 function untracedProductFileFindings(input: {
 	readonly baseFindings: readonly Finding[];
 	readonly files: ScanResultView["files"];
-	readonly observedAnchorIds: ReadonlySet<AnchorId>;
+	readonly activeAnchorIds: ReadonlySet<AnchorId>;
 	readonly usableMappingIds: ReadonlySet<AnchorId>;
 }): Finding[] {
 	if (analysisHealth(input.baseFindings) === "degraded" || input.usableMappingIds.size === 0) {
 		return [];
 	}
 
-	for (const anchorId of input.observedAnchorIds) {
+	for (const anchorId of input.activeAnchorIds) {
 		if (!input.usableMappingIds.has(anchorId)) {
 			return [];
 		}

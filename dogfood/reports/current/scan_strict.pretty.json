@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -14,7 +14,19 @@
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
     },
+    "CLI.COMMANDS.RUN_ANCHORMAP": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
     "CONFIG.YAML_STATE": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
+    "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
+    "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE": {
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
     },
@@ -26,7 +38,23 @@
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
     },
+    "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
+    "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
+    "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
     "RENDER.JSON_CANONICAL": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
+    "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON": {
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
     },
@@ -80,6 +108,31 @@
         "src/infra/config-yaml-render.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
+    "CLI.COMMANDS.RUN_ANCHORMAP": {
+      "state": "usable",
+      "seed_files": [
+        "src/cli/commands.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -105,9 +158,47 @@
         "src/infra/product-files.ts",
         "src/infra/repo-fs.test.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
+      ]
+    },
+    "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE": {
+      "state": "usable",
+      "seed_files": [
+        "src/domain/scan-engine.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
+    "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE": {
+      "state": "usable",
+      "seed_files": [
+        "src/domain/scan-result.ts"
+      ],
+      "reached_files": [
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-result.ts"
       ]
     },
     "GRAPH.LOCAL_TS_REACHABILITY": {
@@ -130,6 +221,7 @@
         "src/infra/config-yaml-render.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -166,7 +258,93 @@
         "src/harness/fixture-sandbox.ts"
       ]
     },
+    "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN": {
+      "state": "usable",
+      "seed_files": [
+        "src/infra/scaffold.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
+    "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY": {
+      "state": "usable",
+      "seed_files": [
+        "src/infra/scaffold.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
+    "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX": {
+      "state": "usable",
+      "seed_files": [
+        "src/infra/spec-index.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
     "RENDER.JSON_CANONICAL": {
+      "state": "usable",
+      "seed_files": [
+        "src/render/render-json.ts"
+      ],
+      "reached_files": [
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-result.ts",
+        "src/render/render-json.ts"
+      ]
+    },
+    "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON": {
       "state": "usable",
       "seed_files": [
         "src/render/render-json.ts"
@@ -205,6 +383,7 @@
         "src/infra/config-yaml-render.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -233,6 +412,7 @@
         "src/infra/config-yaml-render.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -351,8 +531,13 @@
     "src/cli/command-args.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -368,8 +553,13 @@
     "src/cli/commands.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -381,6 +571,7 @@
         "src/infra/config-io.ts",
         "src/infra/product-files.ts",
         "src/infra/repo-fs.ts",
+        "src/infra/scaffold.ts",
         "src/infra/spec-index.ts",
         "src/infra/ts-graph.ts",
         "src/render/render-json.ts"
@@ -397,9 +588,16 @@
     "src/domain/anchor-id.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "SPEC.ANCHOR_DISCOVERY",
@@ -410,9 +608,16 @@
     "src/domain/canonical-order.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
@@ -436,9 +641,16 @@
     "src/domain/finding.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
@@ -460,9 +672,16 @@
     "src/domain/repo-path.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
@@ -487,8 +706,13 @@
     "src/domain/scan-engine.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -518,9 +742,16 @@
     "src/domain/scan-result.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
@@ -757,8 +988,13 @@
     "src/infra/config-io.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -774,8 +1010,13 @@
     "src/infra/config-yaml-render.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -796,8 +1037,13 @@
     "src/infra/product-files.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -818,13 +1064,53 @@
     "src/infra/repo-fs.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/repo-path.ts"
+      ]
+    },
+    "src/infra/scaffold.test.ts": {
+      "covering_anchor_ids": [],
+      "supported_local_targets": [
+        "src/domain/anchor-id.ts",
+        "src/domain/repo-path.ts",
+        "src/infra/config-io.ts",
+        "src/infra/scaffold.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts"
+      ]
+    },
+    "src/infra/scaffold.ts": {
+      "covering_anchor_ids": [
+        "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
+        "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
+        "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
+      ],
+      "supported_local_targets": [
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/repo-path.ts",
+        "src/infra/config-io.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts"
       ]
     },
     "src/infra/spec-index.test.ts": {
@@ -839,8 +1125,13 @@
     "src/infra/spec-index.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -863,8 +1154,13 @@
     "src/infra/ts-graph.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS"
       ],
@@ -902,9 +1198,15 @@
     "src/render/render-json.ts": {
       "covering_anchor_ids": [
         "CLI.COMMANDS",
+        "CLI.COMMANDS.RUN_ANCHORMAP",
         "CONFIG.YAML_STATE",
+        "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE",
         "GRAPH.LOCAL_TS_REACHABILITY",
+        "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN",
+        "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY",
+        "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX",
         "RENDER.JSON_CANONICAL",
+        "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON",
         "SCAN.COVERAGE_FINDINGS",
         "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
@@ -923,40 +1225,66 @@
   },
   "traceability_metrics": {
     "summary": {
-      "product_file_count": 58,
-      "stored_mapping_count": 12,
-      "usable_mapping_count": 12,
-      "observed_anchor_count": 12,
-      "covered_product_file_count": 49,
-      "uncovered_product_file_count": 9,
-      "directly_seeded_product_file_count": 35,
+      "product_file_count": 60,
+      "stored_mapping_count": 19,
+      "usable_mapping_count": 19,
+      "observed_anchor_count": 19,
+      "active_anchor_count": 19,
+      "draft_anchor_count": 0,
+      "covered_product_file_count": 50,
+      "uncovered_product_file_count": 10,
+      "directly_seeded_product_file_count": 38,
       "single_cover_product_file_count": 23,
-      "multi_cover_product_file_count": 26
+      "multi_cover_product_file_count": 27
     },
     "anchors": {
       "CLI.COMMANDS": {
         "seed_file_count": 2,
         "direct_seed_file_count": 2,
-        "reached_file_count": 16,
-        "transitive_reached_file_count": 14,
+        "reached_file_count": 17,
+        "transitive_reached_file_count": 15,
         "unique_reached_file_count": 1,
-        "shared_reached_file_count": 15
+        "shared_reached_file_count": 16
+      },
+      "CLI.COMMANDS.RUN_ANCHORMAP": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 15,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 16
       },
       "CONFIG.YAML_STATE": {
         "seed_file_count": 2,
         "direct_seed_file_count": 2,
-        "reached_file_count": 16,
-        "transitive_reached_file_count": 14,
+        "reached_file_count": 17,
+        "transitive_reached_file_count": 15,
         "unique_reached_file_count": 1,
-        "shared_reached_file_count": 15
+        "shared_reached_file_count": 16
+      },
+      "DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 15,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 16
+      },
+      "DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 5,
+        "transitive_reached_file_count": 4,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 5
       },
       "GRAPH.LOCAL_TS_REACHABILITY": {
         "seed_file_count": 2,
         "direct_seed_file_count": 2,
-        "reached_file_count": 16,
-        "transitive_reached_file_count": 14,
+        "reached_file_count": 17,
+        "transitive_reached_file_count": 15,
         "unique_reached_file_count": 1,
-        "shared_reached_file_count": 15
+        "shared_reached_file_count": 16
       },
       "HARNESS.FIXTURE_ORACLES": {
         "seed_file_count": 9,
@@ -966,7 +1294,39 @@
         "unique_reached_file_count": 6,
         "shared_reached_file_count": 9
       },
+      "INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 15,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 16
+      },
+      "INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 15,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 16
+      },
+      "INFRA.SPEC_INDEX.BUILD_SPEC_INDEX": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 15,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 16
+      },
       "RENDER.JSON_CANONICAL": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 6,
+        "transitive_reached_file_count": 5,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 6
+      },
+      "RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON": {
         "seed_file_count": 1,
         "direct_seed_file_count": 1,
         "reached_file_count": 6,
@@ -977,18 +1337,18 @@
       "SCAN.COVERAGE_FINDINGS": {
         "seed_file_count": 5,
         "direct_seed_file_count": 5,
-        "reached_file_count": 18,
-        "transitive_reached_file_count": 13,
+        "reached_file_count": 19,
+        "transitive_reached_file_count": 14,
         "unique_reached_file_count": 1,
-        "shared_reached_file_count": 17
+        "shared_reached_file_count": 18
       },
       "SCAN.TRACEABILITY_METRICS": {
         "seed_file_count": 4,
         "direct_seed_file_count": 4,
-        "reached_file_count": 17,
-        "transitive_reached_file_count": 13,
+        "reached_file_count": 18,
+        "transitive_reached_file_count": 14,
         "unique_reached_file_count": 0,
-        "shared_reached_file_count": 17
+        "shared_reached_file_count": 18
       },
       "SPEC.ANCHOR_DISCOVERY": {
         "seed_file_count": 1,
@@ -1060,6 +1420,10 @@
     {
       "kind": "untraced_product_file",
       "path": "src/infra/product-files.test.ts"
+    },
+    {
+      "kind": "untraced_product_file",
+      "path": "src/infra/scaffold.test.ts"
     },
     {
       "kind": "untraced_product_file",

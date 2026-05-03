@@ -1,7 +1,7 @@
 {
 	"id": "fx77_scaffold_success_minimal",
 	"family": "B-scaffold",
-	"purpose": "scaffold writes deterministic Markdown from public TypeScript exports without mutating anchormap.yaml.",
+	"purpose": "scaffold writes deterministic draft Markdown from public TypeScript exports without mutating anchormap.yaml.",
 	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
 	"cwd": ".",
 	"exit_code": 0,

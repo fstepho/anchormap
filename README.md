@@ -16,17 +16,17 @@ AnchorMap is distributed as the public npm package `anchormap`.
 npm install -g anchormap
 ```
 
-The installed command is `anchormap`. The v1.0 support matrix is:
+The installed command is `anchormap`. The current support matrix is:
 
 - Linux x86_64
 - macOS arm64
 - Node.js 22 or newer
 
-Other platforms are outside the v1.0 contract.
+Other platforms are outside the supported release contract.
 
 ## Supported Repository Shape
 
-AnchorMap v1.0 is intentionally narrow:
+AnchorMap is intentionally narrow:
 
 - one repository root, which is the current working directory where the command
   starts;
@@ -36,7 +36,7 @@ AnchorMap v1.0 is intentionally narrow:
 - supported local graph edges come from static TypeScript `import` and `export`
   declarations with relative string-literal specifiers.
 
-The following are outside the v1.0 support boundary: monorepos, JavaScript
+The following are outside the current support boundary: monorepos, JavaScript
 product files, TSX product files, declaration files as product files, TypeScript
 path aliases, package specifier resolution, dynamic imports, `require`, and
 repository-wide inference beyond the configured roots.
@@ -114,7 +114,7 @@ Formatted for readability, the example above reports:
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -151,6 +151,8 @@ Formatted for readability, the example above reports:
       "stored_mapping_count": 1,
       "usable_mapping_count": 1,
       "observed_anchor_count": 1,
+      "active_anchor_count": 1,
+      "draft_anchor_count": 0,
       "covered_product_file_count": 2,
       "uncovered_product_file_count": 0,
       "directly_seeded_product_file_count": 1,
@@ -172,20 +174,42 @@ Formatted for readability, the example above reports:
 }
 ```
 
+## Scaffold Draft Specs
+
+For an existing TypeScript repo, `scaffold` can create a draft Markdown spec
+from public TypeScript exports:
+
+```sh
+anchormap scaffold --output .specify/specs/scaffold.generated.md
+```
+
+The generated file starts with:
+
+```md
+<!-- anchormap: draft -->
+```
+
+Draft anchors are visible in `scan --json` with `mapping_state: "draft"`, but
+they do not emit `unmapped_anchor` findings and they cannot be mapped. To
+promote an anchor, add the human intent, remove the draft marker from the file
+or move the selected anchor to an active spec file, then run `anchormap map`.
+
 ## Commands
 
-AnchorMap exposes exactly three commands:
+AnchorMap exposes exactly four commands:
 
 - `anchormap init --root <path> --spec-root <path> [--spec-root <path> ...] [--ignore-root <path> ...]`
 - `anchormap map --anchor <anchor_id> --seed <path> [--seed <path> ...] [--replace]`
 - `anchormap scan [--json]`
+- `anchormap scaffold --output <path>`
 
 `init` creates `./anchormap.yaml` once. `map` creates or replaces explicit human
 mappings in `./anchormap.yaml`. `scan` reads `./anchormap.yaml` and the
-configured repository inputs; it never writes to disk.
+configured repository inputs; it never writes to disk. `scaffold` creates one
+draft Markdown file and never mutates `./anchormap.yaml`.
 
-Human-readable terminal output is not a stable contract in v1.0. Use
-`scan --json` for the guaranteed machine interface.
+Human-readable terminal output is not a stable contract. Use `scan --json` for
+the guaranteed machine interface.
 
 ## Exit Codes
 
@@ -219,4 +243,5 @@ mean dead code, and it does not authorize removing the file.
 `analysis_health = clean` means no degrading findings were emitted. It does not
 mean every product file is mapped.
 
-For the full machine contract, see `docs/contract.md`.
+For the full machine contract, see the
+[repository contract](https://github.com/fstepho/anchormap/blob/main/docs/contract.md).

@@ -114,6 +114,8 @@ test("accumulates sorted covering anchor ids for overlapping closures", () => {
 		stored_mapping_count: 2,
 		usable_mapping_count: 2,
 		observed_anchor_count: 2,
+		active_anchor_count: 2,
+		draft_anchor_count: 0,
 		covered_product_file_count: 3,
 		uncovered_product_file_count: 0,
 		directly_seeded_product_file_count: 2,
@@ -321,12 +323,92 @@ test("emits untraced_product_file for uncovered product files in otherwise clean
 		stored_mapping_count: 1,
 		usable_mapping_count: 1,
 		observed_anchor_count: 1,
+		active_anchor_count: 1,
+		draft_anchor_count: 0,
 		covered_product_file_count: 1,
 		uncovered_product_file_count: 1,
 		directly_seeded_product_file_count: 1,
 		single_cover_product_file_count: 1,
 		multi_cover_product_file_count: 0,
 	});
+});
+
+test("renders draft-only observed anchors without unmapped findings", () => {
+	const result = runScanEngine({
+		config: minimalConfig(),
+		specIndex: specIndexWithAnchors([draftAnchor("DRAFT.ONLY.ANCHOR")]),
+		productGraph: minimalProductGraph(),
+	});
+
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.observed_anchors[anchorId("DRAFT.ONLY.ANCHOR")], {
+		spec_path: repoPath("specs/scaffold.generated.md"),
+		mapping_state: "draft",
+	});
+	assert.deepEqual(result.findings, []);
+	assert.deepEqual(result.traceability_metrics.summary, {
+		product_file_count: 1,
+		stored_mapping_count: 0,
+		usable_mapping_count: 0,
+		observed_anchor_count: 1,
+		active_anchor_count: 0,
+		draft_anchor_count: 1,
+		covered_product_file_count: 0,
+		uncovered_product_file_count: 1,
+		directly_seeded_product_file_count: 0,
+		single_cover_product_file_count: 0,
+		multi_cover_product_file_count: 0,
+	});
+});
+
+test("treats mappings to draft-only anchors as stale", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("DRAFT.ONLY.ANCHOR")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([draftAnchor("DRAFT.ONLY.ANCHOR")]),
+		productGraph: minimalProductGraph(),
+	});
+
+	assert.equal(result.analysis_health, "degraded");
+	assert.deepEqual(result.observed_anchors[anchorId("DRAFT.ONLY.ANCHOR")], {
+		spec_path: repoPath("specs/scaffold.generated.md"),
+		mapping_state: "draft",
+	});
+	assert.deepEqual(result.stored_mappings[anchorId("DRAFT.ONLY.ANCHOR")], {
+		state: "stale",
+		seed_files: [repoPath("src/index.ts")],
+		reached_files: [],
+	});
+	assert.deepEqual(result.findings, [
+		{
+			kind: "stale_mapping_anchor",
+			anchor_id: anchorId("DRAFT.ONLY.ANCHOR"),
+		},
+	]);
+});
+
+test("draft anchors do not suppress untraced_product_file when active anchors are mapped", () => {
+	const result = runScanEngine({
+		config: configWithMappings({
+			[anchorId("FR-014")]: {
+				seedFiles: [repoPath("src/index.ts")],
+			},
+		}),
+		specIndex: specIndexWithAnchors([observedAnchor("FR-014"), draftAnchor("DRAFT.ONLY.ANCHOR")]),
+		productGraph: productGraphWithFiles([repoPath("src/index.ts"), repoPath("src/unused.ts")]),
+	});
+
+	assert.equal(result.analysis_health, "clean");
+	assert.deepEqual(result.observed_anchors[anchorId("DRAFT.ONLY.ANCHOR")].mapping_state, "draft");
+	assert.deepEqual(result.findings, [
+		{
+			kind: "untraced_product_file",
+			path: repoPath("src/unused.ts"),
+		},
+	]);
 });
 
 test("suppresses untraced_product_file when any observed anchor is unmapped", () => {
@@ -390,10 +472,31 @@ function minimalConfig(): Config {
 	};
 }
 
-function specIndexWithAnchors(anchors: readonly ReturnType<typeof observedAnchor>[]): SpecIndex {
+type TestObservedAnchor = ReturnType<typeof observedAnchor> | ReturnType<typeof draftAnchor>;
+
+function specIndexWithAnchors(anchors: readonly TestObservedAnchor[]): SpecIndex {
+	const activeAnchors: Map<AnchorId, TestObservedAnchor> = new Map(
+		anchors
+			.filter((anchor) => anchor.status === "active")
+			.map((anchor) => [anchor.anchorId, anchor]),
+	);
+	const draftAnchors: Map<AnchorId, TestObservedAnchor> = new Map(
+		anchors
+			.filter((anchor) => anchor.status === "draft")
+			.map((anchor) => [anchor.anchorId, anchor]),
+	);
+	const observedAnchors: Map<AnchorId, TestObservedAnchor> = new Map(activeAnchors);
+	for (const [anchorId, anchor] of draftAnchors) {
+		if (!observedAnchors.has(anchorId)) {
+			observedAnchors.set(anchorId, anchor);
+		}
+	}
+
 	return {
 		specFiles: [],
-		observedAnchors: new Map(anchors.map((anchor) => [anchor.anchorId, anchor])),
+		observedAnchors,
+		activeAnchors,
+		draftAnchors,
 		anchorOccurrences: anchors,
 	};
 }
@@ -402,11 +505,27 @@ function observedAnchor(value: string): {
 	readonly anchorId: AnchorId;
 	readonly specPath: RepoPath;
 	readonly sourceKind: "markdown";
+	readonly status: "active";
 } {
 	return {
 		anchorId: anchorId(value),
 		specPath: repoPath("specs/requirements.md"),
 		sourceKind: "markdown",
+		status: "active",
+	};
+}
+
+function draftAnchor(value: string): {
+	readonly anchorId: AnchorId;
+	readonly specPath: RepoPath;
+	readonly sourceKind: "markdown";
+	readonly status: "draft";
+} {
+	return {
+		anchorId: anchorId(value),
+		specPath: repoPath("specs/scaffold.generated.md"),
+		sourceKind: "markdown",
+		status: "draft",
 	};
 }
 

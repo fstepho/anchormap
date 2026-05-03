@@ -1,88 +1,92 @@
 {
   "strict": {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "analysisHealth": "clean",
     "traceabilitySummary": {
-      "product_file_count": 58,
-      "stored_mapping_count": 12,
-      "usable_mapping_count": 12,
-      "observed_anchor_count": 12,
-      "covered_product_file_count": 49,
-      "uncovered_product_file_count": 9,
-      "directly_seeded_product_file_count": 35,
+      "product_file_count": 60,
+      "stored_mapping_count": 19,
+      "usable_mapping_count": 19,
+      "observed_anchor_count": 19,
+      "active_anchor_count": 19,
+      "draft_anchor_count": 0,
+      "covered_product_file_count": 50,
+      "uncovered_product_file_count": 10,
+      "directly_seeded_product_file_count": 38,
       "single_cover_product_file_count": 23,
-      "multi_cover_product_file_count": 26
+      "multi_cover_product_file_count": 27
     },
-    "observedAnchors": 12,
-    "storedMappings": 12,
-    "covered": 49,
-    "uncovered": 9,
+    "observedAnchors": 19,
+    "storedMappings": 19,
+    "covered": 50,
+    "uncovered": 10,
     "findingKinds": {
-      "untraced_product_file": 9
+      "untraced_product_file": 10
     },
     "topCovered": [
       [
         "src/domain/anchor-id.ts",
-        8
+        15
       ],
       [
         "src/domain/canonical-order.ts",
-        7
+        14
       ],
       [
         "src/domain/finding.ts",
-        7
+        14
       ],
       [
         "src/domain/repo-path.ts",
-        7
+        14
       ],
       [
         "src/domain/scan-result.ts",
-        7
+        14
       ],
       [
         "src/render/render-json.ts",
-        7
+        13
       ],
       [
         "src/cli/command-args.ts",
-        5
+        10
       ],
       [
         "src/cli/commands.ts",
-        5
+        10
       ],
       [
         "src/domain/scan-engine.ts",
-        5
+        10
       ],
       [
         "src/infra/config-io.ts",
-        5
+        10
       ]
     ]
   },
   "exploratory": {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "analysisHealth": "clean",
     "traceabilitySummary": {
-      "product_file_count": 58,
+      "product_file_count": 60,
       "stored_mapping_count": 0,
       "usable_mapping_count": 0,
-      "observed_anchor_count": 121,
+      "observed_anchor_count": 126,
+      "active_anchor_count": 126,
+      "draft_anchor_count": 0,
       "covered_product_file_count": 0,
-      "uncovered_product_file_count": 58,
+      "uncovered_product_file_count": 60,
       "directly_seeded_product_file_count": 0,
       "single_cover_product_file_count": 0,
       "multi_cover_product_file_count": 0
     },
-    "observedAnchors": 121,
+    "observedAnchors": 126,
     "storedMappings": 0,
     "covered": 0,
-    "uncovered": 58,
+    "uncovered": 60,
     "findingKinds": {
-      "unmapped_anchor": 121
+      "unmapped_anchor": 126
     },
     "topCovered": [
       [

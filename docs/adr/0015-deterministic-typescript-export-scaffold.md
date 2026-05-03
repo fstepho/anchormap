@@ -33,6 +33,11 @@ deterministic mechanical suffix by export kind, then by stable ordinal for
 same-kind collisions. The output is a draft structure for human completion, not
 a semantic claim and not a mapping.
 
+Generated Markdown files include the file-level marker
+`<!-- anchormap: draft -->`. Scan treats anchors from such files as visible
+draft anchors, not as trusted active spec anchors, until a human removes the
+marker or moves selected anchors into an active spec.
+
 ## Alternatives considered
 
 ### Option A — Markdown scaffold from exports
@@ -75,13 +80,16 @@ Positive:
 
 - existing TypeScript repos can reach a first editable spec draft quickly;
 - common export-name normalization collisions do not block bootstrap;
+- scanning immediately after scaffolding stays readable because draft anchors
+  are visible without creating unmapped-anchor noise;
 - no network, Git, cache, clock, or AI dependency is introduced;
 - generated files are reproducible byte-for-byte.
 
 Negative:
 
 - the CLI surface and fixture harness grow by one command;
-- generated IDs may carry mechanical suffixes that humans later rename.
+- generated IDs may carry mechanical suffixes that humans later rename;
+- `scan --json` requires a schema bump for draft visibility.
 
 Risks:
 
@@ -93,8 +101,8 @@ Risks:
 Yes.
 
 `docs/contract.md` must define the `scaffold` command, output file mutation
-rules, generated Markdown format, exit-code classification, and non-mutation of
-`anchormap.yaml`.
+rules, generated Markdown format, draft marker behavior, draft-aware scan
+semantics, exit-code classification, and non-mutation of `anchormap.yaml`.
 
 ## Eval impact
 
@@ -102,7 +110,8 @@ Yes.
 
 `docs/evals.md` must add B-scaffold fixtures for success, create-only behavior,
 invalid output, config errors, product parse errors, empty generation, generated
-collisions, and collisions with existing spec anchors.
+collisions, and collisions with existing spec anchors. It must also cover
+draft-aware scan and map refusal for draft-only anchors.
 
 ## Design impact
 

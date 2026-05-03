@@ -600,7 +600,10 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return specIndexResult.error;
 	}
 
-	if (!specIndexResult.specIndex.observedAnchors.has(anchorId)) {
+	if (!specIndexResult.specIndex.activeAnchors.has(anchorId)) {
+		if (specIndexResult.specIndex.draftAnchors.has(anchorId)) {
+			return usageError(`anchor ${anchorId} is draft; remove the draft marker before mapping it`);
+		}
 		return usageError(`anchor ${anchorId} is not present in current specs`);
 	}
 

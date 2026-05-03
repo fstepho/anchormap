@@ -17,12 +17,13 @@ AnchorMap is useful when it keeps three states separate:
   untraced.
 
 The strict scan is clean but deliberately incomplete. That is the reference
-posture: it shows that the curated map is internally coherent, while keeping 9
+posture: it shows that the curated map is internally coherent, while keeping 10
 product files visible outside the map.
 
-The schema v2 output qualifies coverage. A reader can distinguish direct
-seeding, focused single-anchor coverage, broad cross-cutting overlap, and
-missing traceability without a repo-specific interpretation layer.
+The schema v3 output qualifies coverage. A reader can distinguish active and
+draft anchors, direct seeding, focused single-anchor coverage, broad
+cross-cutting overlap, and missing traceability without a repo-specific
+interpretation layer.
 
 The exploratory scan is the counterweight. It shows that broad documentation
 discovery can generate many formal identifiers without creating a useful runtime
@@ -45,10 +46,10 @@ shows what AnchorMap can make explicit when anchors and mappings are deliberate.
 
 The strict scan reports these specificity signals:
 
-- direct seeding is visible (`35 / 58` product files);
+- direct seeding is visible (`38 / 60` product files);
 - selective coverage is visible (`23` single-cover files);
-- cross-cutting overlap is visible (`26` multi-cover files);
-- traceability gaps are visible (`9` uncovered files).
+- cross-cutting overlap is visible (`27` multi-cover files);
+- traceability gaps are visible (`10` uncovered files).
 
 These metrics stay inside AnchorMap's product boundary: structural
 traceability, not ownership, conformance, dead code, or safe deletion.
@@ -57,22 +58,24 @@ traceability, not ownership, conformance, dead code, or safe deletion.
 
 Observed state:
 
-- `schema_version = 2`;
+- `schema_version = 3`;
 - `analysis_health = clean`;
-- 12 observed anchors;
-- 12 stored mappings;
+- 19 observed anchors;
+- 19 active anchors;
+- 0 draft anchors;
+- 19 stored mappings;
 - no `unmapped_anchor`;
 - no `stale_mapping_anchor`;
 - no `broken_seed_path`;
-- 58 product files;
-- 49 covered files;
-- 9 uncovered files emitted as `untraced_product_file`.
+- 60 product files;
+- 50 covered files;
+- 10 uncovered files emitted as `untraced_product_file`.
 
 Traceability metrics:
 
-- 35 directly seeded product files;
+- 38 directly seeded product files;
 - 23 single-cover product files;
-- 26 multi-cover product files.
+- 27 multi-cover product files.
 
 The important signal is that uncovered files are visible. The strict scan makes
 those files reviewable as traceability gaps instead of mixing them with broad
@@ -88,7 +91,7 @@ The strict anchors cover the expected cores:
 - `SPEC.ANCHOR_DISCOVERY` traces anchor validation and discovery;
 - `GRAPH.LOCAL_TS_REACHABILITY` traces the local TypeScript graph;
 - `SCAN.COVERAGE_FINDINGS` traces the scan and finding model;
-- `SCAN.TRACEABILITY_METRICS` traces the schema v2 metrics model without
+- `SCAN.TRACEABILITY_METRICS` traces the schema v3 metrics model without
   claiming the renderer as a direct seed;
 - `RENDER.JSON_CANONICAL` traces canonical JSON rendering;
 - `HARNESS.FIXTURE_ORACLES` traces fixture harness oracles;
@@ -97,14 +100,30 @@ The strict anchors cover the expected cores:
 - `VERIFY.RELEASE_READINESS` traces release-readiness verification;
 - `VERIFY.PROCESS_GUARDRAILS` traces repo-local process checks.
 
+The strict map also promotes a small set of scaffold-derived anchors whose
+meaning is clear enough to be active dogfood signal:
+
+- `CLI.COMMANDS.RUN_ANCHORMAP` traces command dispatch for the expanded command
+  surface;
+- `DOMAIN.SCAN_ENGINE.RUN_SCAN_ENGINE` traces scan assembly, including active
+  versus draft anchor behavior;
+- `DOMAIN.SCAN_RESULT.OBSERVED_ANCHOR_MAPPING_STATE` traces the observed-anchor
+  state model;
+- `INFRA.SCAFFOLD.BUILD_SCAFFOLD_MARKDOWN` traces deterministic scaffold draft
+  construction;
+- `INFRA.SCAFFOLD.WRITE_SCAFFOLD_OUTPUT_CREATE_ONLY` traces the scaffold write
+  boundary;
+- `INFRA.SPEC_INDEX.BUILD_SPEC_INDEX` traces the active/draft spec index;
+- `RENDER.RENDER_JSON.RENDER_SCAN_RESULT_JSON` traces canonical JSON rendering.
+
 The most-covered files are cross-cutting modules:
 
-- `src/domain/anchor-id.ts`: 8 anchors;
-- `src/domain/repo-path.ts`: 7 anchors;
-- `src/domain/canonical-order.ts`: 7 anchors;
-- `src/domain/finding.ts`: 7 anchors;
-- `src/domain/scan-result.ts`: 7 anchors;
-- `src/render/render-json.ts`: 7 anchors.
+- `src/domain/anchor-id.ts`: 15 anchors;
+- `src/domain/canonical-order.ts`: 14 anchors;
+- `src/domain/finding.ts`: 14 anchors;
+- `src/domain/repo-path.ts`: 14 anchors;
+- `src/domain/scan-result.ts`: 14 anchors;
+- `src/render/render-json.ts`: 13 anchors.
 
 That overlap is understandable: these modules carry shared types, validation,
 ordering, rendering, and scan-result shape used by both runtime obligations,
@@ -119,7 +138,7 @@ evaluation, and rendering.
 
 ## What The Strict Scan Exposes
 
-The 9 `untraced_product_file` findings are the clearest gap signal.
+The 10 `untraced_product_file` findings are the clearest gap signal.
 
 The strict dogfood map promotes selected focused or boundary-level tests that
 directly protect durable obligations. Wider integration-style suites remain
@@ -130,11 +149,12 @@ The untraced files are:
 
 - `src/bootstrap.test.ts`;
 - `src/bootstrap.ts`;
-- `src/cli/commands.test.ts`;
 - `src/cli-stub.test.ts`;
 - `src/cli-stub.ts`;
+- `src/cli/commands.test.ts`;
 - `src/infra/config-io.test.ts`;
 - `src/infra/product-files.test.ts`;
+- `src/infra/scaffold.test.ts`;
 - `src/infra/spec-index.test.ts`;
 - `src/infra/ts-graph.test.ts`.
 
@@ -154,11 +174,13 @@ The useful interpretation is:
 
 Observed state:
 
-- `schema_version = 2`;
+- `schema_version = 3`;
 - `analysis_health = clean`;
-- 121 observed anchors under `docs`;
+- 126 observed anchors under `docs`;
+- 126 active anchors;
+- 0 draft anchors;
 - 0 stored mappings in this temporary scan;
-- 121 `unmapped_anchor` findings.
+- 126 `unmapped_anchor` findings.
 
 This result is intentionally non-blocking. It shows that `docs` contains many
 observable identifiers (`T*`, `M*`, `S*`, `ADR-*`) that are useful as document

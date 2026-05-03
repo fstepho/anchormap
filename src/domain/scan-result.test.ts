@@ -86,7 +86,7 @@ test("constructs scan result with only contract root fields and computed health"
 		"traceability_metrics",
 		"findings",
 	]);
-	assert.equal(result.schema_version, 2);
+	assert.equal(result.schema_version, 3);
 	assert.equal(result.analysis_health, "degraded");
 });
 
@@ -127,6 +127,8 @@ test("constructs closed nested output views with contract fields", () => {
 			stored_mapping_count: 2,
 			usable_mapping_count: 1,
 			observed_anchor_count: 2,
+			active_anchor_count: 2,
+			draft_anchor_count: 0,
 			covered_product_file_count: 1,
 			uncovered_product_file_count: 1,
 			directly_seeded_product_file_count: 1,
@@ -144,6 +146,8 @@ test("constructs closed nested output views with contract fields", () => {
 		"stored_mapping_count",
 		"usable_mapping_count",
 		"observed_anchor_count",
+		"active_anchor_count",
+		"draft_anchor_count",
 		"covered_product_file_count",
 		"uncovered_product_file_count",
 		"directly_seeded_product_file_count",
@@ -269,6 +273,8 @@ function minimalTraceabilityMetrics() {
 			stored_mapping_count: 0,
 			usable_mapping_count: 0,
 			observed_anchor_count: 0,
+			active_anchor_count: 0,
+			draft_anchor_count: 0,
 			covered_product_file_count: 0,
 			uncovered_product_file_count: 0,
 			directly_seeded_product_file_count: 0,

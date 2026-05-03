@@ -619,6 +619,17 @@ Exemple hors support :
 Les Setext headings ne sont pas supportés.
 Aucune autre structure Markdown n'est interprétée comme anchor.
 
+Un fichier Markdown est un **draft spec file** si sa première ligne non vide est
+exactement :
+
+```md
+<!-- anchormap: draft -->
+```
+
+Toutes les occurrences d'anchor détectées dans un draft spec file sont des
+**draft anchors**. Les autres occurrences Markdown et toutes les occurrences
+YAML sont des **active anchors**.
+
 ### 8.2 YAML
 
 Tout fichier `.yml` ou `.yaml` découvert récursivement sous `spec_roots` doit être :
@@ -646,9 +657,19 @@ Un YAML illisible, non décodable selon la section 1.1, invalide, multi-document
 
 ### 8.3 Doublons
 
-Une anchor ne peut apparaître qu'une seule fois dans l'ensemble des specs analysées.
+Une active anchor ne peut apparaître qu'une seule fois dans l'ensemble des specs
+analysées.
 
-Si la même anchor apparaît plusieurs fois, le dépôt est hors support et la commande échoue.
+Si la même active anchor apparaît plusieurs fois, le dépôt est hors support et
+la commande échoue.
+
+Si une même anchor apparaît à la fois comme active anchor et draft anchor,
+l'active anchor gagne pour les comportements trusted. La draft occurrence reste
+un brouillon et ne crée pas de doublon bloquant.
+
+Si une même anchor apparaît plusieurs fois uniquement comme draft anchor, ces
+occurrences ne bloquent pas le scan ; une seule entrée draft canonique est
+exposée dans `scan --json`.
 
 ## 9. Commandes
 
@@ -742,10 +763,12 @@ anchormap map --anchor <anchor_id> --seed <path> [--seed <path> ...] [--replace]
 - `--replace` est optionnel et ne prend pas d'argument ;
 - `map` charge et valide `./anchormap.yaml` selon la section 7 ;
 - `map` indexe les specs courantes selon la section 8 ;
-- l'anchor fournie doit exister dans les specs courantes ;
+- l'anchor fournie doit exister comme active anchor dans les specs courantes ;
 - chaque `--seed` doit exister, être un `product_file`, et être hors `ignore_roots` ;
 - toute impossibilité de lire `./anchormap.yaml` relève du code `2` ;
 - toute impossibilité d'indexer les specs courantes, de découvrir les `product_files`, de lire un `product_file`, ou d'effectuer un test d'existence requis par les sections 10 et 12.3 relève du code `3`.
+- si l'anchor fournie existe uniquement comme draft anchor, la commande échoue
+  avec le code `4` sans mutation ;
 - si aucun mapping n'existe pour l'anchor, la commande crée le mapping ;
 - si un mapping existe déjà, la commande échoue sauf si `--replace` est fourni ;
 - si `--replace` est fourni et qu'aucun mapping n'existe encore, la commande crée le mapping ;
@@ -782,11 +805,11 @@ Seul `scan --json` a un schéma de sortie garanti.
 #### 9.3.3 Ce que le scan calcule
 
 1. chargement et validation stricte de `anchormap.yaml` ;
-2. index des anchors présentes dans les specs ;
+2. index des active anchors et des draft anchors présentes dans les specs ;
 3. miroir canonique de la configuration de scan dans `config` ;
 4. index des `product_files` ;
 5. construction des `supported_local_targets` et des findings issus des syntaxes locales reconnues de la section 10 ;
-6. validation structurelle des mappings stockés ;
+6. validation structurelle des mappings stockés contre les active anchors ;
 7. calcul de `reached_files` puis de `covering_anchor_ids` pour chaque `product_file` à partir des mappings exploitables ;
 8. métriques de traçabilité dérivées ;
 9. findings ;
@@ -820,10 +843,13 @@ Pour chaque mapping exploitable :
 
 - `analysis_health = clean` ;
 - au moins un mapping exploitable existe ;
-- toutes les anchors observées ont un mapping exploitable ;
+- toutes les active anchors observées ont un mapping exploitable ;
 - le `product_file` n'est atteint par aucun mapping exploitable.
 
 Si l'analyse est dégradée, `untraced_product_file` n'est pas émis.
+
+Les draft anchors ne contribuent ni à l'autorisation ni à la suppression de
+`untraced_product_file`.
 
 #### 9.3.7 Sortie
 
@@ -922,7 +948,16 @@ Exemple : `src/domain/scan-result.ts` exportant à la fois le type
 
 #### 9.4.5 Format Markdown généré
 
-Les sections sont triées par `AnchorId`, puis chemin, puis nom exporté.
+Le fichier commence exactement par le marqueur draft de fichier, suivi d'une
+ligne vide :
+
+```markdown
+<!-- anchormap: draft -->
+
+```
+
+Les sections suivent ce préambule et sont triées par `AnchorId`, puis chemin,
+puis nom exporté.
 
 Chaque section est rendue exactement ainsi :
 
@@ -1154,7 +1189,8 @@ Deux occurrences qui produisent le même tuple n'apparaissent qu'une seule fois 
 
 Sous réserve de la déduplication définie en section 11.3 :
 
-- `unmapped_anchor` est émis pour chaque anchor observée telle que `mapping_state = absent` ;
+- `unmapped_anchor` est émis pour chaque active anchor observée telle que
+  `mapping_state = absent` ;
 - `stale_mapping_anchor` est émis pour chaque mapping stocké tel que `state = stale` ;
 - `broken_seed_path` est émis pour chaque `seed_file` invalide d'un mapping tel que `state = invalid` ;
 - `untraced_product_file` est émis pour chaque `product_file` dont `covering_anchor_ids` est vide lorsque la règle de la section 9.3.6 autorise cette classe de finding.
@@ -1353,7 +1389,7 @@ L'objet JSON de succès contient exactement les clés racine suivantes :
 
 Contraintes normatives :
 
-- `schema_version` vaut toujours l'entier `2` ;
+- `schema_version` vaut toujours l'entier `3` ;
 - `config` est toujours présent ;
 - `analysis_health` vaut `clean` ou `degraded` ;
 - `observed_anchors`, `stored_mappings` et `files` sont toujours présents, y compris s'ils sont vides ;
@@ -1378,7 +1414,9 @@ Règles complémentaires :
 
 ### 13.3 `observed_anchors`
 
-`observed_anchors` contient exactement les anchors détectées dans les specs courantes.
+`observed_anchors` contient exactement les active anchors détectées dans les
+specs courantes, plus les draft anchors qui n'ont pas d'active anchor du même
+ID.
 
 Chaque entrée a pour clé l'`anchor_id` observée et pour valeur un objet fermé contenant exactement :
 
@@ -1389,11 +1427,14 @@ Valeurs possibles de `mapping_state` :
 
 - `absent` : aucun mapping stocké pour cette anchor ;
 - `usable` : mapping stocké et exploitable ;
-- `invalid` : mapping stocké et non exploitable.
+- `invalid` : mapping stocké et non exploitable ;
+- `draft` : anchor observée uniquement dans un draft spec file.
 
 Règles complémentaires :
 
 - `spec_path` est toujours un `RepoPath` canonique ;
+- une entrée `mapping_state = draft` ne représente pas une spec validée et ne
+  contribue jamais à la couverture ;
 - aucune clé supplémentaire n'est autorisée dans une entrée de `observed_anchors`.
 
 ### 13.4 `stored_mappings`
@@ -1410,7 +1451,8 @@ Valeurs possibles de `state` :
 
 - `usable` : mapping présent et exploitable ;
 - `invalid` : mapping présent pour une anchor observée, mais non exploitable ;
-- `stale` : mapping présent pour une anchor absente des specs courantes.
+- `stale` : mapping présent pour une anchor absente des active anchors
+  courantes.
 
 Règles complémentaires :
 
@@ -1457,11 +1499,13 @@ L'objet contient exactement les clés suivantes :
 2. `stored_mapping_count`
 3. `usable_mapping_count`
 4. `observed_anchor_count`
-5. `covered_product_file_count`
-6. `uncovered_product_file_count`
-7. `directly_seeded_product_file_count`
-8. `single_cover_product_file_count`
-9. `multi_cover_product_file_count`
+5. `active_anchor_count`
+6. `draft_anchor_count`
+7. `covered_product_file_count`
+8. `uncovered_product_file_count`
+9. `directly_seeded_product_file_count`
+10. `single_cover_product_file_count`
+11. `multi_cover_product_file_count`
 
 Règles complémentaires :
 
@@ -1469,6 +1513,10 @@ Règles complémentaires :
 - `stored_mapping_count` est le nombre d'entrées dans `stored_mappings` ;
 - `usable_mapping_count` est le nombre d'entrées de `stored_mappings` dont `state = usable` ;
 - `observed_anchor_count` est le nombre d'entrées dans `observed_anchors` ;
+- `active_anchor_count` est le nombre d'entrées dans `observed_anchors` dont
+  `mapping_state != draft` ;
+- `draft_anchor_count` est le nombre d'entrées dans `observed_anchors` dont
+  `mapping_state = draft` ;
 - `covered_product_file_count` est le nombre d'entrées de `files` dont `covering_anchor_ids` n'est pas vide ;
 - `uncovered_product_file_count` vaut `product_file_count - covered_product_file_count` ;
 - `directly_seeded_product_file_count` est le nombre de fichiers produit qui apparaissent dans les `seed_files` d'au moins un mapping `usable` ;
@@ -1550,7 +1598,7 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - tout surrogate isolé `U+D800..U+DFFF`, s'il apparaît dans une chaîne JSON, est échappé en `\u` suivi de 4 chiffres hexadécimaux minuscules ;
 - aucun autre caractère n'est échappé avec `\u` ; les autres caractères sont rendus directement en UTF-8 ;
 - `/` n'est jamais échappé ;
-- l'entier `schema_version` est rendu exactement sous la forme `2`.
+- l'entier `schema_version` est rendu exactement sous la forme `3`.
 
 ### 13.8 Codes de sortie
 

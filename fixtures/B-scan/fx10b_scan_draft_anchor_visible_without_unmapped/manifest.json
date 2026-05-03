@@ -1,0 +1,19 @@
+{
+	"id": "fx10b_scan_draft_anchor_visible_without_unmapped",
+	"family": "B-scan",
+	"purpose": "Scan --json renders draft-only scaffold anchors as draft without emitting unmapped_anchor.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden", "draft"],
+	"groups": ["m14"]
+}

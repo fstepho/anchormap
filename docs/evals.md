@@ -163,6 +163,7 @@ Objectif : couvrir explicitement les règles de décodage et de profils grammati
 | `fx09_scan_findings_canonical_order` | plusieurs findings de kinds différents | 0 | golden JSON exact ; tri canonique des findings ; ordre canonique des clés |
 | `fx10_scan_closed_objects` | fermeture stricte du schéma JSON | 0 | validation exacte des clés racine et des objets fermés ; aucun champ supplémentaire |
 | `fx10a_scan_traceability_metrics_fanout` | fan-out générique avec seed direct, portée transitive, couverture unique et couverture partagée | 0 | golden JSON exact ; `traceability_metrics.summary` et `traceability_metrics.anchors` exacts ; aucune classification métier d'anchor |
+| `fx10b_scan_draft_anchor_visible_without_unmapped` | anchor scaffold draft-only sans mapping | 0 | golden JSON exact ; `mapping_state = draft` ; `draft_anchor_count = 1` ; absence de `unmapped_anchor` pour la draft |
 
 Les états essentiels du schéma doivent être explicitement couverts ainsi :
 
@@ -171,6 +172,7 @@ Les états essentiels du schéma doivent être explicitement couverts ainsi :
 | `observed_anchors.mapping_state = absent` | `fx03_scan_unmapped_anchor` |
 | `observed_anchors.mapping_state = usable` | `fx01_scan_min_clean` |
 | `observed_anchors.mapping_state = invalid` | `fx05_scan_broken_seed` |
+| `observed_anchors.mapping_state = draft` | `fx10b_scan_draft_anchor_visible_without_unmapped` |
 | `stored_mappings.state = usable` | `fx01_scan_min_clean` |
 | `stored_mappings.state = invalid` | `fx05_scan_broken_seed` |
 | `stored_mappings.state = stale` | `fx04_scan_stale_mapping` |
@@ -331,6 +333,7 @@ pas implémentée et activée.
 | `fx67b_map_spec_read_or_decode_failure_code3` | `map` avec spec illisible ou non UTF-8 pendant l'indexation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx67c_map_product_read_decode_or_parse_failure_code3` | `map` avec `product_file` illisible, non UTF-8 ou non parsable pendant la validation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx67d_map_required_existence_test_failure_code3` | `map` avec test d'existence ponctuel requis impossible | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
+| `fx67e_map_draft_anchor_not_mappable` | `map` vers une anchor présente uniquement dans une draft spec | 4 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 
 #### 5.7.1 Fixtures v1.1 planifiées pour `map` et anchors documentaires
 
@@ -375,11 +378,11 @@ Notes obligatoires pour la famille B-cli :
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
-| `fx77_scaffold_success_minimal` | exports publics dans plusieurs fichiers produit | 0 | fichier Markdown généré exact ; `anchormap.yaml` byte-identique |
+| `fx77_scaffold_success_minimal` | exports publics dans plusieurs fichiers produit | 0 | fichier Markdown draft généré exact ; `anchormap.yaml` byte-identique |
 | `fx78_scaffold_output_exists` | `--output` existe déjà | 4 | aucune mutation |
 | `fx79_scaffold_output_outside_spec_roots` | `--output` hors `spec_roots` | 4 | aucune mutation |
 | `fx80_scaffold_no_exports` | aucun export public supporté | 4 | aucune mutation |
-| `fx81_scaffold_generated_anchor_collision` | deux exports de même kind produisent le même `AnchorId` de base | 0 | fichier Markdown généré exact avec suffixes kind/ordinal |
+| `fx81_scaffold_generated_anchor_collision` | deux exports de même kind produisent le même `AnchorId` de base | 0 | fichier Markdown draft généré exact avec suffixes kind/ordinal |
 | `fx82_scaffold_existing_anchor_collision` | une anchor générée existe déjà dans les specs courantes | 4 | aucune mutation |
 | `fx83_scaffold_config_missing_code2` | config absente ou invalide | 2 | aucune mutation |
 | `fx84_scaffold_product_parse_failure_code3` | `product_file` non parsable | 3 | aucune mutation |
