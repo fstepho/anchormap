@@ -9,11 +9,14 @@ set -eu
 DOGFOOD_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$DOGFOOD_DIR/.." && pwd)
 ANCHORMAP="$REPO_DIR/bin/anchormap"
+REPORT_DIR="$DOGFOOD_DIR/reports/current"
 
 if [ ! -x "$ANCHORMAP" ]; then
   echo "anchormap binary not found at $ANCHORMAP - run 'npm run build' first" >&2
   exit 1
 fi
+
+mkdir -p "$REPORT_DIR"
 
 SANDBOX=$(mktemp -d -t anchormap-dogfood.XXXXXX)
 trap 'rm -rf "$SANDBOX"' EXIT
@@ -41,8 +44,8 @@ cp -R "$REPO_DIR/docs" "$EXPLORATORY_DIR/docs"
   "$ANCHORMAP" scan --json > scan_docs_exploratory.json
 )
 
-cp "$STRICT_DIR/scan_strict.json" "$DOGFOOD_DIR/scan_strict.json"
-cp "$EXPLORATORY_DIR/scan_docs_exploratory.json" "$DOGFOOD_DIR/scan_docs_exploratory.json"
+cp "$STRICT_DIR/scan_strict.json" "$REPORT_DIR/scan_strict.json"
+cp "$EXPLORATORY_DIR/scan_docs_exploratory.json" "$REPORT_DIR/scan_docs_exploratory.json"
 
 node -e '
 const fs = require("node:fs");
@@ -68,7 +71,9 @@ function summarize(path) {
   coverage.sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]));
 
   return {
+    schemaVersion: j.schema_version,
     analysisHealth: j.analysis_health,
+    traceabilitySummary: j.traceability_metrics.summary,
     observedAnchors: Object.keys(j.observed_anchors).length,
     storedMappings: Object.keys(j.stored_mappings).length,
     covered,
@@ -101,6 +106,10 @@ writePrettyJson(process.argv[2]);
 
 const strict = summarize(process.argv[1]);
 const exploratory = summarize(process.argv[2]);
+fs.writeFileSync(
+  process.argv[3],
+  `${JSON.stringify({ strict, exploratory }, null, 2)}\n`,
+);
 process.stdout.write([
   "Dogfood strict scan is a curated traceability signal, not full repo coverage.",
   ...linesFor("strict", "dogfood/specs", strict),
@@ -109,4 +118,4 @@ process.stdout.write([
   ...linesFor("exploratory", "docs", exploratory),
   "",
 ].join("\n"));
-' "$DOGFOOD_DIR/scan_strict.json" "$DOGFOOD_DIR/scan_docs_exploratory.json"
+' "$REPORT_DIR/scan_strict.json" "$REPORT_DIR/scan_docs_exploratory.json" "$REPORT_DIR/summary.json"

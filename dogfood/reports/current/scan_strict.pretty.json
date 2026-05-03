@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -34,6 +34,10 @@
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
     },
+    "SCAN.TRACEABILITY_METRICS": {
+      "spec_path": "dogfood/specs/anchormap.md",
+      "mapping_state": "usable"
+    },
     "SPEC.ANCHOR_DISCOVERY": {
       "spec_path": "dogfood/specs/anchormap.md",
       "mapping_state": "usable"
@@ -59,12 +63,26 @@
     "CLI.COMMANDS": {
       "state": "usable",
       "seed_files": [
-        "src/bootstrap.ts",
+        "src/anchormap.ts",
         "src/cli/command-args.ts"
       ],
       "reached_files": [
-        "src/bootstrap.ts",
-        "src/cli/command-args.ts"
+        "src/anchormap.ts",
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
       ]
     },
     "CONFIG.YAML_STATE": {
@@ -192,6 +210,34 @@
         "src/render/render-json.ts"
       ]
     },
+    "SCAN.TRACEABILITY_METRICS": {
+      "state": "usable",
+      "seed_files": [
+        "src/domain/scan-engine.test.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.test.ts",
+        "src/domain/scan-result.ts"
+      ],
+      "reached_files": [
+        "src/cli/command-args.ts",
+        "src/cli/commands.ts",
+        "src/domain/anchor-id.ts",
+        "src/domain/canonical-order.ts",
+        "src/domain/finding.ts",
+        "src/domain/repo-path.ts",
+        "src/domain/scan-engine.test.ts",
+        "src/domain/scan-engine.ts",
+        "src/domain/scan-result.test.ts",
+        "src/domain/scan-result.ts",
+        "src/infra/config-io.ts",
+        "src/infra/config-yaml-render.ts",
+        "src/infra/product-files.ts",
+        "src/infra/repo-fs.ts",
+        "src/infra/spec-index.ts",
+        "src/infra/ts-graph.ts",
+        "src/render/render-json.ts"
+      ]
+    },
     "SPEC.ANCHOR_DISCOVERY": {
       "state": "usable",
       "seed_files": [
@@ -272,7 +318,9 @@
   },
   "files": {
     "src/anchormap.ts": {
-      "covering_anchor_ids": [],
+      "covering_anchor_ids": [
+        "CLI.COMMANDS"
+      ],
       "supported_local_targets": [
         "src/cli/commands.ts"
       ]
@@ -284,9 +332,7 @@
       ]
     },
     "src/bootstrap.ts": {
-      "covering_anchor_ids": [
-        "CLI.COMMANDS"
-      ],
+      "covering_anchor_ids": [],
       "supported_local_targets": []
     },
     "src/cli-stub.test.ts": {
@@ -307,7 +353,8 @@
         "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": []
     },
@@ -320,9 +367,11 @@
     },
     "src/cli/commands.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/cli/command-args.ts",
@@ -347,10 +396,12 @@
     },
     "src/domain/anchor-id.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "SPEC.ANCHOR_DISCOVERY",
         "VERIFY.UNIT_BOUNDARIES"
       ],
@@ -358,10 +409,12 @@
     },
     "src/domain/canonical-order.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
       ],
       "supported_local_targets": [
@@ -382,10 +435,12 @@
     },
     "src/domain/finding.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
       ],
       "supported_local_targets": [
@@ -404,17 +459,20 @@
     },
     "src/domain/repo-path.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
       ],
       "supported_local_targets": []
     },
     "src/domain/scan-engine.test.ts": {
       "covering_anchor_ids": [
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/anchor-id.ts",
@@ -428,9 +486,11 @@
     },
     "src/domain/scan-engine.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/anchor-id.ts",
@@ -445,7 +505,8 @@
     },
     "src/domain/scan-result.test.ts": {
       "covering_anchor_ids": [
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/anchor-id.ts",
@@ -456,10 +517,12 @@
     },
     "src/domain/scan-result.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
       ],
       "supported_local_targets": [
@@ -693,9 +756,11 @@
     },
     "src/infra/config-io.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/cli/commands.ts",
@@ -708,9 +773,11 @@
     },
     "src/infra/config-yaml-render.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/anchor-id.ts",
@@ -728,9 +795,11 @@
     },
     "src/infra/product-files.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/repo-path.ts",
@@ -748,9 +817,11 @@
     },
     "src/infra/repo-fs.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/repo-path.ts"
@@ -767,9 +838,11 @@
     },
     "src/infra/spec-index.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/anchor-id.ts",
@@ -789,9 +862,11 @@
     },
     "src/infra/ts-graph.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
-        "SCAN.COVERAGE_FINDINGS"
+        "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS"
       ],
       "supported_local_targets": [
         "src/domain/finding.ts",
@@ -826,10 +901,12 @@
     },
     "src/render/render-json.ts": {
       "covering_anchor_ids": [
+        "CLI.COMMANDS",
         "CONFIG.YAML_STATE",
         "GRAPH.LOCAL_TS_REACHABILITY",
         "RENDER.JSON_CANONICAL",
         "SCAN.COVERAGE_FINDINGS",
+        "SCAN.TRACEABILITY_METRICS",
         "VERIFY.UNIT_BOUNDARIES"
       ],
       "supported_local_targets": [
@@ -844,14 +921,125 @@
       "supported_local_targets": []
     }
   },
+  "traceability_metrics": {
+    "summary": {
+      "product_file_count": 58,
+      "stored_mapping_count": 12,
+      "usable_mapping_count": 12,
+      "observed_anchor_count": 12,
+      "covered_product_file_count": 49,
+      "uncovered_product_file_count": 9,
+      "directly_seeded_product_file_count": 35,
+      "single_cover_product_file_count": 23,
+      "multi_cover_product_file_count": 26
+    },
+    "anchors": {
+      "CLI.COMMANDS": {
+        "seed_file_count": 2,
+        "direct_seed_file_count": 2,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 14,
+        "unique_reached_file_count": 1,
+        "shared_reached_file_count": 15
+      },
+      "CONFIG.YAML_STATE": {
+        "seed_file_count": 2,
+        "direct_seed_file_count": 2,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 14,
+        "unique_reached_file_count": 1,
+        "shared_reached_file_count": 15
+      },
+      "GRAPH.LOCAL_TS_REACHABILITY": {
+        "seed_file_count": 2,
+        "direct_seed_file_count": 2,
+        "reached_file_count": 16,
+        "transitive_reached_file_count": 14,
+        "unique_reached_file_count": 1,
+        "shared_reached_file_count": 15
+      },
+      "HARNESS.FIXTURE_ORACLES": {
+        "seed_file_count": 9,
+        "direct_seed_file_count": 9,
+        "reached_file_count": 15,
+        "transitive_reached_file_count": 6,
+        "unique_reached_file_count": 6,
+        "shared_reached_file_count": 9
+      },
+      "RENDER.JSON_CANONICAL": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 6,
+        "transitive_reached_file_count": 5,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 6
+      },
+      "SCAN.COVERAGE_FINDINGS": {
+        "seed_file_count": 5,
+        "direct_seed_file_count": 5,
+        "reached_file_count": 18,
+        "transitive_reached_file_count": 13,
+        "unique_reached_file_count": 1,
+        "shared_reached_file_count": 17
+      },
+      "SCAN.TRACEABILITY_METRICS": {
+        "seed_file_count": 4,
+        "direct_seed_file_count": 4,
+        "reached_file_count": 17,
+        "transitive_reached_file_count": 13,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 17
+      },
+      "SPEC.ANCHOR_DISCOVERY": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 1,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 1
+      },
+      "VERIFY.FIXTURE_HARNESS": {
+        "seed_file_count": 4,
+        "direct_seed_file_count": 4,
+        "reached_file_count": 14,
+        "transitive_reached_file_count": 10,
+        "unique_reached_file_count": 5,
+        "shared_reached_file_count": 9
+      },
+      "VERIFY.PROCESS_GUARDRAILS": {
+        "seed_file_count": 3,
+        "direct_seed_file_count": 3,
+        "reached_file_count": 3,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 3,
+        "shared_reached_file_count": 0
+      },
+      "VERIFY.RELEASE_READINESS": {
+        "seed_file_count": 3,
+        "direct_seed_file_count": 3,
+        "reached_file_count": 3,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 3,
+        "shared_reached_file_count": 0
+      },
+      "VERIFY.UNIT_BOUNDARIES": {
+        "seed_file_count": 2,
+        "direct_seed_file_count": 2,
+        "reached_file_count": 8,
+        "transitive_reached_file_count": 6,
+        "unique_reached_file_count": 2,
+        "shared_reached_file_count": 6
+      }
+    }
+  },
   "findings": [
     {
       "kind": "untraced_product_file",
-      "path": "src/anchormap.ts"
+      "path": "src/bootstrap.test.ts"
     },
     {
       "kind": "untraced_product_file",
-      "path": "src/bootstrap.test.ts"
+      "path": "src/bootstrap.ts"
     },
     {
       "kind": "untraced_product_file",

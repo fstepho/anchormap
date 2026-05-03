@@ -1,0 +1,130 @@
+{
+  "strict": {
+    "schemaVersion": 2,
+    "analysisHealth": "clean",
+    "traceabilitySummary": {
+      "product_file_count": 58,
+      "stored_mapping_count": 12,
+      "usable_mapping_count": 12,
+      "observed_anchor_count": 12,
+      "covered_product_file_count": 49,
+      "uncovered_product_file_count": 9,
+      "directly_seeded_product_file_count": 35,
+      "single_cover_product_file_count": 23,
+      "multi_cover_product_file_count": 26
+    },
+    "observedAnchors": 12,
+    "storedMappings": 12,
+    "covered": 49,
+    "uncovered": 9,
+    "findingKinds": {
+      "untraced_product_file": 9
+    },
+    "topCovered": [
+      [
+        "src/domain/anchor-id.ts",
+        8
+      ],
+      [
+        "src/domain/canonical-order.ts",
+        7
+      ],
+      [
+        "src/domain/finding.ts",
+        7
+      ],
+      [
+        "src/domain/repo-path.ts",
+        7
+      ],
+      [
+        "src/domain/scan-result.ts",
+        7
+      ],
+      [
+        "src/render/render-json.ts",
+        7
+      ],
+      [
+        "src/cli/command-args.ts",
+        5
+      ],
+      [
+        "src/cli/commands.ts",
+        5
+      ],
+      [
+        "src/domain/scan-engine.ts",
+        5
+      ],
+      [
+        "src/infra/config-io.ts",
+        5
+      ]
+    ]
+  },
+  "exploratory": {
+    "schemaVersion": 2,
+    "analysisHealth": "clean",
+    "traceabilitySummary": {
+      "product_file_count": 58,
+      "stored_mapping_count": 0,
+      "usable_mapping_count": 0,
+      "observed_anchor_count": 121,
+      "covered_product_file_count": 0,
+      "uncovered_product_file_count": 58,
+      "directly_seeded_product_file_count": 0,
+      "single_cover_product_file_count": 0,
+      "multi_cover_product_file_count": 0
+    },
+    "observedAnchors": 121,
+    "storedMappings": 0,
+    "covered": 0,
+    "uncovered": 58,
+    "findingKinds": {
+      "unmapped_anchor": 121
+    },
+    "topCovered": [
+      [
+        "src/anchormap.ts",
+        0
+      ],
+      [
+        "src/bootstrap.test.ts",
+        0
+      ],
+      [
+        "src/bootstrap.ts",
+        0
+      ],
+      [
+        "src/cli-stub.test.ts",
+        0
+      ],
+      [
+        "src/cli-stub.ts",
+        0
+      ],
+      [
+        "src/cli/command-args.ts",
+        0
+      ],
+      [
+        "src/cli/commands.test.ts",
+        0
+      ],
+      [
+        "src/cli/commands.ts",
+        0
+      ],
+      [
+        "src/domain/anchor-id.test.ts",
+        0
+      ],
+      [
+        "src/domain/anchor-id.ts",
+        0
+      ]
+    ]
+  }
+}

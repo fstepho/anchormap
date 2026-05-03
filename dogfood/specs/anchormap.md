@@ -35,6 +35,12 @@ Non-normative dogfood trace spec.
 
 Authority: `docs/contract.md` §§6.6-6.11, 9.3, 11, 13.3-13.6; `docs/design.md` §§5.5, 7.5-7.8; `docs/evals.md` B-scan.
 
+## SCAN.TRACEABILITY_METRICS - Traceability metrics
+
+Non-normative dogfood trace spec.
+
+Authority: `docs/contract.md` §§6.12, 13.5.1, 13.7; `docs/design.md` §7.6.1; `docs/evals.md` B-scan `fx10a_scan_traceability_metrics_fanout`.
+
 ## RENDER.JSON_CANONICAL - Canonical JSON rendering
 
 Non-normative dogfood trace spec.

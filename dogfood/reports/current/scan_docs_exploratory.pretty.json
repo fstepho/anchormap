@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -79,6 +79,10 @@
       "mapping_state": "absent"
     },
     "M12": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "M13": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
     },
@@ -259,6 +263,22 @@
       "mapping_state": "absent"
     },
     "T12.4": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T13.1": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T13.2": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T13.3": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
+    "T13.4": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
     },
@@ -899,6 +919,989 @@
       "supported_local_targets": []
     }
   },
+  "traceability_metrics": {
+    "summary": {
+      "product_file_count": 58,
+      "stored_mapping_count": 0,
+      "usable_mapping_count": 0,
+      "observed_anchor_count": 121,
+      "covered_product_file_count": 0,
+      "uncovered_product_file_count": 58,
+      "directly_seeded_product_file_count": 0,
+      "single_cover_product_file_count": 0,
+      "multi_cover_product_file_count": 0
+    },
+    "anchors": {
+      "ADR-0001": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0002": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0003": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0004": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0005": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0006": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0007": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0008": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0009": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0010": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0011": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0012": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0013": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "ADR-0014": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M10": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M11": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M12": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M13": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M8": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "M9": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "S6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T0.0": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T0.0a": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T0.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T0.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T0.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.10": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.11": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.8": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T1.9": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T10.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T11.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T11.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T11.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T11.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T12.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T12.1a": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T12.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T12.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T12.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T13.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T13.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T13.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T13.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T2.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T3.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T4.7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T5.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T5.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T5.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T5.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T5.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T6.7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T7.7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T8.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.1": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.2": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.4": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.5": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.6": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.7": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.8": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T9.9": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      }
+    }
+  },
   "findings": [
     {
       "kind": "unmapped_anchor",
@@ -971,6 +1974,10 @@
     {
       "kind": "unmapped_anchor",
       "anchor_id": "M12"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "M13"
     },
     {
       "kind": "unmapped_anchor",
@@ -1151,6 +2158,22 @@
     {
       "kind": "unmapped_anchor",
       "anchor_id": "T12.4"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T13.1"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T13.2"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T13.3"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T13.4"
     },
     {
       "kind": "unmapped_anchor",
