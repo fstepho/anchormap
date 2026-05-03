@@ -198,6 +198,22 @@ contraintes suivantes :
 - l'extension ne crée aucun mapping, candidat de mapping ou lien de propriété
   automatiquement.
 
+## 6.6 Segment v1.2 prévu : métriques de traçabilité
+
+AnchorMap v1.2 cible les dépôts où la couverture brute peut être dominée par
+quelques mappings très connectés.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- les métriques restent des données dérivées du scan courant ;
+- `anchormap.yaml` reste l'unique état persistant propre à AnchorMap ;
+- `scan` reste non-mutant ;
+- aucune classification métier, aucun seuil, et aucun label repo-spécifique ne
+  sont introduits ;
+- les métriques ne deviennent pas une preuve de conformité, d'ownership, de
+  code mort ou de suppression sûre.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :

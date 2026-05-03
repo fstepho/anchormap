@@ -75,6 +75,14 @@ test("calculates sorted transitive reached files from sorted seeds and targets",
 	});
 	assert.deepEqual(result.files[repoPath("src/not-discovered.ts")], undefined);
 	assert.deepEqual(result.files[repoPath("src/d.ts")].covering_anchor_ids, [anchorId("FR-014")]);
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-014")], {
+		seed_file_count: 2,
+		direct_seed_file_count: 2,
+		reached_file_count: 5,
+		transitive_reached_file_count: 3,
+		unique_reached_file_count: 5,
+		shared_reached_file_count: 0,
+	});
 });
 
 test("accumulates sorted covering anchor ids for overlapping closures", () => {
@@ -101,6 +109,33 @@ test("accumulates sorted covering anchor ids for overlapping closures", () => {
 		anchorId("FR-010"),
 		anchorId("FR-020"),
 	]);
+	assert.deepEqual(result.traceability_metrics.summary, {
+		product_file_count: 3,
+		stored_mapping_count: 2,
+		usable_mapping_count: 2,
+		observed_anchor_count: 2,
+		covered_product_file_count: 3,
+		uncovered_product_file_count: 0,
+		directly_seeded_product_file_count: 2,
+		single_cover_product_file_count: 2,
+		multi_cover_product_file_count: 1,
+	});
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-010")], {
+		seed_file_count: 1,
+		direct_seed_file_count: 1,
+		reached_file_count: 2,
+		transitive_reached_file_count: 1,
+		unique_reached_file_count: 1,
+		shared_reached_file_count: 1,
+	});
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-020")], {
+		seed_file_count: 1,
+		direct_seed_file_count: 1,
+		reached_file_count: 2,
+		transitive_reached_file_count: 1,
+		unique_reached_file_count: 1,
+		shared_reached_file_count: 1,
+	});
 });
 
 test("terminates deterministically on supported graph cycles", () => {
@@ -147,6 +182,14 @@ test("emits unmapped_anchor for observed anchors without stored mappings", () =>
 			anchor_id: anchorId("FR-014"),
 		},
 	]);
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-014")], {
+		seed_file_count: 0,
+		direct_seed_file_count: 0,
+		reached_file_count: 0,
+		transitive_reached_file_count: 0,
+		unique_reached_file_count: 0,
+		shared_reached_file_count: 0,
+	});
 });
 
 test("emits broken_seed_path per invalid seed for observed invalid mappings", () => {
@@ -184,6 +227,14 @@ test("emits broken_seed_path per invalid seed for observed invalid mappings", ()
 			seed_path: repoPath("test/helper.ts"),
 		},
 	]);
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-014")], {
+		seed_file_count: 3,
+		direct_seed_file_count: 0,
+		reached_file_count: 0,
+		transitive_reached_file_count: 0,
+		unique_reached_file_count: 0,
+		shared_reached_file_count: 0,
+	});
 });
 
 test("emits exactly one stale mapping finding and skips invalid stale seeds", () => {
@@ -214,6 +265,14 @@ test("emits exactly one stale mapping finding and skips invalid stale seeds", ()
 			anchor_id: anchorId("FR-014"),
 		},
 	]);
+	assert.deepEqual(result.traceability_metrics.anchors[anchorId("FR-999")], {
+		seed_file_count: 2,
+		direct_seed_file_count: 0,
+		reached_file_count: 0,
+		transitive_reached_file_count: 0,
+		unique_reached_file_count: 0,
+		shared_reached_file_count: 0,
+	});
 });
 
 test("preserves and normalizes graph findings with mapping findings", () => {
@@ -257,6 +316,17 @@ test("emits untraced_product_file for uncovered product files in otherwise clean
 			path: repoPath("src/unused.ts"),
 		},
 	]);
+	assert.deepEqual(result.traceability_metrics.summary, {
+		product_file_count: 2,
+		stored_mapping_count: 1,
+		usable_mapping_count: 1,
+		observed_anchor_count: 1,
+		covered_product_file_count: 1,
+		uncovered_product_file_count: 1,
+		directly_seeded_product_file_count: 1,
+		single_cover_product_file_count: 1,
+		multi_cover_product_file_count: 0,
+	});
 });
 
 test("suppresses untraced_product_file when any observed anchor is unmapped", () => {

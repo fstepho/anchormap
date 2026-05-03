@@ -27,7 +27,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
 - Next executable product task: none.
-- Last completed task: `T12.4 — Close v1.1 extended anchor release readiness`
+- Last completed task: `T13.4 — Close v1.2 traceability metrics readiness`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -118,6 +118,10 @@
   - `T12.2 — Add v1.1 B-spec fixtures and goldens for extended anchors`
   - `T12.3 — Preserve config and map behavior for extended anchors`
   - `T12.4 — Close v1.1 extended anchor release readiness`
+  - `T13.1 — Specify v1.2 traceability metrics contract and evals`
+  - `T13.2 — Implement v1.2 scan-result metrics model`
+  - `T13.3 — Render JSON v2 and update scan goldens`
+  - `T13.4 — Close v1.2 traceability metrics readiness`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -161,6 +165,7 @@
 | M10 — Packaging, distribution, and publication | Turn a passing release candidate into a distributable v1.0 artifact without changing product behavior | Packaging ADR, publishable package metadata, install-artifact checks, user docs, publication runbook, published artifact evidence | Post-gate artifact verification; release checklist continuity | M9 done | `ADR-0009` is accepted, the packaged artifact installs and runs from `dist/`, user-facing docs preserve the v1.0 promise, and the selected distribution channel contains the published v1.0 artifact |
 | M11 — v1.1 TypeScript ESM `.js` specifier compatibility | Activate the planned `.js -> .ts` source-candidate rule without adopting full TypeScript or Node resolution | `ts_graph` candidate rule, B-graph fixtures/goldens, scan/map graph validation continuity, v1.1 release-readiness evidence | B-graph `fx38f`–`fx38l`; existing B-graph/B-map graph-validation regressions; docs/ADR consistency | F1 planning complete; M10 done | Explicit relative `.js` specifiers can resolve to sibling `.ts` sources, diagnostic-only `.js` behavior remains explicit when no source exists, and v1.1 gates preserve v1.0 determinism boundaries |
 | M12 — v1.1 AnchorMap extended anchor formats | Activate the planned repository-documentation `AnchorId` grammar and `SCREAMING_SNAKE` dotted segments without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22l` plus `fx19a`–`fx19b`; B-config `fx49a`–`fx49b`; B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b`; docs/ADR consistency | F2/F3 planning complete; M11 done | Task, milestone, spike, ADR-style, and `SCREAMING_SNAKE` dotted anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
+| M13 — v1.2 Traceability metrics | Add generic derived metrics to `scan --json` so users can distinguish raw coverage from structural signal strength without repo-specific labels | JSON schema v2, `traceability_metrics`, scan-engine counters, renderer/goldens, release-readiness evidence | B-scan `fx10a`; all successful `scan --json` goldens; C-metamorphic deterministic reruns | M12 done | `scan --json` renders schema v2 with generic summary and per-anchor metrics, no config persistence changes, no scan mutation, and no ownership/dead-code/proof inference |
 
 ## Milestone dependency graph
 
@@ -181,6 +186,7 @@ M1 Fixture harness
                        -> M10 Packaging, distribution, and publication
                           -> M11 v1.1 TypeScript ESM .js specifier compatibility
                              -> M12 v1.1 AnchorMap extended anchor formats
+                                -> M13 v1.2 Traceability metrics
 ```
 
 ## M1 — Fixture harness
@@ -5438,6 +5444,180 @@ Suggested verification:
 - Run `npm run test:fixtures -- --family B-map`.
 - Run `npm run test:metamorphic`.
 
+## M13 — v1.2 Traceability metrics
+
+### T13.1 — Specify v1.2 traceability metrics contract and evals
+
+Purpose:
+- Define the generic derived metrics exposed by `scan --json` without adding
+  repo-specific labels, config persistence, or scan mutation.
+
+Contract refs:
+- `contract.md` — §6.12 Traceability metrics v1.2
+- `contract.md` — §13.2 Success JSON schema
+- `contract.md` — §13.5.1 `traceability_metrics`
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §5.5 `scan_engine`
+- `design.md` — §5.7 `render`
+- `design.md` — §7.6.1 Traceability metrics v1.2
+
+Eval refs:
+- `evals.md` — §5.2 B-scan `fx10a_scan_traceability_metrics_fanout`
+- `evals.md` — §6 Goldens and exact oracles
+- `evals.md` — C1–C12 deterministic and isolation checks
+
+Dependencies:
+- T12.4.
+
+Implementation scope:
+- Update the authoritative docs for schema v2 and metric definitions.
+- Keep `anchormap.yaml` unchanged as the only persisted AnchorMap state.
+- Keep all metrics descriptive and derived from existing scan views.
+
+Out of scope:
+- Introducing thresholds, `broad` labels, rule labels, CLI labels, dogfood
+  labels, or repository-specific classifications.
+- Changing `analysis_health` or `untraced_product_file` preconditions.
+
+Done when:
+- Contract, design, eval, and task-plan docs define the v1.2 surface.
+- The new fixture obligation for fan-out metrics is recorded.
+- No runtime implementation is required to understand the expected schema.
+
+Suggested verification:
+- Run `sh scripts/lint-tasks.sh`.
+
+### T13.2 — Implement v1.2 scan-result metrics model
+
+Purpose:
+- Compute `traceability_metrics` deterministically from existing scan-engine
+  derived state.
+
+Contract refs:
+- `contract.md` — §6.12 Traceability metrics v1.2
+- `contract.md` — §13.5.1 `traceability_metrics`
+
+Design refs:
+- `design.md` — §5.5 `scan_engine`
+- `design.md` — §7.6.1 Traceability metrics v1.2
+
+Eval refs:
+- `evals.md` — §5.2 B-scan `fx10a_scan_traceability_metrics_fanout`
+- `evals.md` — Level A unit invariants
+
+Dependencies:
+- T13.1.
+
+Implementation scope:
+- Extend `ScanResultView` to schema version `2`.
+- Add `traceability_metrics.summary` and `traceability_metrics.anchors`.
+- Calculate counts once in `scan_engine` from `stored_mappings`,
+  `seed_files`, `reached_files`, and `covering_anchor_ids`.
+- Ensure non-usable mappings contribute only `seed_file_count`.
+
+Out of scope:
+- Adding `direct_seed_anchor_ids` to `files`.
+- Reading package, Git, cache, network, clock, or environment state.
+
+Done when:
+- Unit tests cover usable, absent, stale, invalid, no-usable, direct,
+  transitive, unique, and shared-count cases.
+- Existing coverage and findings behavior remains unchanged except for schema
+  v2 metrics.
+
+Suggested verification:
+- Run `npm run build`.
+- Run `node --test dist/domain/scan-engine.test.js dist/domain/scan-result.test.js`.
+
+### T13.3 — Render JSON v2 and update scan goldens
+
+Purpose:
+- Render the schema v2 machine contract byte-for-byte and update every
+  successful `scan --json` golden.
+
+Contract refs:
+- `contract.md` — §13.2 Success JSON schema
+- `contract.md` — §13.5.1 `traceability_metrics`
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §5.7 `render`
+
+Eval refs:
+- `evals.md` — §5.2 B-scan
+- `evals.md` — §6 Goldens and exact oracles
+- `evals.md` — C1–C12 deterministic and isolation checks
+
+Dependencies:
+- T13.2.
+
+Implementation scope:
+- Render `schema_version = 2`.
+- Render root key order with `traceability_metrics` between `files` and
+  `findings`.
+- Render closed metric objects in contract order.
+- Add `fx10a_scan_traceability_metrics_fanout` and update all affected
+  `scan --json` stdout goldens.
+
+Out of scope:
+- Maintaining JSON v1 and v2 simultaneously.
+- Adding new CLI commands or options.
+
+Done when:
+- Renderer unit tests cover root order, summary order, and anchor metric order.
+- Fixture goldens are updated and pass byte-for-byte.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --fixture fx10a_scan_traceability_metrics_fanout`.
+- Run `npm run test:fixtures -- --goldens-only`.
+
+### T13.4 — Close v1.2 traceability metrics readiness
+
+Purpose:
+- Prove the v1.2 metrics release remains deterministic, non-mutating, and
+  scope-closed.
+
+Contract refs:
+- `contract.md` — §9.3 `anchormap scan`
+- `contract.md` — §13 JSON garanti et codes de sortie
+
+Design refs:
+- `design.md` — §5.5 `scan_engine`
+- `design.md` — §5.7 `render`
+- `design.md` — §13 Complexity and budgets
+
+Eval refs:
+- `evals.md` — §5.2 B-scan
+- `evals.md` — C1–C12
+- `evals.md` — Gates A–G
+
+Dependencies:
+- T13.3.
+
+Implementation scope:
+- Run repo-local static checks applicable to docs, runtime, renderer, and
+  fixtures.
+- Run golden and metamorphic checks that cover the schema v2 output.
+- Update release-facing documentation only if required by existing gate checks.
+
+Out of scope:
+- Publishing a package.
+- Changing performance budgets to absorb the extra JSON fields.
+
+Done when:
+- T13.1–T13.3 are complete.
+- Applicable repo-local checks pass.
+- The new fixture and existing successful `scan --json` goldens pass.
+- Metamorphic determinism remains stable under schema v2.
+
+Suggested verification:
+- Run `npm run lint`.
+- Run `npm test`.
+- Run `npm run test:fixtures -- --goldens-only`.
+- Run `npm run test:metamorphic`.
+
 ## Future compatibility backlog
 
 This section records out-of-scope discoveries made after the v1.0 publication
@@ -5635,6 +5815,7 @@ Non-goals:
 | B-scan `fx03`–`fx05` | T7.2, T7.4, T7.7 | M7 | fixture/golden | Unmapped, stale, broken seed states |
 | B-scan `fx06`, `fx06a`, `fx07`, `fx08` | T7.3, T7.4, T7.7 | M7 | fixture/golden | `untraced_product_file` preconditions and suppression |
 | B-scan `fx09`, `fx10` | T3.3, T3.5, T7.5, T7.7 | M3, M7 | fixture/golden | Finding order and closed objects |
+| B-scan `fx10a` | T13.1, T13.2, T13.3 | M13 | fixture/golden | v1.2 traceability metrics summary and per-anchor direct/transitive/unique/shared counts |
 | B-specs `fx11`–`fx15` | T5.2, T5.4, T5.5 | M5 | fixture | Markdown anchor detection rules |
 | B-specs `fx16`–`fx18` | T5.3, T5.4, T5.5 | M5 | fixture | YAML root `id` behavior |
 | B-specs `fx19`–`fx22` | T5.3, T5.4, T5.5 | M5 | fixture | Duplicate anchors and invalid YAML specs |

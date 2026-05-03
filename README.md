@@ -108,13 +108,13 @@ anchormap scan --json
 
 `scan --json` writes one canonical JSON object to stdout on success. The root
 keys are `schema_version`, `config`, `analysis_health`, `observed_anchors`,
-`stored_mappings`, `files`, and `findings`.
+`stored_mappings`, `files`, `traceability_metrics`, and `findings`.
 
 Formatted for readability, the example above reports:
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -145,13 +145,36 @@ Formatted for readability, the example above reports:
       "supported_local_targets": []
     }
   },
+  "traceability_metrics": {
+    "summary": {
+      "product_file_count": 2,
+      "stored_mapping_count": 1,
+      "usable_mapping_count": 1,
+      "observed_anchor_count": 1,
+      "covered_product_file_count": 2,
+      "uncovered_product_file_count": 0,
+      "directly_seeded_product_file_count": 1,
+      "single_cover_product_file_count": 2,
+      "multi_cover_product_file_count": 0
+    },
+    "anchors": {
+      "DOC.README.PRESENT": {
+        "seed_file_count": 1,
+        "direct_seed_file_count": 1,
+        "reached_file_count": 2,
+        "transitive_reached_file_count": 1,
+        "unique_reached_file_count": 2,
+        "shared_reached_file_count": 0
+      }
+    }
+  },
   "findings": []
 }
 ```
 
 ## Commands
 
-AnchorMap v1.0 exposes exactly three commands:
+AnchorMap exposes exactly three commands:
 
 - `anchormap init --root <path> --spec-root <path> [--spec-root <path> ...] [--ignore-root <path> ...]`
 - `anchormap map --anchor <anchor_id> --seed <path> [--seed <path> ...] [--replace]`

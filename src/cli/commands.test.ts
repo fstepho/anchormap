@@ -1485,7 +1485,7 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 1,
+			schema_version: 2,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1501,6 +1501,10 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 					supported_local_targets: [],
 				},
 			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 1,
+				uncoveredProductFileCount: 1,
+			}),
 			findings: [],
 		});
 		assert.equal(
@@ -1602,7 +1606,7 @@ test("scan --json renders unsupported local require and dynamic import findings"
 			assert.equal(exitCode, 0, testCase.name);
 			assert.equal(stderr.read(), "", testCase.name);
 			assert.deepEqual(JSON.parse(stdout.read()), {
-				schema_version: 1,
+				schema_version: 2,
 				config: {
 					version: 1,
 					product_root: "src",
@@ -1622,6 +1626,10 @@ test("scan --json renders unsupported local require and dynamic import findings"
 						supported_local_targets: [],
 					},
 				},
+				traceability_metrics: traceabilityMetrics({
+					productFileCount: 2,
+					uncoveredProductFileCount: 2,
+				}),
 				findings: [
 					{
 						kind: "unsupported_static_edge",
@@ -1661,7 +1669,7 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 1,
+			schema_version: 2,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1681,6 +1689,10 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 					supported_local_targets: ["src/dep.ts"],
 				},
 			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 2,
+				uncoveredProductFileCount: 2,
+			}),
 			findings: [],
 		});
 		assert.equal(
@@ -1730,7 +1742,7 @@ test("scan --json renders usable mapping reachability through supported graph ed
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 1,
+			schema_version: 2,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1761,6 +1773,24 @@ test("scan --json renders usable mapping reachability through supported graph ed
 					supported_local_targets: ["src/dep.ts"],
 				},
 			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 2,
+				storedMappingCount: 1,
+				usableMappingCount: 1,
+				observedAnchorCount: 1,
+				coveredProductFileCount: 2,
+				directlySeededProductFileCount: 1,
+				singleCoverProductFileCount: 2,
+				anchors: {
+					"FR-014": anchorTraceabilityMetrics({
+						seedFileCount: 1,
+						directSeedFileCount: 1,
+						reachedFileCount: 2,
+						transitiveReachedFileCount: 1,
+						uniqueReachedFileCount: 2,
+					}),
+				},
+			}),
 			findings: [],
 		});
 		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
@@ -1791,7 +1821,7 @@ test("scan --json renders observed anchors without stored mappings", () => {
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 1,
+			schema_version: 2,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1812,6 +1842,14 @@ test("scan --json renders observed anchors without stored mappings", () => {
 					supported_local_targets: [],
 				},
 			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 1,
+				observedAnchorCount: 1,
+				uncoveredProductFileCount: 1,
+				anchors: {
+					"FR-014": anchorTraceabilityMetrics(),
+				},
+			}),
 			findings: [
 				{
 					kind: "unmapped_anchor",
@@ -1856,7 +1894,7 @@ test("scan --json renders stale stored mappings without evaluating seeds", () =>
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 1,
+			schema_version: 2,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -1878,6 +1916,16 @@ test("scan --json renders stale stored mappings without evaluating seeds", () =>
 					supported_local_targets: [],
 				},
 			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 1,
+				storedMappingCount: 1,
+				uncoveredProductFileCount: 1,
+				anchors: {
+					"FR-014": anchorTraceabilityMetrics({
+						seedFileCount: 1,
+					}),
+				},
+			}),
 			findings: [
 				{
 					kind: "stale_mapping_anchor",
@@ -1918,6 +1966,54 @@ test("human scan runs successful orchestration without repository mutation", () 
 		rmSync(cwd, { recursive: true, force: true });
 	}
 });
+
+function traceabilityMetrics(input: {
+	readonly productFileCount?: number;
+	readonly storedMappingCount?: number;
+	readonly usableMappingCount?: number;
+	readonly observedAnchorCount?: number;
+	readonly coveredProductFileCount?: number;
+	readonly uncoveredProductFileCount?: number;
+	readonly directlySeededProductFileCount?: number;
+	readonly singleCoverProductFileCount?: number;
+	readonly multiCoverProductFileCount?: number;
+	readonly anchors?: Record<string, ReturnType<typeof anchorTraceabilityMetrics>>;
+}) {
+	return {
+		summary: {
+			product_file_count: input.productFileCount ?? 0,
+			stored_mapping_count: input.storedMappingCount ?? 0,
+			usable_mapping_count: input.usableMappingCount ?? 0,
+			observed_anchor_count: input.observedAnchorCount ?? 0,
+			covered_product_file_count: input.coveredProductFileCount ?? 0,
+			uncovered_product_file_count: input.uncoveredProductFileCount ?? 0,
+			directly_seeded_product_file_count: input.directlySeededProductFileCount ?? 0,
+			single_cover_product_file_count: input.singleCoverProductFileCount ?? 0,
+			multi_cover_product_file_count: input.multiCoverProductFileCount ?? 0,
+		},
+		anchors: input.anchors ?? {},
+	};
+}
+
+function anchorTraceabilityMetrics(
+	input: {
+		readonly seedFileCount?: number;
+		readonly directSeedFileCount?: number;
+		readonly reachedFileCount?: number;
+		readonly transitiveReachedFileCount?: number;
+		readonly uniqueReachedFileCount?: number;
+		readonly sharedReachedFileCount?: number;
+	} = {},
+) {
+	return {
+		seed_file_count: input.seedFileCount ?? 0,
+		direct_seed_file_count: input.directSeedFileCount ?? 0,
+		reached_file_count: input.reachedFileCount ?? 0,
+		transitive_reached_file_count: input.transitiveReachedFileCount ?? 0,
+		unique_reached_file_count: input.uniqueReachedFileCount ?? 0,
+		shared_reached_file_count: input.sharedReachedFileCount ?? 0,
+	};
+}
 
 function writeMinimalScanConfig(cwd: string): void {
 	writeFileSync(

@@ -1,0 +1,19 @@
+{
+	"id": "fx10a_scan_traceability_metrics_fanout",
+	"family": "B-scan",
+	"purpose": "Scan --json renders v1.2 traceability metrics for direct, transitive, unique, and shared coverage.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden", "traceability_metrics"],
+	"groups": ["m13"]
+}

@@ -36,18 +36,45 @@ export interface FileView {
 	readonly supported_local_targets: readonly RepoPath[];
 }
 
+export interface TraceabilitySummaryView {
+	readonly product_file_count: number;
+	readonly stored_mapping_count: number;
+	readonly usable_mapping_count: number;
+	readonly observed_anchor_count: number;
+	readonly covered_product_file_count: number;
+	readonly uncovered_product_file_count: number;
+	readonly directly_seeded_product_file_count: number;
+	readonly single_cover_product_file_count: number;
+	readonly multi_cover_product_file_count: number;
+}
+
+export interface AnchorTraceabilityMetricsView {
+	readonly seed_file_count: number;
+	readonly direct_seed_file_count: number;
+	readonly reached_file_count: number;
+	readonly transitive_reached_file_count: number;
+	readonly unique_reached_file_count: number;
+	readonly shared_reached_file_count: number;
+}
+
+export interface TraceabilityMetricsView {
+	readonly summary: TraceabilitySummaryView;
+	readonly anchors: Readonly<Record<AnchorId, AnchorTraceabilityMetricsView>>;
+}
+
 export type ObservedAnchorsView = Readonly<Record<AnchorId, ObservedAnchorView>>;
 export type StoredMappingsView = Readonly<Record<AnchorId, StoredMappingView>>;
 export type FilesView = Readonly<Record<RepoPath, FileView>>;
 export type FindingsView = readonly Finding[];
 
 export interface ScanResultView {
-	readonly schema_version: 1;
+	readonly schema_version: 2;
 	readonly config: ConfigView;
 	readonly analysis_health: AnalysisHealth;
 	readonly observed_anchors: ObservedAnchorsView;
 	readonly stored_mappings: StoredMappingsView;
 	readonly files: FilesView;
+	readonly traceability_metrics: TraceabilityMetricsView;
 	readonly findings: FindingsView;
 }
 
@@ -55,9 +82,10 @@ export type ConfigViewFields = Pick<ConfigView, "product_root" | "spec_roots" | 
 export type ObservedAnchorViewFields = ObservedAnchorView;
 export type StoredMappingViewFields = StoredMappingView;
 export type FileViewFields = FileView;
+export type TraceabilityMetricsViewFields = TraceabilityMetricsView;
 export type ScanResultViewFields = Pick<
 	ScanResultView,
-	"config" | "observed_anchors" | "stored_mappings" | "files" | "findings"
+	"config" | "observed_anchors" | "stored_mappings" | "files" | "traceability_metrics" | "findings"
 >;
 
 type NoExtraFields<Input, Shape> = Input & Record<Exclude<keyof Input, keyof Shape>, never>;
@@ -116,16 +144,26 @@ export function createFileView<const Input extends FileViewFields>(
 	};
 }
 
+export function createTraceabilityMetricsView<const Input extends TraceabilityMetricsViewFields>(
+	fields: NoExtraFields<Input, TraceabilityMetricsViewFields>,
+): TraceabilityMetricsView {
+	return {
+		summary: fields.summary,
+		anchors: sortRecordByUtf8Key(fields.anchors),
+	};
+}
+
 export function createScanResultView<const Input extends ScanResultViewFields>(
 	fields: NoExtraFields<Input, ScanResultViewFields>,
 ): ScanResultView {
 	return {
-		schema_version: 1,
+		schema_version: 2,
 		config: fields.config,
 		analysis_health: analysisHealth(fields.findings),
 		observed_anchors: sortRecordByUtf8Key(fields.observed_anchors),
 		stored_mappings: sortRecordByUtf8Key(fields.stored_mappings),
 		files: sortRecordByUtf8Key(fields.files),
+		traceability_metrics: createTraceabilityMetricsView(fields.traceability_metrics),
 		findings: fields.findings,
 	};
 }

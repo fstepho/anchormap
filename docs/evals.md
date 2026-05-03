@@ -161,6 +161,7 @@ Objectif : couvrir explicitement les règles de décodage et de profils grammati
 | `fx08_scan_no_untraced_without_usable_mapping` | aucun mapping exploitable | 0 | golden JSON exact ; absence de `untraced_product_file` |
 | `fx09_scan_findings_canonical_order` | plusieurs findings de kinds différents | 0 | golden JSON exact ; tri canonique des findings ; ordre canonique des clés |
 | `fx10_scan_closed_objects` | fermeture stricte du schéma JSON | 0 | validation exacte des clés racine et des objets fermés ; aucun champ supplémentaire |
+| `fx10a_scan_traceability_metrics_fanout` | fan-out générique avec seed direct, portée transitive, couverture unique et couverture partagée | 0 | golden JSON exact ; `traceability_metrics.summary` et `traceability_metrics.anchors` exacts ; aucune classification métier d'anchor |
 
 Les états essentiels du schéma doivent être explicitement couverts ainsi :
 
@@ -176,6 +177,8 @@ Les états essentiels du schéma doivent être explicitement couverts ainsi :
 | `files[].covering_anchor_ids = []` | `fx06_scan_clean_untraced` ou `fx08_scan_no_untraced_without_usable_mapping` |
 | `findings = []` | `fx01_scan_min_clean` |
 | `findings` non vide | `fx03` à `fx09` |
+| `traceability_metrics.summary` | `fx10a_scan_traceability_metrics_fanout` |
+| `traceability_metrics.anchors` | `fx10a_scan_traceability_metrics_fanout` |
 
 ### 5.3 Famille B-specs — détection d'anchors et échecs bloquants des specs
 

@@ -19,8 +19,12 @@ import {
 	createObservedAnchorView,
 	createScanResultView,
 	createStoredMappingView,
+	createTraceabilityMetricsView,
+	type FilesView,
 	type ScanResultView,
 	type StoredMappingState,
+	type StoredMappingsView,
+	type TraceabilityMetricsView,
 } from "./scan-result";
 
 type ObservedAnchor =
@@ -115,6 +119,13 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 			}),
 		]),
 	);
+	const traceability_metrics = buildTraceabilityMetrics({
+		config: input.config,
+		observedAnchorIds,
+		stored_mappings,
+		files,
+		reachedFilesByMapping,
+	});
 	const baseFindings = normalizeFindings([...input.productGraph.graphFindings, ...mappingFindings]);
 	const findings = normalizeFindings([
 		...baseFindings,
@@ -135,7 +146,118 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 		observed_anchors,
 		stored_mappings,
 		files,
+		traceability_metrics,
 		findings,
+	});
+}
+
+function buildTraceabilityMetrics(input: {
+	readonly config: Config;
+	readonly observedAnchorIds: ReadonlySet<AnchorId>;
+	readonly stored_mappings: StoredMappingsView;
+	readonly files: FilesView;
+	readonly reachedFilesByMapping: ReadonlyMap<AnchorId, readonly RepoPath[]>;
+}): TraceabilityMetricsView {
+	const directlySeededFiles = new Set<RepoPath>();
+	let coveredProductFileCount = 0;
+	let singleCoverProductFileCount = 0;
+	let multiCoverProductFileCount = 0;
+
+	for (const file of Object.values(input.files)) {
+		if (file.covering_anchor_ids.length > 0) {
+			coveredProductFileCount += 1;
+		}
+
+		if (file.covering_anchor_ids.length === 1) {
+			singleCoverProductFileCount += 1;
+		}
+
+		if (file.covering_anchor_ids.length >= 2) {
+			multiCoverProductFileCount += 1;
+		}
+	}
+
+	for (const storedMapping of Object.values(input.stored_mappings)) {
+		if (storedMapping.state !== "usable") {
+			continue;
+		}
+
+		for (const seedFile of storedMapping.seed_files) {
+			directlySeededFiles.add(seedFile);
+		}
+	}
+
+	const anchors = Object.fromEntries(
+		sortAnchorIdsByUtf8([
+			...new Set([
+				...input.observedAnchorIds,
+				...(Object.keys(input.stored_mappings) as AnchorId[]),
+			]),
+		]).map((anchorId) => {
+			const storedMapping = input.stored_mappings[anchorId];
+			const seedFileCount = input.config.mappings[anchorId]?.seedFiles.length ?? 0;
+
+			if (storedMapping?.state !== "usable") {
+				return [
+					anchorId,
+					{
+						seed_file_count: seedFileCount,
+						direct_seed_file_count: 0,
+						reached_file_count: 0,
+						transitive_reached_file_count: 0,
+						unique_reached_file_count: 0,
+						shared_reached_file_count: 0,
+					},
+				];
+			}
+
+			let uniqueReachedFileCount = 0;
+			let sharedReachedFileCount = 0;
+			const reachedFiles = input.reachedFilesByMapping.get(anchorId) ?? [];
+
+			for (const reachedFile of reachedFiles) {
+				const coveringAnchorIds = input.files[reachedFile]?.covering_anchor_ids ?? [];
+
+				if (coveringAnchorIds.length === 1) {
+					uniqueReachedFileCount += 1;
+				}
+
+				if (coveringAnchorIds.length >= 2) {
+					sharedReachedFileCount += 1;
+				}
+			}
+
+			return [
+				anchorId,
+				{
+					seed_file_count: seedFileCount,
+					direct_seed_file_count: storedMapping.seed_files.length,
+					reached_file_count: reachedFiles.length,
+					transitive_reached_file_count: reachedFiles.length - storedMapping.seed_files.length,
+					unique_reached_file_count: uniqueReachedFileCount,
+					shared_reached_file_count: sharedReachedFileCount,
+				},
+			];
+		}),
+	);
+
+	const productFileCount = Object.keys(input.files).length;
+
+	return createTraceabilityMetricsView({
+		summary: {
+			product_file_count: productFileCount,
+			stored_mapping_count: Object.keys(input.stored_mappings).length,
+			usable_mapping_count: Object.values(input.stored_mappings).filter(
+				(storedMapping) => storedMapping.state === "usable",
+			).length,
+			observed_anchor_count: input.observedAnchorIds.size,
+			covered_product_file_count: coveredProductFileCount,
+			uncovered_product_file_count: productFileCount - coveredProductFileCount,
+			directly_seeded_product_file_count: directlySeededFiles.size,
+			single_cover_product_file_count: singleCoverProductFileCount,
+			multi_cover_product_file_count: multiCoverProductFileCount,
+		},
+		anchors,
 	});
 }
 

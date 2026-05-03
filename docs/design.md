@@ -274,6 +274,7 @@ Responsabilités :
 - déterminer les mappings exploitables ;
 - calculer les fermetures transitives ;
 - construire `covering_anchor_ids` ;
+- construire les métriques de traçabilité v1.2 à partir des vues dérivées ;
 - produire les findings métier ;
 - fusionner, dédupliquer et trier tous les findings ;
 - dériver `analysis_health` ;
@@ -326,6 +327,8 @@ Décisions clés :
 - `render` ne trie rien, ne déduplique rien et ne normalise aucun chemin ;
 - le JSON est généré à partir d’un modèle déjà trié et normalisé ;
 - le JSON canonique est rendu par un encoder custom selon `ADR-0007`, pas par `JSON.stringify` ;
+- pour `schema_version = 2`, `traceability_metrics` est rendu entre `files`
+  et `findings`, selon l'ordre exact du contrat ;
 - `render` retourne des bytes ou des strings en mémoire ; `commands` reste seul owner de `stdout` / `stderr` ;
 - tout échec de sérialisation d’un `ScanResult` valide remonte comme `InternalError`.
 
@@ -658,6 +661,20 @@ Décisions clés :
 - l’ordre de visite ne fuit pas dans le rendu final ;
 - `reachedFiles` est figé avant toute projection vers la couverture ;
 - `covering_anchor_ids` est trié après accumulation.
+
+### 7.6.1 Métriques de traçabilité v1.2
+
+Après la construction de `stored_mappings`, `files` et des
+`covering_anchor_ids`, `scan_engine` calcule `traceability_metrics`.
+
+Règles de design :
+
+- les métriques sont calculées une seule fois dans `scan_engine` ;
+- le renderer JSON ne recalcule aucune métrique ;
+- les métriques n'utilisent aucune classification métier d'anchor ;
+- les métriques ne modifient pas `analysis_health` ;
+- les mappings non `usable` ne contribuent à aucun compteur de couverture ;
+- l'objet `anchors` est trié par l'ordre canonique des `AnchorId`.
 
 ### 7.7 Calcul des findings métier
 

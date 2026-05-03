@@ -1,10 +1,13 @@
 import type { Finding } from "../domain/finding";
 import type {
+	AnchorTraceabilityMetricsView,
 	ConfigView,
 	FileView,
 	ObservedAnchorView,
 	ScanResultView,
 	StoredMappingView,
+	TraceabilityMetricsView,
+	TraceabilitySummaryView,
 } from "../domain/scan-result";
 
 export function renderScanResultJson(result: ScanResultView): string {
@@ -23,6 +26,7 @@ function renderScanResultObject(result: ScanResultView): string {
 		["observed_anchors", renderRecord(result.observed_anchors, renderObservedAnchor)],
 		["stored_mappings", renderRecord(result.stored_mappings, renderStoredMapping)],
 		["files", renderRecord(result.files, renderFile)],
+		["traceability_metrics", renderTraceabilityMetrics(result.traceability_metrics)],
 		["findings", renderArray(result.findings, renderFinding)],
 	]);
 }
@@ -55,6 +59,41 @@ function renderFile(file: FileView): string {
 	return renderObject([
 		["covering_anchor_ids", renderStringArray(file.covering_anchor_ids)],
 		["supported_local_targets", renderStringArray(file.supported_local_targets)],
+	]);
+}
+
+function renderTraceabilityMetrics(metrics: TraceabilityMetricsView): string {
+	return renderObject([
+		["summary", renderTraceabilitySummary(metrics.summary)],
+		["anchors", renderRecord(metrics.anchors, renderAnchorTraceabilityMetrics)],
+	]);
+}
+
+function renderTraceabilitySummary(summary: TraceabilitySummaryView): string {
+	return renderObject([
+		["product_file_count", renderNumber(summary.product_file_count)],
+		["stored_mapping_count", renderNumber(summary.stored_mapping_count)],
+		["usable_mapping_count", renderNumber(summary.usable_mapping_count)],
+		["observed_anchor_count", renderNumber(summary.observed_anchor_count)],
+		["covered_product_file_count", renderNumber(summary.covered_product_file_count)],
+		["uncovered_product_file_count", renderNumber(summary.uncovered_product_file_count)],
+		[
+			"directly_seeded_product_file_count",
+			renderNumber(summary.directly_seeded_product_file_count),
+		],
+		["single_cover_product_file_count", renderNumber(summary.single_cover_product_file_count)],
+		["multi_cover_product_file_count", renderNumber(summary.multi_cover_product_file_count)],
+	]);
+}
+
+function renderAnchorTraceabilityMetrics(metrics: AnchorTraceabilityMetricsView): string {
+	return renderObject([
+		["seed_file_count", renderNumber(metrics.seed_file_count)],
+		["direct_seed_file_count", renderNumber(metrics.direct_seed_file_count)],
+		["reached_file_count", renderNumber(metrics.reached_file_count)],
+		["transitive_reached_file_count", renderNumber(metrics.transitive_reached_file_count)],
+		["unique_reached_file_count", renderNumber(metrics.unique_reached_file_count)],
+		["shared_reached_file_count", renderNumber(metrics.shared_reached_file_count)],
 	]);
 }
 
@@ -131,7 +170,7 @@ function renderArray<Value>(
 	return `[${values.map((value) => renderValue(value)).join(",")}]`;
 }
 
-function renderNumber(value: 1): string {
+function renderNumber(value: number): string {
 	return String(value);
 }
 

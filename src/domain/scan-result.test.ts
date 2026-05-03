@@ -23,6 +23,7 @@ import {
 	createObservedAnchorView,
 	createScanResultView,
 	createStoredMappingView,
+	createTraceabilityMetricsView,
 } from "./scan-result";
 
 test("computes clean analysis health for no findings", () => {
@@ -71,6 +72,7 @@ test("constructs scan result with only contract root fields and computed health"
 				supported_local_targets: [],
 			}),
 		},
+		traceability_metrics: minimalTraceabilityMetrics(),
 		findings: [createStaleMappingAnchorFinding({ anchor_id: anchorId("QA-999") })],
 	});
 
@@ -81,9 +83,10 @@ test("constructs scan result with only contract root fields and computed health"
 		"observed_anchors",
 		"stored_mappings",
 		"files",
+		"traceability_metrics",
 		"findings",
 	]);
-	assert.equal(result.schema_version, 1);
+	assert.equal(result.schema_version, 2);
 	assert.equal(result.analysis_health, "degraded");
 });
 
@@ -117,6 +120,37 @@ test("constructs closed nested output views with contract fields", () => {
 	assert.deepEqual(Object.keys(file), ["covering_anchor_ids", "supported_local_targets"]);
 	assert.deepEqual(file.covering_anchor_ids, [anchorId("QA-001"), anchorId("QA-002")]);
 	assert.deepEqual(file.supported_local_targets.map(repoPathToString), ["src/a.ts", "src/z.ts"]);
+
+	const metrics = createTraceabilityMetricsView({
+		summary: {
+			product_file_count: 2,
+			stored_mapping_count: 2,
+			usable_mapping_count: 1,
+			observed_anchor_count: 2,
+			covered_product_file_count: 1,
+			uncovered_product_file_count: 1,
+			directly_seeded_product_file_count: 1,
+			single_cover_product_file_count: 1,
+			multi_cover_product_file_count: 0,
+		},
+		anchors: {
+			[anchorId("QA-002")]: emptyAnchorTraceabilityMetrics(),
+			[anchorId("QA-001")]: emptyAnchorTraceabilityMetrics(),
+		},
+	});
+	assert.deepEqual(Object.keys(metrics), ["summary", "anchors"]);
+	assert.deepEqual(Object.keys(metrics.summary), [
+		"product_file_count",
+		"stored_mapping_count",
+		"usable_mapping_count",
+		"observed_anchor_count",
+		"covered_product_file_count",
+		"uncovered_product_file_count",
+		"directly_seeded_product_file_count",
+		"single_cover_product_file_count",
+		"multi_cover_product_file_count",
+	]);
+	assert.deepEqual(Object.keys(metrics.anchors), [anchorId("QA-001"), anchorId("QA-002")]);
 });
 
 test("clears reached files for non-usable stored mappings", () => {
@@ -171,12 +205,23 @@ test("canonicalizes scan result record key order", () => {
 				supported_local_targets: [],
 			}),
 		},
+		traceability_metrics: createTraceabilityMetricsView({
+			summary: minimalTraceabilityMetrics().summary,
+			anchors: {
+				[anchorId("QA-002")]: emptyAnchorTraceabilityMetrics(),
+				[anchorId("QA-001")]: emptyAnchorTraceabilityMetrics(),
+			},
+		}),
 		findings: [],
 	});
 
 	assert.deepEqual(Object.keys(result.observed_anchors), [anchorId("QA-001"), anchorId("QA-002")]);
 	assert.deepEqual(Object.keys(result.stored_mappings), [anchorId("QA-001"), anchorId("QA-002")]);
 	assert.deepEqual(Object.keys(result.files), [repoPath("src/a.ts"), repoPath("src/z.ts")]);
+	assert.deepEqual(Object.keys(result.traceability_metrics.anchors), [
+		anchorId("QA-001"),
+		anchorId("QA-002"),
+	]);
 });
 
 test("typed view construction rejects extra fields", () => {
@@ -215,6 +260,34 @@ function degradingFindings(): Finding[] {
 			target_path: repoPath("src/view.tsx"),
 		}),
 	];
+}
+
+function minimalTraceabilityMetrics() {
+	return createTraceabilityMetricsView({
+		summary: {
+			product_file_count: 0,
+			stored_mapping_count: 0,
+			usable_mapping_count: 0,
+			observed_anchor_count: 0,
+			covered_product_file_count: 0,
+			uncovered_product_file_count: 0,
+			directly_seeded_product_file_count: 0,
+			single_cover_product_file_count: 0,
+			multi_cover_product_file_count: 0,
+		},
+		anchors: {},
+	});
+}
+
+function emptyAnchorTraceabilityMetrics() {
+	return {
+		seed_file_count: 0,
+		direct_seed_file_count: 0,
+		reached_file_count: 0,
+		transitive_reached_file_count: 0,
+		unique_reached_file_count: 0,
+		shared_reached_file_count: 0,
+	};
 }
 
 function anchorId(value: string): AnchorId {

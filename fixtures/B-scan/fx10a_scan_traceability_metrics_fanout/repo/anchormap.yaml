@@ -1,0 +1,11 @@
+version: 1
+product_root: src
+spec_roots:
+  - specs
+mappings:
+  FR-100:
+    seed_files:
+      - src/root.ts
+  FR-200:
+    seed_files:
+      - src/feature.ts

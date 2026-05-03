@@ -416,6 +416,28 @@ L'état `mapping_state` d'une anchor observée est déterminé ainsi :
 2. sinon, si l'état du mapping stocké est `usable`, `mapping_state = usable` ;
 3. sinon, `mapping_state = invalid`.
 
+### 6.12 Traceability metrics v1.2
+
+Les métriques de traçabilité sont des données **Derived**.
+
+Elles décrivent la forme structurelle du scan réussi. Elles ne sont jamais
+persistées dans `anchormap.yaml`, ne produisent aucun finding, ne modifient pas
+`analysis_health`, et ne portent aucune sémantique d'ownership, de preuve
+métier, de suppression sûre ou de code mort.
+
+Les métriques sont calculées uniquement à partir :
+
+- des anchors observées ;
+- des mappings stockés et de leur état ;
+- des `seed_files` stockés ;
+- des `reached_files` des mappings exploitables ;
+- des `covering_anchor_ids` des fichiers produit.
+
+Pour tout mapping dont l'état n'est pas `usable`, les compteurs liés à la
+couverture valent `0`, même si certains `seed_files` existent. Le compteur
+`seed_file_count` reste le nombre de `seed_files` stockés lorsque le mapping
+existe.
+
 ## 7. `anchormap.yaml`
 
 ### 7.1 Rôle
@@ -754,8 +776,9 @@ Seul `scan --json` a un schéma de sortie garanti.
 5. construction des `supported_local_targets` et des findings issus des syntaxes locales reconnues de la section 10 ;
 6. validation structurelle des mappings stockés ;
 7. calcul de `reached_files` puis de `covering_anchor_ids` pour chaque `product_file` à partir des mappings exploitables ;
-8. findings ;
-9. `analysis_health`.
+8. métriques de traçabilité dérivées ;
+9. findings ;
+10. `analysis_health`.
 
 #### 9.3.4 Règle de contribution d'un mapping
 
@@ -1206,14 +1229,16 @@ L'objet JSON de succès contient exactement les clés racine suivantes :
 - `observed_anchors`
 - `stored_mappings`
 - `files`
+- `traceability_metrics`
 - `findings`
 
 Contraintes normatives :
 
-- `schema_version` vaut toujours l'entier `1` ;
+- `schema_version` vaut toujours l'entier `2` ;
 - `config` est toujours présent ;
 - `analysis_health` vaut `clean` ou `degraded` ;
 - `observed_anchors`, `stored_mappings` et `files` sont toujours présents, y compris s'ils sont vides ;
+- `traceability_metrics` est toujours présent ;
 - `findings` est toujours présent, y compris s'il est vide ;
 - aucune clé racine supplémentaire n'est autorisée.
 
@@ -1297,6 +1322,63 @@ Règles complémentaires :
 - `supported_local_targets` contient exactement l'ensemble dédupliqué des cibles retenues par la règle 1 de la section 10.2 pour ce fichier importeur ;
 - aucune clé supplémentaire n'est autorisée dans une entrée de `files`.
 
+### 13.5.1 `traceability_metrics`
+
+`traceability_metrics` contient des compteurs dérivés du résultat de scan
+réussi.
+
+L'objet contient exactement les clés suivantes :
+
+1. `summary`
+2. `anchors`
+
+`summary` est un objet fermé contenant exactement les clés suivantes :
+
+1. `product_file_count`
+2. `stored_mapping_count`
+3. `usable_mapping_count`
+4. `observed_anchor_count`
+5. `covered_product_file_count`
+6. `uncovered_product_file_count`
+7. `directly_seeded_product_file_count`
+8. `single_cover_product_file_count`
+9. `multi_cover_product_file_count`
+
+Règles complémentaires :
+
+- `product_file_count` est le nombre d'entrées dans `files` pour un scan réussi ;
+- `stored_mapping_count` est le nombre d'entrées dans `stored_mappings` ;
+- `usable_mapping_count` est le nombre d'entrées de `stored_mappings` dont `state = usable` ;
+- `observed_anchor_count` est le nombre d'entrées dans `observed_anchors` ;
+- `covered_product_file_count` est le nombre d'entrées de `files` dont `covering_anchor_ids` n'est pas vide ;
+- `uncovered_product_file_count` vaut `product_file_count - covered_product_file_count` ;
+- `directly_seeded_product_file_count` est le nombre de fichiers produit qui apparaissent dans les `seed_files` d'au moins un mapping `usable` ;
+- `single_cover_product_file_count` est le nombre de fichiers produit couverts par exactement une anchor ;
+- `multi_cover_product_file_count` est le nombre de fichiers produit couverts par au moins deux anchors.
+
+`anchors` est un objet fermé-indexé par l'union triée des anchors observées et
+des mappings stockés.
+
+Chaque entrée de `anchors` a pour clé l'`anchor_id` et pour valeur un objet
+fermé contenant exactement :
+
+1. `seed_file_count`
+2. `direct_seed_file_count`
+3. `reached_file_count`
+4. `transitive_reached_file_count`
+5. `unique_reached_file_count`
+6. `shared_reached_file_count`
+
+Règles complémentaires :
+
+- `seed_file_count` vaut le nombre de `seed_files` stockés si un mapping existe pour cette anchor, sinon `0` ;
+- pour un mapping absent, `invalid` ou `stale`, les cinq autres compteurs valent `0` ;
+- pour un mapping `usable`, `direct_seed_file_count` vaut le nombre de `seed_files` stockés ;
+- pour un mapping `usable`, `reached_file_count` vaut le nombre de `reached_files` ;
+- pour un mapping `usable`, `transitive_reached_file_count` vaut `reached_file_count - direct_seed_file_count` ;
+- pour un mapping `usable`, `unique_reached_file_count` compte les `reached_files` dont `covering_anchor_ids` contient exactement cette anchor ;
+- pour un mapping `usable`, `shared_reached_file_count` compte les `reached_files` dont `covering_anchor_ids` contient cette anchor et au moins une autre anchor.
+
 ### 13.6 `findings`
 
 `findings` est un tableau de findings dédupliqués.
@@ -1330,12 +1412,17 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
   4. `observed_anchors`
   5. `stored_mappings`
   6. `files`
-  7. `findings`
+  7. `traceability_metrics`
+  8. `findings`
 - dans `config`, l'ordre des clés est `version`, puis `product_root`, puis `spec_roots`, puis `ignore_roots` ;
 - les clés de `observed_anchors`, `stored_mappings` et `files` sont triées lexicographiquement ;
 - dans chaque entrée de `observed_anchors`, l'ordre des clés est `spec_path`, puis `mapping_state` ;
 - dans chaque entrée de `stored_mappings`, l'ordre des clés est `state`, puis `seed_files`, puis `reached_files` ;
 - dans chaque entrée de `files`, l'ordre des clés est `covering_anchor_ids`, puis `supported_local_targets` ;
+- dans `traceability_metrics`, l'ordre des clés est `summary`, puis `anchors` ;
+- dans `traceability_metrics.summary`, l'ordre des clés est celui de la section 13.5.1 ;
+- les clés de `traceability_metrics.anchors` sont triées lexicographiquement ;
+- dans chaque entrée de `traceability_metrics.anchors`, l'ordre des clés est celui de la section 13.5.1 ;
 - les tableaux `config.spec_roots`, `config.ignore_roots`, `seed_files`, `reached_files`, `covering_anchor_ids` et `supported_local_targets` sont triés lexicographiquement ;
 - `findings` est trié selon la section 11.6 ;
 - toute chaîne JSON est rendue entre guillemets doubles `"` ;
@@ -1344,7 +1431,7 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - tout surrogate isolé `U+D800..U+DFFF`, s'il apparaît dans une chaîne JSON, est échappé en `\u` suivi de 4 chiffres hexadécimaux minuscules ;
 - aucun autre caractère n'est échappé avec `\u` ; les autres caractères sont rendus directement en UTF-8 ;
 - `/` n'est jamais échappé ;
-- l'entier `schema_version` est rendu exactement sous la forme `1`.
+- l'entier `schema_version` est rendu exactement sous la forme `2`.
 
 ### 13.8 Codes de sortie
 
