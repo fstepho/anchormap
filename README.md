@@ -193,6 +193,8 @@ Draft anchors are visible in `scan --json` with `mapping_state: "draft"`, but
 they do not emit `unmapped_anchor` findings and they cannot be mapped. To
 promote an anchor, add the human intent, remove the draft marker from the file
 or move the selected anchor to an active spec file, then run `anchormap map`.
+When `scaffold` is run again, anchors already present in current specs are
+skipped and only new draft sections are written.
 
 ## Commands
 

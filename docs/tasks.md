@@ -26,9 +26,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T14.4 — Make scaffold rerunnable by skipping existing anchors`
+- Current active task: none.
 - Next executable product task: none.
-- Last completed task: `T14.3 — Treat scaffold output as draft specs`
+- Last completed task: `T14.4 — Make scaffold rerunnable by skipping existing anchors`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -126,6 +126,7 @@
   - `T14.1 — Implement deterministic TypeScript export scaffold`
   - `T14.2 — Disambiguate scaffold anchor collisions`
   - `T14.3 — Treat scaffold output as draft specs`
+  - `T14.4 — Make scaffold rerunnable by skipping existing anchors`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

@@ -176,11 +176,11 @@ Observed state:
 
 - `schema_version = 3`;
 - `analysis_health = clean`;
-- 126 observed anchors under `docs`;
-- 126 active anchors;
+- 127 observed anchors under `docs`;
+- 127 active anchors;
 - 0 draft anchors;
 - 0 stored mappings in this temporary scan;
-- 126 `unmapped_anchor` findings.
+- 127 `unmapped_anchor` findings.
 
 This result is intentionally non-blocking. It shows that `docs` contains many
 observable identifiers (`T*`, `M*`, `S*`, `ADR-*`) that are useful as document

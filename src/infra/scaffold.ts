@@ -124,13 +124,16 @@ export function buildScaffoldMarkdown(
 		}
 	}
 
-	const disambiguatedCandidates = disambiguateScaffoldAnchorCollisions(candidates);
+	const newRawCandidates = skipObservedBaseAnchorCandidates(candidates, specIndex);
+	const disambiguatedCandidates = disambiguateScaffoldAnchorCollisions(newRawCandidates);
 	if (disambiguatedCandidates.kind === "error") {
 		return disambiguatedCandidates;
 	}
 
-	const sortedCandidates = sortScaffoldCandidates(disambiguatedCandidates.candidates);
-	const validation = validateScaffoldCandidates(candidates, sortedCandidates, specIndex);
+	const sortedCandidates = sortScaffoldCandidates(
+		skipObservedFinalAnchorCandidates(disambiguatedCandidates.candidates, specIndex),
+	);
+	const validation = validateScaffoldCandidates(candidates, sortedCandidates);
 	if (validation.kind === "error") {
 		return validation;
 	}
@@ -323,9 +326,8 @@ function readProductFile(
 function validateScaffoldCandidates(
 	rawCandidates: readonly RawScaffoldExportCandidate[],
 	candidates: readonly ScaffoldExportCandidate[],
-	specIndex: SpecIndex,
 ): { kind: "ok" } | { kind: "error"; error: AppError } {
-	if (candidates.length === 0) {
+	if (rawCandidates.length === 0) {
 		return {
 			kind: "error",
 			error: {
@@ -335,45 +337,55 @@ function validateScaffoldCandidates(
 		};
 	}
 
-	for (const candidate of rawCandidates) {
-		if (specIndex.observedAnchors.has(candidate.baseAnchorId)) {
-			return {
-				kind: "error",
-				error: {
-					kind: "UsageError",
-					message: `scaffold anchor ${candidate.baseAnchorId} already exists in current specs`,
-				},
-			};
-		}
+	if (candidates.length === 0) {
+		return {
+			kind: "error",
+			error: {
+				kind: "UsageError",
+				message: "no new scaffold anchors to generate",
+			},
+		};
 	}
 
-	for (let index = 1; index < candidates.length; index += 1) {
-		const previous = candidates[index - 1];
-		const current = candidates[index];
-		if (previous.anchorId === current.anchorId) {
-			return {
-				kind: "error",
-				error: {
-					kind: "UsageError",
-					message: `scaffold generated final anchor collision ${current.anchorId}`,
-				},
-			};
-		}
-	}
-
-	for (const candidate of candidates) {
-		if (specIndex.observedAnchors.has(candidate.anchorId)) {
-			return {
-				kind: "error",
-				error: {
-					kind: "UsageError",
-					message: `scaffold anchor ${candidate.anchorId} already exists in current specs`,
-				},
-			};
-		}
+	const duplicateAnchor = firstDuplicateFinalAnchor(candidates);
+	if (duplicateAnchor !== undefined) {
+		return {
+			kind: "error",
+			error: {
+				kind: "UsageError",
+				message: `scaffold generated final anchor collision ${duplicateAnchor}`,
+			},
+		};
 	}
 
 	return { kind: "ok" };
+}
+
+function skipObservedBaseAnchorCandidates(
+	candidates: readonly RawScaffoldExportCandidate[],
+	specIndex: SpecIndex,
+): readonly RawScaffoldExportCandidate[] {
+	return candidates.filter((candidate) => !specIndex.observedAnchors.has(candidate.baseAnchorId));
+}
+
+function skipObservedFinalAnchorCandidates(
+	candidates: readonly ScaffoldExportCandidate[],
+	specIndex: SpecIndex,
+): readonly ScaffoldExportCandidate[] {
+	return candidates.filter((candidate) => !specIndex.observedAnchors.has(candidate.anchorId));
+}
+
+function firstDuplicateFinalAnchor(
+	candidates: readonly ScaffoldExportCandidate[],
+): AnchorId | undefined {
+	const seenAnchors = new Set<AnchorId>();
+	for (const candidate of candidates) {
+		if (seenAnchors.has(candidate.anchorId)) {
+			return candidate.anchorId;
+		}
+		seenAnchors.add(candidate.anchorId);
+	}
+	return undefined;
 }
 
 function disambiguateScaffoldAnchorCollisions(

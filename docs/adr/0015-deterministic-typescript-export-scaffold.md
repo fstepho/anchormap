@@ -38,6 +38,10 @@ Generated Markdown files include the file-level marker
 draft anchors, not as trusted active spec anchors, until a human removes the
 marker or moves selected anchors into an active spec.
 
+When scaffold is rerun, anchors already observed in current specs are treated as
+already represented and skipped by default. The command writes only new draft
+sections, or exits with a usage error when there is nothing new to generate.
+
 ## Alternatives considered
 
 ### Option A — Markdown scaffold from exports
@@ -82,6 +86,8 @@ Positive:
 - common export-name normalization collisions do not block bootstrap;
 - scanning immediately after scaffolding stays readable because draft anchors
   are visible without creating unmapped-anchor noise;
+- users can promote selected anchors and rerun scaffold later without being
+  blocked by the promoted anchors;
 - no network, Git, cache, clock, or AI dependency is introduced;
 - generated files are reproducible byte-for-byte.
 
@@ -110,8 +116,8 @@ Yes.
 
 `docs/evals.md` must add B-scaffold fixtures for success, create-only behavior,
 invalid output, config errors, product parse errors, empty generation, generated
-collisions, and collisions with existing spec anchors. It must also cover
-draft-aware scan and map refusal for draft-only anchors.
+collisions, existing-anchor skip behavior, and no-new-generation failures. It
+must also cover draft-aware scan and map refusal for draft-only anchors.
 
 ## Design impact
 

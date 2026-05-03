@@ -1,7 +1,7 @@
 {
 	"id": "fx86_scaffold_existing_base_anchor_collision",
 	"family": "B-scaffold",
-	"purpose": "scaffold fails without writing when a generated base anchor already exists in current specs before disambiguation.",
+	"purpose": "scaffold fails without writing when every generated candidate shares an existing base anchor.",
 	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
 	"cwd": ".",
 	"exit_code": 4,

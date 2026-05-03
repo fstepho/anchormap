@@ -1,0 +1,20 @@
+{
+	"id": "fx88_scaffold_skips_existing_anchors",
+	"family": "B-scaffold",
+	"purpose": "scaffold skips existing active and draft anchors and writes only new draft sections.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["specs/generated.md"]
+	},
+	"tags": ["scaffold", "write", "rerunnable", "golden"],
+	"groups": ["m14"]
+}

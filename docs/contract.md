@@ -900,11 +900,16 @@ anchormap scaffold --output <path>
   module relatif à `product_root` et du nom exporté ;
 - si plusieurs candidats produisent le même `AnchorId` de base, `scaffold`
   génère des `AnchorId` finaux désambiguïsés selon la section 9.4.4 ;
-- si deux candidats produisent le même `AnchorId` final après désambiguïsation,
-  la commande échoue ;
-- si un `AnchorId` de base ou un `AnchorId` final généré est déjà observé dans
-  les specs courantes, la commande échoue ;
-- si aucun candidat exporté n'est trouvé, la commande échoue.
+- si un `AnchorId` de base généré est déjà observé dans les specs courantes,
+  tous les candidats de ce groupe de base sont ignorés ;
+- si un `AnchorId` final généré est déjà observé dans les specs courantes, ce
+  candidat final est ignoré ;
+- après ces ignorances, si deux candidats restants produisent le même
+  `AnchorId` final après désambiguïsation, la commande échoue ;
+- si aucun candidat exporté n'est trouvé, la commande échoue ;
+- si tous les candidats exportés sont ignorés parce qu'ils sont déjà
+  représentés dans les specs courantes, la commande échoue sans créer
+  `--output`.
 
 Toute impossibilité de lire ou valider `./anchormap.yaml` relève du code `2`.
 Toute impossibilité d'indexer les specs courantes, de découvrir les

@@ -72,8 +72,8 @@
       "product_file_count": 60,
       "stored_mapping_count": 0,
       "usable_mapping_count": 0,
-      "observed_anchor_count": 126,
-      "active_anchor_count": 126,
+      "observed_anchor_count": 127,
+      "active_anchor_count": 127,
       "draft_anchor_count": 0,
       "covered_product_file_count": 0,
       "uncovered_product_file_count": 60,
@@ -81,12 +81,12 @@
       "single_cover_product_file_count": 0,
       "multi_cover_product_file_count": 0
     },
-    "observedAnchors": 126,
+    "observedAnchors": 127,
     "storedMappings": 0,
     "covered": 0,
     "uncovered": 60,
     "findingKinds": {
-      "unmapped_anchor": 126
+      "unmapped_anchor": 127
     },
     "topCovered": [
       [

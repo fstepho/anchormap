@@ -126,7 +126,9 @@ args
   -> spec_index
   -> product_files.discoverProductFiles
   -> scaffold.extractExportCandidates
+  -> scaffold.skipObservedBaseAnchorCandidates
   -> scaffold.disambiguateAnchorCollisions
+  -> scaffold.skipObservedFinalAnchorCandidates
   -> scaffold.renderMarkdown
   -> scaffold.writeOutputCreateOnly
   -> commands (optional human output)
@@ -327,7 +329,8 @@ Responsabilités :
 - extraire les déclarations exportées supportées ;
 - dériver des `AnchorId` mécaniques depuis chemin module et nom exporté ;
 - désambiguïser mécaniquement les collisions internes ;
-- détecter les collisions avec les anchors déjà observées ;
+- ignorer les anchors déjà observées pour rendre `scaffold` relançable ;
+- détecter les collisions finales entre les nouveaux candidats restants ;
 - rendre le Markdown de brouillon stable avec le marqueur draft de fichier ;
 - écrire le fichier `--output` en create-only avec cleanup sur échec.
 
@@ -341,6 +344,8 @@ Décisions clés :
   ordinal stable lorsque plusieurs candidats du même kind restent en collision ;
 - une collision finale résiduelle après suffixe reste une précondition
   utilisateur de code `4`, jamais une erreur interne ;
+- les anchors déjà observées sont traitées comme déjà représentées et ne sont
+  pas régénérées ;
 - le renderer Markdown est fermé et project-owned.
 - le fichier généré est un draft spec file jusqu'à retrait explicite du marqueur
   par un humain.
@@ -942,9 +947,12 @@ Règle d’application : une précondition utilisateur déjà décidable à part
   `spec_roots` ;
 - découvrir et parser les `product_files` ;
 - générer les anchors depuis les exports TypeScript publics ;
+- ignorer les candidats dont l'anchor de base ou l'anchor finale est déjà
+  observée ;
 - désambiguïser les collisions internes ;
-- échouer sans écriture si la génération est vide, conserve une collision
-  finale, ou recoupe une anchor déjà observée ;
+- échouer sans écriture si la génération est vide, si tous les candidats sont
+  déjà représentés, ou si les nouveaux candidats conservent une collision
+  finale ;
 - écrire le Markdown create-only.
 
 ### 9.5 Règle spécifique aux commandes d’écriture

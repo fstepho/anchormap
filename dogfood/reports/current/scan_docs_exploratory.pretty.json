@@ -302,6 +302,10 @@
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
     },
+    "T14.4": {
+      "spec_path": "docs/tasks.md",
+      "mapping_state": "absent"
+    },
     "T2.1": {
       "spec_path": "docs/tasks.md",
       "mapping_state": "absent"
@@ -969,8 +973,8 @@
       "product_file_count": 60,
       "stored_mapping_count": 0,
       "usable_mapping_count": 0,
-      "observed_anchor_count": 126,
-      "active_anchor_count": 126,
+      "observed_anchor_count": 127,
+      "active_anchor_count": 127,
       "draft_anchor_count": 0,
       "covered_product_file_count": 0,
       "uncovered_product_file_count": 60,
@@ -1556,6 +1560,14 @@
         "shared_reached_file_count": 0
       },
       "T14.3": {
+        "seed_file_count": 0,
+        "direct_seed_file_count": 0,
+        "reached_file_count": 0,
+        "transitive_reached_file_count": 0,
+        "unique_reached_file_count": 0,
+        "shared_reached_file_count": 0
+      },
+      "T14.4": {
         "seed_file_count": 0,
         "direct_seed_file_count": 0,
         "reached_file_count": 0,
@@ -2281,6 +2293,10 @@
     {
       "kind": "unmapped_anchor",
       "anchor_id": "T14.3"
+    },
+    {
+      "kind": "unmapped_anchor",
+      "anchor_id": "T14.4"
     },
     {
       "kind": "unmapped_anchor",

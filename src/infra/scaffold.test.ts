@@ -12,7 +12,7 @@ import {
 	type ScaffoldFs,
 	writeScaffoldOutputCreateOnly,
 } from "./scaffold";
-import type { SpecIndex } from "./spec-index";
+import type { SpecAnchorOccurrence, SpecIndex } from "./spec-index";
 import { parseTypeScriptProductText } from "./ts-graph";
 
 const CWD = "/repo";
@@ -50,7 +50,7 @@ function emptySpecIndex(): SpecIndex {
 }
 
 function specIndexWithAnchors(anchors: readonly AnchorId[]): SpecIndex {
-	const activeAnchors = new Map(
+	const activeAnchors = new Map<AnchorId, SpecAnchorOccurrence>(
 		anchors.map((id) => [
 			id,
 			{
@@ -66,6 +66,47 @@ function specIndexWithAnchors(anchors: readonly AnchorId[]): SpecIndex {
 		observedAnchors: activeAnchors,
 		activeAnchors,
 		draftAnchors: new Map(),
+		anchorOccurrences: [],
+	};
+}
+
+function specIndexWithActiveAndDraftAnchors(input: {
+	readonly active: readonly AnchorId[];
+	readonly draft: readonly AnchorId[];
+}): SpecIndex {
+	const activeAnchors = new Map(
+		input.active.map((id) => [
+			id,
+			{
+				anchorId: id,
+				specPath: repoPath("specs/active.md"),
+				sourceKind: "markdown" as const,
+				status: "active" as const,
+			},
+		]),
+	);
+	const draftAnchors = new Map<AnchorId, SpecAnchorOccurrence>(
+		input.draft.map((id) => [
+			id,
+			{
+				anchorId: id,
+				specPath: repoPath("specs/draft.md"),
+				sourceKind: "markdown" as const,
+				status: "draft" as const,
+			},
+		]),
+	);
+	const observedAnchors = new Map<AnchorId, SpecAnchorOccurrence>(activeAnchors);
+	for (const [id, occurrence] of draftAnchors) {
+		if (!observedAnchors.has(id)) {
+			observedAnchors.set(id, occurrence);
+		}
+	}
+	return {
+		specFiles: [],
+		observedAnchors,
+		activeAnchors,
+		draftAnchors,
 		anchorOccurrences: [],
 	};
 }
@@ -357,6 +398,7 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 	assert.equal(existingBase.kind, "error");
 	if (existingBase.kind === "error") {
 		assert.equal(existingBase.error.kind, "UsageError");
+		assert.equal(existingBase.error.message, "no new scaffold anchors to generate");
 	}
 
 	const residualFinalCollision = buildScaffoldMarkdown(
@@ -388,6 +430,7 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 	assert.equal(existing.kind, "error");
 	if (existing.kind === "error") {
 		assert.equal(existing.error.kind, "UsageError");
+		assert.equal(existing.error.message, "no new scaffold anchors to generate");
 	}
 
 	const existingDefaultInterface = buildScaffoldMarkdown(
@@ -402,5 +445,41 @@ test("builds sorted scaffold markdown, disambiguates collisions, and rejects inv
 	assert.equal(existingDefaultInterface.kind, "error");
 	if (existingDefaultInterface.kind === "error") {
 		assert.equal(existingDefaultInterface.error.kind, "UsageError");
+		assert.equal(existingDefaultInterface.error.message, "no new scaffold anchors to generate");
+	}
+
+	const partialExisting = buildScaffoldMarkdown(
+		config(),
+		[repoPath("src/auth/token.ts")],
+		specIndexWithActiveAndDraftAnchors({
+			active: [anchorId("AUTH.TOKEN.VERIFY_TOKEN")],
+			draft: [anchorId("AUTH.TOKEN.REFRESH_TOKEN")],
+		}),
+		{
+			cwd: CWD,
+			fs: scaffoldFs({
+				"src/auth/token.ts": [
+					"export function verifyToken() {}",
+					"export function refreshToken() {}",
+					"export function revokeToken() {}",
+					"",
+				].join("\n"),
+			}),
+		},
+	);
+	assert.equal(partialExisting.kind, "ok");
+	if (partialExisting.kind === "ok") {
+		assert.equal(
+			partialExisting.markdown,
+			[
+				"<!-- anchormap: draft -->",
+				"",
+				"# AUTH.TOKEN.REVOKE_TOKEN",
+				"<!-- anchormap scaffold: source=src/auth/token.ts export=revokeToken kind=function -->",
+				"",
+				"TODO: describe intent.",
+				"",
+			].join("\n"),
+		);
 	}
 });

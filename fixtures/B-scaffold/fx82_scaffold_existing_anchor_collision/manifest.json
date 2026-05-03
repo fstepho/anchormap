@@ -1,7 +1,7 @@
 {
 	"id": "fx82_scaffold_existing_anchor_collision",
 	"family": "B-scaffold",
-	"purpose": "scaffold fails without writing when a generated anchor already exists in current specs.",
+	"purpose": "scaffold fails without writing when every generated anchor already exists in current specs.",
 	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
 	"cwd": ".",
 	"exit_code": 4,
