@@ -8,6 +8,19 @@ what is structurally covered by supported local TypeScript edges, and whether
 the analysis is clean or degraded. AnchorMap is not a pruning system and is not
 a deletion-safety system.
 
+## Public Demo
+
+A real-world demo is available at
+[fstepho/anchormap-h3-demo](https://github.com/fstepho/anchormap-h3-demo).
+
+It applies AnchorMap to the `src/` tree of
+[h3](https://github.com/unjs/h3) and shows the full flow: `init`,
+`scaffold`, selective anchor promotion, `map`, and `scan --json`.
+
+The demo includes a 308-anchor scaffold draft, 3 promoted active anchors, 3
+explicit mappings, clean analysis health, a pretty-printed full scan output,
+and a short scan summary.
+
 ## Install
 
 AnchorMap is distributed as the public npm package `anchormap`.
