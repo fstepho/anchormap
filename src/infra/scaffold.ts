@@ -30,6 +30,14 @@ export interface ScaffoldExportCandidate {
 	readonly exportKind: ScaffoldExportKind;
 }
 
+interface RawScaffoldExportCandidate {
+	readonly baseAnchorId: AnchorId;
+	readonly sourcePath: RepoPath;
+	readonly exportName: string;
+	readonly exportKind: ScaffoldExportKind;
+	readonly declarationOrder: number;
+}
+
 export interface ScaffoldFs {
 	readonly readFile: (path: string) => Uint8Array;
 	readonly openExclusive: (path: string) => number;
@@ -68,6 +76,15 @@ const nodeScaffoldFs: ScaffoldFs = {
 
 let loadedTypeScript: typeof ts | undefined;
 
+const SCAFFOLD_KIND_SUFFIX: Record<ScaffoldExportKind, string> = {
+	class: "CLASS",
+	enum: "ENUM",
+	function: "FUNCTION",
+	interface: "INTERFACE",
+	type: "TYPE",
+	variable: "VARIABLE",
+};
+
 export function buildScaffoldMarkdown(
 	config: Config,
 	productFiles: readonly RepoPath[],
@@ -76,7 +93,8 @@ export function buildScaffoldMarkdown(
 ): BuildScaffoldResult {
 	const cwd = options.cwd ?? process.cwd();
 	const fs = options.fs ?? nodeScaffoldFs;
-	const candidates: ScaffoldExportCandidate[] = [];
+	const candidates: RawScaffoldExportCandidate[] = [];
+	let declarationOrder = 0;
 
 	for (const productFile of productFiles) {
 		const read = readProductFile(cwd, fs, productFile);
@@ -95,16 +113,23 @@ export function buildScaffoldMarkdown(
 				return anchor;
 			}
 			candidates.push({
-				anchorId: anchor.anchorId,
+				baseAnchorId: anchor.anchorId,
 				sourcePath: productFile,
 				exportName: exportedDeclaration.exportName,
 				exportKind: exportedDeclaration.exportKind,
+				declarationOrder,
 			});
+			declarationOrder += 1;
 		}
 	}
 
-	const sortedCandidates = sortScaffoldCandidates(candidates);
-	const validation = validateScaffoldCandidates(sortedCandidates, specIndex);
+	const disambiguatedCandidates = disambiguateScaffoldAnchorCollisions(candidates);
+	if (disambiguatedCandidates.kind === "error") {
+		return disambiguatedCandidates;
+	}
+
+	const sortedCandidates = sortScaffoldCandidates(disambiguatedCandidates.candidates);
+	const validation = validateScaffoldCandidates(candidates, sortedCandidates, specIndex);
 	if (validation.kind === "error") {
 		return validation;
 	}
@@ -293,6 +318,7 @@ function readProductFile(
 }
 
 function validateScaffoldCandidates(
+	rawCandidates: readonly RawScaffoldExportCandidate[],
 	candidates: readonly ScaffoldExportCandidate[],
 	specIndex: SpecIndex,
 ): { kind: "ok" } | { kind: "error"; error: AppError } {
@@ -306,6 +332,18 @@ function validateScaffoldCandidates(
 		};
 	}
 
+	for (const candidate of rawCandidates) {
+		if (specIndex.observedAnchors.has(candidate.baseAnchorId)) {
+			return {
+				kind: "error",
+				error: {
+					kind: "UsageError",
+					message: `scaffold anchor ${candidate.baseAnchorId} already exists in current specs`,
+				},
+			};
+		}
+	}
+
 	for (let index = 1; index < candidates.length; index += 1) {
 		const previous = candidates[index - 1];
 		const current = candidates[index];
@@ -314,7 +352,7 @@ function validateScaffoldCandidates(
 				kind: "error",
 				error: {
 					kind: "UsageError",
-					message: `scaffold generated duplicate anchor ${current.anchorId}`,
+					message: `scaffold generated final anchor collision ${current.anchorId}`,
 				},
 			};
 		}
@@ -335,6 +373,57 @@ function validateScaffoldCandidates(
 	return { kind: "ok" };
 }
 
+function disambiguateScaffoldAnchorCollisions(
+	candidates: readonly RawScaffoldExportCandidate[],
+):
+	| { kind: "ok"; candidates: readonly ScaffoldExportCandidate[] }
+	| { kind: "error"; error: AppError } {
+	const groups = new Map<AnchorId, RawScaffoldExportCandidate[]>();
+	for (const candidate of candidates) {
+		const group = groups.get(candidate.baseAnchorId);
+		if (group === undefined) {
+			groups.set(candidate.baseAnchorId, [candidate]);
+			continue;
+		}
+		group.push(candidate);
+	}
+
+	const disambiguated: ScaffoldExportCandidate[] = [];
+	for (const group of groups.values()) {
+		const sortedGroup = sortScaffoldBaseCollisionGroup(group);
+		if (sortedGroup.length === 1) {
+			const candidate = sortedGroup[0];
+			disambiguated.push({
+				anchorId: candidate.baseAnchorId,
+				sourcePath: candidate.sourcePath,
+				exportName: candidate.exportName,
+				exportKind: candidate.exportKind,
+			});
+			continue;
+		}
+
+		const countsByKind = new Map<ScaffoldExportKind, number>();
+		for (const candidate of sortedGroup) {
+			const nextCount = (countsByKind.get(candidate.exportKind) ?? 0) + 1;
+			countsByKind.set(candidate.exportKind, nextCount);
+			const kindSuffix = SCAFFOLD_KIND_SUFFIX[candidate.exportKind];
+			const suffix = nextCount === 1 ? kindSuffix : `${kindSuffix}_${nextCount}`;
+			const anchor = appendScaffoldAnchorSuffix(candidate.baseAnchorId, suffix);
+			if (anchor.kind === "error") {
+				return anchor;
+			}
+			disambiguated.push({
+				anchorId: anchor.anchorId,
+				sourcePath: candidate.sourcePath,
+				exportName: candidate.exportName,
+				exportKind: candidate.exportKind,
+			});
+		}
+	}
+
+	return { kind: "ok", candidates: disambiguated };
+}
+
 function sortScaffoldCandidates(
 	candidates: readonly ScaffoldExportCandidate[],
 ): readonly ScaffoldExportCandidate[] {
@@ -347,8 +436,51 @@ function sortScaffoldCandidates(
 		if (pathOrder !== 0) {
 			return pathOrder;
 		}
-		return compareCanonicalTextByUtf8(left.exportName, right.exportName);
+		const exportOrder = compareCanonicalTextByUtf8(left.exportName, right.exportName);
+		if (exportOrder !== 0) {
+			return exportOrder;
+		}
+		return compareCanonicalTextByUtf8(left.exportKind, right.exportKind);
 	});
+}
+
+function sortScaffoldBaseCollisionGroup(
+	candidates: readonly RawScaffoldExportCandidate[],
+): readonly RawScaffoldExportCandidate[] {
+	return [...candidates].sort((left, right) => {
+		const pathOrder = compareCanonicalTextByUtf8(left.sourcePath, right.sourcePath);
+		if (pathOrder !== 0) {
+			return pathOrder;
+		}
+		const exportOrder = compareCanonicalTextByUtf8(left.exportName, right.exportName);
+		if (exportOrder !== 0) {
+			return exportOrder;
+		}
+		const kindOrder = compareCanonicalTextByUtf8(left.exportKind, right.exportKind);
+		if (kindOrder !== 0) {
+			return kindOrder;
+		}
+		return left.declarationOrder - right.declarationOrder;
+	});
+}
+
+function appendScaffoldAnchorSuffix(
+	baseAnchorId: AnchorId,
+	suffix: string,
+): { kind: "ok"; anchorId: AnchorId } | { kind: "error"; error: AppError } {
+	const anchorText = `${baseAnchorId}.${suffix}`;
+	const validated = validateAnchorId(anchorText);
+	if (validated.kind === "ok") {
+		return { kind: "ok", anchorId: validated.anchorId };
+	}
+
+	return {
+		kind: "error",
+		error: {
+			kind: "InternalError",
+			message: `generated invalid scaffold anchor ${anchorText}`,
+		},
+	};
 }
 
 function cleanupFailedScaffoldWrite(

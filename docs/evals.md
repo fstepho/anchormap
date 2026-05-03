@@ -379,11 +379,13 @@ Notes obligatoires pour la famille B-cli :
 | `fx78_scaffold_output_exists` | `--output` existe déjà | 4 | aucune mutation |
 | `fx79_scaffold_output_outside_spec_roots` | `--output` hors `spec_roots` | 4 | aucune mutation |
 | `fx80_scaffold_no_exports` | aucun export public supporté | 4 | aucune mutation |
-| `fx81_scaffold_generated_anchor_collision` | deux exports produisent le même `AnchorId` | 4 | aucune mutation |
+| `fx81_scaffold_generated_anchor_collision` | deux exports de même kind produisent le même `AnchorId` de base | 0 | fichier Markdown généré exact avec suffixes kind/ordinal |
 | `fx82_scaffold_existing_anchor_collision` | une anchor générée existe déjà dans les specs courantes | 4 | aucune mutation |
 | `fx83_scaffold_config_missing_code2` | config absente ou invalide | 2 | aucune mutation |
 | `fx84_scaffold_product_parse_failure_code3` | `product_file` non parsable | 3 | aucune mutation |
 | `fx85_scaffold_output_case_collision` | `--output` collisionne par casse avec un chemin spec existant | 4 | aucune mutation |
+| `fx86_scaffold_existing_base_anchor_collision` | une anchor de base désambiguïsée existe déjà dans les specs courantes | 4 | aucune mutation |
+| `fx87_scaffold_residual_final_anchor_collision` | une anchor finale suffixée collisionne avec une autre anchor générée | 4 | aucune mutation |
 
 ## 6. Goldens et oracles exacts
 

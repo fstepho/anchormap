@@ -27,8 +27,11 @@ The command requires an existing valid `anchormap.yaml`, uses its
 `product_root`, `spec_roots`, and `ignore_roots`, creates only the requested
 Markdown output file, and never writes `anchormap.yaml`.
 
-Generated anchors are derived from module path plus export name. The output is a
-draft structure for human completion, not a semantic claim and not a mapping.
+Generated anchors are derived from module path plus export name. When multiple
+exports normalize to the same generated base anchor, the scaffold applies a
+deterministic mechanical suffix by export kind, then by stable ordinal for
+same-kind collisions. The output is a draft structure for human completion, not
+a semantic claim and not a mapping.
 
 ## Alternatives considered
 
@@ -71,13 +74,14 @@ Cons:
 Positive:
 
 - existing TypeScript repos can reach a first editable spec draft quickly;
+- common export-name normalization collisions do not block bootstrap;
 - no network, Git, cache, clock, or AI dependency is introduced;
 - generated files are reproducible byte-for-byte.
 
 Negative:
 
 - the CLI surface and fixture harness grow by one command;
-- output collisions must be explicit failures.
+- generated IDs may carry mechanical suffixes that humans later rename.
 
 Risks:
 

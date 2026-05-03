@@ -126,6 +126,7 @@ args
   -> spec_index
   -> product_files.discoverProductFiles
   -> scaffold.extractExportCandidates
+  -> scaffold.disambiguateAnchorCollisions
   -> scaffold.renderMarkdown
   -> scaffold.writeOutputCreateOnly
   -> commands (optional human output)
@@ -319,8 +320,8 @@ Responsabilités :
 - lire et parser les `product_files` via le profil TypeScript existant ;
 - extraire les déclarations exportées supportées ;
 - dériver des `AnchorId` mécaniques depuis chemin module et nom exporté ;
-- détecter les collisions internes et les collisions avec les anchors déjà
-  observées ;
+- désambiguïser mécaniquement les collisions internes ;
+- détecter les collisions avec les anchors déjà observées ;
 - rendre le Markdown de brouillon stable ;
 - écrire le fichier `--output` en create-only avec cleanup sur échec.
 
@@ -330,6 +331,10 @@ Décisions clés :
 - `scaffold` ne lit pas JSDoc comme source d'anchor ;
 - les exports `default` de `function`, `class` et `interface` utilisent le nom
   exporté `default`, même si la déclaration locale est nommée ;
+- les collisions internes d'anchors de base sont suffixées par kind, puis par
+  ordinal stable lorsque plusieurs candidats du même kind restent en collision ;
+- une collision finale résiduelle après suffixe reste une précondition
+  utilisateur de code `4`, jamais une erreur interne ;
 - le renderer Markdown est fermé et project-owned.
 
 ### 5.6 `commands`
@@ -926,8 +931,9 @@ Règle d’application : une précondition utilisateur déjà décidable à part
   `spec_roots` ;
 - découvrir et parser les `product_files` ;
 - générer les anchors depuis les exports TypeScript publics ;
-- échouer sans écriture si la génération est vide, collisionne, ou recoupe une
-  anchor déjà observée ;
+- désambiguïser les collisions internes ;
+- échouer sans écriture si la génération est vide, conserve une collision
+  finale, ou recoupe une anchor déjà observée ;
 - écrire le Markdown create-only.
 
 ### 9.5 Règle spécifique aux commandes d’écriture

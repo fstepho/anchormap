@@ -1,10 +1,10 @@
 {
 	"id": "fx81_scaffold_generated_anchor_collision",
 	"family": "B-scaffold",
-	"purpose": "scaffold fails without writing when two exports produce the same generated anchor.",
+	"purpose": "scaffold writes deterministic Markdown when two same-kind exports produce the same generated base anchor.",
 	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
 	"cwd": ".",
-	"exit_code": 4,
+	"exit_code": 0,
 	"stdout": {
 		"kind": "ignored"
 	},
@@ -12,8 +12,9 @@
 		"kind": "ignored"
 	},
 	"filesystem": {
-		"kind": "no_mutation"
+		"kind": "expected_files",
+		"files": ["specs/generated.md"]
 	},
-	"tags": ["scaffold", "usage", "no-mutation"],
+	"tags": ["scaffold", "write", "golden", "collision"],
 	"groups": ["m14"]
 }

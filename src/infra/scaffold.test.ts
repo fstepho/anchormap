@@ -217,7 +217,7 @@ test("renders scaffold markdown byte-for-byte", () => {
 	);
 });
 
-test("builds sorted scaffold markdown and rejects empty or colliding drafts", () => {
+test("builds sorted scaffold markdown, disambiguates collisions, and rejects invalid drafts", () => {
 	const success = buildScaffoldMarkdown(
 		config(),
 		[repoPath("src/z.ts"), repoPath("src/auth/token.ts"), repoPath("src/types.ts")],
@@ -276,9 +276,90 @@ test("builds sorted scaffold markdown and rejects empty or colliding drafts", ()
 			}),
 		},
 	);
-	assert.equal(duplicate.kind, "error");
-	if (duplicate.kind === "error") {
-		assert.equal(duplicate.error.kind, "UsageError");
+	assert.equal(duplicate.kind, "ok");
+	if (duplicate.kind === "ok") {
+		assert.equal(
+			duplicate.markdown,
+			[
+				"# COLLISION.FOO_BAR.VARIABLE",
+				"<!-- anchormap scaffold: source=src/collision.ts export=fooBar kind=variable -->",
+				"",
+				"TODO: describe intent.",
+				"",
+				"# COLLISION.FOO_BAR.VARIABLE_2",
+				"<!-- anchormap scaffold: source=src/collision.ts export=foo_bar kind=variable -->",
+				"",
+				"TODO: describe intent.",
+				"",
+			].join("\n"),
+		);
+	}
+
+	const mixedKindCollision = buildScaffoldMarkdown(
+		config(),
+		[repoPath("src/domain/scan-result.ts")],
+		emptySpecIndex(),
+		{
+			cwd: CWD,
+			fs: scaffoldFs({
+				"src/domain/scan-result.ts": [
+					'export type AnalysisHealth = "clean" | "degraded";',
+					"export function analysisHealth() {}",
+					"",
+				].join("\n"),
+			}),
+		},
+	);
+	assert.equal(mixedKindCollision.kind, "ok");
+	if (mixedKindCollision.kind === "ok") {
+		assert.equal(
+			mixedKindCollision.markdown,
+			[
+				"# DOMAIN.SCAN_RESULT.ANALYSIS_HEALTH.FUNCTION",
+				"<!-- anchormap scaffold: source=src/domain/scan-result.ts export=analysisHealth kind=function -->",
+				"",
+				"TODO: describe intent.",
+				"",
+				"# DOMAIN.SCAN_RESULT.ANALYSIS_HEALTH.TYPE",
+				"<!-- anchormap scaffold: source=src/domain/scan-result.ts export=AnalysisHealth kind=type -->",
+				"",
+				"TODO: describe intent.",
+				"",
+			].join("\n"),
+		);
+	}
+
+	const existingBase = buildScaffoldMarkdown(
+		config(),
+		[repoPath("src/collision.ts")],
+		specIndexWithAnchors([anchorId("COLLISION.FOO_BAR")]),
+		{
+			cwd: CWD,
+			fs: scaffoldFs({
+				"src/collision.ts": "export const fooBar = 1;\nexport const foo_bar = 2;\n",
+			}),
+		},
+	);
+	assert.equal(existingBase.kind, "error");
+	if (existingBase.kind === "error") {
+		assert.equal(existingBase.error.kind, "UsageError");
+	}
+
+	const residualFinalCollision = buildScaffoldMarkdown(
+		config(),
+		[repoPath("src/collision.ts"), repoPath("src/collision/foo_bar.ts")],
+		emptySpecIndex(),
+		{
+			cwd: CWD,
+			fs: scaffoldFs({
+				"src/collision.ts": "export const fooBar = 1;\nexport const foo_bar = 2;\n",
+				"src/collision/foo_bar.ts": "export const variable = 3;\n",
+			}),
+		},
+	);
+	assert.equal(residualFinalCollision.kind, "error");
+	if (residualFinalCollision.kind === "error") {
+		assert.equal(residualFinalCollision.error.kind, "UsageError");
 	}
 
 	const existing = buildScaffoldMarkdown(

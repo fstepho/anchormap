@@ -870,11 +870,14 @@ anchormap scaffold --output <path>
   déclaration locale porte un nom ;
 - les re-exports, imports, JSDoc, déclarations non exportées et formes qui
   exigeraient une résolution sémantique sont ignorés ;
-- chaque candidat produit un `AnchorId` déterministe à partir du chemin module
-  relatif à `product_root` et du nom exporté ;
-- si deux candidats produisent le même `AnchorId`, la commande échoue ;
-- si un `AnchorId` généré est déjà observé dans les specs courantes, la commande
-  échoue ;
+- chaque candidat produit un `AnchorId` de base déterministe à partir du chemin
+  module relatif à `product_root` et du nom exporté ;
+- si plusieurs candidats produisent le même `AnchorId` de base, `scaffold`
+  génère des `AnchorId` finaux désambiguïsés selon la section 9.4.4 ;
+- si deux candidats produisent le même `AnchorId` final après désambiguïsation,
+  la commande échoue ;
+- si un `AnchorId` de base ou un `AnchorId` final généré est déjà observé dans
+  les specs courantes, la commande échoue ;
 - si aucun candidat exporté n'est trouvé, la commande échoue.
 
 Toute impossibilité de lire ou valider `./anchormap.yaml` relève du code `2`.
@@ -882,9 +885,9 @@ Toute impossibilité d'indexer les specs courantes, de découvrir les
 `product_files`, de lire un `product_file`, ou de parser un `product_file`
 relève du code `3`. Les autres préconditions ci-dessus relèvent du code `4`.
 
-#### 9.4.4 Génération des anchors
+#### 9.4.4 Génération et désambiguïsation des anchors
 
-Pour chaque candidat :
+Pour chaque candidat, l'`AnchorId` de base est calculé ainsi :
 
 1. retirer le préfixe `product_root/` du chemin du `product_file` ;
 2. retirer l'extension terminale `.ts` ;
@@ -898,6 +901,24 @@ Pour chaque candidat :
 
 Exemple : `src/auth/token.ts` exportant `verifyToken` avec
 `product_root: 'src'` produit `AUTH.TOKEN.VERIFY_TOKEN`.
+
+Si un groupe de candidats partage le même `AnchorId` de base, les `AnchorId`
+finaux de ce groupe sont désambiguïsés mécaniquement :
+
+- ajouter un segment suffixe selon le kind exporté : `CLASS`, `ENUM`,
+  `FUNCTION`, `INTERFACE`, `TYPE`, ou `VARIABLE` ;
+- si plusieurs candidats du même kind restent en collision, conserver le premier
+  candidat trié avec le suffixe kind seul, puis ajouter un ordinal stable à ce
+  segment pour les suivants : `VARIABLE_2`, `VARIABLE_3`, etc.
+
+L'ordre des candidats dans un groupe de collision est déterminé par tri UTF-8
+canonique sur `(sourcePath, exportName, exportKind)`, puis par ordre d'extraction
+dans le fichier TypeScript lorsque ces clés sont identiques.
+
+Exemple : `src/domain/scan-result.ts` exportant à la fois le type
+`AnalysisHealth` et la fonction `analysisHealth` produit
+`DOMAIN.SCAN_RESULT.ANALYSIS_HEALTH.TYPE` et
+`DOMAIN.SCAN_RESULT.ANALYSIS_HEALTH.FUNCTION`.
 
 #### 9.4.5 Format Markdown généré
 
