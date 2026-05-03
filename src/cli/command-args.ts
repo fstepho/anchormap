@@ -12,6 +12,10 @@ export interface ParsedMapArgs {
 	replace: boolean;
 }
 
+export interface ParsedScaffoldArgs {
+	output: string;
+}
+
 export type ParsedScanArgs =
 	| { kind: "ok"; mode: ScanOutputMode }
 	| { kind: "usage_error"; message: string };
@@ -22,6 +26,10 @@ export type ParsedInitArgsResult =
 
 export type ParsedMapArgsResult =
 	| { kind: "ok"; args: ParsedMapArgs }
+	| { kind: "usage_error"; message: string };
+
+export type ParsedScaffoldArgsResult =
+	| { kind: "ok"; args: ParsedScaffoldArgs }
 	| { kind: "usage_error"; message: string };
 
 type ParsedOptionValue = { kind: "ok"; value: string } | { kind: "usage_error"; message: string };
@@ -189,6 +197,49 @@ export function parseScanArgs(args: readonly string[]): ParsedScanArgs {
 	return {
 		kind: "usage_error",
 		message: "unsupported option combination",
+	};
+}
+
+export function parseScaffoldArgs(args: readonly string[]): ParsedScaffoldArgsResult {
+	let output: string | undefined;
+
+	for (let index = 0; index < args.length; ) {
+		const option = args[index];
+
+		switch (option) {
+			case "--output": {
+				if (output !== undefined) {
+					return { kind: "usage_error", message: "--output may be provided at most once" };
+				}
+
+				const parsedValue = parseOptionValue(args, index, "--output");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+
+				output = parsedValue.value;
+				index += 2;
+				break;
+			}
+			default: {
+				if (option.startsWith("-")) {
+					return { kind: "usage_error", message: `unknown option "${option}"` };
+				}
+
+				return { kind: "usage_error", message: `unsupported argument "${option}"` };
+			}
+		}
+	}
+
+	if (output === undefined) {
+		return { kind: "usage_error", message: "--output is required" };
+	}
+
+	return {
+		kind: "ok",
+		args: {
+			output,
+		},
 	};
 }
 

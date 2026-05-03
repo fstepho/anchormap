@@ -1,0 +1,19 @@
+{
+	"id": "fx81_scaffold_generated_anchor_collision",
+	"family": "B-scaffold",
+	"purpose": "scaffold fails without writing when two exports produce the same generated anchor.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scaffold", "usage", "no-mutation"],
+	"groups": ["m14"]
+}

@@ -82,6 +82,12 @@ function createTempReleaseEvidence(): TempReleaseEvidence {
 			filesystemKind: "expected_files",
 			command: ["node", "dist/anchormap.js", "map", "--anchor", "FR-014", "--seed", "src/index.ts"],
 		},
+		{
+			...baseFixture("fx77_scaffold_success_minimal", "B-scaffold", 0),
+			stdoutKind: "ignored",
+			filesystemKind: "expected_files",
+			command: ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+		},
 		baseFixture("fx43_config_missing_file", "B-config", 2),
 		baseFixture("fx00b_decoding_spec_non_utf8", "B-decodage", 3),
 		baseFixture("fx37_graph_parse_failure", "B-graph", 3),
@@ -778,7 +784,7 @@ test("release gate aggregator accepts stdout-only golden reports when YAML expec
 		assert.deepEqual(yamlCoverageCheck?.missing_yaml_expected_file_fixtures, []);
 		assert.equal(
 			gateB?.checks.find((check) => check.id === "yaml_goldens_present")?.yaml_golden_count,
-			1,
+			2,
 		);
 	} finally {
 		rmSync(evidence.rootDir, { recursive: true, force: true });
@@ -839,6 +845,35 @@ test("release gate aggregator requires current manifests for every Level B famil
 		assert.equal(gateA?.status, "fail");
 		assert.equal(familyCheck?.status, "fail");
 		assert.deepEqual(familyCheck?.missing_families, ["B-specs"]);
+	} finally {
+		rmSync(evidence.rootDir, { recursive: true, force: true });
+	}
+});
+
+test("release gate aggregator requires current scaffold manifests", () => {
+	const evidence = createTempReleaseEvidence();
+	try {
+		rmSync(resolve(evidence.fixturesRoot, "B-scaffold"), { recursive: true, force: true });
+
+		const result = runAggregator(evidence);
+		assert.equal(result.status, 1);
+
+		const report = readJson<{
+			release_verdict: string;
+			gates: Array<{
+				id: string;
+				status: string;
+				checks: Array<{ id: string; status: string; missing_families?: string[] }>;
+			}>;
+		}>(resolve(evidence.outDir, "release-report.json"));
+		const gateA = report.gates.find((gate) => gate.id === "A");
+		const familyCheck = gateA?.checks.find(
+			(check) => check.id === "all_required_b_families_present",
+		);
+		assert.equal(report.release_verdict, "fail");
+		assert.equal(gateA?.status, "fail");
+		assert.equal(familyCheck?.status, "fail");
+		assert.deepEqual(familyCheck?.missing_families, ["B-scaffold"]);
 	} finally {
 		rmSync(evidence.rootDir, { recursive: true, force: true });
 	}

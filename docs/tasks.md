@@ -8,7 +8,8 @@
 - This document must satisfy Gate D — Tasks ready.
 - `contract.md` remains normative for observable CLI behavior.
 - `evals.md` remains normative for verification gates.
-- No new product scope is introduced here.
+- No new product scope is introduced here except the user-authorized M14
+  scaffold extension tracked below.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -27,7 +28,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
 - Next executable product task: none.
-- Last completed task: `T13.4 — Close v1.2 traceability metrics readiness`
+- Last completed task: `T14.1 — Implement deterministic TypeScript export scaffold`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -122,6 +123,7 @@
   - `T13.2 — Implement v1.2 scan-result metrics model`
   - `T13.3 — Render JSON v2 and update scan goldens`
   - `T13.4 — Close v1.2 traceability metrics readiness`
+  - `T14.1 — Implement deterministic TypeScript export scaffold`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -166,6 +168,7 @@
 | M11 — v1.1 TypeScript ESM `.js` specifier compatibility | Activate the planned `.js -> .ts` source-candidate rule without adopting full TypeScript or Node resolution | `ts_graph` candidate rule, B-graph fixtures/goldens, scan/map graph validation continuity, v1.1 release-readiness evidence | B-graph `fx38f`–`fx38l`; existing B-graph/B-map graph-validation regressions; docs/ADR consistency | F1 planning complete; M10 done | Explicit relative `.js` specifiers can resolve to sibling `.ts` sources, diagnostic-only `.js` behavior remains explicit when no source exists, and v1.1 gates preserve v1.0 determinism boundaries |
 | M12 — v1.1 AnchorMap extended anchor formats | Activate the planned repository-documentation `AnchorId` grammar and `SCREAMING_SNAKE` dotted segments without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22l` plus `fx19a`–`fx19b`; B-config `fx49a`–`fx49b`; B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b`; docs/ADR consistency | F2/F3 planning complete; M11 done | Task, milestone, spike, ADR-style, and `SCREAMING_SNAKE` dotted anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
 | M13 — v1.2 Traceability metrics | Add generic derived metrics to `scan --json` so users can distinguish raw coverage from structural signal strength without repo-specific labels | JSON schema v2, `traceability_metrics`, scan-engine counters, renderer/goldens, release-readiness evidence | B-scan `fx10a`; all successful `scan --json` goldens; C-metamorphic deterministic reruns | M12 done | `scan --json` renders schema v2 with generic summary and per-anchor metrics, no config persistence changes, no scan mutation, and no ownership/dead-code/proof inference |
+| M14 — vNext deterministic scaffold | Generate a create-only Markdown spec draft from observed TypeScript exports without creating mappings or inferring intent | `scaffold` command contract, ADR-0015, export extraction, Markdown renderer, create-only write path, B-scaffold fixtures | B-scaffold `fx77`–`fx85`; B-cli command-surface regressions; docs/ADR consistency | M13 done; user-approved scaffold plan | `anchormap scaffold --output <path>` writes exact Markdown from public exports, never mutates `anchormap.yaml`, fails without output mutation on invalid preconditions, and preserves the Observed/Human boundary |
 
 ## Milestone dependency graph
 
@@ -187,6 +190,7 @@ M1 Fixture harness
                           -> M11 v1.1 TypeScript ESM .js specifier compatibility
                              -> M12 v1.1 AnchorMap extended anchor formats
                                 -> M13 v1.2 Traceability metrics
+                                   -> M14 vNext deterministic scaffold
 ```
 
 ## M1 — Fixture harness
@@ -5794,6 +5798,81 @@ Non-goals:
 - Do not accept lowercase, leading-underscore, empty-segment, or hyphenated
   dotted segments.
 
+## M14 — vNext deterministic scaffold
+
+### T14.1 — Implement deterministic TypeScript export scaffold
+
+Purpose:
+- Add `anchormap scaffold --output <path>` to generate a create-only Markdown
+  spec draft from observed TypeScript exports.
+- Reduce startup cost without creating mappings, inferring product intent, or
+  modifying `anchormap.yaml`.
+
+Contract refs:
+- `contract.md` — §4.2 Trust boundaries
+- `contract.md` — §9 Command surface and scaffold command
+- `contract.md` — §12.1 Root/config behavior
+- `contract.md` — §12.2 User path normalization
+- `contract.md` — §12.3 Required reads and failure classification
+- `contract.md` — §12.5 Stable outputs
+
+Design refs:
+- `design.md` — §4.4 Pipeline logique de `scaffold`
+- `design.md` — §5.5.1 `scaffold`
+- `design.md` — §5.6 `commands`
+- `design.md` — §9.4 Classification par commande
+
+Eval refs:
+- `evals.md` — §5.9 Famille B-scaffold
+- `evals.md` — §5.8 Famille B-cli
+- `evals.md` — §6 Goldens et oracles exacts
+
+ADR refs:
+- `ADR-0015` — Deterministic TypeScript export scaffold
+- `ADR-0002` — CLI interface strategy
+- `ADR-0006` — TypeScript parser and graph subset
+
+Dependencies:
+- T13.4.
+
+Implementation scope:
+- Extend the project-owned CLI parser and dispatcher with `scaffold`.
+- Require exactly one `--output` option and normalize it as `RepoPath`.
+- Load and validate `anchormap.yaml`; use its `product_root`, `spec_roots`, and
+  `ignore_roots`.
+- Validate that `--output` is under `spec_roots`, has an existing directory
+  parent, and does not already exist.
+- Build the current `SpecIndex` before generation and reject generated anchors
+  already present in specs.
+- Discover, read, decode, and parse supported `product_files` using the existing
+  TypeScript profile.
+- Extract only supported top-level exported declarations.
+- Generate deterministic `DOTTED_ID` anchors from module path plus export name.
+- Render exact Markdown and write the output file create-only with cleanup on
+  failure.
+- Update packaging file allowlist for the new runtime module.
+- Add B-scaffold fixtures and focused unit tests.
+
+Out of scope:
+- JSDoc anchors.
+- Mapping suggestions or writes to `mappings`.
+- `--replace` or update-in-place behavior.
+- New parser dependencies, Git, network, cache, or clock input.
+
+Done when:
+- `fx77`–`fx85` pass.
+- Existing B-cli command surface fixtures still pass.
+- Unit tests cover parser, extraction, ID generation, Markdown rendering, and
+  write preconditions.
+- `anchormap.yaml` is unchanged for every scaffold fixture.
+
+Suggested verification:
+- Run scaffold and CLI unit tests.
+- Run `npm run test:fixtures`.
+- Run `npm run test:docs`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -5842,6 +5921,7 @@ Non-goals:
 | B-cli `fx71`, `fx71a`–`fx71e` | T2.2, T2.5, T7.1, T7.6 | M2, M7 | fixture | Scan option order and human scan modes |
 | B-cli `fx72`–`fx75` | T2.5, T2.6, T4.7, T6.7, T7.6 | M2–M7 | fixture | Exit-code priority and internal error |
 | B-cli `fx76` | T4.5, T8.5 | M4, M8 | fixture | Atomic write failure exits `1`, no partial mutation |
+| B-scaffold `fx77`–`fx85` | T14.1 | M14 | fixture/golden | Deterministic Markdown scaffold, create-only output, no config mutation, and code `2`/`3`/`4` failures |
 | C1 filesystem order invariance | T1.6, T6.1, T7.5, T9.1 | M1, M6, M7, M9 | metamorphic | Stable ordering independent of FS enumeration |
 | C2 YAML editorial reorder invariance | T4.1, T4.4, T8.4, T9.1 | M4, M8, M9 | metamorphic | Same config semantics, canonical output after map |
 | C3 spec noise invariance | T5.2, T5.3, T5.4, T9.1 | M5, M9 | metamorphic | No anchor from unsupported spec noise |

@@ -60,6 +60,8 @@ AnchorMap v1.0 garantit :
 - un JSON stable et versionné pour `scan --json` en cas de succès ;
 - l'absence de JSON sur `stdout` pour `scan --json` en cas d'échec ;
 - la non-mutation de `./anchormap.yaml` sur tout échec de `init` ou `map` ;
+- la génération déterministe d'un brouillon Markdown de specs par `scaffold`,
+  sans mapping ni mutation de `anchormap.yaml` ;
 - l'absence d'écriture sur disque par `scan`.
 
 ### 3.2 Hors contrat
@@ -71,6 +73,7 @@ AnchorMap v1.0 ne garantit pas :
 - la preuve de dead code ;
 - la sûreté d'une suppression ;
 - la vérité sémantique d'un mapping ;
+- l'inférence d'intention métier depuis les noms de fichiers ou d'exports ;
 - l'interprétation de prose libre ;
 - la réconciliation automatique de renames, splits ou merges ;
 - un bootstrap par candidats ;
@@ -649,11 +652,12 @@ Si la même anchor apparaît plusieurs fois, le dépôt est hors support et la c
 
 ## 9. Commandes
 
-v1.0 expose exactement trois commandes :
+La CLI expose exactement quatre commandes :
 
 - `init`
 - `map`
 - `scan`
+- `scaffold`
 
 Aucune autre commande n'est dans le périmètre.
 
@@ -663,11 +667,19 @@ L'ordre des options n'a pas d'effet sur le résultat.
 
 Toute valeur de chemin fournie en argument CLI est interprétée comme `UserPathArg` et normalisée selon la section 12.2 avant toute validation, déduplication, comparaison, contrôle d'existence, ou écriture.
 
-Règle commune aux commandes d'écriture (`init`, `map`) :
+Règle commune aux commandes qui écrivent `anchormap.yaml` (`init`, `map`) :
 
 - ce sont les seules commandes autorisées à écrire `./anchormap.yaml` ;
 - sur tout code de sortie non nul, `./anchormap.yaml` conserve exactement son état initial : absent avant commande implique absent après commande ; présent avant commande implique contenu byte-identique après commande ;
 - aucun fichier temporaire ou auxiliaire propre à AnchorMap ne peut subsister dans le répertoire courant après un code non nul ;
+
+Règle commune à `scaffold` :
+
+- `scaffold` ne modifie jamais `./anchormap.yaml` ;
+- `scaffold` est autorisée à créer uniquement le fichier fourni par `--output` ;
+- sur tout code de sortie non nul, le fichier `--output` reste absent s'il était absent avant commande, et reste byte-identique s'il existait avant commande ;
+- aucun fichier temporaire ou auxiliaire propre à AnchorMap ne peut subsister dans le répertoire courant après un code non nul ;
+
 - `scan` n'écrit jamais sur disque et ne modifie aucun fichier du dépôt.
 
 ### 9.1 `anchormap init`
@@ -825,6 +837,89 @@ Pour `scan --json`, `stdout`, `stderr`, le schéma JSON et les codes de sortie s
 - `untraced_product_file` ne veut pas dire dead code ;
 - `untraced_product_file` ne veut pas dire safe to delete ;
 - `analysis_health = clean` ne veut pas dire tout est mappé.
+
+### 9.4 `anchormap scaffold`
+
+#### 9.4.1 But
+
+Générer un brouillon Markdown de specs à partir des exports TypeScript publics
+observés, pour réduire le coût d'amorçage sans créer de mapping trusted.
+
+#### 9.4.2 Forme supportée
+
+```bash
+anchormap scaffold --output <path>
+```
+
+#### 9.4.3 Règles
+
+- `--output` est obligatoire et doit apparaître exactement une fois ;
+- `--output` est normalisé comme `UserPathArg -> RepoPath` ;
+- `scaffold` charge et valide `./anchormap.yaml` selon la section 7 ;
+- le chemin `--output` doit être sous au moins un `spec_root` ;
+- le parent de `--output` doit exister et être un répertoire ;
+- `scaffold` est create-only : si `--output` existe déjà, la commande échoue ;
+- `--output` ne doit pas collisionner par casse avec un chemin existant inspecté
+  sous `spec_roots` ;
+- `scaffold` indexe les specs courantes selon la section 8 ;
+- `scaffold` découvre, lit, décode et parse les `product_files` comme `scan` ;
+- `scaffold` extrait uniquement les déclarations top-level exportées suivantes :
+  `function`, `class`, `interface`, `type`, `enum`, `const`, `let`, et `var` ;
+- pour `export default function`, `export default class` et
+  `export default interface`, le nom exporté est `default`, même si la
+  déclaration locale porte un nom ;
+- les re-exports, imports, JSDoc, déclarations non exportées et formes qui
+  exigeraient une résolution sémantique sont ignorés ;
+- chaque candidat produit un `AnchorId` déterministe à partir du chemin module
+  relatif à `product_root` et du nom exporté ;
+- si deux candidats produisent le même `AnchorId`, la commande échoue ;
+- si un `AnchorId` généré est déjà observé dans les specs courantes, la commande
+  échoue ;
+- si aucun candidat exporté n'est trouvé, la commande échoue.
+
+Toute impossibilité de lire ou valider `./anchormap.yaml` relève du code `2`.
+Toute impossibilité d'indexer les specs courantes, de découvrir les
+`product_files`, de lire un `product_file`, ou de parser un `product_file`
+relève du code `3`. Les autres préconditions ci-dessus relèvent du code `4`.
+
+#### 9.4.4 Génération des anchors
+
+Pour chaque candidat :
+
+1. retirer le préfixe `product_root/` du chemin du `product_file` ;
+2. retirer l'extension terminale `.ts` ;
+3. découper le chemin restant en segments `/` ;
+4. ajouter le nom exporté comme dernier segment ;
+5. convertir chaque segment en segment `DOTTED_ID` par séparation camelCase,
+   remplacement des caractères non alphanumériques par `_`, uppercase ASCII,
+   suppression des `_` en bord, et préfixe `X` si le segment ne commence pas par
+   une lettre ;
+6. joindre les segments par `.`.
+
+Exemple : `src/auth/token.ts` exportant `verifyToken` avec
+`product_root: 'src'` produit `AUTH.TOKEN.VERIFY_TOKEN`.
+
+#### 9.4.5 Format Markdown généré
+
+Les sections sont triées par `AnchorId`, puis chemin, puis nom exporté.
+
+Chaque section est rendue exactement ainsi :
+
+```markdown
+# AUTH.TOKEN.VERIFY_TOKEN
+<!-- anchormap scaffold: source=src/auth/token.ts export=verifyToken kind=function -->
+
+TODO: describe intent.
+
+```
+
+Le fichier est encodé en UTF-8, utilise `\n`, et se termine par un saut de
+ligne final.
+
+#### 9.4.6 Sortie
+
+La sortie terminal humaine de `scaffold` est hors contrat.
+Le code de sortie et l'effet de fichier sont contractuels.
 
 ## 10. Dépendances statiques locales supportées
 
@@ -1083,8 +1178,8 @@ Pour toutes les commandes, la racine du dépôt est exactement le répertoire co
 
 Règles :
 
-- `scan` et `map` lisent exactement `./anchormap.yaml` dans ce répertoire ;
-- l'absence de `./anchormap.yaml` pour `scan` ou `map` produit le code `2` ;
+- `scan`, `map` et `scaffold` lisent exactement `./anchormap.yaml` dans ce répertoire ;
+- l'absence de `./anchormap.yaml` pour `scan`, `map` ou `scaffold` produit le code `2` ;
 - `init` écrit exactement `./anchormap.yaml` dans ce répertoire ;
 - aucune recherche implicite dans les répertoires parents n'est autorisée.
 
@@ -1107,7 +1202,7 @@ Les comparaisons, tests d'égalité et tris sur `RepoPath` utilisent l'ordre bin
 
 #### 12.2.2 Normalisation des arguments de chemin CLI
 
-Les arguments de chemin fournis à `--root`, `--spec-root`, `--ignore-root` et `--seed` sont des `UserPathArg`.
+Les arguments de chemin fournis à `--root`, `--spec-root`, `--ignore-root`, `--seed` et `--output` sont des `UserPathArg`.
 
 La normalisation `UserPathArg -> RepoPath` est **exactement** la suivante :
 
@@ -1151,7 +1246,7 @@ En plus de cette découverte récursive, AnchorMap effectue uniquement des tests
 
 Aucune exploration récursive hors `product_root` et hors `spec_roots` n'est autorisée.
 
-Pour `scan` et `map`, les opérations suivantes sont des lectures requises du dépôt :
+Pour `scan`, `map` et `scaffold`, les opérations suivantes sont des lectures requises du dépôt :
 
 - l'ouverture, la lecture et le décodage de `./anchormap.yaml` ;
 - l'énumération récursive de `product_root` et de chaque `spec_root` ;
@@ -1161,7 +1256,7 @@ Pour `scan` et `map`, les opérations suivantes sont des lectures requises du d�
 Règle de classification des échecs de lecture :
 
 - si l'échec concerne `./anchormap.yaml`, y compris absence, illisibilité, non-décodabilité UTF-8 selon la section 1.1, YAML invalide, multi-document, racine non mapping, clés dupliquées, schéma invalide ou invariant violé, le code de sortie est `2` ;
-- si l'échec concerne toute autre lecture requise du dépôt pour `scan` ou `map`, y compris impossibilité d'énumérer un sous-arbre requis, d'ouvrir ou lire une spec, d'ouvrir ou lire un `product_file`, de décoder un tel fichier selon la section 1.1, ou d'effectuer un test d'existence ponctuel requis par la section 10.2, le code de sortie est `3`.
+- si l'échec concerne toute autre lecture requise du dépôt pour `scan`, `map` ou `scaffold`, y compris impossibilité d'énumérer un sous-arbre requis, d'ouvrir ou lire une spec, d'ouvrir ou lire un `product_file`, de décoder un tel fichier selon la section 1.1, ou d'effectuer un test d'existence ponctuel requis par la section 10.2, le code de sortie est `3`.
 
 Le dépôt est hors support si l'un des cas suivants est détecté dans les sous-arbres effectivement inspectés :
 
@@ -1197,6 +1292,9 @@ Pour `scan --json`, AnchorMap garantit :
 - sérialisation JSON exacte selon la section 13.7.
 
 Pour `init` et `map`, AnchorMap garantit l'écriture YAML canonique exacte selon la section 7.5.
+
+Pour `scaffold`, AnchorMap garantit l'écriture Markdown exacte selon la section
+9.4.5.
 
 ### 12.6 Aucune donnée implicite
 

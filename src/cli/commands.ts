@@ -17,20 +17,28 @@ import {
 } from "../infra/config-io";
 import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
+import { buildScaffoldMarkdown, writeScaffoldOutputCreateOnly } from "../infra/scaffold";
 import { buildSpecIndex } from "../infra/spec-index";
 import { buildProductGraph } from "../infra/ts-graph";
 import { renderScanResultHuman, renderScanResultJson } from "../render/render-json";
 import {
 	type ParsedInitArgs,
 	type ParsedMapArgs,
+	type ParsedScaffoldArgs,
 	parseInitArgs,
 	parseMapArgs,
+	parseScaffoldArgs,
 	parseScanArgs,
 	type ScanOutputMode,
 } from "./command-args";
 
-export type AnchormapCommandName = "init" | "map" | "scan";
-export type { ParsedInitArgs, ParsedMapArgs, ScanOutputMode } from "./command-args";
+export type AnchormapCommandName = "init" | "map" | "scan" | "scaffold";
+export type {
+	ParsedInitArgs,
+	ParsedMapArgs,
+	ParsedScaffoldArgs,
+	ScanOutputMode,
+} from "./command-args";
 
 export interface TextWriter {
 	write(chunk: string): unknown;
@@ -64,6 +72,7 @@ export interface AnchormapCommandContext {
 	stderr: TextWriter;
 	initArgs?: ParsedInitArgs;
 	mapArgs?: ParsedMapArgs;
+	scaffoldArgs?: ParsedScaffoldArgs;
 	scanMode?: ScanOutputMode;
 }
 
@@ -75,21 +84,25 @@ export interface AnchormapRunOptions {
 	cwd?: string;
 	stdout?: TextWriter;
 	stderr?: TextWriter;
-	handlers?: AnchormapCommandHandlers;
+	handlers?: Partial<AnchormapCommandHandlers>;
 }
 
-const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>(["init", "map", "scan"]);
+const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>(["init", "map", "scan", "scaffold"]);
 
 const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	init: runInitCommand,
 	map: runMapCommandStub,
 	scan: runScanCommandStub,
+	scaffold: runScaffoldCommand,
 };
 
 export function runAnchormap(argv: readonly string[], options: AnchormapRunOptions = {}): number {
 	const stdout = options.stdout ?? process.stdout;
 	const stderr = options.stderr ?? process.stderr;
-	const handlers = options.handlers ?? DEFAULT_HANDLERS;
+	const handlers: AnchormapCommandHandlers = {
+		...DEFAULT_HANDLERS,
+		...options.handlers,
+	};
 	const cwd = options.cwd ?? process.cwd();
 	const [command, ...args] = argv;
 
@@ -159,6 +172,31 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 				mapArgs: validatedMap.args,
 			},
 			handlers.map,
+		);
+	}
+
+	if (command === "scaffold") {
+		const parsedScaffold = parseScaffoldArgs(args);
+		if (parsedScaffold.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedScaffold.message }, stderr);
+		}
+		const validatedScaffold = validateRawScaffoldArgs(parsedScaffold.args);
+		if (validatedScaffold.kind === "usage_error") {
+			return writeErrorDiagnostic(
+				{ kind: "UsageError", message: validatedScaffold.message },
+				stderr,
+			);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				scaffoldArgs: validatedScaffold.args,
+			},
+			handlers.scaffold,
 		);
 	}
 
@@ -332,6 +370,22 @@ function createBufferedWriter(): { writer: TextWriter; read(): string } {
 
 function isSupportedCommand(command: string): command is AnchormapCommandName {
 	return SUPPORTED_COMMANDS.has(command as AnchormapCommandName);
+}
+
+function validateRawScaffoldArgs(
+	args: ParsedScaffoldArgs,
+): { kind: "ok"; args: ParsedScaffoldArgs } | { kind: "usage_error"; message: string } {
+	const result = normalizeUserPathArg(args.output);
+	if (result.kind === "validation_failure") {
+		return { kind: "usage_error", message: "--output must be a valid repository path" };
+	}
+
+	return {
+		kind: "ok",
+		args: {
+			output: repoPathToString(result.repoPath),
+		},
+	};
 }
 
 function validateRawMapArgs(
@@ -590,6 +644,73 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 	return commandSuccess();
 }
 
+function runScaffoldCommand(context: AnchormapCommandContext): AnchormapCommandResult {
+	const args = context.scaffoldArgs;
+	if (args === undefined) {
+		return internalError("scaffold arguments were not parsed");
+	}
+
+	const outputResult = validateRepoPath(args.output);
+	if (outputResult.kind === "validation_failure") {
+		return internalError("validated scaffold output became invalid");
+	}
+	const output = outputResult.repoPath;
+
+	const configResult = loadConfig({ cwd: context.cwd });
+	if (configResult.kind === "error") {
+		return configResult.error;
+	}
+
+	const outputPreconditions = validateScaffoldOutputPreconditions(
+		configResult.config,
+		output,
+		context.cwd,
+	);
+	if (outputPreconditions.kind === "error") {
+		return outputPreconditions.error;
+	}
+
+	const inspectedPathCaseIndex = new Map<string, RepoPath>();
+	const specIndexResult = buildSpecIndex(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
+	if (specIndexResult.kind === "error") {
+		return specIndexResult.error;
+	}
+	const outputCaseCollision = validateScaffoldOutputCaseCollision(output, inspectedPathCaseIndex);
+	if (outputCaseCollision.kind === "error") {
+		return outputCaseCollision.error;
+	}
+
+	const productFilesResult = discoverProductFiles(configResult.config, {
+		cwd: context.cwd,
+		inspectedPathCaseIndex,
+	});
+	if (productFilesResult.kind === "error") {
+		return productFilesResult.error;
+	}
+
+	const scaffoldResult = buildScaffoldMarkdown(
+		configResult.config,
+		productFilesResult.productFiles,
+		specIndexResult.specIndex,
+		{ cwd: context.cwd },
+	);
+	if (scaffoldResult.kind === "error") {
+		return scaffoldResult.error;
+	}
+
+	const writeResult = writeScaffoldOutputCreateOnly(output, scaffoldResult.markdown, {
+		cwd: context.cwd,
+	});
+	if (writeResult.kind === "error") {
+		return writeResult.error;
+	}
+
+	return commandSuccess();
+}
+
 function buildConfigWithMappedSeedFiles(
 	config: Config,
 	anchorId: AnchorId,
@@ -650,6 +771,45 @@ function validateMapSeedPreconditions(
 		if (status.kind !== "file") {
 			return { kind: "error", error: usageError(`--seed ${seed} must exist as a file`) };
 		}
+	}
+
+	return { kind: "ok" };
+}
+
+function validateScaffoldOutputPreconditions(
+	config: Config,
+	output: RepoPath,
+	cwd: string,
+): { kind: "ok" } | { kind: "error"; error: AppError } {
+	if (!config.specRoots.some((specRoot) => isSameOrDescendantOfRepoPath(output, specRoot))) {
+		return { kind: "error", error: usageError("--output must be under a spec_root") };
+	}
+
+	const parent = getRepoPathParent(output);
+	if (parent === undefined) {
+		return { kind: "error", error: usageError("--output parent must be an existing directory") };
+	}
+
+	const parentStatus = statRepoPath(cwd, parent);
+	if (parentStatus.kind !== "directory") {
+		return { kind: "error", error: usageError("--output parent must be an existing directory") };
+	}
+
+	const createOnly = validateScaffoldOutputDoesNotExist(cwd, output);
+	if (createOnly.kind === "error") {
+		return createOnly;
+	}
+
+	return { kind: "ok" };
+}
+
+function validateScaffoldOutputCaseCollision(
+	output: RepoPath,
+	inspectedPathCaseIndex: ReadonlyMap<string, RepoPath>,
+): { kind: "ok" } | { kind: "error"; error: AppError } {
+	const existingPath = inspectedPathCaseIndex.get(repoPathToString(output).toLowerCase());
+	if (existingPath !== undefined && existingPath !== output) {
+		return { kind: "error", error: usageError("--output conflicts with an existing spec path") };
 	}
 
 	return { kind: "ok" };
@@ -759,6 +919,35 @@ function validateConfigDoesNotExist(
 		}
 		return { kind: "error", error: usageError("anchormap.yaml existence could not be validated") };
 	}
+}
+
+function validateScaffoldOutputDoesNotExist(
+	cwd: string,
+	output: RepoPath,
+): { kind: "ok" } | { kind: "error"; error: AppError } {
+	try {
+		lstatSync(join(cwd, repoPathToString(output)));
+		return { kind: "error", error: usageError("--output already exists") };
+	} catch (error) {
+		if (isMissingPathError(error)) {
+			return { kind: "ok" };
+		}
+		return { kind: "error", error: usageError("--output existence could not be validated") };
+	}
+}
+
+function getRepoPathParent(path: RepoPath): RepoPath | undefined {
+	const value = repoPathToString(path);
+	const separatorIndex = value.lastIndexOf("/");
+	if (separatorIndex === -1) {
+		return undefined;
+	}
+	const result = validateRepoPath(value.slice(0, separatorIndex));
+	return result.kind === "ok" ? result.repoPath : undefined;
+}
+
+function isSameOrDescendantOfRepoPath(path: RepoPath, possibleAncestor: RepoPath): boolean {
+	return path === possibleAncestor || isRepoPathDescendantOf(path, possibleAncestor);
 }
 
 function isRepoPathDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boolean {

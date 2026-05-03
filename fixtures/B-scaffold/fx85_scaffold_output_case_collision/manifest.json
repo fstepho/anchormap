@@ -1,0 +1,19 @@
+{
+	"id": "fx85_scaffold_output_case_collision",
+	"family": "B-scaffold",
+	"purpose": "scaffold fails without writing when --output differs only by case from an existing spec path.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scaffold", "usage", "case-collision", "no-mutation"],
+	"groups": ["m14"]
+}

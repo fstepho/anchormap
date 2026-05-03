@@ -77,6 +77,7 @@ const EXPECTED_PACKAGE_FILES = [
 	"dist/infra/config-yaml-render.js",
 	"dist/infra/product-files.js",
 	"dist/infra/repo-fs.js",
+	"dist/infra/scaffold.js",
 	"dist/infra/spec-index.js",
 	"dist/infra/ts-graph.js",
 	"dist/render/render-json.js",

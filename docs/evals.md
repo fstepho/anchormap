@@ -42,6 +42,7 @@ Ce document est **hors scope** pour :
 | Détection des anchors Markdown/YAML et doublons | § 8 | A, B-specs, B-decodage |
 | Échecs de lecture requise, décodage, énumération et classification code `2` / `3` | §§ 8, 10.5, 12.3, 13.8 | B-decodage, B-config, B-specs, B-graph, B-repo, B-map, B-cli |
 | Surface CLI, préconditions, codes de sortie et priorité, y compris `scan` sans `--json` | §§ 3.3, 9, 13.8, 13.9 | B-cli |
+| Scaffold Markdown depuis exports TypeScript publics | § 9.4 | B-scaffold |
 | Résolution du graphe statique, classification et findings | §§ 10, 11 | B-graph, C5, C6 |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
@@ -97,7 +98,7 @@ Règles d'oracle par commande :
 - `scan --json` échec (`1`, `2`, `3`, `4`) : `stdout` vide, aucun JSON émis ; `stderr` est ignoré sauf contrainte d'encodage/fin de ligne si le harness le vérifie.
 - toute fixture `scan` doit aussi vérifier l'absence de mutation de fichiers dans le dépôt analysé.
 - `scan` sans `--json` : le texte humain n'est jamais oraclé ; le code de sortie exact, les préconditions applicables et l'absence de mutation de fichiers sont obligatoires.
-- `init` et `map` : seuls le code de sortie, l'effet de fichier, l'absence de fichier temporaire résiduel après échec et la forme canonique écrite sont oraclés.
+- `init`, `map` et `scaffold` : seuls le code de sortie, l'effet de fichier, l'absence de fichier temporaire résiduel après échec et la forme canonique écrite sont oraclés.
 - toute fixture d'échec de lecture requise doit préciser la source de l'échec (`anchormap.yaml`, spec, `product_file`, énumération ou test d'existence) et vérifier le code `2` ou `3` correspondant.
 
 ### 4.3 Niveau C — Tests métamorphiques et d'isolation
@@ -369,6 +370,20 @@ Notes obligatoires pour la famille B-cli :
 
 - `fx74_cli_priority_3_over_1` et `fx75_cli_internal_error_code_1` peuvent utiliser un harness de faute **test-only** ou un backend de système de fichiers de test, à condition que l'oracle porte uniquement sur le comportement contractuel observable.
 - L'existence d'un chemin testable vers le code `1` est obligatoire ; un contrat exposant `1` sans éval dédiée n'est pas suffisant.
+
+### 5.9 Famille B-scaffold — brouillon Markdown depuis exports TypeScript
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx77_scaffold_success_minimal` | exports publics dans plusieurs fichiers produit | 0 | fichier Markdown généré exact ; `anchormap.yaml` byte-identique |
+| `fx78_scaffold_output_exists` | `--output` existe déjà | 4 | aucune mutation |
+| `fx79_scaffold_output_outside_spec_roots` | `--output` hors `spec_roots` | 4 | aucune mutation |
+| `fx80_scaffold_no_exports` | aucun export public supporté | 4 | aucune mutation |
+| `fx81_scaffold_generated_anchor_collision` | deux exports produisent le même `AnchorId` | 4 | aucune mutation |
+| `fx82_scaffold_existing_anchor_collision` | une anchor générée existe déjà dans les specs courantes | 4 | aucune mutation |
+| `fx83_scaffold_config_missing_code2` | config absente ou invalide | 2 | aucune mutation |
+| `fx84_scaffold_product_parse_failure_code3` | `product_file` non parsable | 3 | aucune mutation |
+| `fx85_scaffold_output_case_collision` | `--output` collisionne par casse avec un chemin spec existant | 4 | aucune mutation |
 
 ## 6. Goldens et oracles exacts
 
@@ -651,7 +666,7 @@ Une release v1.0 est acceptée **uniquement** si toutes les gates suivantes pass
 
 Passe si et seulement si :
 
-- 100% des fixtures de niveau B passent, y compris B-decodage, B-config, B-specs, B-graph, B-repo, B-init/B-map et B-cli ;
+- 100% des fixtures de niveau B passent, y compris B-decodage, B-config, B-specs, B-graph, B-repo, B-init/B-map, B-cli et B-scaffold ;
 - chaque fixture valide exactement son oracle déclaré ;
 - aucun comportement revendiqué par la matrice de traçabilité n'est sans famille d'évals explicite.
 

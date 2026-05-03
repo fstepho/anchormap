@@ -146,6 +146,22 @@ v1.0 exclut explicitement :
 - plugin IDE ;
 - API séparée de navigation ou de reporting.
 
+### 6.2.1 Extension vNext : scaffold de specs
+
+Une extension post-v1.2 ajoute un amorçage déterministe des specs par
+génération d'un brouillon Markdown depuis les exports TypeScript publics
+observés.
+
+Cette extension reste dans le cadrage produit si :
+
+- elle ne crée aucun mapping ;
+- elle ne modifie jamais `anchormap.yaml` ;
+- elle n'infère aucune intention métier ;
+- le brouillon généré est explicitement présenté comme structure à valider et
+  compléter par un humain ;
+- la génération reste déterministe, locale, sans réseau, sans Git, sans cache et
+  sans IA.
+
 ### 6.3 Qualification des dépôts
 
 Un dépôt est qualifié v1.0 seulement si les dépendances produit-vers-produit nécessaires à la couverture sont exprimées par imports relatifs.

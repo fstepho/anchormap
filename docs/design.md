@@ -51,6 +51,7 @@ ADRs courantes :
 - `ADR-0012` — TypeScript ESM `.js` specifier source resolution (`Accepted`)
 - `ADR-0013` — AnchorMap documentation anchor formats (`Accepted`)
 - `ADR-0014` — SCREAMING_SNAKE dotted anchor segments (`Accepted`)
+- `ADR-0015` — Deterministic TypeScript export scaffold (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -113,6 +114,26 @@ args
   -> config_io.writeConfigAtomic
   -> commands (optional human output)
 ```
+
+### 4.4 Pipeline logique de `scaffold`
+
+```text
+args
+  -> commands
+  -> repo_fs
+  -> config_io.loadConfig
+  -> commands.validateScaffoldOutput
+  -> spec_index
+  -> product_files.discoverProductFiles
+  -> scaffold.extractExportCandidates
+  -> scaffold.renderMarkdown
+  -> scaffold.writeOutputCreateOnly
+  -> commands (optional human output)
+```
+
+`scaffold` lit les specs courantes uniquement pour éviter de générer des
+anchors déjà observées. Il ne crée aucun mapping et ne modifie jamais
+`anchormap.yaml`.
 
 ## 5. Découpage en modules
 
@@ -291,6 +312,26 @@ Décisions clés :
 - `untraced_product_file` n’est produit qu’en analyse `clean`, s’il existe au moins un mapping exploitable, et si toutes les anchors observées ont un mapping exploitable ;
 - le tri final des findings est décidé ici, jamais laissé à l’ordre de découverte.
 
+### 5.5.1 `scaffold`
+
+Responsabilités :
+
+- lire et parser les `product_files` via le profil TypeScript existant ;
+- extraire les déclarations exportées supportées ;
+- dériver des `AnchorId` mécaniques depuis chemin module et nom exporté ;
+- détecter les collisions internes et les collisions avec les anchors déjà
+  observées ;
+- rendre le Markdown de brouillon stable ;
+- écrire le fichier `--output` en create-only avec cleanup sur échec.
+
+Décisions clés :
+
+- `scaffold` ne produit pas de mapping ;
+- `scaffold` ne lit pas JSDoc comme source d'anchor ;
+- les exports `default` de `function`, `class` et `interface` utilisent le nom
+  exporté `default`, même si la déclaration locale est nommée ;
+- le renderer Markdown est fermé et project-owned.
+
 ### 5.6 `commands`
 
 Responsabilités :
@@ -302,6 +343,11 @@ Responsabilités :
 - posséder l’écriture effective sur `stdout` / `stderr` ;
 - garantir le contrat `stdout` / `stderr` de `scan --json` ;
 - classer l’issue de la commande en un unique code de sortie.
+
+Pour `scaffold`, `commands` valide l'argument `--output`, charge la config,
+ordonne les préconditions de code `4` avant les lectures dépôt plus coûteuses
+quand elles sont déjà décidables, puis délègue la génération et l'écriture
+create-only au module `scaffold`.
 
 Décisions clés :
 
@@ -460,7 +506,7 @@ Règles :
 - les causes internes peuvent être conservées pour le debug, mais ne changent pas le `kind` une fois fixé ;
 - une erreur de lecture, d’ouverture, de décodage ou de parsing de `anchormap.yaml` est un `ConfigError` ;
 - une erreur de lecture, d’ouverture, de décodage, de parsing ou de test d’existence concernant les specs ou les `product_files` est un `UnsupportedRepoError` ;
-- `WriteError` désigne uniquement un échec du chemin d’écriture **avant commit**, après cleanup synchrone du fichier temporaire éventuel ;
+- `WriteError` désigne uniquement un échec du chemin d’écriture **avant commit**, après cleanup synchrone du fichier temporaire ou output éventuel ;
 - il n’existe pas d’état `WriteError` post-commit dans v1.0.
 
 ## 7. Algorithmes cibles
@@ -785,7 +831,9 @@ Conséquences :
 ### 8.6 Ownership et sémantique d’échec
 
 - `commands` orchestre l’écriture mais n’édite jamais le fichier lui-même ;
-- `config_io` possède à lui seul le format canonique, la séquence `pre_commit / commit`, le cleanup, et la définition opérationnelle de `WriteError` ;
+- `config_io` possède à lui seul le format canonique, la séquence `pre_commit / commit`, le cleanup, et la définition opérationnelle de `WriteError` pour `anchormap.yaml` ;
+- `scaffold` possède le rendu Markdown, l'écriture create-only et le cleanup de
+  son fichier `--output` ;
 - un `WriteError` signifie exclusivement : **échec avant commit, suivi d’un cleanup réussi** ;
 - un commit réussi ne peut pas être reclassé en `WriteError` ou en un autre code non nul.
 
@@ -807,7 +855,7 @@ Règles :
 - `commands` est l’unique frontière qui convertit un `AppError` en code de sortie ;
 - cette conversion est totale et exécutée une seule fois ;
 - une erreur déjà typée n’est jamais reclassée par un module inférieur ;
-- `config_io` est l’unique module autorisé à produire `WriteError` ;
+- `config_io` et `scaffold` sont les seuls modules autorisés à produire `WriteError` ;
 - `WriteError` ne peut être produit qu’avant commit et après cleanup confirmé.
 
 ### 9.3 Priorité contractuelle
@@ -867,6 +915,21 @@ Règle d’application : une précondition utilisateur déjà décidable à part
 - exécuter `scan_engine` ;
 - construire puis écrire soit le JSON canonique, soit le texte humain.
 
+#### `scaffold`
+
+- parser et valider `--output` sans I/O ;
+- charger et valider `anchormap.yaml` ;
+- vérifier que `--output` est sous `spec_roots`, que son parent existe comme
+  répertoire, et que la cible n'existe pas ;
+- indexer les specs courantes ;
+- rejeter `--output` s'il collisionne par casse avec un chemin inspecté sous
+  `spec_roots` ;
+- découvrir et parser les `product_files` ;
+- générer les anchors depuis les exports TypeScript publics ;
+- échouer sans écriture si la génération est vide, collisionne, ou recoupe une
+  anchor déjà observée ;
+- écrire le Markdown create-only.
+
 ### 9.5 Règle spécifique aux commandes d’écriture
 
 Pour `init` et `map` :
@@ -900,6 +963,9 @@ Le design doit rester testable par module et par frontière stable.
 - intégration `init` : create-only, arguments, YAML minimal canonique, écriture atomique ;
 - intégration `map` : création, garde `--replace`, validation des seeds, validation des `product_files` avant commit, réécriture canonique ;
 - intégration `scan --json` : goldens byte-for-byte, `stdout`/`stderr`, codes de sortie ;
+- intégration `scaffold` : succès create-only avec golden Markdown exact,
+  absence de mutation de `anchormap.yaml`, collisions, output invalide, config
+  invalide, specs invalides et product files invalides ;
 - tests de faute sur commandes d’écriture : échec injecté à chaque étape `pre_commit` -> code `1`, état initial byte-identique, et absence de fichier temporaire résiduel ;
 - tests de priorité `map` : garde `--replace` avant indexation specs/produit, anchor absente avant graphe produit, seed invalide avant graphe produit ;
 - tests de non-mutation `map` : `product_file` illisible, non UTF-8 ou non parsable -> code `3`, `anchormap.yaml` byte-identique, aucun fichier temporaire résiduel ;

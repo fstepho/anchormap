@@ -27,6 +27,7 @@ const requiredBFamilies = [
 	"B-map",
 	"B-repo",
 	"B-scan",
+	"B-scaffold",
 	"B-specs",
 ];
 const priorityFixtureIds = [

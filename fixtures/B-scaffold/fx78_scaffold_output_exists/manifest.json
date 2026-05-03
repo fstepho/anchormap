@@ -1,0 +1,19 @@
+{
+	"id": "fx78_scaffold_output_exists",
+	"family": "B-scaffold",
+	"purpose": "scaffold is create-only and fails when the output file already exists.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scaffold", "usage", "no-mutation"],
+	"groups": ["m14"]
+}

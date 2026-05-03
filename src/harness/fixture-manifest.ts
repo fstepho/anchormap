@@ -26,7 +26,7 @@ const TOP_LEVEL_KEYS = new Set([
 
 const STABLE_ID_PATTERN = /^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$/;
 const FAMILY_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/;
-const SUPPORTED_SUBCOMMANDS = new Set(["init", "map", "scan"]);
+const SUPPORTED_SUBCOMMANDS = new Set(["init", "map", "scan", "scaffold"]);
 const MISSING_SUBCOMMAND = "<missing>";
 const UNSUPPORTED_WRAPPER_LAUNCHERS = new Set([
 	"npm",
@@ -314,7 +314,7 @@ function validateManifestSemantics(manifest: FixtureManifest, context: Validatio
 		return;
 	}
 
-	if (subcommand === "init" || subcommand === "map") {
+	if (subcommand === "init" || subcommand === "map" || subcommand === "scaffold") {
 		validateHumanWriteCommandSemantics(manifest, context);
 	}
 }
@@ -407,28 +407,28 @@ function validateHumanWriteCommandSemantics(
 ): void {
 	if (manifest.stdout.kind !== "ignored") {
 		fail(
-			'init/map fixtures must not oracle human stdout and must use stdout.kind "ignored"',
+			'init/map/scaffold fixtures must not oracle human stdout and must use stdout.kind "ignored"',
 			context,
 		);
 	}
 
 	if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
 		fail(
-			'init/map fixtures must not oracle human stderr and may only use stderr.kind "ignored" or "empty"',
+			'init/map/scaffold fixtures must not oracle human stderr and may only use stderr.kind "ignored" or "empty"',
 			context,
 		);
 	}
 
 	if (manifest.exit_code === 0) {
 		if (manifest.filesystem.kind !== "expected_files") {
-			fail('init/map success fixtures must use filesystem.kind "expected_files"', context);
+			fail('init/map/scaffold success fixtures must use filesystem.kind "expected_files"', context);
 		}
 
 		return;
 	}
 
 	if (manifest.filesystem.kind !== "no_mutation") {
-		fail('init/map failure fixtures must use filesystem.kind "no_mutation"', context);
+		fail('init/map/scaffold failure fixtures must use filesystem.kind "no_mutation"', context);
 	}
 }
 
@@ -494,7 +494,7 @@ function assertExistingRegularFile(
 function detectSubcommand(
 	command: string[],
 	context: ValidationContext,
-): "init" | "map" | "scan" | typeof MISSING_SUBCOMMAND | undefined {
+): "init" | "map" | "scan" | "scaffold" | typeof MISSING_SUBCOMMAND | undefined {
 	if (command[0] === "node") {
 		if (command.length < 2) {
 			fail('command using "node" must be ["node", "<script>", "<subcommand>", ...]', context);
@@ -516,7 +516,7 @@ function detectSubcommand(
 			return undefined;
 		}
 
-		return candidate as "init" | "map" | "scan";
+		return candidate as "init" | "map" | "scan" | "scaffold";
 	}
 
 	if (UNSUPPORTED_WRAPPER_LAUNCHERS.has(command[0])) {
@@ -532,7 +532,7 @@ function detectSubcommand(
 		return undefined;
 	}
 
-	return candidate as "init" | "map" | "scan";
+	return candidate as "init" | "map" | "scan" | "scaffold";
 }
 
 function requireStdoutOracle(value: unknown, context: ValidationContext): StdoutOracle {

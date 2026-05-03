@@ -1,0 +1,19 @@
+{
+	"id": "fx79_scaffold_output_outside_spec_roots",
+	"family": "B-scaffold",
+	"purpose": "scaffold rejects an output path outside configured spec_roots.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "docs/generated.md"],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scaffold", "usage", "no-mutation"],
+	"groups": ["m14"]
+}

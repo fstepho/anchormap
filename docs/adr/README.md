@@ -55,6 +55,7 @@ An ADR is usually not required for:
 | `ADR-0012` | TypeScript ESM `.js` specifier source resolution | Accepted |
 | `ADR-0013` | AnchorMap documentation anchor formats | Accepted |
 | `ADR-0014` | SCREAMING_SNAKE dotted anchor segments | Accepted |
+| `ADR-0015` | Deterministic TypeScript export scaffold | Accepted |
 
 ## Template
 

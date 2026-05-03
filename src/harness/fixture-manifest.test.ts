@@ -514,7 +514,7 @@ test("rejects scan fixtures without --json that oracle human output", () => {
 	);
 });
 
-test("rejects init/map fixtures that oracle human output", () => {
+test("rejects init/map/scaffold fixtures that oracle human output", () => {
 	assert.throws(
 		() =>
 			validateFixtureManifest({
@@ -525,7 +525,7 @@ test("rejects init/map fixtures that oracle human output", () => {
 				stdout: { kind: "exact", value: "mapped\n" },
 				filesystem: { kind: "expected_files", files: ["anchormap.yaml"] },
 			}),
-		/init\/map fixtures must not oracle human stdout/,
+		/init\/map\/scaffold fixtures must not oracle human stdout/,
 	);
 
 	assert.throws(
@@ -539,7 +539,7 @@ test("rejects init/map fixtures that oracle human output", () => {
 				stderr: { kind: "contains", value: "warning" },
 				filesystem: { kind: "expected_files", files: ["anchormap.yaml"] },
 			}),
-		/init\/map fixtures must not oracle human stderr/,
+		/init\/map\/scaffold fixtures must not oracle human stderr/,
 	);
 });
 
@@ -553,6 +553,18 @@ test("classifies the CLI subcommand from the command slot, not from argument val
 			stdout: { kind: "ignored" },
 			stderr: { kind: "ignored" },
 			filesystem: { kind: "expected_files", files: ["anchormap.yaml"] },
+		}),
+	);
+
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
+			id: "harness_schema_valid_scaffold_output",
+			command: ["node", "dist/cli-stub.js", "scaffold", "--output", "specs/generated.md"],
+			exit_code: 0,
+			stdout: { kind: "ignored" },
+			stderr: { kind: "ignored" },
+			filesystem: { kind: "expected_files", files: ["specs/generated.md"] },
 		}),
 	);
 });
@@ -642,7 +654,7 @@ test("rejects unknown or missing command fixtures with non-usage-error oracles",
 	);
 });
 
-test("rejects init/map success fixtures that do not declare expected filesystem outputs", () => {
+test("rejects init/map/scaffold success fixtures that do not declare expected filesystem outputs", () => {
 	assert.throws(
 		() =>
 			validateFixtureManifest({
@@ -654,7 +666,7 @@ test("rejects init/map success fixtures that do not declare expected filesystem 
 				stderr: { kind: "empty" },
 				filesystem: { kind: "no_mutation" },
 			}),
-		/init\/map success fixtures must use filesystem\.kind "expected_files"/,
+		/init\/map\/scaffold success fixtures must use filesystem\.kind "expected_files"/,
 	);
 
 	assert.throws(
@@ -668,11 +680,11 @@ test("rejects init/map success fixtures that do not declare expected filesystem 
 				stderr: { kind: "empty" },
 				filesystem: { kind: "no_mutation" },
 			}),
-		/init\/map success fixtures must use filesystem\.kind "expected_files"/,
+		/init\/map\/scaffold success fixtures must use filesystem\.kind "expected_files"/,
 	);
 });
 
-test("rejects init/map failure fixtures that expect file mutations", () => {
+test("rejects init/map/scaffold failure fixtures that expect file mutations", () => {
 	assert.throws(
 		() =>
 			validateFixtureManifest({
@@ -683,7 +695,7 @@ test("rejects init/map failure fixtures that expect file mutations", () => {
 				stdout: { kind: "ignored" },
 				filesystem: { kind: "expected_files", files: ["anchormap.yaml"] },
 			}),
-		/init\/map failure fixtures must use filesystem\.kind "no_mutation"/,
+		/init\/map\/scaffold failure fixtures must use filesystem\.kind "no_mutation"/,
 	);
 
 	assert.throws(
@@ -696,7 +708,7 @@ test("rejects init/map failure fixtures that expect file mutations", () => {
 				stdout: { kind: "ignored" },
 				filesystem: { kind: "expected_files", files: ["anchormap.yaml"] },
 			}),
-		/init\/map failure fixtures must use filesystem\.kind "no_mutation"/,
+		/init\/map\/scaffold failure fixtures must use filesystem\.kind "no_mutation"/,
 	);
 });
 
