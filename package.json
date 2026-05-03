@@ -1,9 +1,16 @@
 {
 	"name": "anchormap",
-	"version": "1.0.0",
-	"description": "Local deterministic structural traceability CLI for narrow-scope TypeScript repositories.",
-	"license": "UNLICENSED",
+	"version": "1.2.0",
+	"description": "Audit structural traceability between spec anchors and TypeScript code.",
+	"license": "MIT",
 	"private": false,
+	"keywords": [
+		"cli",
+		"traceability",
+		"typescript",
+		"static-analysis",
+		"requirements"
+	],
 	"publishConfig": {
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
@@ -34,6 +41,10 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/fstepho/anchormap.git"
+	},
+	"homepage": "https://github.com/fstepho/anchormap#readme",
+	"bugs": {
+		"url": "https://github.com/fstepho/anchormap/issues"
 	},
 	"packageManager": "npm@11.11.1",
 	"engines": {

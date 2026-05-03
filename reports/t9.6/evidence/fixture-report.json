@@ -1,10 +1,10 @@
 {
-	"total_count": 102,
-	"passed_count": 102,
+	"total_count": 103,
+	"passed_count": 103,
 	"failed_count": 0,
 	"exit_code": 0,
-	"total_duration_ms": 10247.166208,
-	"summary_path": ".tmp/fixture-runs/all/run-0018/summary.txt",
+	"total_duration_ms": 9577.361959,
+	"summary_path": ".tmp/fixture-runs/all/run-0019/summary.txt",
 	"records": [
 		{
 			"fixture_id": "fx68_cli_unknown_command",
@@ -12,16 +12,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.300416,
-			"harness_duration_ms": 52.933584,
+			"total_duration_ms": 50.867542,
+			"harness_duration_ms": 54.477875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx68_cli_unknown_command",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx68_cli_unknown_command/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx68_cli_unknown_command/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx68_cli_unknown_command",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx68_cli_unknown_command/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx68_cli_unknown_command/summary.txt"
 		},
 		{
 			"fixture_id": "fx69_cli_unknown_option",
@@ -29,16 +29,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.199667,
-			"harness_duration_ms": 52.532292,
+			"total_duration_ms": 43.350708,
+			"harness_duration_ms": 45.444375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx69_cli_unknown_option",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx69_cli_unknown_option/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx69_cli_unknown_option/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx69_cli_unknown_option",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx69_cli_unknown_option/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx69_cli_unknown_option/summary.txt"
 		},
 		{
 			"fixture_id": "fx70_cli_invalid_option_combination",
@@ -46,16 +46,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.658125,
-			"harness_duration_ms": 51.8805,
+			"total_duration_ms": 42.173459,
+			"harness_duration_ms": 43.851667,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx70_cli_invalid_option_combination",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx70_cli_invalid_option_combination/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx70_cli_invalid_option_combination/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx70_cli_invalid_option_combination",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx70_cli_invalid_option_combination/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx70_cli_invalid_option_combination/summary.txt"
 		},
 		{
 			"fixture_id": "fx71_cli_scan_option_order_invariant",
@@ -63,16 +63,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.587959,
-			"harness_duration_ms": 143.32825,
+			"total_duration_ms": 135.277666,
+			"harness_duration_ms": 139.141542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71_cli_scan_option_order_invariant",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71_cli_scan_option_order_invariant/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71_cli_scan_option_order_invariant/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71_cli_scan_option_order_invariant",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71_cli_scan_option_order_invariant/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71_cli_scan_option_order_invariant/summary.txt"
 		},
 		{
 			"fixture_id": "fx71a_cli_scan_human_success",
@@ -80,16 +80,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.864541,
-			"harness_duration_ms": 144.683375,
+			"total_duration_ms": 127.914791,
+			"harness_duration_ms": 130.968542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71a_cli_scan_human_success",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71a_cli_scan_human_success/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71a_cli_scan_human_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71a_cli_scan_human_success",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71a_cli_scan_human_success/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71a_cli_scan_human_success/summary.txt"
 		},
 		{
 			"fixture_id": "fx71b_cli_scan_human_config_error_code2",
@@ -97,16 +97,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 47.812875,
-			"harness_duration_ms": 49.573625,
+			"total_duration_ms": 42.754291,
+			"harness_duration_ms": 44.568333,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71b_cli_scan_human_config_error_code2/summary.txt"
 		},
 		{
 			"fixture_id": "fx71c_cli_scan_human_repo_error_code3",
@@ -114,16 +114,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 50.721584,
-			"harness_duration_ms": 53.640625,
+			"total_duration_ms": 46.873333,
+			"harness_duration_ms": 50.397208,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71c_cli_scan_human_repo_error_code3/summary.txt"
 		},
 		{
 			"fixture_id": "fx71d_cli_scan_human_invalid_args_code4",
@@ -131,16 +131,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 46.91375,
-			"harness_duration_ms": 49.629541,
+			"total_duration_ms": 41.613125,
+			"harness_duration_ms": 43.300208,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71d_cli_scan_human_invalid_args_code4/summary.txt"
 		},
 		{
 			"fixture_id": "fx71e_cli_scan_human_internal_error_code1",
@@ -148,16 +148,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.359958,
-			"harness_duration_ms": 142.5805,
+			"total_duration_ms": 130.057458,
+			"harness_duration_ms": 133.895833,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx71e_cli_scan_human_internal_error_code1/summary.txt"
 		},
 		{
 			"fixture_id": "fx72_cli_priority_4_over_2",
@@ -165,16 +165,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 28.016583,
-			"harness_duration_ms": 30.356375,
+			"total_duration_ms": 27.33375,
+			"harness_duration_ms": 29.604917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx72_cli_priority_4_over_2",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx72_cli_priority_4_over_2/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx72_cli_priority_4_over_2/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx72_cli_priority_4_over_2",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx72_cli_priority_4_over_2/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx72_cli_priority_4_over_2/summary.txt"
 		},
 		{
 			"fixture_id": "fx73_cli_priority_2_over_3",
@@ -182,16 +182,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 26.687875,
-			"harness_duration_ms": 29.522166,
+			"total_duration_ms": 25.431625,
+			"harness_duration_ms": 27.943291,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx73_cli_priority_2_over_3",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx73_cli_priority_2_over_3/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx73_cli_priority_2_over_3/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx73_cli_priority_2_over_3",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx73_cli_priority_2_over_3/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx73_cli_priority_2_over_3/summary.txt"
 		},
 		{
 			"fixture_id": "fx74_cli_priority_3_over_1",
@@ -199,16 +199,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 26.868333,
-			"harness_duration_ms": 29.67875,
+			"total_duration_ms": 24.247708,
+			"harness_duration_ms": 26.871958,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx74_cli_priority_3_over_1",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx74_cli_priority_3_over_1/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx74_cli_priority_3_over_1/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx74_cli_priority_3_over_1",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx74_cli_priority_3_over_1/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx74_cli_priority_3_over_1/summary.txt"
 		},
 		{
 			"fixture_id": "fx75_cli_internal_error_code_1",
@@ -216,16 +216,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.883084,
-			"harness_duration_ms": 141.901792,
+			"total_duration_ms": 125.38975,
+			"harness_duration_ms": 128.863792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx75_cli_internal_error_code_1",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx75_cli_internal_error_code_1/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx75_cli_internal_error_code_1/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx75_cli_internal_error_code_1",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx75_cli_internal_error_code_1/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx75_cli_internal_error_code_1/summary.txt"
 		},
 		{
 			"fixture_id": "fx76_cli_write_failure_code_1",
@@ -233,16 +233,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 151.438875,
-			"harness_duration_ms": 154.765708,
+			"total_duration_ms": 132.697708,
+			"harness_duration_ms": 136.138416,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx76_cli_write_failure_code_1",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx76_cli_write_failure_code_1/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-cli/fx76_cli_write_failure_code_1/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx76_cli_write_failure_code_1",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx76_cli_write_failure_code_1/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-cli/fx76_cli_write_failure_code_1/summary.txt"
 		},
 		{
 			"fixture_id": "fx43_config_missing_file",
@@ -250,16 +250,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.57325,
-			"harness_duration_ms": 51.133917,
+			"total_duration_ms": 42.562667,
+			"harness_duration_ms": 44.417125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx43_config_missing_file",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx43_config_missing_file/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx43_config_missing_file/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx43_config_missing_file",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx43_config_missing_file/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx43_config_missing_file/summary.txt"
 		},
 		{
 			"fixture_id": "fx49a_config_mapping_repo_native_anchor_keys",
@@ -267,16 +267,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.882625,
-			"harness_duration_ms": 142.769917,
+			"total_duration_ms": 127.188708,
+			"harness_duration_ms": 131.057125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/summary.txt"
 		},
 		{
 			"fixture_id": "fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
@@ -284,16 +284,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.711334,
-			"harness_duration_ms": 141.615833,
+			"total_duration_ms": 126.490959,
+			"harness_duration_ms": 129.288084,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/summary.txt"
 		},
 		{
 			"fixture_id": "fx00m_map_decode_spec_non_utf8_no_mutation",
@@ -301,16 +301,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.687666,
-			"harness_duration_ms": 56.364083,
+			"total_duration_ms": 47.363042,
+			"harness_duration_ms": 49.973125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00m_map_decode_spec_non_utf8_no_mutation/summary.txt"
 		},
 		{
 			"fixture_id": "fx00n_map_decode_product_non_utf8_no_mutation",
@@ -318,16 +318,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 56.350375,
-			"harness_duration_ms": 59.210709,
+			"total_duration_ms": 46.959125,
+			"harness_duration_ms": 49.610083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00n_map_decode_product_non_utf8_no_mutation/summary.txt"
 		},
 		{
 			"fixture_id": "fx00o_map_decode_config_non_utf8_no_mutation",
@@ -335,16 +335,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.538792,
-			"harness_duration_ms": 51.41425,
+			"total_duration_ms": 43.160834,
+			"harness_duration_ms": 44.793834,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-decodage/fx00o_map_decode_config_non_utf8_no_mutation/summary.txt"
 		},
 		{
 			"fixture_id": "fx37_graph_parse_failure",
@@ -352,16 +352,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 137.023708,
-			"harness_duration_ms": 139.608875,
+			"total_duration_ms": 124.867,
+			"harness_duration_ms": 127.73175,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx37_graph_parse_failure",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx37_graph_parse_failure/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx37_graph_parse_failure/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx37_graph_parse_failure",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx37_graph_parse_failure/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx37_graph_parse_failure/summary.txt"
 		},
 		{
 			"fixture_id": "fx38f_graph_js_specifier_to_ts_source",
@@ -369,16 +369,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.782708,
-			"harness_duration_ms": 143.340625,
+			"total_duration_ms": 125.53525,
+			"harness_duration_ms": 129.905084,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38g_graph_js_specifier_reexport_to_ts_source",
@@ -386,16 +386,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 142.2285,
-			"harness_duration_ms": 145.679958,
+			"total_duration_ms": 127.1715,
+			"harness_duration_ms": 131.533709,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38h_graph_js_specifier_explicit_index_source",
@@ -403,16 +403,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.437125,
-			"harness_duration_ms": 145.344292,
+			"total_duration_ms": 139.72925,
+			"harness_duration_ms": 144.303209,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38i_graph_js_specifier_ts_source_wins_over_js",
@@ -420,16 +420,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.810167,
-			"harness_duration_ms": 142.606458,
+			"total_duration_ms": 137.163417,
+			"harness_duration_ms": 141.139042,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/summary.txt"
 		},
 		{
 			"fixture_id": "fx38j_graph_js_specifier_exact_js_without_ts",
@@ -437,16 +437,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.336584,
-			"harness_duration_ms": 143.929125,
+			"total_duration_ms": 134.049833,
+			"harness_duration_ms": 138.649834,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/summary.txt"
 		},
 		{
 			"fixture_id": "fx38k_graph_js_specifier_unresolved",
@@ -454,16 +454,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.129667,
-			"harness_duration_ms": 141.417084,
+			"total_duration_ms": 133.309417,
+			"harness_duration_ms": 136.767375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38k_graph_js_specifier_unresolved",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38k_graph_js_specifier_unresolved",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/summary.txt"
 		},
 		{
 			"fixture_id": "fx38l_graph_js_specifier_source_out_of_scope",
@@ -471,16 +471,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 136.545667,
-			"harness_duration_ms": 140.523667,
+			"total_duration_ms": 136.8935,
+			"harness_duration_ms": 140.667417,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx54_init_success_minimal",
@@ -488,16 +488,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 58.212709,
-			"harness_duration_ms": 61.861208,
+			"total_duration_ms": 56.907042,
+			"harness_duration_ms": 60.151625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx54_init_success_minimal",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx54_init_success_minimal/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx54_init_success_minimal/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx54_init_success_minimal",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx54_init_success_minimal/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx54_init_success_minimal/summary.txt"
 		},
 		{
 			"fixture_id": "fx55_init_create_only",
@@ -505,16 +505,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 50.33575,
-			"harness_duration_ms": 53.094208,
+			"total_duration_ms": 49.6365,
+			"harness_duration_ms": 52.408708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55_init_create_only",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55_init_create_only/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55_init_create_only/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55_init_create_only",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55_init_create_only/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55_init_create_only/summary.txt"
 		},
 		{
 			"fixture_id": "fx55a_init_create_only_broken_symlink",
@@ -522,16 +522,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 50.341375,
-			"harness_duration_ms": 54.700292,
+			"total_duration_ms": 45.296208,
+			"harness_duration_ms": 48.696708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55a_init_create_only_broken_symlink",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55a_init_create_only_broken_symlink/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx55a_init_create_only_broken_symlink/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55a_init_create_only_broken_symlink",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55a_init_create_only_broken_symlink/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx55a_init_create_only_broken_symlink/summary.txt"
 		},
 		{
 			"fixture_id": "fx56_init_invalid_args",
@@ -539,16 +539,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.423958,
-			"harness_duration_ms": 52.505375,
+			"total_duration_ms": 43.531625,
+			"harness_duration_ms": 45.178292,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx56_init_invalid_args",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx56_init_invalid_args/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx56_init_invalid_args/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx56_init_invalid_args",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx56_init_invalid_args/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx56_init_invalid_args/summary.txt"
 		},
 		{
 			"fixture_id": "fx57_init_missing_required_dirs",
@@ -556,16 +556,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 49.132334,
-			"harness_duration_ms": 50.865416,
+			"total_duration_ms": 43.60825,
+			"harness_duration_ms": 45.111666,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx57_init_missing_required_dirs",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx57_init_missing_required_dirs/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx57_init_missing_required_dirs/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx57_init_missing_required_dirs",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx57_init_missing_required_dirs/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx57_init_missing_required_dirs/summary.txt"
 		},
 		{
 			"fixture_id": "fx58_init_duplicate_normalized_roots",
@@ -573,16 +573,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 47.418458,
-			"harness_duration_ms": 50.416292,
+			"total_duration_ms": 44.675334,
+			"harness_duration_ms": 47.630542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58_init_duplicate_normalized_roots",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58_init_duplicate_normalized_roots/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58_init_duplicate_normalized_roots/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58_init_duplicate_normalized_roots",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58_init_duplicate_normalized_roots/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58_init_duplicate_normalized_roots/summary.txt"
 		},
 		{
 			"fixture_id": "fx58a_init_option_order_invariant",
@@ -590,16 +590,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 54.69925,
-			"harness_duration_ms": 58.407041,
+			"total_duration_ms": 52.387459,
+			"harness_duration_ms": 55.815917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58a_init_option_order_invariant",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58a_init_option_order_invariant/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-init/fx58a_init_option_order_invariant/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58a_init_option_order_invariant",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58a_init_option_order_invariant/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-init/fx58a_init_option_order_invariant/summary.txt"
 		},
 		{
 			"fixture_id": "fx59_map_create",
@@ -607,16 +607,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 146.920292,
-			"harness_duration_ms": 149.356584,
+			"total_duration_ms": 133.8275,
+			"harness_duration_ms": 137.028,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59_map_create",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59_map_create/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59_map_create/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59_map_create",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59_map_create/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59_map_create/summary.txt"
 		},
 		{
 			"fixture_id": "fx59a_map_create_repo_native_anchor_mapping",
@@ -624,16 +624,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 146.527958,
-			"harness_duration_ms": 149.277917,
+			"total_duration_ms": 141.28775,
+			"harness_duration_ms": 145.171959,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59a_map_create_repo_native_anchor_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx59b_map_create_screaming_snake_dotted_anchor_mapping",
@@ -641,16 +641,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 145.390041,
-			"harness_duration_ms": 148.199166,
+			"total_duration_ms": 141.252917,
+			"harness_duration_ms": 144.9945,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx59b_map_create_screaming_snake_dotted_anchor_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx60_map_replace_guard",
@@ -658,16 +658,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 51.580625,
-			"harness_duration_ms": 53.918792,
+			"total_duration_ms": 46.866625,
+			"harness_duration_ms": 49.308166,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx60_map_replace_guard",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx60_map_replace_guard/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx60_map_replace_guard/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx60_map_replace_guard",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx60_map_replace_guard/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx60_map_replace_guard/summary.txt"
 		},
 		{
 			"fixture_id": "fx61_map_replace_ok",
@@ -675,16 +675,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 149.849584,
-			"harness_duration_ms": 152.543125,
+			"total_duration_ms": 133.957333,
+			"harness_duration_ms": 136.96775,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx61_map_replace_ok",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx61_map_replace_ok/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx61_map_replace_ok/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx61_map_replace_ok",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx61_map_replace_ok/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx61_map_replace_ok/summary.txt"
 		},
 		{
 			"fixture_id": "fx62_map_replace_create_if_absent",
@@ -692,16 +692,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 146.346167,
-			"harness_duration_ms": 149.001667,
+			"total_duration_ms": 133.52075,
+			"harness_duration_ms": 136.443709,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx62_map_replace_create_if_absent",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx62_map_replace_create_if_absent/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx62_map_replace_create_if_absent/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx62_map_replace_create_if_absent",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx62_map_replace_create_if_absent/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx62_map_replace_create_if_absent/summary.txt"
 		},
 		{
 			"fixture_id": "fx63_map_invalid_anchor_argument",
@@ -709,16 +709,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 48.186542,
-			"harness_duration_ms": 49.785875,
+			"total_duration_ms": 43.240417,
+			"harness_duration_ms": 44.921417,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63_map_invalid_anchor_argument",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63_map_invalid_anchor_argument/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63_map_invalid_anchor_argument/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63_map_invalid_anchor_argument",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63_map_invalid_anchor_argument/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63_map_invalid_anchor_argument/summary.txt"
 		},
 		{
 			"fixture_id": "fx63a_map_invalid_repo_native_anchor_near_miss",
@@ -726,16 +726,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 47.555125,
-			"harness_duration_ms": 49.093667,
+			"total_duration_ms": 43.119791,
+			"harness_duration_ms": 44.799041,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63a_map_invalid_repo_native_anchor_near_miss/summary.txt"
 		},
 		{
 			"fixture_id": "fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss",
@@ -743,16 +743,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 47.986083,
-			"harness_duration_ms": 49.562417,
+			"total_duration_ms": 42.805,
+			"harness_duration_ms": 44.433417,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss/summary.txt"
 		},
 		{
 			"fixture_id": "fx64_map_anchor_not_observed",
@@ -760,16 +760,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 52.391792,
-			"harness_duration_ms": 54.844833,
+			"total_duration_ms": 49.077708,
+			"harness_duration_ms": 51.724083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64_map_anchor_not_observed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64_map_anchor_not_observed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64_map_anchor_not_observed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64_map_anchor_not_observed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64_map_anchor_not_observed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64_map_anchor_not_observed/summary.txt"
 		},
 		{
 			"fixture_id": "fx64a_map_repo_native_anchor_not_observed",
@@ -777,16 +777,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.683458,
-			"harness_duration_ms": 55.951792,
+			"total_duration_ms": 49.047083,
+			"harness_duration_ms": 51.972375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64a_map_repo_native_anchor_not_observed/summary.txt"
 		},
 		{
 			"fixture_id": "fx64b_map_screaming_snake_dotted_anchor_not_observed",
@@ -794,16 +794,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.90225,
-			"harness_duration_ms": 56.088083,
+			"total_duration_ms": 49.3715,
+			"harness_duration_ms": 52.205958,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx64b_map_screaming_snake_dotted_anchor_not_observed/summary.txt"
 		},
 		{
 			"fixture_id": "fx65_map_invalid_seed",
@@ -811,16 +811,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.099708,
-			"harness_duration_ms": 55.714792,
+			"total_duration_ms": 46.998083,
+			"harness_duration_ms": 49.955042,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx65_map_invalid_seed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx65_map_invalid_seed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx65_map_invalid_seed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx65_map_invalid_seed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx65_map_invalid_seed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx65_map_invalid_seed/summary.txt"
 		},
 		{
 			"fixture_id": "fx66_map_duplicate_seed_argument",
@@ -828,16 +828,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 48.230375,
-			"harness_duration_ms": 49.645292,
+			"total_duration_ms": 42.478959,
+			"harness_duration_ms": 44.095834,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx66_map_duplicate_seed_argument",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx66_map_duplicate_seed_argument/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx66_map_duplicate_seed_argument/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx66_map_duplicate_seed_argument",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx66_map_duplicate_seed_argument/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx66_map_duplicate_seed_argument/summary.txt"
 		},
 		{
 			"fixture_id": "fx67_map_option_order_invariant",
@@ -845,16 +845,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 151.028958,
-			"harness_duration_ms": 153.515917,
+			"total_duration_ms": 135.130791,
+			"harness_duration_ms": 138.495583,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67_map_option_order_invariant",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67_map_option_order_invariant/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67_map_option_order_invariant/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67_map_option_order_invariant",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67_map_option_order_invariant/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67_map_option_order_invariant/summary.txt"
 		},
 		{
 			"fixture_id": "fx67a_map_config_missing_or_invalid_code2",
@@ -862,16 +862,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 50.170833,
-			"harness_duration_ms": 51.588333,
+			"total_duration_ms": 44.550792,
+			"harness_duration_ms": 46.24625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67a_map_config_missing_or_invalid_code2/summary.txt"
 		},
 		{
 			"fixture_id": "fx67b_map_spec_read_or_decode_failure_code3",
@@ -879,16 +879,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 54.380583,
-			"harness_duration_ms": 56.658583,
+			"total_duration_ms": 46.497292,
+			"harness_duration_ms": 49.178292,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67b_map_spec_read_or_decode_failure_code3/summary.txt"
 		},
 		{
 			"fixture_id": "fx67c_map_product_read_decode_or_parse_failure_code3",
@@ -896,16 +896,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.11425,
-			"harness_duration_ms": 140.383542,
+			"total_duration_ms": 127.108416,
+			"harness_duration_ms": 130.062041,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67c_map_product_read_decode_or_parse_failure_code3/summary.txt"
 		},
 		{
 			"fixture_id": "fx67d_map_required_existence_test_failure_code3",
@@ -913,16 +913,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 51.26775,
-			"harness_duration_ms": 53.65475,
+			"total_duration_ms": 48.101458,
+			"harness_duration_ms": 50.698041,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67d_map_required_existence_test_failure_code3",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67d_map_required_existence_test_failure_code3/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-map/fx67d_map_required_existence_test_failure_code3/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67d_map_required_existence_test_failure_code3",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67d_map_required_existence_test_failure_code3/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-map/fx67d_map_required_existence_test_failure_code3/summary.txt"
 		},
 		{
 			"fixture_id": "fx39_repo_case_collision_in_scope",
@@ -930,16 +930,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.137833,
-			"harness_duration_ms": 57.643833,
+			"total_duration_ms": 47.078,
+			"harness_duration_ms": 50.4035,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39_repo_case_collision_in_scope",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39_repo_case_collision_in_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39_repo_case_collision_in_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39_repo_case_collision_in_scope",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39_repo_case_collision_in_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39_repo_case_collision_in_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx39a_repo_cross_root_case_collision",
@@ -947,16 +947,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 52.708541,
-			"harness_duration_ms": 55.3775,
+			"total_duration_ms": 47.770417,
+			"harness_duration_ms": 50.301,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39a_repo_cross_root_case_collision",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39a_repo_cross_root_case_collision/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx39a_repo_cross_root_case_collision/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39a_repo_cross_root_case_collision",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39a_repo_cross_root_case_collision/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx39a_repo_cross_root_case_collision/summary.txt"
 		},
 		{
 			"fixture_id": "fx40_repo_symlink_in_scope",
@@ -964,16 +964,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 52.732292,
-			"harness_duration_ms": 55.480167,
+			"total_duration_ms": 46.375584,
+			"harness_duration_ms": 49.135125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx40_repo_symlink_in_scope",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx40_repo_symlink_in_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx40_repo_symlink_in_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx40_repo_symlink_in_scope",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx40_repo_symlink_in_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx40_repo_symlink_in_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx41_repo_noise_outside_scope_ignored",
@@ -981,16 +981,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.391042,
-			"harness_duration_ms": 57.123458,
+			"total_duration_ms": 48.530625,
+			"harness_duration_ms": 52.098583,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/summary.txt"
 		},
 		{
 			"fixture_id": "fx42a_repo_product_root_enumeration_failure",
@@ -998,16 +998,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 50.707125,
-			"harness_duration_ms": 53.747292,
+			"total_duration_ms": 46.317917,
+			"harness_duration_ms": 48.795084,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42a_repo_product_root_enumeration_failure/summary.txt"
 		},
 		{
 			"fixture_id": "fx42c_repo_noncanonical_path_in_scope",
@@ -1015,16 +1015,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 52.957958,
-			"harness_duration_ms": 56.276334,
+			"total_duration_ms": 49.134875,
+			"harness_duration_ms": 51.786625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-repo/fx42c_repo_noncanonical_path_in_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx01_scan_min_clean",
@@ -1032,16 +1032,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.977917,
-			"harness_duration_ms": 144.211,
+			"total_duration_ms": 130.655208,
+			"harness_duration_ms": 134.644958,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx01_scan_min_clean",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx01_scan_min_clean/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx01_scan_min_clean/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx01_scan_min_clean",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx01_scan_min_clean/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx01_scan_min_clean/summary.txt"
 		},
 		{
 			"fixture_id": "fx02_scan_two_anchors_overlap",
@@ -1049,16 +1049,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 143.036125,
-			"harness_duration_ms": 146.771667,
+			"total_duration_ms": 128.463917,
+			"harness_duration_ms": 133.033417,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx02_scan_two_anchors_overlap",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx02_scan_two_anchors_overlap/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx02_scan_two_anchors_overlap/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx02_scan_two_anchors_overlap",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx02_scan_two_anchors_overlap/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx02_scan_two_anchors_overlap/summary.txt"
 		},
 		{
 			"fixture_id": "fx03_scan_unmapped_anchor",
@@ -1066,16 +1066,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.709792,
-			"harness_duration_ms": 143.912708,
+			"total_duration_ms": 127.630666,
+			"harness_duration_ms": 131.287209,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx03_scan_unmapped_anchor",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx03_scan_unmapped_anchor/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx03_scan_unmapped_anchor/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx03_scan_unmapped_anchor",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx03_scan_unmapped_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx03_scan_unmapped_anchor/summary.txt"
 		},
 		{
 			"fixture_id": "fx04_scan_stale_mapping",
@@ -1083,16 +1083,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.424084,
-			"harness_duration_ms": 142.56775,
+			"total_duration_ms": 128.033084,
+			"harness_duration_ms": 131.529167,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx04_scan_stale_mapping",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx04_scan_stale_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx04_scan_stale_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx04_scan_stale_mapping",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx04_scan_stale_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx04_scan_stale_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx05_scan_broken_seed",
@@ -1100,16 +1100,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.542917,
-			"harness_duration_ms": 144.660833,
+			"total_duration_ms": 127.489541,
+			"harness_duration_ms": 130.600042,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx05_scan_broken_seed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx05_scan_broken_seed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx05_scan_broken_seed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx05_scan_broken_seed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx05_scan_broken_seed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx05_scan_broken_seed/summary.txt"
 		},
 		{
 			"fixture_id": "fx06_scan_clean_untraced",
@@ -1117,16 +1117,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 143.058541,
-			"harness_duration_ms": 146.338917,
+			"total_duration_ms": 127.897458,
+			"harness_duration_ms": 132.134625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06_scan_clean_untraced",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06_scan_clean_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06_scan_clean_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06_scan_clean_untraced",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06_scan_clean_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06_scan_clean_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx06a_scan_unmapped_anchor_suppresses_untraced",
@@ -1134,16 +1134,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.247791,
-			"harness_duration_ms": 144.842709,
+			"total_duration_ms": 128.117417,
+			"harness_duration_ms": 131.2275,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx07_scan_degraded_suppresses_untraced",
@@ -1151,16 +1151,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 137.654958,
-			"harness_duration_ms": 141.399875,
+			"total_duration_ms": 132.132625,
+			"harness_duration_ms": 135.600292,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx08_scan_no_untraced_without_usable_mapping",
@@ -1168,16 +1168,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.211667,
-			"harness_duration_ms": 143.491041,
+			"total_duration_ms": 130.479292,
+			"harness_duration_ms": 133.601917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx09_scan_findings_canonical_order",
@@ -1185,16 +1185,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 142.482542,
-			"harness_duration_ms": 146.229416,
+			"total_duration_ms": 131.7615,
+			"harness_duration_ms": 136.733083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx09_scan_findings_canonical_order",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx09_scan_findings_canonical_order/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx09_scan_findings_canonical_order/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx09_scan_findings_canonical_order",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx09_scan_findings_canonical_order/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx09_scan_findings_canonical_order/summary.txt"
 		},
 		{
 			"fixture_id": "fx10_scan_closed_objects",
@@ -1202,16 +1202,33 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.358958,
-			"harness_duration_ms": 141.500625,
+			"total_duration_ms": 126.981209,
+			"harness_duration_ms": 130.242416,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx10_scan_closed_objects",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx10_scan_closed_objects/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-scan/fx10_scan_closed_objects/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10_scan_closed_objects",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10_scan_closed_objects/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10_scan_closed_objects/summary.txt"
+		},
+		{
+			"fixture_id": "fx10a_scan_traceability_metrics_fanout",
+			"family": "B-scan",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 128.783667,
+			"harness_duration_ms": 132.924,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/summary.txt"
 		},
 		{
 			"fixture_id": "fx19_specs_duplicate_anchor",
@@ -1219,16 +1236,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.0385,
-			"harness_duration_ms": 55.432375,
+			"total_duration_ms": 47.543292,
+			"harness_duration_ms": 50.772584,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19_specs_duplicate_anchor",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19_specs_duplicate_anchor/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19_specs_duplicate_anchor/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19_specs_duplicate_anchor",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19_specs_duplicate_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19_specs_duplicate_anchor/summary.txt"
 		},
 		{
 			"fixture_id": "fx19a_specs_duplicate_repo_native_anchor",
@@ -1236,16 +1253,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.779167,
-			"harness_duration_ms": 56.238708,
+			"total_duration_ms": 47.731375,
+			"harness_duration_ms": 50.552792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19a_specs_duplicate_repo_native_anchor/summary.txt"
 		},
 		{
 			"fixture_id": "fx19b_specs_duplicate_screaming_snake_dotted_anchor",
@@ -1253,16 +1270,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 54.556916,
-			"harness_duration_ms": 57.024583,
+			"total_duration_ms": 48.79125,
+			"harness_duration_ms": 51.3615,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx19b_specs_duplicate_screaming_snake_dotted_anchor/summary.txt"
 		},
 		{
 			"fixture_id": "fx22b_specs_markdown_non_utf8",
@@ -1270,16 +1287,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 53.899875,
-			"harness_duration_ms": 56.391042,
+			"total_duration_ms": 47.309458,
+			"harness_duration_ms": 50.044125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22b_specs_markdown_non_utf8",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22b_specs_markdown_non_utf8/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22b_specs_markdown_non_utf8/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22b_specs_markdown_non_utf8",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22b_specs_markdown_non_utf8/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22b_specs_markdown_non_utf8/summary.txt"
 		},
 		{
 			"fixture_id": "fx22e_specs_yaml_non_utf8",
@@ -1287,16 +1304,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 54.847833,
-			"harness_duration_ms": 57.195292,
+			"total_duration_ms": 46.96325,
+			"harness_duration_ms": 49.476209,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22e_specs_yaml_non_utf8",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22e_specs_yaml_non_utf8/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22e_specs_yaml_non_utf8/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22e_specs_yaml_non_utf8",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22e_specs_yaml_non_utf8/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22e_specs_yaml_non_utf8/summary.txt"
 		},
 		{
 			"fixture_id": "fx22g_specs_repo_native_markdown_ids",
@@ -1304,16 +1321,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 137.448958,
-			"harness_duration_ms": 140.02575,
+			"total_duration_ms": 132.686708,
+			"harness_duration_ms": 136.420708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22h_specs_repo_native_yaml_root_ids",
@@ -1321,16 +1338,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.738708,
-			"harness_duration_ms": 141.806167,
+			"total_duration_ms": 126.88825,
+			"harness_duration_ms": 131.700833,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22i_specs_repo_native_rejected_near_misses",
@@ -1338,16 +1355,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 143.459417,
-			"harness_duration_ms": 147.080709,
+			"total_duration_ms": 130.645458,
+			"harness_duration_ms": 136.126708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/summary.txt"
 		},
 		{
 			"fixture_id": "fx22j_specs_screaming_snake_dotted_markdown_ids",
@@ -1355,16 +1372,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.927958,
-			"harness_duration_ms": 142.279583,
+			"total_duration_ms": 129.114792,
+			"harness_duration_ms": 132.766083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22k_specs_screaming_snake_dotted_yaml_root_ids",
@@ -1372,16 +1389,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.945125,
-			"harness_duration_ms": 143.632375,
+			"total_duration_ms": 128.199416,
+			"harness_duration_ms": 131.976542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22l_specs_screaming_snake_dotted_rejected_near_misses",
@@ -1389,16 +1406,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 143.938375,
-			"harness_duration_ms": 147.290625,
+			"total_duration_ms": 129.190708,
+			"harness_duration_ms": 134.27575,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/summary.txt"
 		},
 		{
 			"fixture_id": "c1_filesystem_order_baseline",
@@ -1406,16 +1423,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 138.97725,
-			"harness_duration_ms": 142.780625,
+			"total_duration_ms": 129.564667,
+			"harness_duration_ms": 133.46,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c1_filesystem_order_transformed",
@@ -1423,16 +1440,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.061458,
-			"harness_duration_ms": 144.803958,
+			"total_duration_ms": 126.93925,
+			"harness_duration_ms": 130.5525,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c1_filesystem_order_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c1_filesystem_order_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_map_baseline",
@@ -1440,16 +1457,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 154.056833,
-			"harness_duration_ms": 156.852083,
+			"total_duration_ms": 142.91325,
+			"harness_duration_ms": 145.879625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_map_transformed",
@@ -1457,16 +1474,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 148.343375,
-			"harness_duration_ms": 151.056417,
+			"total_duration_ms": 134.761375,
+			"harness_duration_ms": 137.642792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_map_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_scan_baseline",
@@ -1474,16 +1491,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.685708,
-			"harness_duration_ms": 143.3865,
+			"total_duration_ms": 128.221709,
+			"harness_duration_ms": 131.078042,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_scan_transformed",
@@ -1491,16 +1508,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 142.328291,
-			"harness_duration_ms": 145.535459,
+			"total_duration_ms": 127.240292,
+			"harness_duration_ms": 130.416125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c3_spec_noise_baseline",
@@ -1508,16 +1525,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.65525,
-			"harness_duration_ms": 144.566,
+			"total_duration_ms": 129.743042,
+			"harness_duration_ms": 132.60675,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c3_spec_noise_transformed",
@@ -1525,16 +1542,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.023333,
-			"harness_duration_ms": 144.027583,
+			"total_duration_ms": 127.010917,
+			"harness_duration_ms": 130.123917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c3_spec_noise_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c3_spec_noise_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c4_seed_movement_baseline",
@@ -1542,16 +1559,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.367875,
-			"harness_duration_ms": 143.888125,
+			"total_duration_ms": 127.548041,
+			"harness_duration_ms": 130.875583,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c4_seed_movement_transformed",
@@ -1559,16 +1576,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.465209,
-			"harness_duration_ms": 143.271958,
+			"total_duration_ms": 130.302292,
+			"harness_duration_ms": 134.02875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c4_seed_movement_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c4_seed_movement_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c5_external_import_baseline",
@@ -1576,16 +1593,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 143.527,
-			"harness_duration_ms": 146.753334,
+			"total_duration_ms": 131.029625,
+			"harness_duration_ms": 134.687083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c5_external_import_transformed",
@@ -1593,16 +1610,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 142.487208,
-			"harness_duration_ms": 145.5625,
+			"total_duration_ms": 131.5385,
+			"harness_duration_ms": 134.500584,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c5_external_import_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c5_external_import_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c6_unsupported_extension_baseline",
@@ -1610,16 +1627,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 140.947041,
-			"harness_duration_ms": 143.882333,
+			"total_duration_ms": 128.304042,
+			"harness_duration_ms": 131.50875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_baseline",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_baseline",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c6_unsupported_extension_transformed",
@@ -1627,16 +1644,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.9275,
-			"harness_duration_ms": 142.8665,
+			"total_duration_ms": 128.382083,
+			"harness_duration_ms": 131.4165,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_transformed",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c6_unsupported_extension_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_transformed",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c6_unsupported_extension_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c8_locale_collation_order",
@@ -1644,16 +1661,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 142.526167,
-			"harness_duration_ms": 146.415708,
+			"total_duration_ms": 126.544166,
+			"harness_duration_ms": 130.014084,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c8_locale_collation_order",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c8_locale_collation_order/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/C-metamorphic/c8_locale_collation_order/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c8_locale_collation_order",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c8_locale_collation_order/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/C-metamorphic/c8_locale_collation_order/summary.txt"
 		},
 		{
 			"fixture_id": "harness_schema_failure",
@@ -1661,16 +1678,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 28.619958,
-			"harness_duration_ms": 30.767583,
+			"total_duration_ms": 24.33875,
+			"harness_duration_ms": 26.215042,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_failure",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_failure/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_failure/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_failure",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_failure/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_failure/summary.txt"
 		},
 		{
 			"fixture_id": "harness_schema_success",
@@ -1678,16 +1695,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 27.531667,
-			"harness_duration_ms": 30.285667,
+			"total_duration_ms": 24.238125,
+			"harness_duration_ms": 26.639625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_success",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_success/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-schema/harness_schema_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_success",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_success/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-schema/harness_schema_success/summary.txt"
 		},
 		{
 			"fixture_id": "harness_smoke_init_write",
@@ -1695,16 +1712,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 26.872291,
-			"harness_duration_ms": 28.457584,
+			"total_duration_ms": 24.04475,
+			"harness_duration_ms": 25.992667,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_init_write",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_init_write/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_init_write/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_init_write",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_init_write/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_init_write/summary.txt"
 		},
 		{
 			"fixture_id": "harness_smoke_scan_failure",
@@ -1712,16 +1729,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 26.177083,
-			"harness_duration_ms": 27.767209,
+			"total_duration_ms": 23.447209,
+			"harness_duration_ms": 25.167958,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_failure",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_failure/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_failure/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_failure",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_failure/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_failure/summary.txt"
 		},
 		{
 			"fixture_id": "harness_smoke_scan_success",
@@ -1729,16 +1746,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 27.312791,
-			"harness_duration_ms": 29.648833,
+			"total_duration_ms": 26.190292,
+			"harness_duration_ms": 28.625959,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_success",
-			"metadata_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_success/result.json",
-			"summary_path": ".tmp/fixture-runs/all/run-0018/fixtures/harness-smoke/harness_smoke_scan_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_success",
+			"metadata_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_success/result.json",
+			"summary_path": ".tmp/fixture-runs/all/run-0019/fixtures/harness-smoke/harness_smoke_scan_success/summary.txt"
 		}
 	]
 }

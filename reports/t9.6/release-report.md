@@ -28,7 +28,7 @@ Checklist verdict: pass
 - consumer_lockback: archived (reports/t9.6/artifacts/consumer-lockback.json)
 - t10_5_tarball_artifact: archived (reports/t9.6/artifacts/t10.5-tarball-artifact.json)
 - t10_5_publication_dry_run: archived (reports/t9.6/artifacts/t10.5-publication-dry-run.json)
-- t10_6_publication_evidence: archived (reports/t9.6/artifacts/t10.6-publication-evidence.json)
+- t10_6_publication_evidence: pending (reports/t9.6/artifacts/t10.6-publication-evidence.json)
 
 ## Golden Diffs
 

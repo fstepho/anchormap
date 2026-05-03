@@ -38,6 +38,7 @@ const VERIFY_INSTALLED_ARTIFACT_PATH = resolve(
 	"verify-installed-artifact.mjs",
 );
 const PUBLICATION_DRY_RUN_PATH = resolve(REPO_ROOT, "scripts", "publication-dry-run.mjs");
+const EXPECTED_PACKAGE_VERSION = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8")).version;
 
 interface PackageJson {
 	name?: string;
@@ -251,8 +252,8 @@ test("package.json exposes the stable repo-local check and harness command surfa
 	const scripts = packageJson.scripts ?? {};
 
 	assert.equal(packageJson.name, "anchormap");
-	assert.equal(packageJson.version, "1.0.0");
-	assert.equal(packageJson.license, "UNLICENSED");
+	assert.equal(packageJson.version, EXPECTED_PACKAGE_VERSION);
+	assert.equal(packageJson.license, "MIT");
 	assert.equal(packageJson.private, false);
 	assert.deepEqual(packageJson.publishConfig, {
 		access: "public",
@@ -558,12 +559,12 @@ const packageFiles = ${JSON.stringify(packageFiles.map((file) => ({ path: file }
 if (process.argv[2] === "pack") {
 	const destination = process.argv[process.argv.indexOf("--pack-destination") + 1];
 	fs.mkdirSync(destination, { recursive: true });
-	fs.writeFileSync(path.join(destination, "anchormap-1.0.0.tgz"), "fake tarball\\n");
+	fs.writeFileSync(path.join(destination, "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz"), "fake tarball\\n");
 	process.stdout.write(JSON.stringify([{
-		id: "anchormap@1.0.0",
+		id: "anchormap@${EXPECTED_PACKAGE_VERSION}",
 		name: "anchormap",
-		version: "1.0.0",
-		filename: "anchormap-1.0.0.tgz",
+		version: "${EXPECTED_PACKAGE_VERSION}",
+		filename: "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz",
 		integrity: "sha512-current",
 		shasum: "1111111111111111111111111111111111111111",
 		files: packageFiles,
@@ -588,8 +589,8 @@ process.exit(1);
 			verdict: "pass",
 			package: {
 				name: "anchormap",
-				version: "1.0.0",
-				filename: "anchormap-1.0.0.tgz",
+				version: EXPECTED_PACKAGE_VERSION,
+				filename: `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`,
 				integrity: "sha512-current",
 				shasum: "1111111111111111111111111111111111111111",
 				files: packageFiles,
@@ -681,12 +682,12 @@ const packageFiles = ${JSON.stringify(packageFiles.map((file) => ({ path: file }
 if (process.argv[2] === "pack") {
 	const destination = process.argv[process.argv.indexOf("--pack-destination") + 1];
 	fs.mkdirSync(destination, { recursive: true });
-	fs.writeFileSync(path.join(destination, "anchormap-1.0.0.tgz"), "fake tarball\\n");
+	fs.writeFileSync(path.join(destination, "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz"), "fake tarball\\n");
 	process.stdout.write(JSON.stringify([{
-		id: "anchormap@1.0.0",
+		id: "anchormap@${EXPECTED_PACKAGE_VERSION}",
 		name: "anchormap",
-		version: "1.0.0",
-		filename: "anchormap-1.0.0.tgz",
+		version: "${EXPECTED_PACKAGE_VERSION}",
+		filename: "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz",
 		integrity: "sha512-current",
 		shasum: "1111111111111111111111111111111111111111",
 		files: packageFiles,
@@ -711,8 +712,8 @@ process.exit(1);
 			verdict: "pass",
 			package: {
 				name: "anchormap",
-				version: "1.0.0",
-				filename: "anchormap-1.0.0.tgz",
+				version: EXPECTED_PACKAGE_VERSION,
+				filename: `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`,
 				integrity: "sha512-current",
 				shasum: "1111111111111111111111111111111111111111",
 				files: packageFiles,
@@ -787,12 +788,12 @@ const packageFiles = ${JSON.stringify(packageFiles.map((file) => ({ path: file }
 if (process.argv[2] === "pack") {
 	const destination = process.argv[process.argv.indexOf("--pack-destination") + 1];
 	fs.mkdirSync(destination, { recursive: true });
-	fs.writeFileSync(path.join(destination, "anchormap-1.0.0.tgz"), "fake tarball\\n");
+	fs.writeFileSync(path.join(destination, "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz"), "fake tarball\\n");
 	process.stdout.write(JSON.stringify([{
-		id: "anchormap@1.0.0",
+		id: "anchormap@${EXPECTED_PACKAGE_VERSION}",
 		name: "anchormap",
-		version: "1.0.0",
-		filename: "anchormap-1.0.0.tgz",
+		version: "${EXPECTED_PACKAGE_VERSION}",
+		filename: "anchormap-${EXPECTED_PACKAGE_VERSION}.tgz",
 		integrity: "sha512-current",
 		shasum: "1111111111111111111111111111111111111111",
 		files: packageFiles,
@@ -819,8 +820,8 @@ process.exit(1);
 			verdict: "pass",
 			package: {
 				name: "anchormap",
-				version: "1.0.0",
-				filename: "anchormap-1.0.0.tgz",
+				version: EXPECTED_PACKAGE_VERSION,
+				filename: `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`,
 				integrity: "sha512-current",
 				shasum: "1111111111111111111111111111111111111111",
 				files: packageFiles,
@@ -903,7 +904,12 @@ test("release package contents include launcher and compiled CLI target", () => 
 			files: Array<{ path: string }>;
 		}>;
 		const packedFiles = packResult.files.map((file) => file.path).sort();
-		const expectedPackedFiles = ["README.md", "package.json", ...EXPECTED_PACKAGE_FILES].sort();
+		const expectedPackedFiles = [
+			"LICENSE",
+			"README.md",
+			"package.json",
+			...EXPECTED_PACKAGE_FILES,
+		].sort();
 
 		assert.deepEqual(packedFiles, expectedPackedFiles);
 		assert.ok(!packedFiles.some((path) => path.includes(".test.")));
@@ -1319,7 +1325,7 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 1,
+		schema_version: 2,
 		config: {
 			version: 1,
 			product_root: "src",
@@ -1344,6 +1350,29 @@ mappings:
 			"src/index.ts": {
 				covering_anchor_ids: ["AM-001"],
 				supported_local_targets: [],
+			},
+		},
+		traceability_metrics: {
+			summary: {
+				product_file_count: 1,
+				stored_mapping_count: 1,
+				usable_mapping_count: 1,
+				observed_anchor_count: 1,
+				covered_product_file_count: 1,
+				uncovered_product_file_count: 0,
+				directly_seeded_product_file_count: 1,
+				single_cover_product_file_count: 1,
+				multi_cover_product_file_count: 0,
+			},
+			anchors: {
+				"AM-001": {
+					seed_file_count: 1,
+					direct_seed_file_count: 1,
+					reached_file_count: 1,
+					transitive_reached_file_count: 0,
+					unique_reached_file_count: 1,
+					shared_reached_file_count: 0,
+				},
 			},
 		},
 		findings: [],
@@ -1515,7 +1544,7 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 1,
+		schema_version: 2,
 		config: {
 			version: 1,
 			product_root: "src",
@@ -1540,6 +1569,29 @@ mappings:
 			"src/index.ts": {
 				covering_anchor_ids: ["AM-001"],
 				supported_local_targets: [],
+			},
+		},
+		traceability_metrics: {
+			summary: {
+				product_file_count: 1,
+				stored_mapping_count: 1,
+				usable_mapping_count: 1,
+				observed_anchor_count: 1,
+				covered_product_file_count: 1,
+				uncovered_product_file_count: 0,
+				directly_seeded_product_file_count: 1,
+				single_cover_product_file_count: 1,
+				multi_cover_product_file_count: 0,
+			},
+			anchors: {
+				"AM-001": {
+					seed_file_count: 1,
+					direct_seed_file_count: 1,
+					reached_file_count: 1,
+					transitive_reached_file_count: 0,
+					unique_reached_file_count: 1,
+					shared_reached_file_count: 0,
+				},
 			},
 		},
 		findings: [],

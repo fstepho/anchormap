@@ -17,16 +17,16 @@
 				{
 					"id": "level_b_fixture_report_passed",
 					"status": "pass",
-					"scoped_record_count": 82,
+					"scoped_record_count": 83,
 					"failed_scoped_record_count": 0
 				},
 				{
 					"id": "level_b_fixture_report_matches_current_manifests",
 					"status": "pass",
-					"expected_count": 82,
-					"actual_count": 82,
-					"total_count": 102,
-					"passed_count": 102
+					"expected_count": 83,
+					"actual_count": 83,
+					"total_count": 103,
+					"passed_count": 103
 				},
 				{
 					"id": "level_b_fixture_report_records_well_formed",
@@ -68,10 +68,10 @@
 					"id": "golden_report_matches_current_stdout_golden_manifests",
 					"status": "pass",
 					"missing_stdout_golden_fixtures": [],
-					"expected_count": 43,
-					"actual_count": 43,
-					"total_count": 43,
-					"passed_count": 43
+					"expected_count": 44,
+					"actual_count": 44,
+					"total_count": 44,
+					"passed_count": 44
 				},
 				{
 					"id": "golden_report_records_well_formed",
@@ -91,7 +91,7 @@
 				{
 					"id": "json_goldens_present",
 					"status": "pass",
-					"json_golden_count": 43
+					"json_golden_count": 44
 				},
 				{
 					"id": "yaml_goldens_present",
@@ -106,7 +106,7 @@
 				{
 					"id": "all_level_b_fixture_oracles_passed",
 					"status": "pass",
-					"scoped_record_count": 82,
+					"scoped_record_count": 83,
 					"failed_scoped_record_count": 0
 				},
 				{
@@ -429,7 +429,7 @@
 			{
 				"name": "t10_6_publication_evidence",
 				"required": false,
-				"status": "archived",
+				"status": "pending",
 				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
 				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
 			}
@@ -459,7 +459,7 @@
 			{
 				"name": "t10_6_publication_evidence",
 				"required": false,
-				"status": "archived",
+				"status": "pending",
 				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
 				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
 			}
@@ -489,7 +489,7 @@
 				"status": "pass"
 			},
 			"t10_6_publication_evidence": {
-				"status": "pass"
+				"status": "pending"
 			}
 		},
 		"golden_diffs": [],

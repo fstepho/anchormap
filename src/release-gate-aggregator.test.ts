@@ -7,6 +7,9 @@ import { test } from "node:test";
 
 const REPO_ROOT = resolve(__dirname, "..");
 const SCRIPT_PATH = resolve(REPO_ROOT, "scripts", "release-gate-aggregator.mjs");
+const EXPECTED_PACKAGE_VERSION = JSON.parse(
+	readFileSync(resolve(REPO_ROOT, "package.json"), "utf8"),
+).version;
 
 interface ReleaseGateFixture {
 	id: string;
@@ -187,7 +190,7 @@ function createTempReleaseEvidence(): TempReleaseEvidence {
 }
 
 function writePublicationEvidence(evidenceDir: string): void {
-	const tarballFile = "anchormap-1.0.0.tgz";
+	const tarballFile = `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`;
 	const npmIntegrity =
 		"sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
 	const npmShasum = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -196,7 +199,7 @@ function writePublicationEvidence(evidenceDir: string): void {
 		schema_version: 1,
 		task: "T10.5",
 		package_name: "anchormap",
-		package_version: "1.0.0",
+		package_version: EXPECTED_PACKAGE_VERSION,
 		mechanism: "npm-shrinkwrap.json",
 		runtime_closure_matches_gate_g: true,
 		shrinkwrap: {
@@ -208,7 +211,7 @@ function writePublicationEvidence(evidenceDir: string): void {
 		schema_version: 1,
 		task: "T10.5",
 		package_name: "anchormap",
-		package_version: "1.0.0",
+		package_version: EXPECTED_PACKAGE_VERSION,
 		tarball_file: tarballFile,
 		included_files: ["package.json", "npm-shrinkwrap.json", "bin/anchormap", "dist/anchormap.js"],
 		npm_integrity: npmIntegrity,
@@ -219,7 +222,7 @@ function writePublicationEvidence(evidenceDir: string): void {
 			m9_release_gate_report: "reports/t9.6/release-report.json",
 			t9_7_entropy_review: "reports/t9.7/entropy-review.json",
 			t10_3_installed_artifact_report: "reports/t10.3/installed-artifact-report.json",
-			checksum_evidence: "reports/t10.5/anchormap-1.0.0.sha256",
+			checksum_evidence: `reports/t10.5/anchormap-${EXPECTED_PACKAGE_VERSION}.sha256`,
 		},
 	});
 	writeJson(resolve(evidenceDir, "t10.5-publication-dry-run.json"), {
@@ -238,8 +241,8 @@ function writeT10_6PublicationEvidence(evidenceDir: string): void {
 	writeJson(resolve(evidenceDir, "t10.6-publication-evidence.json"), {
 		schema_version: 1,
 		task: "T10.6",
-		registry_coordinate: "anchormap@1.0.0",
-		tarball_file: "anchormap-1.0.0.tgz",
+		registry_coordinate: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
+		tarball_file: `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`,
 		dist_integrity: npmIntegrity,
 		dist_shasum: npmShasum,
 		sha256,
@@ -1908,7 +1911,7 @@ test("release gate aggregator validates present T10 package identity without req
 		);
 		assert.ok(
 			publicationEvidence.validation_errors.includes(
-				"T10.5 tarball artifact package_version must be 1.0.0",
+				`T10.5 tarball artifact package_version must be ${EXPECTED_PACKAGE_VERSION}`,
 			),
 		);
 	} finally {
@@ -1923,8 +1926,8 @@ test("release gate aggregator validates T10.6 package coordinate without owning 
 		writeT10_6PublicationEvidence(evidence.evidenceDir);
 		const publicationPath = resolve(evidence.evidenceDir, "t10.6-publication-evidence.json");
 		const publication = readJson<Record<string, unknown>>(publicationPath);
-		publication.registry_coordinate = "other@1.0.0";
-		publication.tarball_file = "anchormap-1.0.0-rebuilt.tgz";
+		publication.registry_coordinate = `other@${EXPECTED_PACKAGE_VERSION}`;
+		publication.tarball_file = `anchormap-${EXPECTED_PACKAGE_VERSION}-rebuilt.tgz`;
 		publication.dist_shasum = "cccccccccccccccccccccccccccccccccccccccc";
 		writeJson(publicationPath, publication);
 

@@ -34,7 +34,7 @@ mappings:
       - 'src/index.ts'
 `;
 const expectedScanJson = `${JSON.stringify({
-	schema_version: 1,
+	schema_version: 2,
 	config: {
 		version: 1,
 		product_root: "src",
@@ -59,6 +59,29 @@ const expectedScanJson = `${JSON.stringify({
 		"src/index.ts": {
 			covering_anchor_ids: ["AM-001"],
 			supported_local_targets: [],
+		},
+	},
+	traceability_metrics: {
+		summary: {
+			product_file_count: 1,
+			stored_mapping_count: 1,
+			usable_mapping_count: 1,
+			observed_anchor_count: 1,
+			covered_product_file_count: 1,
+			uncovered_product_file_count: 0,
+			directly_seeded_product_file_count: 1,
+			single_cover_product_file_count: 1,
+			multi_cover_product_file_count: 0,
+		},
+		anchors: {
+			"AM-001": {
+				seed_file_count: 1,
+				direct_seed_file_count: 1,
+				reached_file_count: 1,
+				transitive_reached_file_count: 0,
+				unique_reached_file_count: 1,
+				shared_reached_file_count: 0,
+			},
 		},
 	},
 	findings: [],
@@ -413,7 +436,7 @@ function main() {
 			consumer_install_exit_zero: installResult?.status === 0,
 			installed_binary_present: binStat !== null,
 			package_name: packageJson?.name === "anchormap",
-			package_version: packageJson?.version === "1.0.0",
+			package_version: packageJson?.version === packMetadata?.version,
 			bin_resolves_to_installed_package:
 				binRealpath !== null &&
 				packageRealpath !== null &&

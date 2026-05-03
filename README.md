@@ -10,7 +10,7 @@ a deletion-safety system.
 
 ## Install
 
-AnchorMap v1.0 is distributed as the public npm package `anchormap@1.0.0`.
+AnchorMap is distributed as the public npm package `anchormap`.
 
 ```sh
 npm install -g anchormap

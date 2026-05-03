@@ -94,7 +94,9 @@ const postM9PublicationArtifactNames = new Set([
 	"t10_6_publication_evidence",
 ]);
 const expectedPackageName = "anchormap";
-const expectedPackageVersion = "1.0.0";
+const expectedPackageVersion = JSON.parse(
+	readFileSync(join(repoRoot, "package.json"), "utf8"),
+).version;
 const allowedGoldenDiffClassifications = new Set([
 	"bug d'implémentation",
 	"ambiguïté du contrat",

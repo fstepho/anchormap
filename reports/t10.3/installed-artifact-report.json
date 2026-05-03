@@ -13,13 +13,14 @@
 		"metadata_error": null
 	},
 	"package": {
-		"id": "anchormap@1.0.0",
+		"id": "anchormap@1.2.0",
 		"name": "anchormap",
-		"version": "1.0.0",
-		"filename": "anchormap-1.0.0.tgz",
-		"integrity": "sha512-oOJLgzxPvCmddEqRQ9Mx5cJg4D1HVycQ3jwNXjk9mxVXPW2UjcHbLjYDWxqa5kjcFlRQEQmi2ihE0ARnZmznIA==",
-		"shasum": "32cb50240f10bd62db8cd8ad6aca1cd748671510",
+		"version": "1.2.0",
+		"filename": "anchormap-1.2.0.tgz",
+		"integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+		"shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
 		"files": [
+			"LICENSE",
 			"README.md",
 			"bin/anchormap",
 			"dist/anchormap.js",
@@ -43,7 +44,7 @@
 		]
 	},
 	"consumer_install": {
-		"command": "npm install <local tarball:anchormap-1.0.0.tgz> --ignore-scripts --no-audit --no-fund",
+		"command": "npm install <local tarball:anchormap-1.2.0.tgz> --ignore-scripts --no-audit --no-fund",
 		"status": 0,
 		"signal": null,
 		"timed_out": false,
@@ -91,7 +92,7 @@
 			"timed_out": false,
 			"error": null,
 			"timeout_ms": 30000,
-			"stdout": "{\"schema_version\":1,\"config\":{\"version\":1,\"product_root\":\"src\",\"spec_roots\":[\"specs\"],\"ignore_roots\":[]},\"analysis_health\":\"clean\",\"observed_anchors\":{\"AM-001\":{\"spec_path\":\"specs/requirements.md\",\"mapping_state\":\"usable\"}},\"stored_mappings\":{\"AM-001\":{\"state\":\"usable\",\"seed_files\":[\"src/index.ts\"],\"reached_files\":[\"src/index.ts\"]}},\"files\":{\"src/index.ts\":{\"covering_anchor_ids\":[\"AM-001\"],\"supported_local_targets\":[]}},\"findings\":[]}\n",
+			"stdout": "{\"schema_version\":2,\"config\":{\"version\":1,\"product_root\":\"src\",\"spec_roots\":[\"specs\"],\"ignore_roots\":[]},\"analysis_health\":\"clean\",\"observed_anchors\":{\"AM-001\":{\"spec_path\":\"specs/requirements.md\",\"mapping_state\":\"usable\"}},\"stored_mappings\":{\"AM-001\":{\"state\":\"usable\",\"seed_files\":[\"src/index.ts\"],\"reached_files\":[\"src/index.ts\"]}},\"files\":{\"src/index.ts\":{\"covering_anchor_ids\":[\"AM-001\"],\"supported_local_targets\":[]}},\"traceability_metrics\":{\"summary\":{\"product_file_count\":1,\"stored_mapping_count\":1,\"usable_mapping_count\":1,\"observed_anchor_count\":1,\"covered_product_file_count\":1,\"uncovered_product_file_count\":0,\"directly_seeded_product_file_count\":1,\"single_cover_product_file_count\":1,\"multi_cover_product_file_count\":0},\"anchors\":{\"AM-001\":{\"seed_file_count\":1,\"direct_seed_file_count\":1,\"reached_file_count\":1,\"transitive_reached_file_count\":0,\"unique_reached_file_count\":1,\"shared_reached_file_count\":0}}},\"findings\":[]}\n",
 			"stderr": ""
 		}
 	},

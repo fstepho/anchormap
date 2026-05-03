@@ -28,7 +28,7 @@ const packageJsonPath = join(repoRoot, "package.json");
 const packageLockPath = join(repoRoot, "package-lock.json");
 const shrinkwrapPath = join(repoRoot, "npm-shrinkwrap.json");
 const expectedPackageName = "anchormap";
-const expectedPackageVersion = "1.0.0";
+const expectedPackageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
 const rootConventionFiles = ["README.md", "LICENSE", "LICENSE.md"];
 const adr0009RequiredPackageFiles = [
 	"package.json",

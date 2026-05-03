@@ -3,10 +3,11 @@
 	"task": "T10.5",
 	"status": "pass",
 	"package_name": "anchormap",
-	"package_version": "1.0.0",
-	"tarball_file": "anchormap-1.0.0.tgz",
-	"tarball_path": "reports/t10.5/anchormap-1.0.0.tgz",
+	"package_version": "1.2.0",
+	"tarball_file": "anchormap-1.2.0.tgz",
+	"tarball_path": "reports/t10.5/anchormap-1.2.0.tgz",
 	"included_files": [
+		"LICENSE",
 		"README.md",
 		"bin/anchormap",
 		"dist/anchormap.js",
@@ -28,13 +29,14 @@
 		"npm-shrinkwrap.json",
 		"package.json"
 	],
-	"npm_integrity": "sha512-oOJLgzxPvCmddEqRQ9Mx5cJg4D1HVycQ3jwNXjk9mxVXPW2UjcHbLjYDWxqa5kjcFlRQEQmi2ihE0ARnZmznIA==",
-	"npm_shasum": "32cb50240f10bd62db8cd8ad6aca1cd748671510",
-	"sha256": "f777ace6acdeb5d3041f34639030388486842f701eab2b58ab93b73d0c4353d2",
+	"npm_integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+	"npm_shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
+	"sha256": "3b631d9a2d614f4371a698c1fa226f4d0a0a9a4bfd86a4d8ddc46b5512a00546",
 	"consumer_lockback_evidence": true,
 	"consumer_lockback_report": "reports/t10.5/consumer-lockback.json",
 	"content_validation": {
 		"allowed_files": [
+			"LICENSE",
 			"README.md",
 			"bin/anchormap",
 			"dist/anchormap.js",
@@ -115,7 +117,7 @@
 		"m9_release_gate_summary": "reports/t9.6/release-report.md",
 		"t9_7_entropy_review": "reports/t9.7/entropy-review.json",
 		"t10_3_installed_artifact_report": "reports/t10.3/installed-artifact-report.json",
-		"checksum_evidence": "reports/t10.5/anchormap-1.0.0.tgz.sha256",
+		"checksum_evidence": "reports/t10.5/anchormap-1.2.0.tgz.sha256",
 		"consumer_lockback_evidence": "reports/t10.5/consumer-lockback.json"
 	},
 	"pack": {
