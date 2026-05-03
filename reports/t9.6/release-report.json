@@ -429,7 +429,7 @@
 			{
 				"name": "t10_6_publication_evidence",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
 				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
 			}
@@ -459,7 +459,7 @@
 			{
 				"name": "t10_6_publication_evidence",
 				"required": false,
-				"status": "pending",
+				"status": "archived",
 				"source": "reports/t9.6/evidence/t10.6-publication-evidence.json",
 				"archived_path": "reports/t9.6/artifacts/t10.6-publication-evidence.json"
 			}
@@ -489,7 +489,7 @@
 				"status": "pass"
 			},
 			"t10_6_publication_evidence": {
-				"status": "pending"
+				"status": "pass"
 			}
 		},
 		"golden_diffs": [],

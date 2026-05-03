@@ -1,0 +1,100 @@
+{
+	"schema_version": 1,
+	"task": "T10.6",
+	"status": "pass",
+	"package_name": "anchormap",
+	"package_version": "1.2.0",
+	"registry_coordinate": "anchormap@1.2.0",
+	"tarball_file": "anchormap-1.2.0.tgz",
+	"dist_integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+	"dist_shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
+	"sha256": "3b631d9a2d614f4371a698c1fa226f4d0a0a9a4bfd86a4d8ddc46b5512a00546",
+	"distribution_channel": {
+		"adr": "docs/adr/0009-packaging-and-distribution.md",
+		"type": "public npm registry",
+		"registry": "https://registry.npmjs.org/",
+		"package_coordinate": "anchormap@1.2.0",
+		"dist_tag": "latest",
+		"repository_tag": "v1.2.0"
+	},
+	"artifact": {
+		"source": "T10.5 validated tarball",
+		"identifier": "anchormap@1.2.0",
+		"tarball_path": "reports/t10.5/anchormap-1.2.0.tgz",
+		"tarball_artifact_report": "reports/t10.5/t10.5-tarball-artifact.json",
+		"publication_dry_run_report": "reports/t10.5/t10.5-publication-dry-run.json",
+		"package_name": "anchormap",
+		"package_version": "1.2.0",
+		"npm_integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+		"npm_shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
+		"sha256": "3b631d9a2d614f4371a698c1fa226f4d0a0a9a4bfd86a4d8ddc46b5512a00546",
+		"checksum_file": "reports/t10.5/anchormap-1.2.0.tgz.sha256"
+	},
+	"release_evidence_links": {
+		"m9_release_gate_report": "reports/t9.6/release-report.json",
+		"m9_release_gate_summary": "reports/t9.6/release-report.md",
+		"t9_7_entropy_review": "reports/t9.7/entropy-review.json",
+		"t10_3_installed_artifact_report": "reports/t10.3/installed-artifact-report.json",
+		"t10_5_tarball_artifact_report": "reports/t10.5/t10.5-tarball-artifact.json",
+		"t10_5_checksum_record": "reports/t10.5/anchormap-1.2.0.tgz.sha256"
+	},
+	"publication": {
+		"publish_attempted": true,
+		"publish_command": "npm publish reports/t10.5/anchormap-1.2.0.tgz --access public --tag latest --registry https://registry.npmjs.org/",
+		"exit_status": 0,
+		"registry_coordinate_published": "anchormap@1.2.0",
+		"package_version_url": "https://www.npmjs.com/package/anchormap/v/1.2.0",
+		"registry_tarball_url": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.0.tgz",
+		"npm_publish_result": {
+			"id": "anchormap@1.2.0",
+			"name": "anchormap",
+			"version": "1.2.0",
+			"shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
+			"integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+			"filename": "anchormap-1.2.0.tgz",
+			"entry_count": 21
+		}
+	},
+	"post_publish_verification": {
+		"registry_metadata_lookup": {
+			"command": "npm view anchormap@1.2.0 version dist.integrity dist.shasum dist.tarball --registry https://registry.npmjs.org/",
+			"status": 0,
+			"version": "1.2.0",
+			"dist_integrity": "sha512-PP6zN+Bx6F2mA/yJzGWZKPewhPHebYC72m5X3okKLaz46DqhIErIMQzNCwXSlCHg3p+TRthT/Ac0q+p1VGswiw==",
+			"dist_shasum": "dd2a7973c5e26eed034654d19d7d389f922be2fb",
+			"dist_tarball": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.0.tgz",
+			"matches_t10_5_artifact": true
+		},
+		"published_tarball_download_verification": {
+			"command": "npm pack anchormap@1.2.0 --pack-destination /tmp/anchormap-t10.6-published-package.fWM901 --json --registry https://registry.npmjs.org/",
+			"status": 0,
+			"sha256_command": "shasum -a 256 /tmp/anchormap-t10.6-published-package.fWM901/anchormap-1.2.0.tgz",
+			"sha256": "3b631d9a2d614f4371a698c1fa226f4d0a0a9a4bfd86a4d8ddc46b5512a00546",
+			"matches_t10_5_artifact": true
+		},
+		"documented_user_flow_install_smoke": {
+			"command_summary": "npm init -y; npm install anchormap@1.2.0 --no-audit --no-fund --registry https://registry.npmjs.org/; create minimal src/specs; anchormap init; anchormap map; anchormap scan --json",
+			"status": 0,
+			"check_dir": "/tmp/anchormap-post-publish-check.C8NWNJ",
+			"registry": "https://registry.npmjs.org/",
+			"installed_coordinate": "anchormap@1.2.0",
+			"launcher": "./node_modules/.bin/anchormap",
+			"scan_result_summary": {
+				"schema_version": 2,
+				"analysis_health": "clean",
+				"anchors": 1,
+				"findings": 0,
+				"files": 1,
+				"traceability_metrics_present": true
+			}
+		}
+	},
+	"credential_hygiene": {
+		"token_value_printed": false,
+		"token_value_archived": false,
+		"token_written_inside_repository": false,
+		"token_source_file": "/Users/fstepho/.npmjs-token",
+		"temporary_npmrc_used": true,
+		"temporary_npmrc_removed_after_use": true
+	}
+}
