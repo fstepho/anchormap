@@ -47,12 +47,38 @@ AnchorMap is intentionally narrow:
 - one or more spec roots containing Markdown or YAML specs;
 - product files are `.ts` files under `product_root`, excluding `.d.ts`;
 - supported local graph edges come from static TypeScript `import` and `export`
-  declarations with relative string-literal specifiers.
+  declarations with relative string-literal specifiers or supported
+  deterministic local alias specifiers from `./tsconfig.json`.
+
+AnchorMap automatically reads `./tsconfig.json` when it is present. The
+supported alias subset is deliberately small: local relative `extends`, optional
+`compilerOptions.baseUrl`, and `compilerOptions.paths` entries with exactly one
+terminal `/*` key and exactly one terminal `/*` target under `product_root`.
+
+```jsonc
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+
+With that config, static `import` and `export` declarations such as
+`import { checkReadme } from "@/rules/readme"` are treated as supported local
+edges. A missing `./tsconfig.json`, or a supported config chain without
+effective `paths`, preserves relative-only graph behavior. A present
+`./tsconfig.json` that is unreadable, invalid, cyclic, non-local, or outside
+the supported alias subset makes `scan` and `map` fail with repository error
+code `3`.
 
 The following are outside the current support boundary: monorepos, JavaScript
 product files, TSX product files, declaration files as product files, TypeScript
-path aliases, package specifier resolution, dynamic imports, `require`, and
-repository-wide inference beyond the configured roots.
+aliases beyond the deterministic local subset above, package specifier
+resolution, dynamic imports, `require`, project references, Node resolver
+conditions, and repository-wide inference beyond the configured roots.
 
 ## Minimal Example
 
@@ -127,12 +153,14 @@ Formatted for readability, the example above reports:
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "config": {
     "version": 1,
     "product_root": "src",
     "spec_roots": [".specify/specs"],
-    "ignore_roots": []
+    "ignore_roots": [],
+    "tsconfig_path": null,
+    "local_aliases": []
   },
   "analysis_health": "clean",
   "observed_anchors": {
@@ -242,11 +270,19 @@ For `scan --json`, success writes JSON to stdout and leaves stderr empty, even
 when the JSON contains findings. On exit codes `1` through `4`, stdout is empty
 and no JSON is emitted.
 
+For `scan` and `map`, an invalid present `./tsconfig.json` is a repository
+input failure and exits with code `3`. Argument errors still have priority over
+repository inspection, and `anchormap.yaml` config errors still have priority
+over other repository input errors.
+
 ## Interpreting Results
 
 `anchormap.yaml` is the only AnchorMap-owned persistent source of truth. It
 stores stable config and explicit human mappings only; it does not store caches,
-derived graph data, candidates, classifications, history, or metrics.
+derived graph data, candidates, classifications, history, metrics, or
+`tsconfig.json` aliases. Alias state from `./tsconfig.json` is an observed input
+rendered in `scan --json` as `config.tsconfig_path` and
+`config.local_aliases`.
 
 `covering_anchor_ids` reports structural reachability from usable mappings under
 the supported local TypeScript rules. It is not ownership proof.

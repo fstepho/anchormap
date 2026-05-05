@@ -22,6 +22,29 @@ Do not publish from a missing, failing, edited-by-hand, or stale replacement of
 that evidence. If any item is missing or failing, stop and return to the owning
 task instead of continuing this runbook.
 
+## M15 Alias Readiness Addendum
+
+For a release candidate that includes the M15 deterministic `tsconfig.json`
+alias extension, release readiness evidence must additionally record:
+
+- the machine output schema is JSON v4 and successful `scan --json` renders
+  `config.tsconfig_path` and `config.local_aliases`;
+- B-graph M15 fixtures `fx38m` through `fx38w` pass, covering missing
+  `tsconfig.json`, supported aliases, local relative `extends`, invalid JSONC,
+  unsupported `paths`, and alias targets outside `product_root`;
+- B-map fixtures `fx67f` and `fx67g` pass, covering alias-aware graph
+  validation before map writes and no mutation on invalid `tsconfig.json`;
+- B-cli fixtures `fx76a` and `fx76b` pass, preserving the `4 > 3` and `2 > 3`
+  exit-code priorities when a `tsconfig.json` repository error is also present;
+- JSON goldens, deterministic fixture coverage, and docs consistency checks pass
+  for the same release candidate.
+
+The M15 extension remains limited to the `ADR-0016` deterministic local alias
+subset. The release notes, README, and package metadata must not promise full
+TypeScript resolver behavior, Node/package resolution, monorepo lookup, TSX or
+JavaScript product files, project references, dynamic imports, or `require`
+support.
+
 ## Pre-Publish Checks
 
 Run the release gates and package evidence commands:

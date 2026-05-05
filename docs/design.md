@@ -443,8 +443,9 @@ Décisions clés :
 - `render` ne trie rien, ne déduplique rien et ne normalise aucun chemin ;
 - le JSON est généré à partir d’un modèle déjà trié et normalisé ;
 - le JSON canonique est rendu par un encoder custom selon `ADR-0007`, pas par `JSON.stringify` ;
-- pour `schema_version = 3`, `traceability_metrics` est rendu entre `files`
-  et `findings`, selon l'ordre exact du contrat ;
+- pour les schémas incluant `traceability_metrics`, dont les schémas v3 et v4,
+  `traceability_metrics` est rendu entre `files` et `findings`, selon l'ordre
+  exact du contrat ;
 - `render` retourne des bytes ou des strings en mémoire ; `commands` reste seul owner de `stdout` / `stderr` ;
 - tout échec de sérialisation d’un `ScanResult` valide remonte comme `InternalError`.
 
@@ -1179,7 +1180,7 @@ Le design v1.0 repousse volontairement :
 
 - plugin system ;
 - abstraction multi-langage ;
-- support des aliases TypeScript ;
+- support des aliases TypeScript au-delà du sous-ensemble M15 déterministe ;
 - prise en charge des monorepos ;
 - cache persistant ;
 - API serveur ;
