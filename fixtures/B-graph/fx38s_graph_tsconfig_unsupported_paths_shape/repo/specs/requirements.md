@@ -1,0 +1,1 @@
+# Unsupported paths shape fixture

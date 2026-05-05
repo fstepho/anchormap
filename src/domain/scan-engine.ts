@@ -1,6 +1,7 @@
 import type { Config } from "../infra/config-io";
 import type { SpecIndex } from "../infra/spec-index";
 import type { ProductGraph } from "../infra/ts-graph";
+import type { TsconfigAliasState } from "../infra/tsconfig-io";
 import type { AnchorId } from "./anchor-id";
 import { sortAnchorIdsByUtf8, sortRepoPathsByUtf8 } from "./canonical-order";
 import {
@@ -34,6 +35,7 @@ export interface ScanEngineInput {
 	readonly config: Config;
 	readonly specIndex: SpecIndex;
 	readonly productGraph: ProductGraph;
+	readonly tsconfigAliasState?: TsconfigAliasState;
 }
 
 export function runScanEngine(input: ScanEngineInput): ScanResultView {
@@ -147,6 +149,12 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 			product_root: input.config.productRoot,
 			spec_roots: input.config.specRoots,
 			ignore_roots: input.config.ignoreRoots,
+			tsconfig_path: input.tsconfigAliasState?.tsconfigPath ?? null,
+			local_aliases:
+				input.tsconfigAliasState?.localAliases.map((localAlias) => ({
+					prefix: localAlias.prefix,
+					target: localAlias.targetPrefix,
+				})) ?? [],
 		}),
 		observed_anchors,
 		stored_mappings,

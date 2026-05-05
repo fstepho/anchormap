@@ -14,6 +14,13 @@ export interface ConfigView {
 	readonly product_root: RepoPath;
 	readonly spec_roots: readonly RepoPath[];
 	readonly ignore_roots: readonly RepoPath[];
+	readonly tsconfig_path: RepoPath | null;
+	readonly local_aliases: readonly LocalAliasView[];
+}
+
+export interface LocalAliasView {
+	readonly prefix: string;
+	readonly target: string;
 }
 
 export type ObservedAnchorMappingState = "absent" | "usable" | "invalid" | "draft";
@@ -70,7 +77,7 @@ export type FilesView = Readonly<Record<RepoPath, FileView>>;
 export type FindingsView = readonly Finding[];
 
 export interface ScanResultView {
-	readonly schema_version: 3;
+	readonly schema_version: 4;
 	readonly config: ConfigView;
 	readonly analysis_health: AnalysisHealth;
 	readonly observed_anchors: ObservedAnchorsView;
@@ -80,7 +87,8 @@ export interface ScanResultView {
 	readonly findings: FindingsView;
 }
 
-export type ConfigViewFields = Pick<ConfigView, "product_root" | "spec_roots" | "ignore_roots">;
+export type ConfigViewFields = Pick<ConfigView, "product_root" | "spec_roots" | "ignore_roots"> &
+	Partial<Pick<ConfigView, "tsconfig_path" | "local_aliases">>;
 export type ObservedAnchorViewFields = ObservedAnchorView;
 export type StoredMappingViewFields = StoredMappingView;
 export type FileViewFields = FileView;
@@ -115,6 +123,8 @@ export function createConfigView<const Input extends ConfigViewFields>(
 		product_root: fields.product_root,
 		spec_roots: sortRepoPathsByUtf8(fields.spec_roots),
 		ignore_roots: sortRepoPathsByUtf8(fields.ignore_roots),
+		tsconfig_path: fields.tsconfig_path ?? null,
+		local_aliases: sortLocalAliasViews(fields.local_aliases ?? []),
 	};
 }
 
@@ -159,7 +169,7 @@ export function createScanResultView<const Input extends ScanResultViewFields>(
 	fields: NoExtraFields<Input, ScanResultViewFields>,
 ): ScanResultView {
 	return {
-		schema_version: 3,
+		schema_version: 4,
 		config: fields.config,
 		analysis_health: analysisHealth(fields.findings),
 		observed_anchors: sortRecordByUtf8Key(fields.observed_anchors),
@@ -176,4 +186,20 @@ function sortRecordByUtf8Key<Key extends string, Value>(
 	const entries = Object.entries(record) as [Key, Value][];
 	entries.sort(([leftKey], [rightKey]) => compareCanonicalTextByUtf8(leftKey, rightKey));
 	return Object.fromEntries(entries) as Record<Key, Value>;
+}
+
+function sortLocalAliasViews(localAliases: readonly LocalAliasView[]): readonly LocalAliasView[] {
+	return [...localAliases].sort((left, right) => {
+		const prefixLengthOrder = right.prefix.length - left.prefix.length;
+		if (prefixLengthOrder !== 0) {
+			return prefixLengthOrder;
+		}
+
+		const prefixOrder = compareCanonicalTextByUtf8(left.prefix, right.prefix);
+		if (prefixOrder !== 0) {
+			return prefixOrder;
+		}
+
+		return compareCanonicalTextByUtf8(left.target, right.target);
+	});
 }

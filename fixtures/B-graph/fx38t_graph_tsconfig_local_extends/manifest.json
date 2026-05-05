@@ -1,0 +1,19 @@
+{
+	"id": "fx38t_graph_tsconfig_local_extends",
+	"family": "B-graph",
+	"purpose": "scan --json follows a local relative tsconfig extends chain and renders the inherited normalized aliases.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "extends", "scan", "golden"],
+	"groups": ["m15"]
+}

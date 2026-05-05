@@ -1552,6 +1552,35 @@ test("default map handler classifies graph existence-test failures as code 3 wit
 	}
 });
 
+test("default map handler classifies invalid tsconfig before mutation", () => {
+	const cwd = createTempRepo();
+	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeFileSync(join(cwd, "anchormap.yaml"), configBytes);
+		writeFileSync(join(cwd, "tsconfig.json"), "{ invalid jsonc\n");
+		writeFileSync(join(cwd, "specs", "present.md"), "# FR-014 Present\n");
+		writeFileSync(join(cwd, "src", "index.ts"), "export const value = 1;\n");
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["map", "--anchor", "FR-014", "--seed", "src/index.ts"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
+		assert.equal(readFileSync(join(cwd, "anchormap.yaml"), "utf8"), configBytes);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("default map handler ignores graph findings and writes the explicit mapping", () => {
 	const cwd = createTempRepo();
 	const configBytes = "version: 1\nproduct_root: 'src'\nspec_roots:\n  - 'specs'\nmappings: {}\n";
@@ -1645,12 +1674,14 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 3,
+			schema_version: 4,
 			config: {
 				version: 1,
 				product_root: "src",
 				spec_roots: ["specs"],
 				ignore_roots: [],
+				tsconfig_path: null,
+				local_aliases: [],
 			},
 			analysis_health: "clean",
 			observed_anchors: {},
@@ -1766,12 +1797,14 @@ test("scan --json renders unsupported local require and dynamic import findings"
 			assert.equal(exitCode, 0, testCase.name);
 			assert.equal(stderr.read(), "", testCase.name);
 			assert.deepEqual(JSON.parse(stdout.read()), {
-				schema_version: 3,
+				schema_version: 4,
 				config: {
 					version: 1,
 					product_root: "src",
 					spec_roots: ["specs"],
 					ignore_roots: [],
+					tsconfig_path: null,
+					local_aliases: [],
 				},
 				analysis_health: "degraded",
 				observed_anchors: {},
@@ -1829,12 +1862,14 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 3,
+			schema_version: 4,
 			config: {
 				version: 1,
 				product_root: "src",
 				spec_roots: ["specs"],
 				ignore_roots: [],
+				tsconfig_path: null,
+				local_aliases: [],
 			},
 			analysis_health: "clean",
 			observed_anchors: {},
@@ -1855,6 +1890,97 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 			}),
 			findings: [],
 		});
+		assert.equal(
+			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
+			["version: 1", "product_root: 'src'", "spec_roots:", "  - 'specs'", "mappings: {}", ""].join(
+				"\n",
+			),
+		);
+		assertNoAnchormapTemps(cwd);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json renders tsconfig alias state and resolves alias imports", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(join(cwd, "tsconfig.json"), tsconfigWithAtAlias());
+		writeFileSync(
+			join(cwd, "src/index.ts"),
+			"import { dep } from '@/dep';\nexport const value = dep;\n",
+		);
+		writeFileSync(join(cwd, "src/dep.ts"), "export const dep = 1;\n");
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 0);
+		assert.equal(stderr.read(), "");
+		assert.deepEqual(JSON.parse(stdout.read()), {
+			schema_version: 4,
+			config: {
+				version: 1,
+				product_root: "src",
+				spec_roots: ["specs"],
+				ignore_roots: [],
+				tsconfig_path: "tsconfig.json",
+				local_aliases: [{ prefix: "@/", target: "src/" }],
+			},
+			analysis_health: "clean",
+			observed_anchors: {},
+			stored_mappings: {},
+			files: {
+				"src/dep.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: [],
+				},
+				"src/index.ts": {
+					covering_anchor_ids: [],
+					supported_local_targets: ["src/dep.ts"],
+				},
+			},
+			traceability_metrics: traceabilityMetrics({
+				productFileCount: 2,
+				uncoveredProductFileCount: 2,
+			}),
+			findings: [],
+		});
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("scan --json classifies invalid tsconfig as code 3 with empty stdout", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "src"));
+		mkdirSync(join(cwd, "specs"));
+		writeMinimalScanConfig(cwd);
+		writeFileSync(join(cwd, "tsconfig.json"), "{ invalid jsonc\n");
+		writeFileSync(join(cwd, "src/index.ts"), "export const value = 1;\n");
+
+		const stdout = createBufferingWriter();
+		const stderr = createBufferingWriter();
+
+		const exitCode = runAnchormap(["scan", "--json"], {
+			cwd,
+			stdout: stdout.writer,
+			stderr: stderr.writer,
+		});
+
+		assert.equal(exitCode, 3);
+		assert.equal(stdout.read(), "");
+		assert.notEqual(stderr.read(), "");
 		assert.equal(
 			readFileSync(join(cwd, "anchormap.yaml"), "utf8"),
 			["version: 1", "product_root: 'src'", "spec_roots:", "  - 'specs'", "mappings: {}", ""].join(
@@ -1902,12 +2028,14 @@ test("scan --json renders usable mapping reachability through supported graph ed
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 3,
+			schema_version: 4,
 			config: {
 				version: 1,
 				product_root: "src",
 				spec_roots: ["specs"],
 				ignore_roots: [],
+				tsconfig_path: null,
+				local_aliases: [],
 			},
 			analysis_health: "clean",
 			observed_anchors: {
@@ -1981,12 +2109,14 @@ test("scan --json renders observed anchors without stored mappings", () => {
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 3,
+			schema_version: 4,
 			config: {
 				version: 1,
 				product_root: "src",
 				spec_roots: ["specs"],
 				ignore_roots: [],
+				tsconfig_path: null,
+				local_aliases: [],
 			},
 			analysis_health: "clean",
 			observed_anchors: {
@@ -2054,12 +2184,14 @@ test("scan --json renders stale stored mappings without evaluating seeds", () =>
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 3,
+			schema_version: 4,
 			config: {
 				version: 1,
 				product_root: "src",
 				spec_roots: ["specs"],
 				ignore_roots: [],
+				tsconfig_path: null,
+				local_aliases: [],
 			},
 			analysis_health: "degraded",
 			observed_anchors: {},
@@ -2187,6 +2319,20 @@ function writeMinimalScanConfig(cwd: string): void {
 			"\n",
 		),
 	);
+}
+
+function tsconfigWithAtAlias(): string {
+	return [
+		"{",
+		'  "compilerOptions": {',
+		'    "baseUrl": ".",',
+		'    "paths": {',
+		'      "@/*": ["src/*"]',
+		"    }",
+		"  }",
+		"}",
+		"",
+	].join("\n");
 }
 
 function assertNoAnchormapTemps(cwd: string): void {

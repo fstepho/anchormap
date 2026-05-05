@@ -1,0 +1,19 @@
+{
+	"id": "fx38n_graph_tsconfig_alias_import",
+	"family": "B-graph",
+	"purpose": "scan --json resolves a supported tsconfig alias ImportDeclaration and renders the normalized alias state.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "scan", "golden"],
+	"groups": ["m15"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx38s_graph_tsconfig_unsupported_paths_shape",
+	"family": "B-graph",
+	"purpose": "scan --json classifies unsupported tsconfig compilerOptions.paths shapes as repository error code 3.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "failure"],
+	"groups": ["m15"]
+}

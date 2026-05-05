@@ -1,0 +1,1 @@
+# Tsconfig without paths fixture

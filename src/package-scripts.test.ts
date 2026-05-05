@@ -80,6 +80,7 @@ const EXPECTED_PACKAGE_FILES = [
 	"dist/infra/scaffold.js",
 	"dist/infra/spec-index.js",
 	"dist/infra/ts-graph.js",
+	"dist/infra/tsconfig-io.js",
 	"dist/render/render-json.js",
 ];
 
@@ -1326,12 +1327,14 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 3,
+		schema_version: 4,
 		config: {
 			version: 1,
 			product_root: "src",
 			spec_roots: ["specs"],
 			ignore_roots: [],
+			tsconfig_path: null,
+			local_aliases: [],
 		},
 		analysis_health: "clean",
 		observed_anchors: {
@@ -1547,12 +1550,14 @@ mappings:
       - 'src/index.ts'
 `;
 	const scanJson = `${JSON.stringify({
-		schema_version: 3,
+		schema_version: 4,
 		config: {
 			version: 1,
 			product_root: "src",
 			spec_roots: ["specs"],
 			ignore_roots: [],
+			tsconfig_path: null,
+			local_aliases: [],
 		},
 		analysis_health: "clean",
 		observed_anchors: {

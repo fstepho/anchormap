@@ -1,0 +1,19 @@
+{
+	"id": "fx38p_graph_tsconfig_alias_js_specifier_to_ts",
+	"family": "B-graph",
+	"purpose": "scan --json applies the .js to .ts source-candidate rule after tsconfig alias rewriting.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "js-specifier", "scan", "golden"],
+	"groups": ["m15"]
+}

@@ -86,7 +86,7 @@ test("constructs scan result with only contract root fields and computed health"
 		"traceability_metrics",
 		"findings",
 	]);
-	assert.equal(result.schema_version, 3);
+	assert.equal(result.schema_version, 4);
 	assert.equal(result.analysis_health, "degraded");
 });
 
@@ -110,9 +110,18 @@ test("constructs closed nested output views with contract fields", () => {
 		supported_local_targets: [repoPath("src/z.ts"), repoPath("src/a.ts")],
 	});
 
-	assert.deepEqual(Object.keys(config), ["version", "product_root", "spec_roots", "ignore_roots"]);
+	assert.deepEqual(Object.keys(config), [
+		"version",
+		"product_root",
+		"spec_roots",
+		"ignore_roots",
+		"tsconfig_path",
+		"local_aliases",
+	]);
 	assert.deepEqual(config.spec_roots.map(repoPathToString), ["specs/a", "specs/z"]);
 	assert.deepEqual(config.ignore_roots.map(repoPathToString), ["dist", "tmp"]);
+	assert.equal(config.tsconfig_path, null);
+	assert.deepEqual(config.local_aliases, []);
 	assert.deepEqual(Object.keys(observedAnchor), ["spec_path", "mapping_state"]);
 	assert.deepEqual(Object.keys(storedMapping), ["state", "seed_files", "reached_files"]);
 	assert.deepEqual(storedMapping.seed_files.map(repoPathToString), ["src/a.ts", "src/z.ts"]);
@@ -155,6 +164,29 @@ test("constructs closed nested output views with contract fields", () => {
 		"multi_cover_product_file_count",
 	]);
 	assert.deepEqual(Object.keys(metrics.anchors), [anchorId("QA-001"), anchorId("QA-002")]);
+});
+
+test("canonicalizes config local alias state for JSON v4", () => {
+	const config = createConfigView({
+		product_root: repoPath("src"),
+		spec_roots: [repoPath("specs")],
+		ignore_roots: [],
+		tsconfig_path: repoPath("tsconfig.json"),
+		local_aliases: [
+			{ prefix: "#/", target: "src/hash/" },
+			{ prefix: "@/feature/", target: "src/feature/" },
+			{ prefix: "@/", target: "src/" },
+			{ prefix: "@/feature/", target: "src/a/" },
+		],
+	});
+
+	assert.equal(config.tsconfig_path, repoPath("tsconfig.json"));
+	assert.deepEqual(config.local_aliases, [
+		{ prefix: "@/feature/", target: "src/a/" },
+		{ prefix: "@/feature/", target: "src/feature/" },
+		{ prefix: "#/", target: "src/hash/" },
+		{ prefix: "@/", target: "src/" },
+	]);
 });
 
 test("clears reached files for non-usable stored mappings", () => {

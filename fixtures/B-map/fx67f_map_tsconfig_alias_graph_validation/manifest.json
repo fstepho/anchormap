@@ -1,0 +1,28 @@
+{
+	"id": "fx67f_map_tsconfig_alias_graph_validation",
+	"family": "B-map",
+	"purpose": "map validates the TypeScript graph with supported tsconfig aliases before writing the canonical mapping.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "tsconfig", "alias", "write", "golden"],
+	"groups": ["m15"]
+}

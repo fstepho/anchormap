@@ -1,0 +1,19 @@
+{
+	"id": "fx38r_graph_tsconfig_invalid_jsonc",
+	"family": "B-graph",
+	"purpose": "scan --json classifies an invalid present tsconfig.json as repository error code 3 with empty stdout.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "failure"],
+	"groups": ["m15"]
+}

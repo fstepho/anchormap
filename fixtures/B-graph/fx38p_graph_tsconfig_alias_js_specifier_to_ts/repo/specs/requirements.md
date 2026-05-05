@@ -1,0 +1,1 @@
+# Alias js specifier fixture

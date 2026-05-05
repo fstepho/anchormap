@@ -1,0 +1,19 @@
+{
+	"id": "fx38v_graph_tsconfig_alias_target_outside_product_root",
+	"family": "B-graph",
+	"purpose": "scan --json rejects a tsconfig alias target that normalizes outside product_root.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "failure"],
+	"groups": ["m15"]
+}

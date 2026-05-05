@@ -1,0 +1,19 @@
+{
+	"id": "fx38w_graph_tsconfig_without_paths_relative_only",
+	"family": "B-graph",
+	"purpose": "scan --json renders tsconfig_path with an empty alias set when present tsconfig.json has no effective paths.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "scan", "golden"],
+	"groups": ["m15"]
+}

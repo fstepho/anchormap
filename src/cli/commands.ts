@@ -20,6 +20,7 @@ import { statRepoPath } from "../infra/repo-fs";
 import { buildScaffoldMarkdown, writeScaffoldOutputCreateOnly } from "../infra/scaffold";
 import { buildSpecIndex } from "../infra/spec-index";
 import { buildProductGraph } from "../infra/ts-graph";
+import { loadLocalAliases } from "../infra/tsconfig-io";
 import { renderScanResultHuman, renderScanResultJson } from "../render/render-json";
 import {
 	type ParsedInitArgs,
@@ -533,11 +534,19 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		return productFilesResult.error;
 	}
 
+	const localAliasesResult = loadLocalAliases(configResult.config, {
+		cwd: context.cwd,
+	});
+	if (localAliasesResult.kind === "error") {
+		return localAliasesResult.error;
+	}
+
 	const productGraphResult = buildProductGraph(
 		configResult.config,
 		productFilesResult.productFiles,
 		{
 			cwd: context.cwd,
+			localAliases: localAliasesResult.state.localAliases,
 		},
 	);
 	if (productGraphResult.kind === "error") {
@@ -548,6 +557,7 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		config: configResult.config,
 		specIndex: specIndexResult.specIndex,
 		productGraph: productGraphResult.productGraph,
+		tsconfigAliasState: localAliasesResult.state,
 	});
 
 	if (context.scanMode === "json") {
@@ -623,11 +633,19 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		return seedMembership.error;
 	}
 
+	const localAliasesResult = loadLocalAliases(configResult.config, {
+		cwd: context.cwd,
+	});
+	if (localAliasesResult.kind === "error") {
+		return localAliasesResult.error;
+	}
+
 	const productGraphResult = buildProductGraph(
 		configResult.config,
 		productFilesResult.productFiles,
 		{
 			cwd: context.cwd,
+			localAliases: localAliasesResult.state.localAliases,
 		},
 	);
 	if (productGraphResult.kind === "error") {

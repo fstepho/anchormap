@@ -1,0 +1,19 @@
+{
+	"id": "fx38u_graph_tsconfig_extends_cycle_or_package",
+	"family": "B-graph",
+	"purpose": "scan --json classifies a package tsconfig extends value as repository error code 3.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "extends", "failure"],
+	"groups": ["m15"]
+}

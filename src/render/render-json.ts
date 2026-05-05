@@ -3,6 +3,7 @@ import type {
 	AnchorTraceabilityMetricsView,
 	ConfigView,
 	FileView,
+	LocalAliasView,
 	ObservedAnchorView,
 	ScanResultView,
 	StoredMappingView,
@@ -37,6 +38,15 @@ function renderConfig(config: ConfigView): string {
 		["product_root", renderString(config.product_root)],
 		["spec_roots", renderStringArray(config.spec_roots)],
 		["ignore_roots", renderStringArray(config.ignore_roots)],
+		["tsconfig_path", renderNullableString(config.tsconfig_path)],
+		["local_aliases", renderArray(config.local_aliases, renderLocalAlias)],
+	]);
+}
+
+function renderLocalAlias(localAlias: LocalAliasView): string {
+	return renderObject([
+		["prefix", renderString(localAlias.prefix)],
+		["target", renderString(localAlias.target)],
 	]);
 }
 
@@ -163,6 +173,10 @@ function renderObject(fields: readonly (readonly [string, string])[]): string {
 
 function renderStringArray(values: readonly string[]): string {
 	return renderArray(values, renderString);
+}
+
+function renderNullableString(value: string | null): string {
+	return value === null ? "null" : renderString(value);
 }
 
 function renderArray<Value>(

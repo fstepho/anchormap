@@ -1,0 +1,27 @@
+{
+	"id": "fx67g_map_tsconfig_invalid_no_mutation",
+	"family": "B-map",
+	"purpose": "map with an invalid present tsconfig.json exits 3, preserves anchormap.yaml, and leaves no AnchorMap temp file.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "tsconfig", "alias", "failure", "no_mutation"],
+	"groups": ["m15"]
+}

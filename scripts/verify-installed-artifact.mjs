@@ -34,12 +34,14 @@ mappings:
       - 'src/index.ts'
 `;
 const expectedScanJson = `${JSON.stringify({
-	schema_version: 3,
+	schema_version: 4,
 	config: {
 		version: 1,
 		product_root: "src",
 		spec_roots: ["specs"],
 		ignore_roots: [],
+		tsconfig_path: null,
+		local_aliases: [],
 	},
 	analysis_health: "clean",
 	observed_anchors: {

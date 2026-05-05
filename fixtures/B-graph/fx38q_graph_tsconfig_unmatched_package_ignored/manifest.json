@@ -1,0 +1,19 @@
+{
+	"id": "fx38q_graph_tsconfig_unmatched_package_ignored",
+	"family": "B-graph",
+	"purpose": "scan --json ignores a non-relative package import that does not match a supported tsconfig alias.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "external", "scan", "golden"],
+	"groups": ["m15"]
+}

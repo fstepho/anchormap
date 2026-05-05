@@ -50,6 +50,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/infra/scaffold.js",
 	"dist/infra/spec-index.js",
 	"dist/infra/ts-graph.js",
+	"dist/infra/tsconfig-io.js",
 	"dist/render/render-json.js",
 ];
 const forbiddenPackagePrefixes = [

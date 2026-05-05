@@ -1,0 +1,19 @@
+{
+	"id": "fx38m_graph_tsconfig_missing_relative_only",
+	"family": "B-graph",
+	"purpose": "scan --json keeps relative graph behavior and renders empty alias state when tsconfig.json is absent.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "scan", "golden"],
+	"groups": ["m15"]
+}
