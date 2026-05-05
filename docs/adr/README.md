@@ -56,6 +56,7 @@ An ADR is usually not required for:
 | `ADR-0013` | AnchorMap documentation anchor formats | Accepted |
 | `ADR-0014` | SCREAMING_SNAKE dotted anchor segments | Accepted |
 | `ADR-0015` | Deterministic TypeScript export scaffold | Accepted |
+| `ADR-0016` | Deterministic tsconfig local alias resolution | Accepted |
 
 ## Template
 

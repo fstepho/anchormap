@@ -52,6 +52,7 @@ ADRs courantes :
 - `ADR-0013` — AnchorMap documentation anchor formats (`Accepted`)
 - `ADR-0014` — SCREAMING_SNAKE dotted anchor segments (`Accepted`)
 - `ADR-0015` — Deterministic TypeScript export scaffold (`Accepted`)
+- `ADR-0016` — Deterministic tsconfig local alias resolution (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -80,6 +81,7 @@ current working directory
   -> repo_fs
   -> config_io.loadConfig
   -> spec_index
+  -> tsconfig_io.loadLocalAliases (M15)
   -> ts_graph
   -> scan_engine
   -> render
@@ -98,6 +100,7 @@ args
   -> commands.validateMapAnchor
   -> ts_graph.discoverProductFiles
   -> commands.validateMapSeedsInProductFiles
+  -> tsconfig_io.loadLocalAliases (M15)
   -> ts_graph.buildProductGraph (validation dépôt requise, résultat ignoré)
   -> config_io.writeConfigAtomic
   -> commands (optional human output)
@@ -271,6 +274,8 @@ API cible :
 
 - `SortedSet<RepoPath> discoverProductFiles(config: Config, fs: RepoFs)`
 - `ProductGraph buildProductGraph(config: Config, fs: RepoFs, productFiles: SortedSet<RepoPath>)`
+- extension M15 cible :
+  `ProductGraph buildProductGraph(config: Config, fs: RepoFs, productFiles: SortedSet<RepoPath>, localAliases: SortedList<LocalAlias>)`
 
 Structure cible :
 
@@ -293,6 +298,53 @@ Décisions clés :
 - les imports non relatifs sont ignorés par le graphe et ne produisent pas de finding ;
 - un `product_file` illisible, non décodable en UTF-8 strict ou non parsable provoque `UnsupportedRepoError` ;
 - `graphFindings` est normalisé, dédupliqué et trié avant retour.
+
+#### 5.4.1 `tsconfig_io` M15
+
+Responsabilités :
+
+- lire au plus `./tsconfig.json` et ses `extends` locaux relatifs ;
+- décoder les fichiers lus via la frontière UTF-8 stricte de `repo_fs` ;
+- parser le JSONC avec le paquet TypeScript piné ;
+- extraire uniquement `compilerOptions.baseUrl` et `compilerOptions.paths` ;
+- valider le sous-ensemble d'aliases défini par `ADR-0016` ;
+- produire un état canonique `TsconfigAliasState` ou un
+  `UnsupportedRepoError`.
+
+API cible :
+
+- `TsconfigAliasState loadLocalAliases(config: Config, fs: RepoFs)`
+
+Structure cible :
+
+```text
+TsconfigAliasState {
+  tsconfigPath: RepoPath | null
+  localAliases: SortedList<LocalAlias>
+}
+
+LocalAlias {
+  prefix: string
+  targetPrefix: string
+}
+```
+
+Décisions clés :
+
+- l'absence de `./tsconfig.json` retourne un ensemble vide ;
+- un `./tsconfig.json` présent sans `compilerOptions.paths` effectif retourne
+  un ensemble vide seulement si les formes inspectées par M15 restent supportées ;
+- la présence d'un `./tsconfig.json` invalide ou hors sous-ensemble M15 échoue
+  explicitement ;
+- les `extends` locaux relatifs utilisent la règle d'héritage nearest-`paths`
+  du contrat, sans fusionner plusieurs mappings `paths` ;
+- `tsconfig_io` ne lit jamais `package.json` et ne délègue jamais à la
+  résolution de modules TypeScript complète ;
+- `tsconfigPath` vaut `null` quand `./tsconfig.json` est absent et
+  `"tsconfig.json"` quand il a été lu avec succès, même si `localAliases` est
+  vide ;
+- les aliases normalisés sont une entrée Observed du scan, pas de l'état
+  persistant AnchorMap.
 
 ### 5.5 `scan_engine`
 
@@ -684,6 +736,35 @@ Les autres frontières restent inchangées :
   syntaxiques supportées pour cette extension ;
 - `require("./x.js")` et `import("./x.js")` restent des formes reconnues mais
   hors support, sans résolution de candidats.
+
+#### 7.4.2 Extension M15 planifiée : aliases locaux `tsconfig.json`
+
+Quand l'extension M15 est active, `commands` charge `TsconfigAliasState` via
+`tsconfig_io` avant d'appeler `buildProductGraph`, transmet explicitement
+`TsconfigAliasState.localAliases` à `ts_graph`, puis transmet le même
+`TsconfigAliasState` au modèle de scan pour rendre `config.tsconfig_path` et
+`config.local_aliases`.
+
+`ts_graph` conserve le même extracteur syntaxique pour `ImportDeclaration` et
+`ExportDeclaration`, mais classe chaque specifier en trois catégories :
+
+1. relatif supporté existant ;
+2. alias local supporté, si le specifier non relatif correspond à un
+   `LocalAlias.prefix` ;
+3. externe ignoré, si aucun alias ne correspond.
+
+Pour la catégorie aliasée, `ts_graph` réécrit le préfixe du specifier vers
+`LocalAlias.targetPrefix`, puis réutilise la construction de candidats et la
+classification ordonnée existantes, y compris la règle `.js -> .ts`.
+
+Les frontières restent inchangées :
+
+- les fichiers produit restent uniquement `.ts` ;
+- `require("@/x")` et `import("@/x")` ne deviennent pas des edges supportés ;
+- aucun fallback silencieux n'est autorisé quand `./tsconfig.json` existe mais
+  ne peut pas être interprété selon le sous-ensemble M15 ;
+- aucun resolver TypeScript complet, Node, package, cache, Git, réseau, horloge
+  ou environnement n'est utilisé.
 
 ### 7.5 Validation des mappings
 

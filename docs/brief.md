@@ -230,6 +230,32 @@ contraintes suivantes :
 - les métriques ne deviennent pas une preuve de conformité, d'ownership, de
   code mort ou de suppression sûre.
 
+## 6.7 Segment vNext prévu : aliases locaux `tsconfig.json`
+
+AnchorMap M15 cible aussi les dépôts TypeScript mono-package qui expriment des
+dépendances locales produit-vers-produit via des aliases simples de
+`tsconfig.json`, par exemple `@/*` vers `src/*`.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- `init` ne gagne aucune option d'alias et `anchormap.yaml` ne stocke pas les
+  aliases ;
+- `./tsconfig.json` peut être lu automatiquement comme entrée observée du dépôt
+  pour la résolution du graphe ;
+- l'absence de `./tsconfig.json` reste acceptée et conserve le comportement
+  relatif existant ;
+- un `./tsconfig.json` présent mais illisible, invalide ou hors sous-ensemble
+  supporté échoue explicitement, sans fallback silencieux ;
+- seuls `compilerOptions.baseUrl` et les formes simples de
+  `compilerOptions.paths` avec un unique wildcard terminal de segment `/*` sont
+  interprétés ;
+- les fichiers produit restent uniquement des sources `.ts` ; `.tsx`, `.js`,
+  `.d.ts`, `package.json`, conditions Node, project references, package
+  `exports`, monorepo et résolution TypeScript complète restent hors scope ;
+- les aliases ne créent aucun mapping, candidat de mapping ou lien de propriété
+  automatiquement.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :

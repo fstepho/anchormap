@@ -44,6 +44,7 @@ Ce document est **hors scope** pour :
 | Surface CLI, préconditions, codes de sortie et priorité, y compris `scan` sans `--json` | §§ 3.3, 9, 13.8, 13.9 | B-cli |
 | Scaffold Markdown depuis exports TypeScript publics | § 9.4 | B-scaffold |
 | Résolution du graphe statique, classification et findings | §§ 10, 11 | B-graph, C5, C6 |
+| Aliases locaux déterministes depuis `tsconfig.json` | §§ 10.1.1, 10.2.2, 12.2.4, 13.2.1 | B-graph M15, B-map, B-cli, goldens |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
 | Absence de dépendance au réseau, au temps, à Git, à un cache persistant ou aux variables d'environnement comme source de vérité | §§ 4.1, 12.6 | C8, C9, C10, C11, C12 |
@@ -264,6 +265,26 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 | `fx38k_graph_js_specifier_unresolved` | aucun candidat `.ts` ou `.js` n'existe | 0 | finding `unresolved_static_edge` exact avec `specifier = "./dep.js"` ; `analysis_health = degraded` |
 | `fx38l_graph_js_specifier_source_out_of_scope` | la source `.ts` jumelle existe hors `product_root` ou sous `ignore_roots` | 0 | finding `out_of_scope_static_edge` exact ; la cible `.js` ne masque pas la priorité out-of-scope |
 
+#### 5.4.2 Fixtures M15 planifiées pour aliases locaux `tsconfig.json`
+
+Ces fixtures planifient l'extension M15 définie par `ADR-0016`. Elles ne font
+pas partie du gate courant tant que l'extension n'est pas implémentée et
+activée.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx38m_graph_tsconfig_missing_relative_only` | absence de `./tsconfig.json` | 0 | comportement de graphe identique au relatif existant ; golden JSON v4 exact ; `config.tsconfig_path = null` ; `config.local_aliases = []` |
+| `fx38w_graph_tsconfig_without_paths_relative_only` | `./tsconfig.json` présent sans `compilerOptions.paths` effectif | 0 | comportement de graphe identique au relatif existant ; golden JSON v4 exact ; `config.tsconfig_path = "tsconfig.json"` ; `config.local_aliases = []` |
+| `fx38n_graph_tsconfig_alias_import` | `@/* -> src/*` résout un `ImportDeclaration` | 0 | golden JSON exact ; `supported_local_targets = ["src/dep.ts"]` ; `config.local_aliases` exact |
+| `fx38o_graph_tsconfig_alias_reexport` | `@/* -> src/*` résout un `ExportDeclaration` | 0 | golden JSON exact ; edge local pris en compte pour les re-exports supportés |
+| `fx38p_graph_tsconfig_alias_js_specifier_to_ts` | `@/dep.js` retient `src/dep.ts` | 0 | golden JSON exact ; aucun finding pour `src/dep.js` lorsque la source `.ts` existe |
+| `fx38q_graph_tsconfig_unmatched_package_ignored` | import non relatif sans alias correspondant | 0 | aucun edge local ajouté ; aucun finding lié à cet import |
+| `fx38r_graph_tsconfig_invalid_jsonc` | `./tsconfig.json` présent mais invalide | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx38s_graph_tsconfig_unsupported_paths_shape` | `paths` hors sous-ensemble M15 | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx38t_graph_tsconfig_local_extends` | `extends` local relatif avec héritage nearest-`paths` | 0 | golden JSON exact ; aliases normalisés et triés déterministiquement |
+| `fx38u_graph_tsconfig_extends_cycle_or_package` | `extends` cyclique ou non local | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx38v_graph_tsconfig_alias_target_outside_product_root` | alias cible hors `product_root` | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+
 ### 5.5 Famille B-repo — limites de support du dépôt et découverte
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
@@ -350,6 +371,16 @@ pas implémentée et activée.
 | `fx63b_map_invalid_screaming_snake_dotted_anchor_near_miss` | `--anchor` rejette les formes dotted proches invalides | 4 | aucun changement de fichier |
 | `fx64b_map_screaming_snake_dotted_anchor_not_observed` | anchor dotted avec underscore valide mais absente des specs courantes | 4 | aucun changement de fichier |
 
+#### 5.7.2 Fixtures M15 planifiées pour `map` et aliases `tsconfig.json`
+
+Ces fixtures vérifient que `map` utilise la même validation de graphe aliasée
+que `scan` avant toute mutation de `anchormap.yaml`.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx67f_map_tsconfig_alias_graph_validation` | mapping valide avec graphe contenant un alias local supporté | 0 | YAML canonique exact ; validation de graphe réussie avant écriture |
+| `fx67g_map_tsconfig_invalid_no_mutation` | `map` avec `./tsconfig.json` présent mais invalide | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
+
 ### 5.8 Famille B-cli — surface CLI, échecs machine et priorité des codes
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
@@ -373,6 +404,16 @@ Notes obligatoires pour la famille B-cli :
 
 - `fx74_cli_priority_3_over_1` et `fx75_cli_internal_error_code_1` peuvent utiliser un harness de faute **test-only** ou un backend de système de fichiers de test, à condition que l'oracle porte uniquement sur le comportement contractuel observable.
 - L'existence d'un chemin testable vers le code `1` est obligatoire ; un contrat exposant `1` sans éval dédiée n'est pas suffisant.
+
+#### 5.8.1 Fixtures M15 planifiées pour priorités CLI et aliases `tsconfig.json`
+
+Ces fixtures vérifient que les erreurs `tsconfig.json` M15 restent classées
+comme erreurs dépôt de code `3`, sous la priorité globale des codes de sortie.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx76a_cli_m15_priority_4_over_tsconfig3` | arguments invalides + `./tsconfig.json` présent mais invalide | 4 | priorité exacte `4 > 3` ; si `scan --json` est concerné, `stdout` vide |
+| `fx76b_cli_m15_priority_2_over_tsconfig3` | `anchormap.yaml` absent ou invalide + `./tsconfig.json` présent mais invalide | 2 | priorité exacte `2 > 3` ; `stdout` vide ; aucun JSON |
 
 ### 5.9 Famille B-scaffold — brouillon Markdown depuis exports TypeScript
 

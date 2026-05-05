@@ -9,7 +9,7 @@
 - `contract.md` remains normative for observable CLI behavior.
 - `evals.md` remains normative for verification gates.
 - No new product scope is introduced here except the user-authorized M14
-  scaffold extension tracked below.
+  scaffold extension and M15 deterministic local alias extension tracked below.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -27,7 +27,7 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: none.
+- Next executable product task: `T15.1 — Implement tsconfig alias input boundary`
 - Last completed task: `T14.4 — Make scaffold rerunnable by skipping existing anchors`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
@@ -172,6 +172,7 @@
 | M12 — v1.1 AnchorMap extended anchor formats | Activate the planned repository-documentation `AnchorId` grammar and `SCREAMING_SNAKE` dotted segments without inferring anchors from prose or references | `AnchorId` validator extension, B-specs/B-config/B-map fixtures and goldens, canonical ordering and release-readiness evidence | B-specs `fx22g`–`fx22l` plus `fx19a`–`fx19b`; B-config `fx49a`–`fx49b`; B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b`; docs/ADR consistency | F2/F3 planning complete; M11 done | Task, milestone, spike, ADR-style, and `SCREAMING_SNAKE` dotted anchors are accepted only in supported anchor positions, invalid near-misses remain rejected, and v1.1 gates preserve duplicate, mapping, mutation, and canonical-order boundaries |
 | M13 — v1.2 Traceability metrics | Add generic derived metrics to `scan --json` so users can distinguish raw coverage from structural signal strength without repo-specific labels | JSON schema v2, `traceability_metrics`, scan-engine counters, renderer/goldens, release-readiness evidence | B-scan `fx10a`; all successful `scan --json` goldens; C-metamorphic deterministic reruns | M12 done | `scan --json` renders schema v2 with generic summary and per-anchor metrics, no config persistence changes, no scan mutation, and no ownership/dead-code/proof inference |
 | M14 — vNext deterministic scaffold | Generate a create-only Markdown spec draft from observed TypeScript exports without creating mappings or inferring intent | `scaffold` command contract, ADR-0015, export extraction, Markdown renderer, create-only write path, draft-aware scan, B-scaffold fixtures | B-scaffold `fx77`–`fx87`; B-scan draft fixture; B-map draft fixture; B-cli command-surface regressions; docs/ADR consistency | M13 done; user-approved scaffold plan | `anchormap scaffold --output <path>` writes exact draft Markdown from public exports, `scan --json` surfaces draft anchors without unmapped-anchor noise, never mutates `anchormap.yaml`, fails without output mutation on invalid preconditions, and preserves the Observed/Human boundary |
+| M15 — vNext deterministic local alias resolution | Resolve common local TypeScript aliases from `./tsconfig.json` without adopting full TypeScript or Node module resolution | ADR-0016, `tsconfig_io`, alias-aware `ts_graph`, JSON schema v4, B-graph/B-map/B-cli fixtures and goldens | B-graph `fx38m`–`fx38w`; B-map `fx67f`–`fx67g`; B-cli `fx76a`–`fx76b`; schema/golden regressions | M14 done; user-approved M15 plan | `scan --json` exposes normalized alias resolver state and follows supported `@/* -> src/*` style aliases, missing `tsconfig.json` preserves relative-only behavior, invalid present `tsconfig.json` exits `3`, and `map` preserves no-mutation guarantees on alias-resolution failures |
 
 ## Milestone dependency graph
 
@@ -194,6 +195,7 @@ M1 Fixture harness
                              -> M12 v1.1 AnchorMap extended anchor formats
                                 -> M13 v1.2 Traceability metrics
                                    -> M14 vNext deterministic scaffold
+                                      -> M15 vNext deterministic local alias resolution
 ```
 
 ## M1 — Fixture harness
@@ -6079,6 +6081,255 @@ Suggested verification:
 - Run `npm run lint`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M15 — vNext deterministic local alias resolution
+
+### T15.1 — Implement tsconfig alias input boundary
+
+Purpose:
+- Read `./tsconfig.json` as an observed repository input for local alias
+  resolution.
+- Preserve relative-only behavior when `./tsconfig.json` is absent.
+- Fail explicitly on invalid or unsupported present `tsconfig.json`.
+
+Contract refs:
+- `contract.md` — §5.3.1 Extension M15 planned local aliases
+- `contract.md` — §10.2.2 Extension M15 planned tsconfig aliases
+- `contract.md` — §12.2.4 Alias normalization
+- `contract.md` — §12.3 Required reads and failure classification
+
+Design refs:
+- `design.md` — §5.4.1 `tsconfig_io` M15
+- `design.md` — §7.4.2 Extension M15 planned local aliases
+
+Eval refs:
+- `evals.md` — §4.1 Level A invariant coverage
+
+ADR refs:
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+- `ADR-0006` — TypeScript parser and graph subset
+
+Dependencies:
+- T14.4.
+
+Implementation scope:
+- Add a `tsconfig_io` boundary that reads `./tsconfig.json` if it exists.
+- Decode through the existing strict UTF-8/BOM boundary.
+- Parse JSONC with the pinned TypeScript package.
+- Follow only local relative `extends` that stay under the repository root.
+- Reject package `extends`, cycles, unreadable files, invalid JSONC, and
+  unsupported `baseUrl` / `paths` shapes as `UnsupportedRepoError`.
+- Treat missing `compilerOptions` or missing effective `paths` as an empty alias
+  set only after the read chain's M15-inspected fields validate successfully.
+- Apply the contract's nearest-`paths` inheritance rule without merging path
+  mappings from multiple config files.
+- Normalize supported terminal path-segment wildcard aliases into canonical
+  sorted `LocalAlias` records.
+
+Out of scope:
+- Full TypeScript module resolution.
+- `package.json`, project references, monorepo lookup, `exports`, or Node
+  conditions.
+- CLI flags or `anchormap.yaml` fields for aliases.
+
+Done when:
+- Missing `./tsconfig.json` returns an empty alias set.
+- Present `./tsconfig.json` without effective `paths` returns an empty alias
+  set only when the read chain otherwise stays inside the M15 supported subset.
+- Supported `@/* -> src/*` aliases normalize deterministically.
+- Local relative `extends` obey the nearest-`paths` inheritance rule.
+- Invalid or unsupported present `tsconfig.json` is rejected by the boundary as
+  `UnsupportedRepoError`.
+- Unit tests cover decode, parse, extends, cycles, baseUrl, paths, target-scope,
+  and canonical ordering.
+
+Suggested verification:
+- Run tsconfig boundary unit tests.
+- Run `npm run test:product`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T15.2 — Resolve supported alias imports in the TypeScript graph
+
+Purpose:
+- Let supported import/export declarations with matching alias specifiers
+  produce deterministic local graph edges.
+- Keep non-matching non-relative package imports ignored.
+
+Contract refs:
+- `contract.md` — §10.1.1 Extension M15 planned alias specifiers
+- `contract.md` — §10.2 Candidate classification
+- `contract.md` — §10.2.1 `.js -> .ts` source-candidate rule
+- `contract.md` — §10.2.2 Extension M15 planned tsconfig aliases
+- `contract.md` — §10.3 Non-contributing dependencies
+
+Design refs:
+- `design.md` — §5.4 `ts_graph`
+- `design.md` — §7.4 TypeScript graph construction
+- `design.md` — §7.4.2 Extension M15 planned local aliases
+
+Eval refs:
+- `evals.md` — `fx38n`, `fx38o`, `fx38p`, `fx38q`
+- `evals.md` — C5 external imports
+- `evals.md` — C6 unsupported extension conversion
+
+ADR refs:
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+
+Dependencies:
+- T15.1.
+
+Implementation scope:
+- Pass normalized aliases into `buildProductGraph`.
+- Classify `ImportDeclaration` and `ExportDeclaration` specifiers as relative,
+  alias-local, or external.
+- Rewrite alias-local specifiers to repo-root candidate bases.
+- Reuse the existing candidate ordering and finding classification, including
+  `.js -> .ts`.
+- Keep unmatched non-relative imports ignored with no finding.
+- Keep `require("@/x")` and `import("@/x")` outside the supported edge set.
+
+Out of scope:
+- Dynamic alias resolution.
+- Symbol-level or package-level graph semantics.
+- Supporting `.tsx`, `.js`, or `.d.ts` product files.
+
+Done when:
+- Alias imports and re-exports add exact supported targets.
+- Alias `.js` specifiers retain the M11 `.js -> .ts` behavior.
+- Package imports remain ignored.
+- Existing relative graph fixtures still pass.
+
+Suggested verification:
+- Run ts-graph unit tests.
+- Run `npm run test:fixtures -- --fixture fx38n_graph_tsconfig_alias_import`.
+- Run `npm run test:fixtures -- --fixture fx38o_graph_tsconfig_alias_reexport`.
+- Run `npm run test:product`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T15.3 — Render JSON v4 alias state and preserve map no-mutation behavior
+
+Purpose:
+- Expose the alias resolver state in successful `scan --json`.
+- Ensure `map` performs alias-aware graph validation before writing.
+
+Contract refs:
+- `contract.md` — §9.2 `anchormap map`
+- `contract.md` — §9.3 `anchormap scan`
+- `contract.md` — §12.3 Required reads and failure classification
+- `contract.md` — §13.2.1 Extension M15 planned JSON v4
+- `contract.md` — §13.7 Canonical JSON serialization
+
+Design refs:
+- `design.md` — §4.1 Pipeline logique de `scan`
+- `design.md` — §4.2 Pipeline logique de `map`
+- `design.md` — §5.5 `scan_engine`
+- `design.md` — §5.6 `commands`
+
+Eval refs:
+- `evals.md` — `fx38m`–`fx38w`
+- `evals.md` — `fx67f`, `fx67g`
+- `evals.md` — `fx76a`, `fx76b`
+- `evals.md` — §6 Goldens and exact oracles
+
+ADR refs:
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+- `ADR-0007` — Canonical JSON and YAML rendering
+- `ADR-0008` — Atomic config write path
+
+Dependencies:
+- T15.2.
+
+Implementation scope:
+- Bump successful `scan --json` to schema version `4`.
+- Add `config.tsconfig_path` and `config.local_aliases` to the scan result
+  view and canonical renderer.
+- Keep JSON object closure and ordering exact.
+- Route tsconfig boundary failures for `scan` and `map` to code `3`.
+- Add B-cli priority coverage for tsconfig boundary failures against code `4`
+  and code `2` preconditions.
+- Ensure failed `map` leaves `anchormap.yaml` byte-identical and leaves no
+  AnchorMap temp files.
+- Update all successful `scan --json` goldens across fixture families for JSON
+  v4, including the new M15 B-graph goldens.
+
+Out of scope:
+- Changing `anchormap.yaml` canonical YAML.
+- Adding `init` alias flags.
+- Human-output wording guarantees.
+
+Done when:
+- Every successful scan golden renders schema version `4`.
+- Alias resolver state is visible and canonically ordered.
+- `fx67g` verifies no mutation on tsconfig failure during `map`.
+- `fx76a` and `fx76b` verify `4 > 3` and `2 > 3` priorities when a tsconfig
+  failure is also present.
+- Existing `init`, `map`, and `scan` failure priorities still pass.
+
+Suggested verification:
+- Run render-json, scan-engine, commands, and ts-graph unit tests.
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run test:fixtures -- --family B-map`.
+- Run `npm run test:fixtures -- --family B-cli`.
+- Run `npm run check:goldens`.
+- Run `npm run test:product`.
+- Run `npm test`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T15.4 — Close M15 alias release readiness
+
+Purpose:
+- Verify the M15 extension is complete, documented, and does not imply full
+  TypeScript resolver support.
+
+Contract refs:
+- `contract.md` — §10 TypeScript graph rules
+- `contract.md` — §12 Determinism, paths, platforms and stability
+- `contract.md` — §13 JSON guaranteed output and exit codes
+
+Design refs:
+- `design.md` — §7.4.2 Extension M15 planned local aliases
+- `design.md` — §14 Decisions explicitly deferred
+
+Eval refs:
+- `evals.md` — §5.4.2 Fixtures M15 planned local aliases
+- `evals.md` — §5.7.2 Fixtures M15 map aliases
+- `evals.md` — §10 Release gates
+
+ADR refs:
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+
+Dependencies:
+- T15.3.
+
+Implementation scope:
+- Update user-facing docs to describe M15 alias support and its limitations.
+- Ensure release checklist or readiness evidence includes the M15 fixture
+  families and JSON v4 schema change.
+- Verify no docs promise full TypeScript, Node, monorepo, package, TSX, or JS
+  product-file resolution.
+- Run the applicable release gate subset for graph, map, JSON goldens,
+  determinism, and docs consistency.
+
+Out of scope:
+- Publishing a new artifact unless separately requested.
+- Expanding beyond the `ADR-0016` alias subset.
+
+Done when:
+- README and release docs describe deterministic `tsconfig.json` aliases.
+- All M15 fixtures pass.
+- Full applicable repo checks pass.
+- `docs/tasks.md` records M15 completion only after task-level done criteria
+  from `operating-model.md` §19.1 are satisfied.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run test:fixtures -- --family B-map`.
+- Run `npm run test:fixtures:all`.
+- Run `npm run test:docs`.
+- Run `npm run lint`.
+- Run `npm test`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -6113,6 +6364,7 @@ Suggested verification:
 | B-graph `fx35`–`fx36` | T3.3, T6.6, T7.3 | M6, M7 | fixture/golden | Finding dedup and graph cycles |
 | B-graph `fx37`–`fx38e` | T6.2, T6.4, T6.7 | M6 | fixture | Parse failures, outside-root candidates, existence-test failures |
 | B-graph `fx38f`–`fx38l` | T11.1, T11.2, T11.3 | M11 | fixture/golden | v1.1 explicit `.js` specifier source-candidate resolution |
+| B-graph `fx38m`–`fx38w` | T15.1, T15.2, T15.3 | M15 | fixture/golden | M15 deterministic `tsconfig.json` alias loading, alias resolution, JSON v4 visibility, and failure classification |
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
@@ -6123,6 +6375,8 @@ Suggested verification:
 | B-map `fx59a`–`fx59b`, `fx63a`–`fx63b`, `fx64a`–`fx64b` | T12.1, T12.1a, T12.3 | M12 | fixture/golden | v1.1 documentation and `SCREAMING_SNAKE` dotted anchor map creation, invalid args, and unobserved anchors |
 | B-map `fx63`–`fx67` | T8.1, T8.2, T8.3, T8.5, T8.6 | M8 | fixture | Anchor/seed validation and option order |
 | B-map `fx67a`–`fx67d` | T4.7, T5.5, T6.7, T8.2, T8.3, T8.5 | M4–M8 | fixture | Config/spec/product/existence failures with no mutation |
+| B-map `fx67f`–`fx67g` | T15.3 | M15 | fixture/golden | M15 alias-aware graph validation before map writes and no mutation on tsconfig failure |
+| B-cli M15 `fx76a`–`fx76b` | T15.3 | M15 | fixture | M15 tsconfig failure code `3` remains below argument code `4` and config code `2` priorities |
 | B-cli `fx68`–`fx70` | T2.1, T2.2, T2.5 | M2 | fixture | Unknown command, unknown option, invalid combinations |
 | B-cli `fx71`, `fx71a`–`fx71e` | T2.2, T2.5, T7.1, T7.6 | M2, M7 | fixture | Scan option order and human scan modes |
 | B-cli `fx72`–`fx75` | T2.5, T2.6, T4.7, T6.7, T7.6 | M2–M7 | fixture | Exit-code priority and internal error |

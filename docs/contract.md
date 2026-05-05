@@ -213,6 +213,21 @@ Ils ne participent pas au calcul de couverture locale et ne produisent pas de fi
 Conséquence explicite : le dépôt supporté ne doit pas encoder des dépendances locales produit-vers-produit via imports non relatifs.
 AnchorMap v1.0 ne prouve pas cette hypothèse.
 
+#### 5.3.1 Extension M15 planifiée : aliases locaux `tsconfig.json`
+
+Cette section planifie une extension M15. Elle ne modifie pas le contrat runtime
+v1.0 tant que les tâches d'implémentation M15 correspondantes n'ont pas activé
+explicitement ces règles.
+
+Quand l'extension est active, certains specifiers non relatifs peuvent être
+traités comme dépendances locales supportées s'ils correspondent exactement à
+un alias local déterministe lu depuis `./tsconfig.json` selon la section
+10.2.2.
+
+Les specifiers non relatifs qui ne correspondent à aucun alias local supporté
+restent traités comme externes : ils ne participent pas au calcul de couverture
+locale et ne produisent pas de finding.
+
 ### 5.4 Candidats hors racine du dépôt
 
 Un candidat de résolution calculé à partir d'un import relatif n'est pris en compte que si son chemin normalisé reste sous la racine du dépôt.
@@ -815,6 +830,11 @@ Seul `scan --json` a un schéma de sortie garanti.
 9. findings ;
 10. `analysis_health`.
 
+Extension M15 planifiée : lorsque les aliases locaux `tsconfig.json` sont
+activés, `scan` lit aussi `./tsconfig.json`, s'il existe, avant la construction
+du graphe TypeScript. Les aliases normalisés deviennent visibles dans
+`config.local_aliases` du JSON v4 selon la section 13.2.1.
+
 #### 9.3.4 Règle de contribution d'un mapping
 
 Un mapping contribue au calcul de `reached_files` et de `covering_anchor_ids` uniquement s'il est exploitable.
@@ -1009,6 +1029,17 @@ Cela couvre notamment :
 
 Quand un finding contient un champ `specifier`, sa valeur est la valeur décodée de la chaîne littérale TypeScript, sans guillemets.
 
+#### 10.1.1 Extension M15 planifiée : specifiers aliasés
+
+Quand l'extension M15 est active, les mêmes déclarations TypeScript
+`ImportDeclaration` et `ExportDeclaration` sont aussi supportées lorsqu'elles
+portent un specifier chaîne littérale non relatif qui correspond à un alias
+local `tsconfig.json` normalisé selon la section 10.2.2.
+
+Les formes reconnues mais hors support de la section 10.4 restent limitées aux
+specifiers relatifs ; `require("@/x")` et `import("@/x")` restent hors contrat
+M15.
+
 ### 10.2 Candidats de résolution et ordre de classification des occurrences supportées
 
 Cette section s'applique **uniquement** aux occurrences syntaxiques supportées par la section 10.1.
@@ -1114,6 +1145,78 @@ Cette extension ne promet pas :
 - la résolution de répertoires pour un specifier explicite `.js` autre que le
   chemin écrit dans le specifier.
 
+#### 10.2.2 Extension M15 planifiée : aliases locaux `tsconfig.json`
+
+Quand l'extension M15 est active, AnchorMap lit au plus `./tsconfig.json` et
+les fichiers référencés par des `extends` locaux relatifs pour construire une
+liste canonique d'aliases locaux.
+
+Sous-ensemble supporté :
+
+- `compilerOptions` absent ou mapping ;
+- `compilerOptions.baseUrl` absent ou chaîne scalaire ;
+- `compilerOptions.paths` absent ou mapping d'entrées alias vers séquences de
+  chaînes ;
+- chaque alias supporté a exactement un wildcard terminal comme segment final
+  `/*` dans la clé, par exemple `@/*` ;
+- chaque alias supporté a exactement une cible, avec exactement un `*`
+  terminal comme segment final `/*`, par exemple `src/*` ;
+- le préfixe de clé avant `*` est non vide, se termine par `/`, et ne commence
+  pas par `.` ou `/` ;
+- le préfixe de cible avant `*` se termine par `/` ;
+- la cible, après application de `baseUrl`, se normalise en `RepoPath` canonique
+  sous `product_root`.
+
+Un `./tsconfig.json` absent produit une liste d'aliases vide et conserve le
+comportement relatif existant.
+
+Un `./tsconfig.json` présent sans `compilerOptions.paths`, directement ou par
+`extends`, produit une liste d'aliases vide et conserve le comportement relatif
+existant seulement si chaque fichier lu de la chaîne reste conforme aux formes
+inspectées du sous-ensemble supporté.
+
+Résolution des `extends` locaux relatifs :
+
+1. construire la chaîne depuis `./tsconfig.json` vers ses bases locales
+   relatives, en rejetant les cycles, les sorties de racine et les formes non
+   locales ;
+2. pour chaque fichier de la chaîne, calculer son `baseUrl` effectif : il
+   hérite du `baseUrl` effectif de sa base, sauf si le fichier courant déclare
+   `compilerOptions.baseUrl` ; toute valeur déclarée est résolue relativement
+   au répertoire du fichier qui la déclare ;
+3. utiliser comme source de `paths` le fichier le plus proche de la racine de
+   commande qui déclare `compilerOptions.paths` ;
+4. si aucun fichier de la chaîne ne déclare `compilerOptions.paths`, produire
+   une liste d'aliases vide ;
+5. résoudre les cibles `paths` relativement au `baseUrl` effectif du fichier
+   qui fournit `paths` ;
+6. ne pas fusionner les mappings `paths` de plusieurs fichiers.
+
+Un `./tsconfig.json` présent mais illisible, non décodable en UTF-8 selon la
+section 1.1, JSONC invalide, portant une chaîne `extends` non locale, une
+chaîne `extends` qui sort de la racine du dépôt, un cycle d'`extends`, ou une
+forme inspectée par M15 hors du sous-ensemble supporté rend le dépôt hors support
+et produit le code de sortie `3`.
+
+Pour un specifier non relatif, AnchorMap choisit le premier alias dont le
+préfixe de clé correspond au début du specifier selon l'ordre canonique défini
+en section 12.2.4. Le suffixe du specifier après ce préfixe est concaténé à la
+cible d'alias normalisée pour produire une base de candidat relative à la
+racine du dépôt. La liste de candidats de la section 10.2 est ensuite construite
+sur cette base et la classification ordonnée reste inchangée.
+
+Conséquences explicites :
+
+- `@/feature/model` peut retenir `src/feature/model.ts` pour un alias
+  `@/* -> src/*` ;
+- `@/feature/model.js` peut retenir `src/feature/model.ts` par la règle
+  `.js -> .ts` déjà activée ;
+- un import de package comme `react` reste ignoré s'il ne correspond à aucun
+  alias local supporté ;
+- aucun `package.json`, `exports`, condition Node, project reference, recherche
+  monorepo, cache, réseau, Git, horloge ou variable d'environnement n'intervient
+  dans la résolution.
+
 ### 10.3 Ce qui ne produit pas de dépendance locale supportée
 
 Ne produisent pas de dépendance locale supportée :
@@ -1128,6 +1231,10 @@ Ne produisent pas de dépendance locale supportée :
 Conséquences explicites :
 
 - les imports de packages et, plus généralement, les specifiers non relatifs n'émettent aucun finding ;
+- extension M15 planifiée : les specifiers non relatifs qui correspondent à un
+  alias local supporté ne sont plus des imports de package pour la résolution du
+  graphe ; les specifiers non relatifs sans alias correspondant restent ignorés
+  sans finding ;
 - les occurrences supportées de la section 10.1 dont la classification aboutit à une cible hors `product_root`, sous `ignore_roots`, d'extension non supportée, ou non résolue, émettent respectivement `out_of_scope_static_edge`, `unsupported_local_target` ou `unresolved_static_edge` selon la section 10.2 ;
 - les formes reconnues mais hors support de la section 10.4 émettent `unsupported_static_edge`.
 
@@ -1297,6 +1404,30 @@ Pour résoudre un specifier relatif depuis un `importer`, AnchorMap utilise une 
 
 Cette normalisation est la seule utilisée pour produire `target_path`, `supported_local_targets`, `reached_files` et `covering_anchor_ids`.
 
+#### 12.2.4 Extension M15 planifiée : normalisation des aliases
+
+Quand l'extension M15 est active, les chemins lus depuis `./tsconfig.json` sont
+normalisés avec le même modèle `RepoPath` que les chemins du dépôt.
+
+Le `baseUrl` effectif d'un fichier `tsconfig.json`, s'il est absent dans toute
+sa chaîne d'`extends`, vaut le répertoire du fichier qui fournit les `paths`.
+S'il est déclaré, il doit être une chaîne qui se normalise lexicalement en
+`RepoPath` ou en racine du dépôt après résolution relative au répertoire du
+fichier qui le déclare.
+
+Pour chaque cible `paths` supportée :
+
+1. retirer le `*` terminal ;
+2. concaténer `baseUrl` et ce préfixe de cible avec `/` ;
+3. normaliser lexicalement comme chemin sous racine du dépôt ;
+4. rejeter la configuration si le résultat sort de la racine du dépôt, n'est
+   pas canonique, ou n'est pas sous `product_root` ;
+5. rendre le préfixe cible normalisé avec un `/` terminal dans
+   `config.local_aliases[*].target`.
+
+Les aliases normalisés sont triés par longueur décroissante de `prefix`, puis
+par ordre binaire UTF-8 de `prefix`, puis par ordre binaire UTF-8 de `target`.
+
 ### 12.3 Portée de découverte, lisibilité et garde-fous
 
 La découverte récursive de fichiers est limitée à :
@@ -1308,12 +1439,22 @@ En plus de cette découverte récursive, AnchorMap effectue uniquement des tests
 
 Aucune exploration récursive hors `product_root` et hors `spec_roots` n'est autorisée.
 
+Extension M15 planifiée : lorsque les aliases locaux `tsconfig.json` sont
+activés, la lecture ponctuelle de `./tsconfig.json` et des fichiers `extends`
+locaux relatifs requis est aussi autorisée. Cette lecture ne déclenche aucune
+recherche parent, aucune exploration récursive, et aucune lecture de
+`package.json`.
+
 Pour `scan`, `map` et `scaffold`, les opérations suivantes sont des lectures requises du dépôt :
 
 - l'ouverture, la lecture et le décodage de `./anchormap.yaml` ;
 - l'énumération récursive de `product_root` et de chaque `spec_root` ;
 - l'ouverture, la lecture et le décodage des spec files et des `product_files` découverts ;
 - les tests d'existence ponctuels requis par la résolution de la section 10.2.
+
+Extension M15 planifiée : pour `scan` et `map`, si `./tsconfig.json` existe, son
+ouverture, sa lecture, son décodage, son parsing JSONC et la lecture de ses
+`extends` locaux relatifs sont des lectures requises du dépôt.
 
 Règle de classification des échecs de lecture :
 
@@ -1329,6 +1470,11 @@ Le dépôt est hors support si l'un des cas suivants est détecté dans les sous
 - `product_file` illisible, non décodable selon la section 1.1, ou non parsable ;
 - fichier Markdown de spec illisible ou non décodable selon la section 1.1 ;
 - fichier YAML de spec illisible, non décodable selon la section 1.1, invalide, multi-document, ou à clés dupliquées.
+
+Extension M15 planifiée : lorsque les aliases locaux `tsconfig.json` sont
+activés, `scan` et `map` considèrent aussi le dépôt hors support si
+`./tsconfig.json` est présent mais illisible, non décodable selon la section 1.1,
+invalide, ou hors sous-ensemble alias M15 supporté.
 
 L'impossibilité de charger ou valider `anchormap.yaml`, y compris YAML invalide, multi-document, racine non mapping ou clés dupliquées, relève de la configuration et produit le code de sortie `2`, pas le code `3`.
 ### 12.4 Plateformes supportées
@@ -1367,6 +1513,10 @@ Le chemin quotidien n'utilise :
 - ni horloge ;
 - ni réseau ;
 - ni variable d'environnement comme source de vérité.
+
+Extension M15 planifiée : `./tsconfig.json` peut devenir une entrée observée du
+dépôt pour la résolution locale d'aliases. Il ne devient pas un état persisté
+propre à AnchorMap et ne permet pas de source de vérité implicite hors fichier.
 
 ## 13. JSON garanti et codes de sortie
 
@@ -1416,6 +1566,35 @@ Règles complémentaires :
 - `config.spec_roots` vaut exactement la liste canonique et triée des `spec_roots` lus dans `anchormap.yaml` ;
 - `config.ignore_roots` est toujours présent ; sa valeur est `[]` si `ignore_roots` est absent ou vide dans `anchormap.yaml`, sinon la liste canonique et triée des `ignore_roots` lus dans `anchormap.yaml` ;
 - aucune clé supplémentaire n'est autorisée dans `config`.
+
+#### 13.2.1 Extension M15 planifiée : JSON v4 et aliases locaux
+
+Quand l'extension M15 est active, le schéma de succès est remplacé par un
+schéma JSON v4.
+
+Contraintes normatives du schéma v4 :
+
+- `schema_version` vaut toujours l'entier `4` ;
+- les clés racine restent celles de la section 13.2 ;
+- `config` est un objet fermé contenant exactement :
+  1. `version`
+  2. `product_root`
+  3. `spec_roots`
+  4. `ignore_roots`
+  5. `tsconfig_path`
+  6. `local_aliases`
+- `config.tsconfig_path` vaut `"tsconfig.json"` si `./tsconfig.json` a été lu
+  avec succès, sinon `null` ;
+- `config.local_aliases` est toujours présent ;
+- `config.local_aliases` vaut `[]` lorsqu'aucun alias local supporté n'est
+  actif ;
+- chaque entrée de `config.local_aliases` est un objet fermé contenant
+  exactement `prefix`, puis `target` ;
+- `prefix` est le préfixe d'alias avant le wildcard terminal, par exemple
+  `"@/"` ;
+- `target` est le préfixe de chemin cible normalisé avec `/` terminal, par
+  exemple `"src/"` ;
+- les entrées de `config.local_aliases` sont triées selon la section 12.2.4.
 
 ### 13.3 `observed_anchors`
 
@@ -1587,6 +1766,11 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
   7. `traceability_metrics`
   8. `findings`
 - dans `config`, l'ordre des clés est `version`, puis `product_root`, puis `spec_roots`, puis `ignore_roots` ;
+- extension M15 planifiée : dans le schéma JSON v4, l'ordre des clés de
+  `config` est `version`, puis `product_root`, puis `spec_roots`, puis
+  `ignore_roots`, puis `tsconfig_path`, puis `local_aliases` ;
+- extension M15 planifiée : dans chaque entrée de `config.local_aliases`,
+  l'ordre des clés est `prefix`, puis `target` ;
 - les clés de `observed_anchors`, `stored_mappings` et `files` sont triées lexicographiquement ;
 - dans chaque entrée de `observed_anchors`, l'ordre des clés est `spec_path`, puis `mapping_state` ;
 - dans chaque entrée de `stored_mappings`, l'ordre des clés est `state`, puis `seed_files`, puis `reached_files` ;
@@ -1596,6 +1780,8 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - les clés de `traceability_metrics.anchors` sont triées lexicographiquement ;
 - dans chaque entrée de `traceability_metrics.anchors`, l'ordre des clés est celui de la section 13.5.1 ;
 - les tableaux `config.spec_roots`, `config.ignore_roots`, `seed_files`, `reached_files`, `covering_anchor_ids` et `supported_local_targets` sont triés lexicographiquement ;
+- extension M15 planifiée : le tableau `config.local_aliases` est trié selon
+  la section 12.2.4 ;
 - `findings` est trié selon la section 11.6 ;
 - toute chaîne JSON est rendue entre guillemets doubles `"` ;
 - dans les chaînes JSON, `"` est échappé en `\"`, `\` en `\\` ;
@@ -1604,6 +1790,8 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - aucun autre caractère n'est échappé avec `\u` ; les autres caractères sont rendus directement en UTF-8 ;
 - `/` n'est jamais échappé ;
 - l'entier `schema_version` est rendu exactement sous la forme `3`.
+- extension M15 planifiée : dans le schéma JSON v4, l'entier `schema_version`
+  est rendu exactement sous la forme `4`.
 
 ### 13.8 Codes de sortie
 
