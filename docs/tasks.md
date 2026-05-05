@@ -27,8 +27,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: none.
-- Next executable product task: `T15.2 — Resolve supported alias imports in the TypeScript graph`
-- Last completed task: `T15.1 — Implement tsconfig alias input boundary`
+- Next executable product task: `T15.3 — Render JSON v4 alias state and preserve map no-mutation behavior`
+- Last completed task: `T15.2 — Resolve supported alias imports in the TypeScript graph`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -128,6 +128,7 @@
   - `T14.3 — Treat scaffold output as draft specs`
   - `T14.4 — Make scaffold rerunnable by skipping existing anchors`
   - `T15.1 — Implement tsconfig alias input boundary`
+  - `T15.2 — Resolve supported alias imports in the TypeScript graph`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

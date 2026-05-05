@@ -13,14 +13,17 @@ import {
 	type ProductGraphFs,
 	parseTypeScriptProductText,
 	productGraphHasLocalDependencySyntax,
+	productGraphHasSupportedLocalDependencySyntax,
 	sourceFileHasLocalDependencySyntax,
 } from "./ts-graph";
+import type { LocalAlias } from "./tsconfig-io";
 
 type ParsedSourceFile = ts.SourceFile & {
 	readonly parseDiagnostics: readonly ts.Diagnostic[];
 };
 
 const CWD = "/repo";
+const AT_ALIAS: readonly LocalAlias[] = [{ prefix: "@/", targetPrefix: "src/" }];
 
 function repoPath(value: string): RepoPath {
 	const result = validateRepoPath(value);
@@ -66,11 +69,14 @@ function bytes(text: string): Uint8Array {
 function candidatePaths(
 	importer: string,
 	specifier: string,
+	localAliases: readonly LocalAlias[] = [],
 ): Array<{ path: string; support: "supported" | "diagnostic_only" }> {
-	return buildStaticEdgeResolutionCandidates(repoPath(importer), specifier).map((candidate) => ({
-		path: candidate.path,
-		support: candidate.support,
-	}));
+	return buildStaticEdgeResolutionCandidates(repoPath(importer), specifier, localAliases).map(
+		(candidate) => ({
+			path: candidate.path,
+			support: candidate.support,
+		}),
+	);
 }
 
 function edgesByImporterEntries(
@@ -233,6 +239,28 @@ test("extracts supported static import and export edge inputs in source order", 
 	}
 });
 
+test("extracts matching alias import and export declarations as supported edge inputs", () => {
+	const result = parseTypeScriptProductText(
+		repoPath("src/index.ts"),
+		[
+			"import { value } from '@/value';",
+			"import type { External } from 'pkg';",
+			"export * from '@/all';",
+			"export { external } from 'pkg/subpath';",
+			"export const local = value;",
+		].join("\n"),
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(extractSupportedStaticEdgeInputs(result.sourceFile, AT_ALIAS), [
+			{ syntaxKind: "import_declaration", specifier: "@/value" },
+			{ syntaxKind: "export_declaration", specifier: "@/all" },
+		]);
+		assert.equal(sourceFileHasLocalDependencySyntax(result.sourceFile, AT_ALIAS), true);
+	}
+});
+
 test("extracts unsupported local require and dynamic import inputs in source order", () => {
 	const result = parseTypeScriptProductText(
 		repoPath("src/index.ts"),
@@ -300,6 +328,43 @@ test("builds explicit .js static edge candidates with source .ts before exact .j
 		{ path: "src/features/dir.ts", support: "supported" },
 		{ path: "src/features/dir.js", support: "diagnostic_only" },
 	]);
+});
+
+test("builds alias static edge candidates from the repository root", () => {
+	assert.deepEqual(candidatePaths("src/features/index.ts", "@/model", AT_ALIAS), [
+		{ path: "src/model.ts", support: "supported" },
+		{ path: "src/model/index.ts", support: "supported" },
+		{ path: "src/model.tsx", support: "diagnostic_only" },
+		{ path: "src/model.js", support: "diagnostic_only" },
+		{ path: "src/model.d.ts", support: "diagnostic_only" },
+		{ path: "src/model/index.tsx", support: "diagnostic_only" },
+		{ path: "src/model/index.js", support: "diagnostic_only" },
+		{ path: "src/model/index.d.ts", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "@/dep.js", AT_ALIAS), [
+		{ path: "src/dep.ts", support: "supported" },
+		{ path: "src/dep.js", support: "diagnostic_only" },
+	]);
+	assert.deepEqual(candidatePaths("src/features/index.ts", "react", AT_ALIAS), []);
+});
+
+test("uses canonical alias order when multiple prefixes match a specifier", () => {
+	assert.deepEqual(
+		candidatePaths("src/index.ts", "@/feature/model", [
+			{ prefix: "@/", targetPrefix: "src/" },
+			{ prefix: "@/feature/", targetPrefix: "src/features/" },
+		]),
+		[
+			{ path: "src/features/model.ts", support: "supported" },
+			{ path: "src/features/model/index.ts", support: "supported" },
+			{ path: "src/features/model.tsx", support: "diagnostic_only" },
+			{ path: "src/features/model.js", support: "diagnostic_only" },
+			{ path: "src/features/model.d.ts", support: "diagnostic_only" },
+			{ path: "src/features/model/index.tsx", support: "diagnostic_only" },
+			{ path: "src/features/model/index.js", support: "diagnostic_only" },
+			{ path: "src/features/model/index.d.ts", support: "diagnostic_only" },
+		],
+	);
 });
 
 test("omits outside-root static edge candidates before existence testing", () => {
@@ -393,6 +458,37 @@ test("resolves simple declaration-only product files without changing graph sema
 		const indexFile = result.productGraph.parsedFiles.find((file) => file.path === "src/index.ts");
 		assert.deepEqual(indexFile?.supportedStaticEdgeInputs, [
 			{ syntaxKind: "import_declaration", specifier: "./dep" },
+		]);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("resolves simple declaration-only alias imports without changing graph semantics", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				[
+					'import { value0001 as dep0001 } from "@/dep";',
+					"",
+					"export const value0000 = 0;",
+					"export const linked0000 = [dep0001];",
+					"",
+				].join("\n"),
+			),
+			"src/dep.ts": bytes("export const value0001 = 1;\n"),
+		}),
+		localAliases: AT_ALIAS,
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		const indexFile = result.productGraph.parsedFiles.find((file) => file.path === "src/index.ts");
+		assert.deepEqual(indexFile?.supportedStaticEdgeInputs, [
+			{ syntaxKind: "import_declaration", specifier: "@/dep" },
 		]);
 		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
 			"src/dep.ts",
@@ -510,6 +606,32 @@ test("ignores non-relative require and dynamic import calls", () => {
 
 	assert.equal(result.kind, "ok");
 	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.unsupportedStaticEdgeInputs, []);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+		assert.equal(productGraphHasLocalDependencySyntax(result.productGraph), false);
+	}
+});
+
+test("ignores unmatched package imports and alias require or dynamic import calls", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				[
+					"import { value } from 'react';",
+					"const required = require('@/dep');",
+					"const dynamic = import('@/dep');",
+				].join("\n"),
+			),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+		}),
+		localAliases: AT_ALIAS,
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.supportedStaticEdgeInputs, []);
 		assert.deepEqual(result.productGraph.parsedFiles[0]?.unsupportedStaticEdgeInputs, []);
 		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
 		assert.deepEqual(result.productGraph.graphFindings, []);
@@ -738,6 +860,52 @@ test("resolves explicit .js export declarations to sibling .ts source files", ()
 			"src/index.ts": bytes("export * from './dep.js';\nexport { dep } from './dep.js';\n"),
 			"src/dep.ts": bytes("export const dep = 1;\n"),
 		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("resolves matching alias import and export declarations to local product files", () => {
+	const result = buildProductGraph(
+		config(),
+		[repoPath("src/index.ts"), repoPath("src/dep.ts"), repoPath("src/reexport.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import { dep } from '@/dep';\nexport * from '@/reexport';\n"),
+				"src/dep.ts": bytes("export const dep = 1;\n"),
+				"src/reexport.ts": bytes("export const reexport = 1;\n"),
+			}),
+			localAliases: AT_ALIAS,
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+			"src/reexport.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+		assert.equal(productGraphHasSupportedLocalDependencySyntax(result.productGraph), true);
+	}
+});
+
+test("resolves matching alias .js specifiers to .ts source files", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import { dep } from '@/dep.js';\n"),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+			"src/dep.js": bytes("export const dep = 1;\n"),
+		}),
+		localAliases: AT_ALIAS,
 	});
 
 	assert.equal(result.kind, "ok");

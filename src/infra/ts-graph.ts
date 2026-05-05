@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import type ts = require("typescript");
 
+import { compareCanonicalTextByUtf8 } from "../domain/canonical-order";
 import {
 	createOutOfScopeStaticEdgeFinding,
 	createUnresolvedStaticEdgeFinding,
@@ -17,9 +18,11 @@ import {
 	normalizeImportCandidate,
 	type RepoPath,
 	repoPathToString,
+	validateRepoPath,
 } from "../domain/repo-path";
 import type { Config } from "./config-io";
 import { decodeUtf8StrictNoBom } from "./repo-fs";
+import type { LocalAlias } from "./tsconfig-io";
 
 export interface ProductGraph {
 	readonly productFiles: readonly RepoPath[];
@@ -64,6 +67,7 @@ export interface ProductGraphFs {
 export interface BuildProductGraphOptions {
 	readonly cwd?: string;
 	readonly fs?: ProductGraphFs;
+	readonly localAliases?: readonly LocalAlias[];
 }
 
 export type ParseTypeScriptProductTextResult =
@@ -85,6 +89,11 @@ type CandidateDefinition = {
 	readonly support: StaticEdgeResolutionCandidate["support"];
 };
 
+type StaticEdgeResolutionBase =
+	| { readonly kind: "relative"; readonly specifier: string }
+	| { readonly kind: "repo_root"; readonly specifier: string }
+	| { readonly kind: "external" };
+
 type StaticEdgeInputs = {
 	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
 	readonly unsupportedStaticEdgeInputs: readonly UnsupportedStaticEdgeInput[];
@@ -94,6 +103,7 @@ const nodeProductGraphFs: ProductGraphFs = {
 	readFile: readFileSync,
 	exists: pathExists,
 };
+const ROOT_IMPORTER_PATH = checkedRepoPath("anchormap-root-importer.ts");
 let loadedTypeScript: typeof ts | undefined;
 
 export function buildProductGraph(
@@ -103,6 +113,7 @@ export function buildProductGraph(
 ): BuildProductGraphResult {
 	const cwd = options.cwd ?? process.cwd();
 	const fs = options.fs ?? nodeProductGraphFs;
+	const localAliases = normalizeLocalAliases(options.localAliases ?? []);
 	const parsedFiles: ParsedProductFile[] = [];
 	const sortedProductFiles = normalizeProductFiles(productFiles);
 
@@ -112,7 +123,7 @@ export function buildProductGraph(
 			return read;
 		}
 
-		const parsed = collectProductFileStaticEdgeInputs(productFile, read.text);
+		const parsed = collectProductFileStaticEdgeInputs(productFile, read.text, localAliases);
 		if (parsed.kind === "error") {
 			return parsed;
 		}
@@ -124,7 +135,7 @@ export function buildProductGraph(
 		});
 	}
 
-	const resolution = resolveSupportedStaticEdges(config, cwd, fs, parsedFiles);
+	const resolution = resolveSupportedStaticEdges(config, cwd, fs, parsedFiles, localAliases);
 	if (resolution.kind === "error") {
 		return resolution;
 	}
@@ -175,10 +186,11 @@ function getTypeScript(): typeof ts {
 function collectProductFileStaticEdgeInputs(
 	path: RepoPath,
 	text: string,
+	localAliases: readonly LocalAlias[],
 ):
 	| { kind: "ok"; staticEdgeInputs: StaticEdgeInputs }
 	| { kind: "error"; error: ProductGraphError } {
-	const simpleStaticEdgeInputs = collectSimpleProductFileStaticEdgeInputs(text);
+	const simpleStaticEdgeInputs = collectSimpleProductFileStaticEdgeInputs(text, localAliases);
 	if (simpleStaticEdgeInputs !== undefined) {
 		return {
 			kind: "ok",
@@ -193,11 +205,14 @@ function collectProductFileStaticEdgeInputs(
 
 	return {
 		kind: "ok",
-		staticEdgeInputs: collectStaticEdgeInputs(parsed.sourceFile),
+		staticEdgeInputs: collectStaticEdgeInputs(parsed.sourceFile, localAliases),
 	};
 }
 
-function collectSimpleProductFileStaticEdgeInputs(text: string): StaticEdgeInputs | undefined {
+function collectSimpleProductFileStaticEdgeInputs(
+	text: string,
+	localAliases: readonly LocalAlias[],
+): StaticEdgeInputs | undefined {
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
 	const lines = text.split(/\r\n|\n|\r/);
 
@@ -208,7 +223,7 @@ function collectSimpleProductFileStaticEdgeInputs(text: string): StaticEdgeInput
 
 		const importSpecifier = readSimpleImportDeclarationSpecifier(line);
 		if (importSpecifier !== undefined) {
-			if (isLocalDependencySpecifier(importSpecifier)) {
+			if (isSupportedStaticEdgeSpecifier(importSpecifier, localAliases)) {
 				supportedStaticEdgeInputs.push({
 					syntaxKind: "import_declaration",
 					specifier: importSpecifier,
@@ -255,17 +270,24 @@ export function productGraphHasSupportedLocalDependencySyntax(productGraph: Prod
 
 export function extractSupportedStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
+	localAliases: readonly LocalAlias[] = [],
 ): SupportedStaticEdgeInput[] {
-	return [...collectStaticEdgeInputs(sourceFile).supportedStaticEdgeInputs];
+	return [
+		...collectStaticEdgeInputs(sourceFile, normalizeLocalAliases(localAliases))
+			.supportedStaticEdgeInputs,
+	];
 }
 
 export function extractUnsupportedStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
 ): UnsupportedStaticEdgeInput[] {
-	return [...collectStaticEdgeInputs(sourceFile).unsupportedStaticEdgeInputs];
+	return [...collectStaticEdgeInputs(sourceFile, []).unsupportedStaticEdgeInputs];
 }
 
-function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
+function collectStaticEdgeInputs(
+	sourceFile: ts.SourceFile,
+	localAliases: readonly LocalAlias[],
+): StaticEdgeInputs {
 	const tsCompiler = getTypeScript();
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
 	const unsupportedStaticEdgeInputs: UnsupportedStaticEdgeInput[] = [];
@@ -280,7 +302,7 @@ function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
 	}
 
 	for (const statement of sourceFile.statements) {
-		const supportedEdgeInput = supportedStaticEdgeInputFromNode(statement);
+		const supportedEdgeInput = supportedStaticEdgeInputFromNode(statement, localAliases);
 		if (supportedEdgeInput !== undefined) {
 			supportedStaticEdgeInputs.push(supportedEdgeInput);
 			continue;
@@ -295,13 +317,19 @@ function collectStaticEdgeInputs(sourceFile: ts.SourceFile): StaticEdgeInputs {
 export function buildStaticEdgeResolutionCandidates(
 	importer: RepoPath,
 	specifier: string,
+	localAliases: readonly LocalAlias[] = [],
 ): StaticEdgeResolutionCandidate[] {
-	return candidateDefinitionsForSpecifier(specifier).flatMap((definition) => {
-		const normalized = normalizeImportCandidate(
-			importer,
-			definition.specifier ?? specifier,
-			definition.suffix,
-		);
+	const resolutionBase = staticEdgeResolutionBase(specifier, normalizeLocalAliases(localAliases));
+	if (resolutionBase.kind === "external") {
+		return [];
+	}
+
+	return candidateDefinitionsForSpecifier(resolutionBase.specifier).flatMap((definition) => {
+		const candidateSpecifier = definition.specifier ?? resolutionBase.specifier;
+		const normalized =
+			resolutionBase.kind === "relative"
+				? normalizeImportCandidate(importer, candidateSpecifier, definition.suffix)
+				: normalizeRepoRootImportCandidate(candidateSpecifier, definition.suffix);
 		if (normalized.kind === "outside_repo_root") {
 			return [];
 		}
@@ -315,8 +343,12 @@ export function buildStaticEdgeResolutionCandidates(
 	});
 }
 
-export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): boolean {
+export function sourceFileHasLocalDependencySyntax(
+	sourceFile: ts.SourceFile,
+	localAliases: readonly LocalAlias[] = [],
+): boolean {
 	const tsCompiler = getTypeScript();
+	const normalizedLocalAliases = normalizeLocalAliases(localAliases);
 	let hasLocalDependencySyntax = false;
 
 	function visit(node: ts.Node): void {
@@ -324,7 +356,7 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 			return;
 		}
 
-		if (supportedStaticEdgeInputFromNode(node) !== undefined) {
+		if (supportedStaticEdgeInputFromNode(node, normalizedLocalAliases) !== undefined) {
 			hasLocalDependencySyntax = true;
 			return;
 		}
@@ -341,12 +373,15 @@ export function sourceFileHasLocalDependencySyntax(sourceFile: ts.SourceFile): b
 	return hasLocalDependencySyntax;
 }
 
-function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInput | undefined {
+function supportedStaticEdgeInputFromNode(
+	node: ts.Node,
+	localAliases: readonly LocalAlias[],
+): SupportedStaticEdgeInput | undefined {
 	const tsCompiler = getTypeScript();
 	if (
 		tsCompiler.isImportDeclaration(node) &&
 		tsCompiler.isStringLiteral(node.moduleSpecifier) &&
-		isLocalDependencySpecifier(node.moduleSpecifier.text)
+		isSupportedStaticEdgeSpecifier(node.moduleSpecifier.text, localAliases)
 	) {
 		return {
 			syntaxKind: "import_declaration",
@@ -358,7 +393,7 @@ function supportedStaticEdgeInputFromNode(node: ts.Node): SupportedStaticEdgeInp
 		tsCompiler.isExportDeclaration(node) &&
 		node.moduleSpecifier !== undefined &&
 		tsCompiler.isStringLiteral(node.moduleSpecifier) &&
-		isLocalDependencySpecifier(node.moduleSpecifier.text)
+		isSupportedStaticEdgeSpecifier(node.moduleSpecifier.text, localAliases)
 	) {
 		return {
 			syntaxKind: "export_declaration",
@@ -401,6 +436,51 @@ function callExpressionHasLocalDependencySyntax(node: ts.CallExpression): boolea
 
 function isLocalDependencySpecifier(specifier: string): boolean {
 	return (specifier.startsWith("./") || specifier.startsWith("../")) && !specifier.includes("\\");
+}
+
+function isSupportedStaticEdgeSpecifier(
+	specifier: string,
+	localAliases: readonly LocalAlias[],
+): boolean {
+	return staticEdgeResolutionBase(specifier, localAliases).kind !== "external";
+}
+
+function staticEdgeResolutionBase(
+	specifier: string,
+	localAliases: readonly LocalAlias[],
+): StaticEdgeResolutionBase {
+	if (isLocalDependencySpecifier(specifier)) {
+		return { kind: "relative", specifier };
+	}
+
+	const localAlias = matchingLocalAlias(specifier, localAliases);
+	if (localAlias !== undefined) {
+		return {
+			kind: "repo_root",
+			specifier: `${localAlias.targetPrefix}${specifier.slice(localAlias.prefix.length)}`,
+		};
+	}
+
+	return { kind: "external" };
+}
+
+function matchingLocalAlias(
+	specifier: string,
+	localAliases: readonly LocalAlias[],
+): LocalAlias | undefined {
+	if (specifier.includes("\\") || specifier.startsWith("./") || specifier.startsWith("../")) {
+		return undefined;
+	}
+
+	return localAliases.find((localAlias) => specifier.startsWith(localAlias.prefix));
+}
+
+function normalizeRepoRootImportCandidate(rootRelativeSpecifier: string, candidateSuffix: string) {
+	return normalizeImportCandidate(
+		ROOT_IMPORTER_PATH,
+		`./${rootRelativeSpecifier}`,
+		candidateSuffix,
+	);
 }
 
 const SUPPORTED_EXACT_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
@@ -466,6 +546,7 @@ function resolveSupportedStaticEdges(
 	cwd: string,
 	fs: ProductGraphFs,
 	parsedFiles: readonly ParsedProductFile[],
+	localAliases: readonly LocalAlias[],
 ):
 	| {
 			kind: "ok";
@@ -490,6 +571,7 @@ function resolveSupportedStaticEdges(
 				candidateExistenceCache,
 				file.path,
 				edgeInput,
+				localAliases,
 			);
 			if (resolution.kind === "error") {
 				return resolution;
@@ -526,6 +608,7 @@ function resolveSupportedStaticEdge(
 	candidateExistenceCache: Map<RepoPath, boolean>,
 	importer: RepoPath,
 	edgeInput: SupportedStaticEdgeInput,
+	localAliases: readonly LocalAlias[],
 ):
 	| { kind: "supported_target"; target: RepoPath }
 	| { kind: "finding"; finding: Finding }
@@ -533,23 +616,18 @@ function resolveSupportedStaticEdge(
 	let firstOutOfScopeTarget: RepoPath | undefined;
 	let firstUnsupportedTarget: RepoPath | undefined;
 
-	for (const definition of candidateDefinitionsForSpecifier(edgeInput.specifier)) {
-		const normalized = normalizeImportCandidate(
-			importer,
-			definition.specifier ?? edgeInput.specifier,
-			definition.suffix,
-		);
-		if (normalized.kind === "outside_repo_root") {
-			continue;
-		}
-
-		const candidatePath = normalized.repoPath;
+	for (const candidate of buildStaticEdgeResolutionCandidates(
+		importer,
+		edgeInput.specifier,
+		localAliases,
+	)) {
+		const candidatePath = candidate.path;
 		const exists = candidateExists(cwd, fs, candidateExistenceCache, candidatePath);
 		if (exists.kind === "error") {
 			return exists;
 		}
 		if (exists.exists) {
-			if (definition.support === "supported" && isInSupportedProductScope(config, candidatePath)) {
+			if (candidate.support === "supported" && isInSupportedProductScope(config, candidatePath)) {
 				return { kind: "supported_target", target: candidatePath };
 			}
 			if (firstOutOfScopeTarget === undefined && isOutOfProductScope(config, candidatePath)) {
@@ -557,7 +635,7 @@ function resolveSupportedStaticEdge(
 			}
 			if (
 				firstUnsupportedTarget === undefined &&
-				definition.support === "diagnostic_only" &&
+				candidate.support === "diagnostic_only" &&
 				isInSupportedProductScope(config, candidatePath)
 			) {
 				firstUnsupportedTarget = candidatePath;
@@ -630,6 +708,32 @@ function isSameOrDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boole
 	const pathValue = repoPathToString(path);
 	const ancestorValue = repoPathToString(possibleAncestor);
 	return pathValue === ancestorValue || pathValue.startsWith(`${ancestorValue}/`);
+}
+
+function normalizeLocalAliases(localAliases: readonly LocalAlias[]): readonly LocalAlias[] {
+	return [...localAliases].sort(compareLocalAliases);
+}
+
+function compareLocalAliases(left: LocalAlias, right: LocalAlias): number {
+	const lengthDifference = right.prefix.length - left.prefix.length;
+	if (lengthDifference !== 0) {
+		return lengthDifference;
+	}
+
+	const prefixOrder = compareCanonicalTextByUtf8(left.prefix, right.prefix);
+	if (prefixOrder !== 0) {
+		return prefixOrder;
+	}
+
+	return compareCanonicalTextByUtf8(left.targetPrefix, right.targetPrefix);
+}
+
+function checkedRepoPath(value: string): RepoPath {
+	const result = validateRepoPath(value);
+	if (result.kind !== "ok") {
+		throw new Error(`invalid internal RepoPath ${value}`);
+	}
+	return result.repoPath;
 }
 
 function readProductFile(
