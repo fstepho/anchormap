@@ -64,8 +64,8 @@ extension, release readiness evidence must additionally record:
 
 The M16 extension remains limited to `ADR-0017` syntax-only `.tsx` product-file
 support. The release notes, README, and package metadata may promise `.tsx`
-product files only within that boundary, and must not promise JavaScript or
-JSX product files, React or framework behavior, full TypeScript resolver
+product files only within that boundary, and must not promise `.js` or `.jsx`
+product files, React or framework behavior, full TypeScript resolver
 behavior, Node/package resolution, monorepo lookup, project references, dynamic
 imports, or `require` support.
 

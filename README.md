@@ -79,8 +79,8 @@ effective `paths`, preserves relative-only graph behavior. A present
 the supported alias subset makes `scan` and `map` fail with repository error
 code `3`.
 
-The following are outside the current support boundary: monorepos, JavaScript
-or JSX product files, declaration files as product files, TypeScript aliases
+The following are outside the current support boundary: monorepos, `.js` and
+`.jsx` product files, declaration files as product files, TypeScript aliases
 beyond the deterministic local subset above, package specifier resolution,
 dynamic imports, `require`, project references, Node resolver conditions,
 framework semantics, and repository-wide inference beyond the configured roots.
