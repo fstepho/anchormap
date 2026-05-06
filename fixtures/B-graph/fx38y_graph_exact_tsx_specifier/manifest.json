@@ -1,0 +1,19 @@
+{
+	"id": "fx38y_graph_exact_tsx_specifier",
+	"family": "B-graph",
+	"purpose": "scan --json resolves import './view.tsx' to the exact TSX product file.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "scan", "golden"],
+	"groups": ["m16"]
+}

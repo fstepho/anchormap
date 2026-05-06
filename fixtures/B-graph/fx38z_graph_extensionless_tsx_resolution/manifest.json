@@ -1,0 +1,19 @@
+{
+	"id": "fx38z_graph_extensionless_tsx_resolution",
+	"family": "B-graph",
+	"purpose": "scan --json resolves an extensionless import to TSX when the TS sibling is absent.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "scan", "golden"],
+	"groups": ["m16"]
+}

@@ -1,0 +1,19 @@
+{
+	"id": "fx91_graph_ts_before_tsx_precedence",
+	"family": "B-graph",
+	"purpose": "scan --json keeps TS before TSX for extensionless, JS, and alias candidates.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "precedence", "tsconfig", "alias", "scan", "golden"],
+	"groups": ["m16"]
+}

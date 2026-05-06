@@ -1,0 +1,19 @@
+{
+	"id": "fx38x_graph_tsx_product_file_discovered",
+	"family": "B-graph",
+	"purpose": "scan --json discovers a .tsx product_file under product_root, parses JSX, and emits exact stdout.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "scan", "golden"],
+	"groups": ["m16"]
+}

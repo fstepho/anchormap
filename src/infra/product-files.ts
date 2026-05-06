@@ -171,9 +171,9 @@ function isDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boolean {
 	return pathValue.startsWith(`${ancestorValue}/`);
 }
 
-function isProductFilePath(path: RepoPath): boolean {
+export function isProductFilePath(path: RepoPath): boolean {
 	const value = repoPathToString(path);
-	return value.endsWith(".ts") && !value.endsWith(".d.ts");
+	return (value.endsWith(".ts") || value.endsWith(".tsx")) && !value.endsWith(".d.ts");
 }
 
 function productDiscoveryUnsupportedError(

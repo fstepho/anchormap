@@ -1080,10 +1080,10 @@ test("default map handler rejects config-dependent seed preconditions before spe
 			},
 		},
 		{
-			name: "tsx file",
-			seed: "src/view.tsx",
+			name: "jsx file",
+			seed: "src/view.jsx",
 			setup: (cwd) => {
-				writeFileSync(join(cwd, "src", "view.tsx"), "export const view = null;\n");
+				writeFileSync(join(cwd, "src", "view.jsx"), "export const view = null;\n");
 			},
 		},
 		{
@@ -1235,9 +1235,15 @@ test("default map handler rejects draft-only anchors with code 4", () => {
 });
 
 test("map seed product-file membership validation rejects seeds missing from discovery", () => {
-	assert.deepEqual(validateMapSeedsInProductFiles(["src/index.ts"], [repoPath("src/index.ts")]), {
-		kind: "ok",
-	});
+	assert.deepEqual(
+		validateMapSeedsInProductFiles(
+			["src/index.ts", "src/view.tsx"],
+			[repoPath("src/index.ts"), repoPath("src/view.tsx")],
+		),
+		{
+			kind: "ok",
+		},
+	);
 
 	const result = validateMapSeedsInProductFiles(["src/other.ts"], [repoPath("src/index.ts")]);
 
@@ -1267,12 +1273,23 @@ test("default map handler creates a canonical mapping with sorted seed files", (
 		);
 		writeFileSync(join(cwd, "specs", "requirements.md"), "# FR-014 Trace\n");
 		writeFileSync(join(cwd, "src", "index.ts"), "export const index = 1;\n");
+		writeFileSync(join(cwd, "src", "view.tsx"), "export const view = <main />;\n");
 		writeFileSync(join(cwd, "src", "z.ts"), "export const z = 1;\n");
 		const stdout = createBufferingWriter();
 		const stderr = createBufferingWriter();
 
 		const exitCode = runAnchormap(
-			["map", "--anchor", "FR-014", "--seed", "src/z.ts", "--seed", "src/index.ts"],
+			[
+				"map",
+				"--anchor",
+				"FR-014",
+				"--seed",
+				"src/z.ts",
+				"--seed",
+				"src/view.tsx",
+				"--seed",
+				"src/index.ts",
+			],
 			{ cwd, stdout: stdout.writer, stderr: stderr.writer },
 		);
 
@@ -1290,6 +1307,7 @@ test("default map handler creates a canonical mapping with sorted seed files", (
 				"  'FR-014':",
 				"    seed_files:",
 				"      - 'src/index.ts'",
+				"      - 'src/view.tsx'",
 				"      - 'src/z.ts'",
 				"",
 			].join("\n"),

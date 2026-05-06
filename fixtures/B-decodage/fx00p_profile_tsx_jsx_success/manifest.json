@@ -1,0 +1,19 @@
+{
+	"id": "fx00p_profile_tsx_jsx_success",
+	"family": "B-decodage",
+	"purpose": "scan --json parses JSX syntax in a .tsx product_file with ScriptKind.TSX and emits exact stdout.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["decode", "profile", "tsx", "scan", "golden"],
+	"groups": ["m16"]
+}

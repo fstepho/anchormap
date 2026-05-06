@@ -216,7 +216,7 @@ test("C6 unsupported extension conversion: baseline=c6_unsupported_extension_bas
 			baseline: "c6_unsupported_extension_baseline",
 			transformed: "c6_unsupported_extension_transformed",
 			oracle:
-				"supported target edge disappears and unsupported_local_target appears for the exact .tsx target",
+				"supported target edge disappears and unsupported_local_target appears for the .d.ts target",
 		},
 		async (baseline, transformed) => {
 			const baselineJson = readScanJson(baseline);
@@ -237,7 +237,7 @@ test("C6 unsupported extension conversion: baseline=c6_unsupported_extension_bas
 				{
 					kind: "unsupported_local_target",
 					importer: "src/index.ts",
-					target_path: "src/view.tsx",
+					target_path: "src/view.d.ts",
 				},
 			]);
 			assert.equal(hasFindingKind(transformedJson, "untraced_product_file"), false);

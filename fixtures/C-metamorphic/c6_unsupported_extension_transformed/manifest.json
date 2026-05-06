@@ -1,7 +1,7 @@
 {
 	"id": "c6_unsupported_extension_transformed",
 	"family": "C-metamorphic",
-	"purpose": "C6 transformed scan fixture where a formerly supported target is now .tsx.",
+	"purpose": "C6 transformed scan fixture where a formerly supported target is now .d.ts.",
 	"command": ["node", "dist/anchormap.js", "scan", "--json"],
 	"cwd": ".",
 	"exit_code": 0,

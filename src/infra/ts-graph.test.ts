@@ -117,6 +117,19 @@ test("rejects JSX syntax in .ts under ScriptKind.TS", () => {
 	}
 });
 
+test("accepts JSX syntax in .tsx under ScriptKind.TSX", () => {
+	const result = parseTypeScriptProductText(
+		repoPath("src/view.tsx"),
+		'export const node = <section data-testid="view" />;\n',
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.equal(result.sourceFile.fileName, "src/view.tsx");
+		assert.equal((result.sourceFile as ParsedSourceFile).parseDiagnostics.length, 0);
+	}
+});
+
 test("reads all product files through strict UTF-8 decoding and strips one initial BOM", () => {
 	const result = buildProductGraph(config(), [repoPath("src/z.ts"), repoPath("src/a.ts")], {
 		cwd: CWD,
@@ -134,6 +147,23 @@ test("reads all product files through strict UTF-8 decoding and strips one initi
 			["src/a.ts", "src/z.ts"],
 		);
 		assert.deepEqual([...result.productGraph.edgesByImporter.keys()], ["src/a.ts", "src/z.ts"]);
+	}
+});
+
+test("builds product graph for TSX product files with JSX syntax", () => {
+	const result = buildProductGraph(config(), [repoPath("src/view.tsx")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/view.tsx": bytes("export const View = () => <main />;\n"),
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.productFiles, ["src/view.tsx"]);
+		assert.deepEqual(result.productGraph.parsedFiles[0]?.supportedStaticEdgeInputs, []);
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/view.tsx")), []);
+		assert.deepEqual(result.productGraph.graphFindings, []);
 	}
 });
 
@@ -288,14 +318,16 @@ test("builds local static edge candidates exactly by supported specifier shape",
 		{ path: "src/features/model.ts", support: "supported" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./view.tsx"), [
-		{ path: "src/features/view.tsx", support: "diagnostic_only" },
+		{ path: "src/features/view.tsx", support: "supported" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./compiled.js"), [
 		{ path: "src/features/compiled.ts", support: "supported" },
+		{ path: "src/features/compiled.tsx", support: "supported" },
 		{ path: "src/features/compiled.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./types.d.js"), [
 		{ path: "src/features/types.d.ts", support: "diagnostic_only" },
+		{ path: "src/features/types.d.tsx", support: "supported" },
 		{ path: "src/features/types.d.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./types.d.ts"), [
@@ -303,11 +335,11 @@ test("builds local static edge candidates exactly by supported specifier shape",
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./model"), [
 		{ path: "src/features/model.ts", support: "supported" },
+		{ path: "src/features/model.tsx", support: "supported" },
 		{ path: "src/features/model/index.ts", support: "supported" },
-		{ path: "src/features/model.tsx", support: "diagnostic_only" },
+		{ path: "src/features/model/index.tsx", support: "supported" },
 		{ path: "src/features/model.js", support: "diagnostic_only" },
 		{ path: "src/features/model.d.ts", support: "diagnostic_only" },
-		{ path: "src/features/model/index.tsx", support: "diagnostic_only" },
 		{ path: "src/features/model/index.js", support: "diagnostic_only" },
 		{ path: "src/features/model/index.d.ts", support: "diagnostic_only" },
 	]);
@@ -318,14 +350,17 @@ test("builds local static edge candidates exactly by supported specifier shape",
 test("builds explicit .js static edge candidates with source .ts before exact .js", () => {
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./dep.js"), [
 		{ path: "src/features/dep.ts", support: "supported" },
+		{ path: "src/features/dep.tsx", support: "supported" },
 		{ path: "src/features/dep.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./dir/index.js"), [
 		{ path: "src/features/dir/index.ts", support: "supported" },
+		{ path: "src/features/dir/index.tsx", support: "supported" },
 		{ path: "src/features/dir/index.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "./dir.js"), [
 		{ path: "src/features/dir.ts", support: "supported" },
+		{ path: "src/features/dir.tsx", support: "supported" },
 		{ path: "src/features/dir.js", support: "diagnostic_only" },
 	]);
 });
@@ -333,16 +368,17 @@ test("builds explicit .js static edge candidates with source .ts before exact .j
 test("builds alias static edge candidates from the repository root", () => {
 	assert.deepEqual(candidatePaths("src/features/index.ts", "@/model", AT_ALIAS), [
 		{ path: "src/model.ts", support: "supported" },
+		{ path: "src/model.tsx", support: "supported" },
 		{ path: "src/model/index.ts", support: "supported" },
-		{ path: "src/model.tsx", support: "diagnostic_only" },
+		{ path: "src/model/index.tsx", support: "supported" },
 		{ path: "src/model.js", support: "diagnostic_only" },
 		{ path: "src/model.d.ts", support: "diagnostic_only" },
-		{ path: "src/model/index.tsx", support: "diagnostic_only" },
 		{ path: "src/model/index.js", support: "diagnostic_only" },
 		{ path: "src/model/index.d.ts", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "@/dep.js", AT_ALIAS), [
 		{ path: "src/dep.ts", support: "supported" },
+		{ path: "src/dep.tsx", support: "supported" },
 		{ path: "src/dep.js", support: "diagnostic_only" },
 	]);
 	assert.deepEqual(candidatePaths("src/features/index.ts", "react", AT_ALIAS), []);
@@ -356,11 +392,11 @@ test("uses canonical alias order when multiple prefixes match a specifier", () =
 		]),
 		[
 			{ path: "src/features/model.ts", support: "supported" },
+			{ path: "src/features/model.tsx", support: "supported" },
 			{ path: "src/features/model/index.ts", support: "supported" },
-			{ path: "src/features/model.tsx", support: "diagnostic_only" },
+			{ path: "src/features/model/index.tsx", support: "supported" },
 			{ path: "src/features/model.js", support: "diagnostic_only" },
 			{ path: "src/features/model.d.ts", support: "diagnostic_only" },
-			{ path: "src/features/model/index.tsx", support: "diagnostic_only" },
 			{ path: "src/features/model/index.js", support: "diagnostic_only" },
 			{ path: "src/features/model/index.d.ts", support: "diagnostic_only" },
 		],
@@ -371,11 +407,11 @@ test("omits outside-root static edge candidates before existence testing", () =>
 	assert.deepEqual(candidatePaths("src/index.ts", "../../outside"), []);
 	assert.deepEqual(candidatePaths("src/index.ts", "../outside"), [
 		{ path: "outside.ts", support: "supported" },
+		{ path: "outside.tsx", support: "supported" },
 		{ path: "outside/index.ts", support: "supported" },
-		{ path: "outside.tsx", support: "diagnostic_only" },
+		{ path: "outside/index.tsx", support: "supported" },
 		{ path: "outside.js", support: "diagnostic_only" },
 		{ path: "outside.d.ts", support: "diagnostic_only" },
-		{ path: "outside/index.tsx", support: "diagnostic_only" },
 		{ path: "outside/index.js", support: "diagnostic_only" },
 		{ path: "outside/index.d.ts", support: "diagnostic_only" },
 	]);
@@ -1097,12 +1133,99 @@ test("emits out_of_scope_static_edge before unsupported_local_target", () => {
 	}
 });
 
+test("resolves supported TSX targets for exact, extensionless, and .js specifiers", () => {
+	const result = buildProductGraph(
+		config(),
+		[
+			repoPath("src/index.ts"),
+			repoPath("src/exact.tsx"),
+			repoPath("src/view.tsx"),
+			repoPath("src/runtime.tsx"),
+			repoPath("src/alias.tsx"),
+			repoPath("src/reexport.tsx"),
+			repoPath("src/lib/index.tsx"),
+		],
+		{
+			cwd: CWD,
+			localAliases: AT_ALIAS,
+			fs: createReadFileFs({
+				"src/index.ts": bytes(
+					[
+						"import './exact.tsx';",
+						"import './view';",
+						"import './runtime.js';",
+						"import '@/alias';",
+						"export * from './reexport.tsx';",
+						"import './lib';",
+					].join("\n"),
+				),
+				"src/exact.tsx": bytes("export const exact = <main />;\n"),
+				"src/view.tsx": bytes("export const view = <main />;\n"),
+				"src/runtime.tsx": bytes("export const runtime = <main />;\n"),
+				"src/alias.tsx": bytes("export const alias = <main />;\n"),
+				"src/reexport.tsx": bytes("export const reexported = <main />;\n"),
+				"src/lib/index.tsx": bytes("export const lib = <main />;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			repoPath("src/alias.tsx"),
+			repoPath("src/exact.tsx"),
+			repoPath("src/lib/index.tsx"),
+			repoPath("src/reexport.tsx"),
+			repoPath("src/runtime.tsx"),
+			repoPath("src/view.tsx"),
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
+test("keeps TS precedence over TSX for extensionless, .js, and alias specifiers", () => {
+	const result = buildProductGraph(
+		config(),
+		[
+			repoPath("src/index.ts"),
+			repoPath("src/view.ts"),
+			repoPath("src/view.tsx"),
+			repoPath("src/runtime.ts"),
+			repoPath("src/runtime.tsx"),
+			repoPath("src/alias.ts"),
+			repoPath("src/alias.tsx"),
+		],
+		{
+			cwd: CWD,
+			localAliases: AT_ALIAS,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import './view';\nimport './runtime.js';\nimport '@/alias';\n"),
+				"src/view.ts": bytes("export const view = 1;\n"),
+				"src/view.tsx": bytes("export const view = <main />;\n"),
+				"src/runtime.ts": bytes("export const runtime = 1;\n"),
+				"src/runtime.tsx": bytes("export const runtime = <main />;\n"),
+				"src/alias.ts": bytes("export const alias = 1;\n"),
+				"src/alias.tsx": bytes("export const alias = <main />;\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			repoPath("src/alias.ts"),
+			repoPath("src/runtime.ts"),
+			repoPath("src/view.ts"),
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, []);
+	}
+});
+
 test("emits unsupported_local_target for existing unsupported in-scope targets", () => {
 	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
 		cwd: CWD,
 		fs: createReadFileFs({
 			"src/index.ts": bytes("import './view';\n"),
-			"src/view.tsx": bytes("export const view = 1;\n"),
 			"src/view.js": bytes("export const compiled = 1;\n"),
 		}),
 	});
@@ -1114,7 +1237,7 @@ test("emits unsupported_local_target for existing unsupported in-scope targets",
 			{
 				kind: "unsupported_local_target",
 				importer: "src/index.ts",
-				target_path: "src/view.tsx",
+				target_path: "src/view.js",
 			},
 		]);
 	}

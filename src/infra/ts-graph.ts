@@ -165,7 +165,7 @@ export function parseTypeScriptProductText(
 		text,
 		tsCompiler.ScriptTarget.Latest,
 		false,
-		tsCompiler.ScriptKind.TS,
+		scriptKindForProductFilePath(tsCompiler, path),
 	) as ParsedSourceFile;
 
 	if (sourceFile.parseDiagnostics.length > 0) {
@@ -173,6 +173,12 @@ export function parseTypeScriptProductText(
 	}
 
 	return { kind: "ok", sourceFile };
+}
+
+function scriptKindForProductFilePath(tsCompiler: typeof ts, path: RepoPath): ts.ScriptKind {
+	return repoPathToString(path).endsWith(".tsx")
+		? tsCompiler.ScriptKind.TSX
+		: tsCompiler.ScriptKind.TS;
 }
 
 function getTypeScript(): typeof ts {
@@ -491,11 +497,11 @@ const DIAGNOSTIC_EXACT_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
 ];
 const EXTENSIONLESS_CANDIDATE_DEFINITIONS: readonly CandidateDefinition[] = [
 	{ suffix: ".ts", support: "supported" },
+	{ suffix: ".tsx", support: "supported" },
 	{ suffix: "/index.ts", support: "supported" },
-	{ suffix: ".tsx", support: "diagnostic_only" },
+	{ suffix: "/index.tsx", support: "supported" },
 	{ suffix: ".js", support: "diagnostic_only" },
 	{ suffix: ".d.ts", support: "diagnostic_only" },
-	{ suffix: "/index.tsx", support: "diagnostic_only" },
 	{ suffix: "/index.js", support: "diagnostic_only" },
 	{ suffix: "/index.d.ts", support: "diagnostic_only" },
 ];
@@ -510,18 +516,24 @@ function candidateDefinitionsForSpecifier(specifier: string): readonly Candidate
 		return SUPPORTED_EXACT_CANDIDATE_DEFINITIONS;
 	}
 
-	if (specifier.endsWith(".tsx") || specifier.endsWith(".d.ts")) {
+	if (specifier.endsWith(".tsx")) {
+		return SUPPORTED_EXACT_CANDIDATE_DEFINITIONS;
+	}
+
+	if (specifier.endsWith(".d.ts")) {
 		return DIAGNOSTIC_EXACT_CANDIDATE_DEFINITIONS;
 	}
 
 	if (specifier.endsWith(".js")) {
 		const sourceSpecifier = replaceTerminalJsExtensionWithTs(specifier);
+		const tsxSourceSpecifier = replaceTerminalJsExtensionWithTsx(specifier);
 		return [
 			{
 				specifier: sourceSpecifier,
 				suffix: "",
 				support: sourceSpecifier.endsWith(".d.ts") ? "diagnostic_only" : "supported",
 			},
+			{ specifier: tsxSourceSpecifier, suffix: "", support: "supported" },
 			{ suffix: "", support: "diagnostic_only" },
 		];
 	}
@@ -539,6 +551,10 @@ function lastPathSegmentHasDot(path: string): boolean {
 
 function replaceTerminalJsExtensionWithTs(specifier: string): string {
 	return `${specifier.slice(0, -".js".length)}.ts`;
+}
+
+function replaceTerminalJsExtensionWithTsx(specifier: string): string {
+	return `${specifier.slice(0, -".js".length)}.tsx`;
 }
 
 function resolveSupportedStaticEdges(

@@ -1,0 +1,19 @@
+{
+	"id": "fx92_graph_tsx_reexport",
+	"family": "B-graph",
+	"purpose": "scan --json resolves a supported re-export from a TSX product file.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "reexport", "scan", "golden"],
+	"groups": ["m16"]
+}

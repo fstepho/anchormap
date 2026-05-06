@@ -106,7 +106,16 @@ test("discovers only supported product files under product_root in stable order"
 		cwd: CWD,
 		fs: createVirtualFs({
 			directories: {
-				src: ["z.ts", "component.tsx", "types.d.ts", "nested", "helper.js", "a.ts", "generated"],
+				src: [
+					"z.ts",
+					"component.tsx",
+					"types.d.ts",
+					"nested",
+					"helper.js",
+					"component.jsx",
+					"a.ts",
+					"generated",
+				],
 				"src/nested": ["index.ts", "ignored.txt"],
 				"src/generated": ["generated.ts"],
 			},
@@ -115,6 +124,7 @@ test("discovers only supported product files under product_root in stable order"
 				"src/component.tsx": new Uint8Array(),
 				"src/types.d.ts": new Uint8Array(),
 				"src/helper.js": new Uint8Array(),
+				"src/component.jsx": new Uint8Array(),
 				"src/a.ts": new Uint8Array(),
 				"src/nested/index.ts": new Uint8Array(),
 				"src/nested/ignored.txt": new Uint8Array(),
@@ -125,12 +135,17 @@ test("discovers only supported product files under product_root in stable order"
 
 	assert.equal(result.kind, "ok");
 	if (result.kind === "ok") {
-		assert.deepEqual(result.productFiles, ["src/a.ts", "src/nested/index.ts", "src/z.ts"]);
+		assert.deepEqual(result.productFiles, [
+			"src/a.ts",
+			"src/component.tsx",
+			"src/nested/index.ts",
+			"src/z.ts",
+		]);
 	}
 });
 
 test("returns product files independent of filesystem discovery order", () => {
-	const expected = ["src/a.ts", "src/nested/b.ts", "src/z.ts"];
+	const expected = ["src/a.ts", "src/nested/b.ts", "src/nested/view.tsx", "src/z.ts"];
 	const cases: ReadonlyArray<readonly string[]> = [
 		["z.ts", "noise.js", "nested", "a.ts"],
 		["nested", "a.ts", "noise.js", "z.ts"],
@@ -142,13 +157,14 @@ test("returns product files independent of filesystem discovery order", () => {
 			fs: createVirtualFs({
 				directories: {
 					src: directoryEntries,
-					"src/nested": ["b.ts", "ignored.d.ts"],
+					"src/nested": ["view.tsx", "b.ts", "ignored.d.ts"],
 				},
 				files: {
 					"src/z.ts": new Uint8Array(),
 					"src/noise.js": new Uint8Array(),
 					"src/a.ts": new Uint8Array(),
 					"src/nested/b.ts": new Uint8Array(),
+					"src/nested/view.tsx": new Uint8Array(),
 					"src/nested/ignored.d.ts": new Uint8Array(),
 				},
 			}),

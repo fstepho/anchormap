@@ -1,0 +1,19 @@
+{
+	"id": "fx93_graph_extensionless_index_tsx_resolution",
+	"family": "B-graph",
+	"purpose": "scan --json resolves an extensionless import to index.tsx after earlier TSX candidates are absent.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "index", "scan", "golden"],
+	"groups": ["m16"]
+}

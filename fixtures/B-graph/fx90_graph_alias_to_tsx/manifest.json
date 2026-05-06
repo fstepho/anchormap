@@ -1,0 +1,19 @@
+{
+	"id": "fx90_graph_alias_to_tsx",
+	"family": "B-graph",
+	"purpose": "scan --json resolves a supported tsconfig alias import to a TSX product file.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "tsconfig", "alias", "scan", "golden"],
+	"groups": ["m16"]
+}

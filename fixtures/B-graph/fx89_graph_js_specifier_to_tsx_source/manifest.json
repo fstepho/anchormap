@@ -1,0 +1,19 @@
+{
+	"id": "fx89_graph_js_specifier_to_tsx_source",
+	"family": "B-graph",
+	"purpose": "scan --json resolves import './view.js' to the sibling TSX source when TS is absent.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsx", "js-specifier", "scan", "golden"],
+	"groups": ["m16"]
+}

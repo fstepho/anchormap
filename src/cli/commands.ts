@@ -15,7 +15,7 @@ import {
 	loadConfig,
 	writeConfigAtomic,
 } from "../infra/config-io";
-import { discoverProductFiles } from "../infra/product-files";
+import { discoverProductFiles, isProductFilePath } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildScaffoldMarkdown, writeScaffoldOutputCreateOnly } from "../infra/scaffold";
 import { buildSpecIndex } from "../infra/spec-index";
@@ -779,7 +779,7 @@ function validateMapSeedPreconditions(
 			return { kind: "error", error: usageError(`--seed ${seed} must be outside ignore_roots`) };
 		}
 		if (!isAdmissibleProductFilePath(seed)) {
-			return { kind: "error", error: usageError(`--seed ${seed} must be a product .ts file`) };
+			return { kind: "error", error: usageError(`--seed ${seed} must be a product file`) };
 		}
 
 		const status = statRepoPath(cwd, seed);
@@ -984,8 +984,7 @@ function isIgnoredRepoPath(path: RepoPath, ignoreRoots: readonly RepoPath[]): bo
 }
 
 function isAdmissibleProductFilePath(path: RepoPath): boolean {
-	const value = repoPathToString(path);
-	return value.endsWith(".ts") && !value.endsWith(".d.ts");
+	return isProductFilePath(path);
 }
 
 function isMissingPathError(error: unknown): boolean {
