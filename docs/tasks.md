@@ -27,9 +27,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: `T16.4 — Close TSX release readiness`
-- Next executable product task: `T16.4 — Close TSX release readiness`
-- Last completed task: `T16.3 — Preserve map and scaffold behavior with TSX`
+- Current active task: None recorded.
+- Next executable product task: None recorded.
+- Last completed task: `T16.4 — Close TSX release readiness`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -136,6 +136,7 @@
   - `T16.1 — Discover and parse TSX product files`
   - `T16.2 — Resolve static edges to TSX`
   - `T16.3 — Preserve map and scaffold behavior with TSX`
+  - `T16.4 — Close TSX release readiness`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
