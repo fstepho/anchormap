@@ -1,0 +1,20 @@
+{
+	"id": "fx88a_scaffold_tsx_exports",
+	"family": "B-scaffold",
+	"purpose": "scaffold writes deterministic draft Markdown from public .tsx exports without framework semantics.",
+	"command": ["node", "dist/anchormap.js", "scaffold", "--output", "specs/generated.md"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["specs/generated.md"]
+	},
+	"tags": ["scaffold", "tsx", "write", "golden"],
+	"groups": ["m16"]
+}

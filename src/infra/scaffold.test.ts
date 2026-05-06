@@ -203,6 +203,47 @@ test("generates deterministic dotted anchors from path plus export name", () => 
 	}
 });
 
+test("builds scaffold markdown from TSX exports with JSX syntax", () => {
+	const result = buildScaffoldMarkdown(
+		config(),
+		[repoPath("src/components/view-card.tsx")],
+		emptySpecIndex(),
+		{
+			cwd: CWD,
+			fs: scaffoldFs({
+				"src/components/view-card.tsx": [
+					"export function ViewCard() {",
+					'  return <main data-testid="view-card" />;',
+					"}",
+					"export const viewState = 'ready';",
+					"",
+				].join("\n"),
+			}),
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.equal(
+			result.markdown,
+			[
+				"<!-- anchormap: draft -->",
+				"",
+				"# COMPONENTS.VIEW_CARD.VIEW_CARD",
+				"<!-- anchormap scaffold: source=src/components/view-card.tsx export=ViewCard kind=function -->",
+				"",
+				"TODO: describe intent.",
+				"",
+				"# COMPONENTS.VIEW_CARD.VIEW_STATE",
+				"<!-- anchormap scaffold: source=src/components/view-card.tsx export=viewState kind=variable -->",
+				"",
+				"TODO: describe intent.",
+				"",
+			].join("\n"),
+		);
+	}
+});
+
 test("scaffold output cleanup unlinks partial output even when close fails", () => {
 	const calls: string[] = [];
 	const result = writeScaffoldOutputCreateOnly(repoPath("specs/generated.md"), "# DRAFT\n", {

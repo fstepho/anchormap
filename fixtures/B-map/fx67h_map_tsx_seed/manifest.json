@@ -1,0 +1,28 @@
+{
+	"id": "fx67h_map_tsx_seed",
+	"family": "B-map",
+	"purpose": "map creates a valid canonical mapping with a .tsx product-file seed.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/view.tsx"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "tsx", "write", "golden"],
+	"groups": ["m16"]
+}

@@ -255,7 +255,8 @@ export function buildScaffoldAnchorId(
 ): { kind: "ok"; anchorId: AnchorId } | { kind: "error"; error: AppError } {
 	const sourceValue = repoPathToString(sourcePath);
 	const productRoot = repoPathToString(config.productRoot);
-	const relativeModulePath = sourceValue.slice(productRoot.length + 1, -".ts".length);
+	const relativePath = sourceValue.slice(productRoot.length + 1);
+	const relativeModulePath = stripProductFileExtension(relativePath);
 	const segments = [...relativeModulePath.split("/"), exportName].map(toAnchorSegment);
 	const anchorText = segments.join(".");
 	const validated = validateAnchorId(anchorText);
@@ -270,6 +271,13 @@ export function buildScaffoldAnchorId(
 			message: `generated invalid scaffold anchor ${anchorText}`,
 		},
 	};
+}
+
+function stripProductFileExtension(path: string): string {
+	if (path.endsWith(".tsx")) {
+		return path.slice(0, -".tsx".length);
+	}
+	return path.slice(0, -".ts".length);
 }
 
 export function renderScaffoldMarkdown(candidates: readonly ScaffoldExportCandidate[]): string {
