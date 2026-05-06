@@ -45,10 +45,15 @@ AnchorMap is intentionally narrow:
   starts;
 - one TypeScript product tree under `product_root`;
 - one or more spec roots containing Markdown or YAML specs;
-- product files are `.ts` files under `product_root`, excluding `.d.ts`;
+- product files are `.ts` and `.tsx` files under `product_root`, excluding
+  `.d.ts`;
 - supported local graph edges come from static TypeScript `import` and `export`
   declarations with relative string-literal specifiers or supported
   deterministic local alias specifiers from `./tsconfig.json`.
+
+`.tsx` files are treated as syntax-only TypeScript product files. JSX is
+accepted only as parser syntax in `.tsx`; AnchorMap does not interpret React,
+component ownership, JSX runtime behavior, or framework conventions.
 
 AnchorMap automatically reads `./tsconfig.json` when it is present. The
 supported alias subset is deliberately small: local relative `extends`, optional
@@ -75,10 +80,10 @@ the supported alias subset makes `scan` and `map` fail with repository error
 code `3`.
 
 The following are outside the current support boundary: monorepos, JavaScript
-product files, TSX product files, declaration files as product files, TypeScript
-aliases beyond the deterministic local subset above, package specifier
-resolution, dynamic imports, `require`, project references, Node resolver
-conditions, and repository-wide inference beyond the configured roots.
+or JSX product files, declaration files as product files, TypeScript aliases
+beyond the deterministic local subset above, package specifier resolution,
+dynamic imports, `require`, project references, Node resolver conditions,
+framework semantics, and repository-wide inference beyond the configured roots.
 
 ## Minimal Example
 
@@ -218,7 +223,7 @@ Formatted for readability, the example above reports:
 ## Scaffold Draft Specs
 
 For an existing TypeScript repo, `scaffold` can create a draft Markdown spec
-from public TypeScript exports:
+from public exports in supported `.ts` and `.tsx` product files:
 
 ```sh
 anchormap scaffold --output .specify/specs/scaffold.generated.md

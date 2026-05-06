@@ -146,6 +146,10 @@ v1.0 exclut explicitement :
 - plugin IDE ;
 - API séparée de navigation ou de reporting.
 
+Les sections d'extension ci-dessous documentent les élargissements produit
+acceptés après v1.0. Le comportement courant observable reste gouverné par
+`docs/contract.md` et les ADR acceptées.
+
 ### 6.2.1 Extension vNext : scaffold de specs
 
 Une extension post-v1.2 ajoute un amorçage déterministe des specs par
@@ -176,11 +180,13 @@ AnchorMap v1.1 cible aussi les dépôts TypeScript mono-package qui écrivent
 leurs dépendances locales relatives au format runtime ESM, par exemple
 `import "./dep.js"` dans un fichier source `.ts`.
 
-Cette extension reste dans le périmètre produit seulement si elle conserve les
-contraintes suivantes :
+Cette extension, prise isolément avant les extensions M15 et M16 ultérieures,
+reste dans le périmètre produit seulement si elle conserve les contraintes
+suivantes :
 
-- les fichiers produit restent des sources `.ts` ;
-- `.js`, `.tsx` et `.d.ts` ne deviennent pas des fichiers produit supportés ;
+- les fichiers produit restent alors des sources `.ts` ;
+- `.js`, `.tsx` et `.d.ts` ne deviennent pas des fichiers produit supportés par
+  cette seule extension ;
 - aucune lecture de `tsconfig.json`, `package.json`, `baseUrl`, `paths`,
   `exports`, conditions Node, cache ou environnement n'est utilisée comme
   source de vérité ;
@@ -250,9 +256,10 @@ contraintes suivantes :
 - seuls `compilerOptions.baseUrl` et les formes simples de
   `compilerOptions.paths` avec un unique wildcard terminal de segment `/*` sont
   interprétés ;
-- les fichiers produit restent uniquement des sources `.ts` ; `.tsx`, `.js`,
-  `.d.ts`, `package.json`, conditions Node, project references, package
-  `exports`, monorepo et résolution TypeScript complète restent hors scope ;
+- les fichiers produit restent alors uniquement des sources `.ts` ; `.tsx`,
+  `.js`, `.d.ts`, `package.json`, conditions Node, project references, package
+  `exports`, monorepo et résolution TypeScript complète restent hors scope de
+  cette seule extension ;
 - les aliases ne créent aucun mapping, candidat de mapping ou lien de propriété
   automatiquement.
 

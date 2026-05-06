@@ -40,10 +40,34 @@ alias extension, release readiness evidence must additionally record:
   for the same release candidate.
 
 The M15 extension remains limited to the `ADR-0016` deterministic local alias
-subset. The release notes, README, and package metadata must not promise full
-TypeScript resolver behavior, Node/package resolution, monorepo lookup, TSX or
-JavaScript product files, project references, dynamic imports, or `require`
-support.
+subset. For an M15-only release candidate, the release notes, README, and
+package metadata must not promise full TypeScript resolver behavior,
+Node/package resolution, monorepo lookup, TSX product files, JavaScript product
+files, project references, dynamic imports, or `require` support.
+
+## M16 TSX Readiness Addendum
+
+For a release candidate that includes the M16 deterministic TSX product-file
+extension, release readiness evidence must additionally record:
+
+- `.tsx` product files are discovered and parsed with `ScriptKind.TSX`;
+- JSX is accepted only as parser syntax in `.tsx`, without React, component,
+  JSX runtime, or framework semantics;
+- B-graph M16 fixtures `fx38x` through `fx38z` and `fx89` through `fx93` pass,
+  covering `.tsx` discovery, exact specifiers, extensionless fallback,
+  `index.tsx`, aliases, re-exports, `.js -> .tsx`, and `.ts` before `.tsx`
+  precedence;
+- B-map fixture `fx67h` and B-scaffold fixture `fx88a` pass;
+- affected B-scan goldens, C6 unsupported-extension conversion, JSON goldens,
+  deterministic fixture coverage, and docs consistency checks pass for the
+  same release candidate.
+
+The M16 extension remains limited to `ADR-0017` syntax-only `.tsx` product-file
+support. The release notes, README, and package metadata may promise `.tsx`
+product files only within that boundary, and must not promise JavaScript or
+JSX product files, React or framework behavior, full TypeScript resolver
+behavior, Node/package resolution, monorepo lookup, project references, dynamic
+imports, or `require` support.
 
 ## Pre-Publish Checks
 
