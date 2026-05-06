@@ -1,6 +1,6 @@
 # AnchorMap CLI — contract.md
 
-**Statut**: contrat normatif v7  
+**Statut**: contrat normatif v8
 **Portée**: ce document définit le comportement observable garanti de la CLI v1.0.  
 **Prévalence**: en cas de conflit avec `brief.md`, `design.md` ou `evals.md`, ce document prévaut pour le comportement runtime, le schéma de sortie, les règles de classification, et la sérialisation canonique.
 
@@ -29,16 +29,19 @@ Le contrat v1.0 fige les profils normatifs suivants :
 
 - `MARKDOWN_PROFILE = CommonMark 0.30`
 - `YAML_PROFILE = YAML 1.2.2`
-- `TS_PROFILE = typescript@6.0.3 parser API`, avec `ScriptKind.TS`, objectif `module`, sans JSX
+- `TS_PROFILE = typescript@6.0.3 parser API`, avec `ScriptKind.TS` pour les
+  fichiers `.ts`, `ScriptKind.TSX` pour les fichiers `.tsx`, objectif `module`
 
 Règles :
 
-- tout fichier `.md`, `.yml`, `.yaml` ou `.ts` consommé par AnchorMap est lu comme une suite d'octets et décodé strictement en UTF-8 ;
+- tout fichier `.md`, `.yml`, `.yaml`, `.ts` ou `.tsx` consommé par AnchorMap est lu comme une suite d'octets et décodé strictement en UTF-8 ;
 - un unique BOM UTF-8 initial (`U+FEFF`), s'il est présent, est ignoré avant parsing ;
 - toute séquence d'octets non décodable en UTF-8 rend le fichier invalide pour le contrat ;
 - un fichier Markdown est interprété selon `MARKDOWN_PROFILE` après ce décodage ;
 - tout YAML validé par ce contrat est interprété selon `YAML_PROFILE` après ce décodage ;
 - un `product_file` est **syntaxiquement parsable** si et seulement si, après ce décodage, sous `TS_PROFILE`, le parseur produit **zéro** diagnostic syntaxique.
+- JSX est accepté syntaxiquement uniquement dans un `product_file` `.tsx`; JSX
+  dans un `product_file` `.ts` reste une erreur de parsing.
 
 Ces profils et cette règle de décodage sont normatifs pour v1.0.
 
@@ -181,7 +184,7 @@ v1.0 supporte :
 
 - un dépôt mono-package ;
 - un unique `product_root` explicite ;
-- des fichiers produit `.ts` décodables en UTF-8 selon la section 1.1 ;
+- des fichiers produit `.ts` et `.tsx` décodables en UTF-8 selon la section 1.1 ;
 - des specs `.md`, `.yml`, `.yaml` décodables en UTF-8 selon la section 1.1 ;
 - des dépendances locales exprimées uniquement par imports / re-exports statiques **relatifs** avec specifier chaîne littérale ;
 - des chemins canoniques sous la racine du dépôt ;
@@ -195,7 +198,7 @@ v1.0 ne supporte pas comme contrat fort :
 - symlinks dans les arbres analysés ;
 - collisions de chemins qui ne diffèrent que par la casse ;
 - chemins en scope non représentables comme `RepoPath` canonique ;
-- `.tsx`, `.js`, `.d.ts` comme fichiers produit ;
+- `.jsx`, `.js`, `.d.ts` comme fichiers produit ;
 - `require()` comme edge supporté ;
 - `import()` dynamique comme edge supporté ;
 - specifiers calculés ;
@@ -351,7 +354,7 @@ C'est un point de départ.
 
 ### 6.5 Product file
 
-Un `product_file` est un fichier `.ts` sous `product_root`, hors `ignore_roots`, hors `.d.ts`.
+Un `product_file` est un fichier `.ts` ou `.tsx` sous `product_root`, hors `ignore_roots`, hors `.d.ts`.
 
 ### 6.6 Mapping exploitable
 
@@ -941,7 +944,7 @@ relève du code `3`. Les autres préconditions ci-dessus relèvent du code `4`.
 Pour chaque candidat, l'`AnchorId` de base est calculé ainsi :
 
 1. retirer le préfixe `product_root/` du chemin du `product_file` ;
-2. retirer l'extension terminale `.ts` ;
+2. retirer l'extension terminale `.ts` ou `.tsx` ;
 3. découper le chemin restant en segments `/` ;
 4. ajouter le nom exporté comme dernier segment ;
 5. convertir chaque segment en segment `DOTTED_ID` par séparation camelCase,
@@ -1061,27 +1064,40 @@ Cas 1 — specifier se terminant par `.ts` **et non par** `.d.ts` :
 
 1. candidat supporté : la cible exacte.
 
-Cas 2 — specifier se terminant par `.tsx`, `.js` ou `.d.ts` :
+Cas 2 — specifier se terminant par `.tsx` :
+
+1. candidat supporté : la cible exacte.
+
+Cas 3 — specifier se terminant par `.d.ts` :
 
 1. candidat de diagnostic uniquement : la cible exacte.
 
-Cas 3 — specifier sans extension explicite, c'est-à-dire dont le dernier segment ne contient aucun `.` :
+Cas 4 — specifier se terminant par `.js` :
+
+1. candidat : la cible obtenue en remplaçant le suffixe terminal `.js` par
+   `.ts`; ce candidat est supporté sauf s'il se termine par `.d.ts`, auquel
+   cas il est de diagnostic uniquement ;
+2. candidat supporté : la cible source obtenue en remplaçant le suffixe
+   terminal `.js` par `.tsx` ;
+3. candidat de diagnostic uniquement : la cible exacte `.js`.
+
+Cas 5 — specifier sans extension explicite, c'est-à-dire dont le dernier segment ne contient aucun `.` :
 
 1. candidat supporté : `<path>.ts`
-2. candidat supporté : `<path>/index.ts`
-3. candidat de diagnostic uniquement : `<path>.tsx`
-4. candidat de diagnostic uniquement : `<path>.js`
-5. candidat de diagnostic uniquement : `<path>.d.ts`
-6. candidat de diagnostic uniquement : `<path>/index.tsx`
+2. candidat supporté : `<path>.tsx`
+3. candidat supporté : `<path>/index.ts`
+4. candidat supporté : `<path>/index.tsx`
+5. candidat de diagnostic uniquement : `<path>.js`
+6. candidat de diagnostic uniquement : `<path>.d.ts`
 7. candidat de diagnostic uniquement : `<path>/index.js`
 8. candidat de diagnostic uniquement : `<path>/index.d.ts`
 
-Cas 4 — specifier avec extension explicite autre que `.ts`, `.tsx`, `.js` ou `.d.ts`, ou se terminant par `/` :
+Cas 6 — specifier avec extension explicite autre que `.ts`, `.tsx`, `.js` ou `.d.ts`, ou se terminant par `/` :
 
 1. aucun candidat n'est construit ;
 2. l'occurrence supportée produit `unresolved_static_edge`.
 
-La classification se fait dans l'ordre strict suivant pour les cas 1 à 3 :
+La classification se fait dans l'ordre strict suivant pour les cas 1 à 5 :
 
 1. choisir le **premier** candidat de la liste qui existe, est supporté, est sous `product_root` et n'est pas sous `ignore_roots` ; ce candidat est la cible supportée retenue pour le calcul de couverture ;
 2. sinon, choisir le **premier** candidat de la liste qui existe et qui est soit hors `product_root`, soit sous `ignore_roots` ; ce candidat produit un finding `out_of_scope_static_edge` avec son `target_path` exact ;
@@ -1093,50 +1109,33 @@ Conséquences explicites :
 - si `<path>.ts` et `<path>/index.ts` existent tous les deux dans le périmètre supporté, `<path>.ts` gagne ;
 - si plusieurs candidats de diagnostic existent, le premier dans la liste ordonnée gagne ;
 - `target_path` vaut toujours le chemin normalisé du candidat effectivement retenu par la règle 2 ou la règle 3 ;
-- le cas 4 ne produit jamais `target_path` ;
+- le cas 6 ne produit jamais `target_path` ;
 - pour un importeur donné, l'ensemble dédupliqué des cibles retenues par la règle 1 est exposé dans `files[importer].supported_local_targets`.
 
-#### 10.2.1 Extension v1.1 planifiée : specifiers `.js` vers sources `.ts`
+#### 10.2.1 Règle `.js` vers sources TypeScript
 
-Cette section planifie une extension v1.1. Elle ne modifie pas le contrat
-runtime v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
-activé explicitement ces règles.
+Conséquences explicites :
 
-Quand l'extension est active, le cas 2 de la section 10.2 est remplacé pour les
-specifiers terminés par `.js` uniquement.
-
-Cas 2a — specifier se terminant par `.tsx` ou `.d.ts` :
-
-1. candidat de diagnostic uniquement : la cible exacte.
-
-Cas 2b — specifier se terminant par `.js` :
-
-1. candidat supporté : la cible source obtenue en remplaçant le suffixe
-   terminal `.js` par `.ts`, sauf si cette cible se termine par `.d.ts` ;
-2. candidat de diagnostic uniquement : la cible exacte `.js`.
-
-Si le candidat source `.ts` du cas 2b se terminerait par `.d.ts`, il n'est pas
-un candidat supporté et il est traité comme candidat de diagnostic uniquement.
-
-La classification ordonnée reste celle de la section 10.2.
-
-Conséquences explicites de l'extension :
-
-- `import "./dep.js"` peut retenir `dep.ts` comme cible supportée ;
+- `import "./dep.js"` peut retenir `dep.ts` ou, en absence de `dep.ts`,
+  `dep.tsx` comme cible supportée ;
 - `export * from "./dep.js"` et les autres `ExportDeclaration` supportées
   utilisent la même résolution ;
-- `import "./dir/index.js"` peut retenir `dir/index.ts` comme cible supportée ;
-- `import "./dir.js"` ne construit pas de candidat `dir/index.ts` ;
+- `import "./dir/index.js"` peut retenir `dir/index.ts` ou `dir/index.tsx`
+  comme cible supportée ;
+- `import "./dir.js"` ne construit pas de candidat `dir/index.ts` ou
+  `dir/index.tsx` ;
 - si `dep.ts` et `dep.js` existent tous les deux sous `product_root` et hors
   `ignore_roots`, `dep.ts` gagne et aucun finding lié à `dep.js` n'est émis ;
-- si `dep.ts` n'existe pas mais `dep.js` existe sous `product_root` et hors
-  `ignore_roots`, l'occurrence produit `unsupported_local_target` avec
-  `target_path = "dep.js"` ;
-- si aucun candidat du cas 2b n'est retenu par les règles de classification,
+- si `dep.ts` et `dep.tsx` existent tous les deux sous `product_root` et hors
+  `ignore_roots`, `dep.ts` gagne ;
+- si aucune source `.ts` ou `.tsx` n'existe mais `dep.js` existe sous
+  `product_root` et hors `ignore_roots`, l'occurrence produit
+  `unsupported_local_target` avec `target_path = "dep.js"` ;
+- si aucun candidat du cas 4 n'est retenu par les règles de classification,
   l'occurrence produit `unresolved_static_edge` avec le specifier original,
   par exemple `"./dep.js"`.
 
-Cette extension ne promet pas :
+Cette règle ne promet pas :
 
 - la prise en charge de `.js` comme `product_file` ;
 - la lecture de `tsconfig.json`, `package.json`, `baseUrl`, `paths`, `exports`

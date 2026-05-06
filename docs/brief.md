@@ -1,6 +1,6 @@
 # AnchorMap CLI — brief.md
 
-**Statut**: brief produit v3  
+**Statut**: brief produit v4
 **Portée**: ce document décrit le problème, l'utilisateur cible, la promesse, le périmètre de release et les critères d'arrêt.  
 **Prévalence**: le comportement runtime normatif vit dans `contract.md`. Les choix d'implémentation vivent dans `design.md`. Les gates de validation vivent dans `evals.md`.
 
@@ -254,6 +254,30 @@ contraintes suivantes :
   `.d.ts`, `package.json`, conditions Node, project references, package
   `exports`, monorepo et résolution TypeScript complète restent hors scope ;
 - les aliases ne créent aucun mapping, candidat de mapping ou lien de propriété
+  automatiquement.
+
+## 6.8 Segment vNext prévu : fichiers produit `.tsx`
+
+AnchorMap M16 cible aussi les dépôts TypeScript mono-package dont une partie du
+code produit est écrite en `.tsx`, en particulier les dépôts React, Next, Remix
+ou Vite qui restent autrement compatibles avec le modèle fichier-à-fichier
+déterministe.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- `.tsx` devient un fichier produit supporté au même niveau que `.ts` ;
+- JSX est accepté uniquement comme syntaxe TypeScript parsable dans `.tsx`,
+  sans sémantique React, composant, JSX runtime ou framework ;
+- les imports et re-exports statiques supportés peuvent viser des fichiers
+  `.tsx`, y compris via les aliases M15 déjà supportés ;
+- les specifiers `.js` runtime peuvent retenir une source `.tsx` seulement
+  après avoir testé la source `.ts` jumelle, et avant le diagnostic `.js`
+  existant ;
+- `.jsx`, `.js`, `.d.ts`, `package.json`, conditions Node, project references,
+  package `exports`, monorepo et résolution TypeScript complète restent hors
+  scope ;
+- l'extension ne crée aucun mapping, candidat de mapping ou lien de propriété
   automatiquement.
 
 ## 7. Workflow utilisateur v1.0

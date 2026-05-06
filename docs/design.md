@@ -1,6 +1,6 @@
 # AnchorMap CLI — design.md
 
-**Statut**: design de référence v5  
+**Statut**: design de référence v6
 **Portée**: ce document décrit une implémentation cible compatible avec `contract.md`.  
 **Prévalence**: si une section de ce document entre en conflit avec `contract.md`, le contrat prévaut.
 
@@ -53,6 +53,7 @@ ADRs courantes :
 - `ADR-0014` — SCREAMING_SNAKE dotted anchor segments (`Accepted`)
 - `ADR-0015` — Deterministic TypeScript export scaffold (`Accepted`)
 - `ADR-0016` — Deterministic tsconfig local alias resolution (`Accepted`)
+- `ADR-0017` — Deterministic TSX product file support (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -67,7 +68,7 @@ Règles de frontière :
 - `./anchormap.yaml` est l’unique source de vérité persistée propre à AnchorMap ;
 - aucune donnée Derived n’est stockée sur disque ;
 - aucune donnée Observed n’est promue implicitement en donnée Human ;
-- tout fichier `.md`, `.yml`, `.yaml` ou `.ts` consommé est converti en texte uniquement par la frontière de décodage UTF-8 stricte de `repo_fs` ;
+- tout fichier `.md`, `.yml`, `.yaml`, `.ts` ou `.tsx` consommé est converti en texte uniquement par la frontière de décodage UTF-8 stricte de `repo_fs` ;
 - le rendu ne recalcule rien : il sérialise uniquement des données déjà dérivées et triées ;
 - les écritures de `anchormap.yaml` passent par une frontière explicite **préparation / pre_commit / commit** ;
 - aucun module autre que `config_io` ne possède la sémantique du commit de `anchormap.yaml`.
@@ -671,8 +672,9 @@ Conséquences :
 `ts_graph.discoverProductFiles` :
 
 1. parcourt récursivement `product_root`, hors `ignore_roots` ;
-2. retient uniquement les fichiers `.ts` admissibles comme `product_file` ;
-3. exclut `.d.ts`, `.tsx` et `.js` ;
+2. retient uniquement les fichiers `.ts` et `.tsx` admissibles comme
+   `product_file` ;
+3. exclut `.d.ts`, `.js` et `.jsx` ;
 4. retourne un ensemble trié de `RepoPath`.
 
 `discoverProductFiles` ne lit pas le contenu des fichiers retenus. Toute validation de lisibilité, de décodage strict et de syntaxe TypeScript est faite par `buildProductGraph`.
@@ -688,7 +690,8 @@ Cette fonction est la source de vérité partagée pour :
 Pour chaque `product_file` trié :
 
 1. lire le fichier via `repo_fs.readUtf8StrictNoBom` ;
-2. parser le texte décodé via le parseur TypeScript figé ;
+2. parser le texte décodé via le parseur TypeScript figé, avec `ScriptKind.TS`
+   pour `.ts` et `ScriptKind.TSX` pour `.tsx` ;
 3. extraire :
    - `ImportDeclaration`
    - `ExportDeclaration`
@@ -710,27 +713,21 @@ Choix de design :
 - aucun symbole, aucune fonction, aucun call graph ;
 - aucun cache persistant.
 
-#### 7.4.1 Extension v1.1 planifiée : specifiers `.js` ESM
-
-Cette section décrit le design v1.1 prévu par `ADR-0012`. Elle ne modifie pas
-le design v1.0 tant que la tâche d'implémentation v1.1 correspondante n'a pas
-activé explicitement l'extension.
-
-Quand l'extension est active, `ts_graph` ajoute une branche distincte de
-construction de candidats pour les specifiers relatifs explicites terminés par
-`.js` :
+#### 7.4.1 Specifiers `.js` ESM
 
 1. construire d'abord le candidat source obtenu en remplaçant le suffixe
    terminal `.js` par `.ts` ;
 2. conserver ce candidat comme supporté seulement s'il ne se termine pas par
-   `.d.ts` ;
-3. construire ensuite le candidat exact `.js` comme diagnostic uniquement ;
-4. appliquer sans autre changement la classification ordonnée du contrat.
+   `.d.ts`, sinon le conserver comme diagnostic uniquement ;
+3. construire ensuite le candidat source obtenu en remplaçant le suffixe
+   terminal `.js` par `.tsx` ;
+4. construire ensuite le candidat exact `.js` comme diagnostic uniquement ;
+5. appliquer sans autre changement la classification ordonnée du contrat.
 
 Les autres frontières restent inchangées :
 
-- `discoverProductFiles` continue de retenir uniquement les fichiers `.ts` et
-  d'exclure `.d.ts`, `.tsx` et `.js` ;
+- `discoverProductFiles` retient uniquement les fichiers `.ts` et `.tsx`, et
+  exclut `.d.ts`, `.js` et `.jsx` ;
 - `buildProductGraph` ne lit ni `tsconfig.json`, ni `package.json`, ni cache, ni
   environnement pour résoudre un specifier ;
 - `ImportDeclaration` et `ExportDeclaration` restent les seules occurrences
@@ -756,11 +753,12 @@ Quand l'extension M15 est active, `commands` charge `TsconfigAliasState` via
 
 Pour la catégorie aliasée, `ts_graph` réécrit le préfixe du specifier vers
 `LocalAlias.targetPrefix`, puis réutilise la construction de candidats et la
-classification ordonnée existantes, y compris la règle `.js -> .ts`.
+classification ordonnée existantes, y compris les candidats `.tsx` et la règle
+`.js -> .ts` puis `.js -> .tsx`.
 
 Les frontières restent inchangées :
 
-- les fichiers produit restent uniquement `.ts` ;
+- les fichiers produit restent uniquement `.ts` et `.tsx` ;
 - `require("@/x")` et `import("@/x")` ne deviennent pas des edges supportés ;
 - aucun fallback silencieux n'est autorisé quand `./tsconfig.json` existe mais
   ne peut pas être interprété selon le sous-ensemble M15 ;
@@ -994,7 +992,8 @@ Règle d’application : une précondition utilisateur déjà décidable à part
 - vérifier les préconditions décidables depuis la config validée avant toute analyse dépôt :
   - si `mappings[anchor]` existe déjà et que `--replace` est absent, produire `UsageError` ;
   - chaque seed doit être lexicalement sous `product_root` et hors `ignore_roots` ;
-  - chaque seed doit avoir une forme admissible de `product_file` (`.ts`, hors `.d.ts`, hors `.tsx`, hors `.js`) ;
+  - chaque seed doit avoir une forme admissible de `product_file` (`.ts` ou
+    `.tsx`, hors `.d.ts`, hors `.js`) ;
   - chaque seed doit exister comme fichier par un test ponctuel borné ; une absence produit `UsageError`, une impossibilité d’effectuer le test produit `UnsupportedRepoError` ;
 - indexer les specs courantes ;
 - vérifier que l’anchor demandée est présente comme active anchor dans

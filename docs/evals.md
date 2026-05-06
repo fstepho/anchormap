@@ -1,6 +1,6 @@
 # AnchorMap CLI — evals.md
 
-**Statut**: plan d'évaluation v4 corrigé  
+**Statut**: plan d'évaluation v5 corrigé
 **Portée**: ce document définit les évaluations, corpus, goldens, budgets et gates de release nécessaires pour valider le contrat v1.0 de la CLI.  
 **Prévalence**: `contract.md` fixe le comportement observable garanti. Ce document fixe uniquement comment le vérifier. En cas de conflit, `contract.md` prévaut.
 
@@ -45,6 +45,7 @@ Ce document est **hors scope** pour :
 | Scaffold Markdown depuis exports TypeScript publics | § 9.4 | B-scaffold |
 | Résolution du graphe statique, classification et findings | §§ 10, 11 | B-graph, C5, C6 |
 | Aliases locaux déterministes depuis `tsconfig.json` | §§ 10.1.1, 10.2.2, 12.2.4, 13.2.1 | B-graph M15, B-map, B-cli, goldens |
+| Fichiers produit `.tsx` déterministes | §§ 1.1, 6.5, 9.2, 9.4, 10, 12.3 | B-graph M16, B-map, B-scaffold, goldens |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
 | Absence de dépendance au réseau, au temps, à Git, à un cache persistant ou aux variables d'environnement comme source de vérité | §§ 4.1, 12.6 | C8, C9, C10, C11, C12 |
@@ -65,7 +66,8 @@ Couverture minimale :
 
 - formats d'`AnchorId` valides et invalides ;
 - décodage UTF-8 strict, rejet des octets non décodables et retrait d'un unique BOM initial ;
-- application des profils `MARKDOWN_PROFILE`, `YAML_PROFILE` et `TS_PROFILE` dans les cas minimaux contractuels ;
+- application des profils `MARKDOWN_PROFILE`, `YAML_PROFILE` et `TS_PROFILE`
+  dans les cas minimaux contractuels, y compris `ScriptKind.TSX` pour `.tsx` ;
 - normalisation et refus des chemins interdits par le contrat ;
 - refus des champs inconnus et des clés YAML dupliquées ;
 - invariants `seed_files` non vide et sans doublon ;
@@ -144,6 +146,7 @@ Objectif : couvrir explicitement les règles de décodage et de profils grammati
 | `fx00j_profile_yaml_1_2_2_boundary` | cas limite YAML 1.2.2 valide et single-document | 0 | traitement conforme au profil ; golden JSON exact |
 | `fx00k_profile_ts_5_4_boundary` | cas parsable avec le parser TypeScript piné, `ScriptKind.TS`, objectif `module`, sans JSX | 0 | `supported_local_targets` et findings exacts |
 | `fx00l_profile_ts_jsx_rejected_in_ts` | syntaxe JSX dans un `product_file` `.ts` | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx00p_profile_tsx_jsx_success` | syntaxe JSX dans un `product_file` `.tsx` | 0 | golden JSON exact ; le fichier `.tsx` est dans `files` |
 | `fx00m_map_decode_spec_non_utf8_no_mutation` | `map` rencontre une spec non UTF-8 pendant l'indexation | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx00n_map_decode_product_non_utf8_no_mutation` | `map` rencontre un `product_file` non UTF-8 pendant la validation dépôt | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 | `fx00o_map_decode_config_non_utf8_no_mutation` | `map` rencontre un `anchormap.yaml` non UTF-8 | 2 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
@@ -236,7 +239,7 @@ pas implémentée et activée.
 | `fx28_graph_resolution_index_fallback` | fallback sur `index.ts` | 0 | golden JSON exact |
 | `fx29_graph_unresolved_static_edge` | aucun candidat valide | 0 | finding `unresolved_static_edge` exact ; `analysis_health = degraded` |
 | `fx30_graph_out_of_scope_static_edge` | cible existante hors `product_root` ou sous `ignore_roots` | 0 | finding `out_of_scope_static_edge` exact ; `target_path` exact |
-| `fx31_graph_unsupported_local_target` | cible locale existante en `.tsx` / `.js` / `.d.ts` | 0 | finding `unsupported_local_target` exact ; `target_path` exact |
+| `fx31_graph_unsupported_local_target` | cible locale existante en `.js` / `.d.ts` | 0 | finding `unsupported_local_target` exact ; `target_path` exact |
 | `fx32_graph_require_local` | `require("./x")` local reconnu hors support | 0 | finding `unsupported_static_edge` avec `syntax_kind = require_call` |
 | `fx33_graph_dynamic_import_local` | `import("./x")` local reconnu hors support | 0 | finding `unsupported_static_edge` avec `syntax_kind = dynamic_import` |
 | `fx34_graph_non_relative_import_ignored` | import non relatif traité comme externe | 0 | aucun edge local ajouté ; aucun finding lié à cet import |
@@ -284,6 +287,21 @@ activée.
 | `fx38t_graph_tsconfig_local_extends` | `extends` local relatif avec héritage nearest-`paths` | 0 | golden JSON exact ; aliases normalisés et triés déterministiquement |
 | `fx38u_graph_tsconfig_extends_cycle_or_package` | `extends` cyclique ou non local | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx38v_graph_tsconfig_alias_target_outside_product_root` | alias cible hors `product_root` | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+
+#### 5.4.3 Fixtures M16 planifiées pour fichiers produit `.tsx`
+
+Ces fixtures vérifient l'extension M16 définie par `ADR-0017`.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx38x_graph_tsx_product_file_discovered` | `.tsx` sous `product_root` devient `product_file` | 0 | golden JSON exact ; `files` contient le `.tsx` ; JSX parsable |
+| `fx38y_graph_exact_tsx_specifier` | `import "./view.tsx"` retient `view.tsx` | 0 | golden JSON exact ; `supported_local_targets = ["src/view.tsx"]` |
+| `fx38z_graph_extensionless_tsx_resolution` | import extensionless retient `.tsx` en absence de `.ts` | 0 | golden JSON exact ; aucun finding pour le `.tsx` |
+| `fx89_graph_js_specifier_to_tsx_source` | `import "./view.js"` retient `view.tsx` quand `view.ts` est absent | 0 | golden JSON exact ; aucun finding pour `view.js` |
+| `fx90_graph_alias_to_tsx` | alias M15 vers `.tsx` | 0 | golden JSON exact ; `config.local_aliases` visible ; edge aliasé vers `.tsx` |
+| `fx91_graph_ts_before_tsx_precedence` | specifiers extensionless, `.js`, et alias local retiennent `.ts` quand `.ts` et `.tsx` existent | 0 | golden JSON exact ; `supported_local_targets` retient les chemins `.ts` ; aucun edge supporté vers les siblings `.tsx` |
+| `fx92_graph_tsx_reexport` | `export ... from "./view.tsx"` retient `view.tsx` | 0 | golden JSON exact ; edge local pris en compte pour les formes de re-export supportées |
+| `fx93_graph_extensionless_index_tsx_resolution` | import extensionless retient `<path>/index.tsx` en absence de `<path>.ts`, `<path>.tsx`, et `<path>/index.ts` | 0 | golden JSON exact ; `supported_local_targets` retient le chemin `index.tsx` ; aucun finding pour le specifier |
 
 ### 5.5 Famille B-repo — limites de support du dépôt et découverte
 
@@ -381,6 +399,15 @@ que `scan` avant toute mutation de `anchormap.yaml`.
 | `fx67f_map_tsconfig_alias_graph_validation` | mapping valide avec graphe contenant un alias local supporté | 0 | YAML canonique exact ; validation de graphe réussie avant écriture |
 | `fx67g_map_tsconfig_invalid_no_mutation` | `map` avec `./tsconfig.json` présent mais invalide | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 
+#### 5.7.3 Fixtures M16 planifiées pour `map` et fichiers produit `.tsx`
+
+Ces fixtures vérifient que `map` accepte la même frontière `product_file`
+`.tsx` que `scan` avant toute mutation de `anchormap.yaml`.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx67h_map_tsx_seed` | `map` crée un mapping vers un seed `.tsx` | 0 | `anchormap.yaml` final exact avec seed `.tsx` |
+
 ### 5.8 Famille B-cli — surface CLI, échecs machine et priorité des codes
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
@@ -431,6 +458,15 @@ comme erreurs dépôt de code `3`, sous la priorité globale des codes de sortie
 | `fx86_scaffold_existing_base_anchor_collision` | tous les candidats générés partagent une anchor de base déjà observée | 4 | aucune mutation |
 | `fx87_scaffold_residual_final_anchor_collision` | une anchor finale suffixée collisionne avec une autre anchor générée | 4 | aucune mutation |
 | `fx88_scaffold_skips_existing_anchors` | certaines anchors générées sont déjà actives ou draft | 0 | fichier Markdown draft généré exact avec seulement les nouvelles sections ; `anchormap.yaml` byte-identique |
+
+#### 5.9.1 Fixtures M16 planifiées pour `scaffold` et fichiers produit `.tsx`
+
+Ces fixtures vérifient que `scaffold` extrait les exports publics depuis les
+fichiers produit `.tsx` sans sémantique JSX ou framework.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx88a_scaffold_tsx_exports` | scaffold depuis exports `.tsx` | 0 | Markdown golden exact ; anchors dérivées du chemin sans suffixe `.tsx` |
 
 ## 6. Goldens et oracles exacts
 

@@ -9,7 +9,8 @@
 - `contract.md` remains normative for observable CLI behavior.
 - `evals.md` remains normative for verification gates.
 - No new product scope is introduced here except the user-authorized M14
-  scaffold extension and M15 deterministic local alias extension tracked below.
+  scaffold extension, M15 deterministic local alias extension, and M16
+  deterministic TSX product-file extension tracked below.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -26,9 +27,9 @@
 
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
-- Current active task: none.
-- Next executable product task: none.
-- Last completed task: `T15.4 — Close M15 alias release readiness`
+- Current active task: `T16.1 — Discover and parse TSX product files`
+- Next executable product task: `T16.1 — Discover and parse TSX product files`
+- Last completed task: `T16.0 — Specify TSX contract, evals, ADR, and task plan`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -131,6 +132,7 @@
   - `T15.2 — Resolve supported alias imports in the TypeScript graph`
   - `T15.3 — Render JSON v4 alias state and preserve map no-mutation behavior`
   - `T15.4 — Close M15 alias release readiness`
+  - `T16.0 — Specify TSX contract, evals, ADR, and task plan`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -177,6 +179,7 @@
 | M13 — v1.2 Traceability metrics | Add generic derived metrics to `scan --json` so users can distinguish raw coverage from structural signal strength without repo-specific labels | JSON schema v2, `traceability_metrics`, scan-engine counters, renderer/goldens, release-readiness evidence | B-scan `fx10a`; all successful `scan --json` goldens; C-metamorphic deterministic reruns | M12 done | `scan --json` renders schema v2 with generic summary and per-anchor metrics, no config persistence changes, no scan mutation, and no ownership/dead-code/proof inference |
 | M14 — vNext deterministic scaffold | Generate a create-only Markdown spec draft from observed TypeScript exports without creating mappings or inferring intent | `scaffold` command contract, ADR-0015, export extraction, Markdown renderer, create-only write path, draft-aware scan, B-scaffold fixtures | B-scaffold `fx77`–`fx87`; B-scan draft fixture; B-map draft fixture; B-cli command-surface regressions; docs/ADR consistency | M13 done; user-approved scaffold plan | `anchormap scaffold --output <path>` writes exact draft Markdown from public exports, `scan --json` surfaces draft anchors without unmapped-anchor noise, never mutates `anchormap.yaml`, fails without output mutation on invalid preconditions, and preserves the Observed/Human boundary |
 | M15 — vNext deterministic local alias resolution | Resolve common local TypeScript aliases from `./tsconfig.json` without adopting full TypeScript or Node module resolution | ADR-0016, `tsconfig_io`, alias-aware `ts_graph`, JSON schema v4, B-graph/B-map/B-cli fixtures and goldens | B-graph `fx38m`–`fx38w`; B-map `fx67f`–`fx67g`; B-cli `fx76a`–`fx76b`; schema/golden regressions | M14 done; user-approved M15 plan | `scan --json` exposes normalized alias resolver state and follows supported `@/* -> src/*` style aliases, missing `tsconfig.json` preserves relative-only behavior, invalid present `tsconfig.json` exits `3`, and `map` preserves no-mutation guarantees on alias-resolution failures |
+| M16 — vNext deterministic TSX product files | Support `.tsx` as syntax-only TypeScript product files without React, framework, or full resolver semantics | ADR-0017, `product_files`, `ts_graph`, `map`, `scaffold`, B-graph/B-map/B-scaffold fixtures and goldens | B-graph `fx38x`–`fx38z`, `fx89`–`fx93`; B-map `fx67h`; B-scaffold `fx88a`; affected B-scan goldens; product parser profile regressions | M15 done; user-approved TSX plan | `.tsx` files are discovered, parsed with `ScriptKind.TSX`, mappable as seeds, reachable through static edges including `.js -> .tsx`, and scaffolded from exports while `.js`, `.jsx`, `.d.ts`, monorepo, package, and framework semantics remain out of scope |
 
 ## Milestone dependency graph
 
@@ -200,6 +203,7 @@ M1 Fixture harness
                                 -> M13 v1.2 Traceability metrics
                                    -> M14 vNext deterministic scaffold
                                       -> M15 vNext deterministic local alias resolution
+                                         -> M16 vNext deterministic TSX product files
 ```
 
 ## M1 — Fixture harness
@@ -6334,6 +6338,274 @@ Suggested verification:
 - Run `npm test`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M16 — vNext deterministic TSX product files
+
+### T16.0 — Specify TSX contract, evals, ADR, and task plan
+
+Purpose:
+- Make `.tsx` support explicit before runtime changes.
+- Keep the extension syntax-only and file-level.
+
+Contract refs:
+- `contract.md` — §1.1 Grammar profiles
+- `contract.md` — §6.5 Product file
+- `contract.md` — §9.2 `map`
+- `contract.md` — §9.4 `scaffold`
+- `contract.md` — §10 TypeScript graph rules
+- `contract.md` — §12.3 Required reads and failure classification
+
+Design refs:
+- `design.md` — §5.4 `ts_graph`
+- `design.md` — §7.3 Product file discovery
+- `design.md` — §7.4 TypeScript graph construction
+- `design.md` — §9.3 Command behavior
+
+Eval refs:
+- `evals.md` — B-graph M16 `fx38x`–`fx38z`, `fx89`–`fx93`
+- `evals.md` — B-map `fx67h`
+- `evals.md` — B-scaffold `fx88a`
+- `evals.md` — affected B-scan goldens
+- `evals.md` — product parser profile fixtures
+
+ADR refs:
+- `ADR-0017` — Deterministic TSX product file support
+- `ADR-0006` — TypeScript parser and graph subset
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+
+Dependencies:
+- T15.4.
+
+Implementation scope:
+- Add and register `ADR-0017`.
+- Update `brief.md`, `contract.md`, `design.md`, `evals.md`, and this task
+  plan for M16.
+- Specify `.tsx` as a supported product-file extension.
+- Specify `ScriptKind.TSX` only for `.tsx` product files.
+- Specify exact `.tsx`, extensionless `.tsx`, alias `.tsx`, and `.js -> .tsx`
+  candidate behavior.
+
+Out of scope:
+- React, Next, Remix, Vite, JSX runtime, component semantics, `.jsx`, `.js`,
+  `.d.ts`, monorepo, package exports, project references, or full TypeScript
+  resolver support.
+
+Done when:
+- The contract, design, evals, ADR register, and task plan agree on M16.
+- Existing ADR-0006 is explicitly amended rather than silently contradicted.
+- `docs/tasks.md` remains structurally valid.
+
+Suggested verification:
+- Run `sh scripts/lint-tasks.sh`.
+- Run `npm run check:docs`.
+
+### T16.1 — Discover and parse TSX product files
+
+Purpose:
+- Include `.tsx` in the product-file set and parser boundary.
+
+Contract refs:
+- `contract.md` — §1.1 Grammar profiles
+- `contract.md` — §6.5 Product file
+- `contract.md` — §10.5 Parse failures
+- `contract.md` — §12.3 Required reads and failure classification
+
+Design refs:
+- `design.md` — §7.3 Product file discovery
+- `design.md` — §7.4 TypeScript graph construction
+
+Eval refs:
+- `evals.md` — `fx00p`
+- `evals.md` — `fx38x`
+
+ADR refs:
+- `ADR-0017` — Deterministic TSX product file support
+
+Dependencies:
+- T16.0.
+
+Implementation scope:
+- Update product discovery to include `.tsx` and continue excluding `.d.ts`,
+  `.js`, and `.jsx`.
+- Parse `.ts` with `ScriptKind.TS` and `.tsx` with `ScriptKind.TSX`.
+- Keep JSX in `.ts` rejected.
+- Keep read, decode, parse failures classified as `UnsupportedRepoError`.
+
+Out of scope:
+- Any JSX semantic analysis.
+- Any new dependency.
+
+Done when:
+- Unit tests prove `.tsx` discovery and parsing.
+- JSX succeeds in `.tsx` and still fails in `.ts`.
+- Existing `.ts` behavior remains unchanged.
+
+Suggested verification:
+- Run `npm run build`.
+- Run product-file and ts-graph unit tests.
+
+### T16.2 — Resolve static edges to TSX
+
+Purpose:
+- Let supported static imports and re-exports reach `.tsx` product files.
+
+Contract refs:
+- `contract.md` — §10.1 Supported static occurrences
+- `contract.md` — §10.2 Candidate resolution and classification
+- `contract.md` — §10.2.1 `.js` source-candidate rule
+
+Design refs:
+- `design.md` — §7.4 TypeScript graph construction
+- `design.md` — §7.4.1 Specifiers `.js` ESM
+- `design.md` — §7.4.2 Local aliases
+
+Eval refs:
+- `evals.md` — `fx38y`, `fx38z`, `fx89`, `fx90`, `fx91`, `fx92`, `fx93`
+- `evals.md` — C6 unsupported extension conversion
+
+ADR refs:
+- `ADR-0017` — Deterministic TSX product file support
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+
+Dependencies:
+- T16.1.
+
+Implementation scope:
+- Treat exact `.tsx` candidates as supported.
+- Order extensionless candidates as `.ts`, `.tsx`, `index.ts`, `index.tsx`,
+  then diagnostic `.js` / `.d.ts` forms.
+- Order explicit `.js` candidates as `.ts`, `.tsx`, exact `.js`.
+- Reuse the same candidate order for alias-local specifiers.
+- Preserve the same `.tsx` candidate behavior for supported re-exports.
+- Update unsupported-extension fixtures that previously relied on `.tsx`.
+
+Out of scope:
+- Dynamic import or `require` resolution.
+- `.jsx` or `.js` product files.
+
+Done when:
+- `.tsx` targets appear in `supported_local_targets`.
+- `.js -> .tsx` works only after `.js -> .ts` is absent.
+- `.ts` wins over `.tsx` when both candidate siblings exist.
+- supported re-exports and `/index.tsx` fallback are covered by M16 fixtures.
+- `.js` and `.d.ts` still produce diagnostics when no supported source wins.
+
+Suggested verification:
+- Run ts-graph unit tests.
+- Run B-graph M16 fixtures.
+- Run C6 metamorphic fixture.
+
+### T16.3 — Preserve map and scaffold behavior with TSX
+
+Purpose:
+- Make write commands use the same `.tsx` product-file boundary.
+
+Contract refs:
+- `contract.md` — §9.2 `map`
+- `contract.md` — §9.4 `scaffold`
+- `contract.md` — §12.3 Required reads and failure classification
+
+Design refs:
+- `design.md` — §4.2 Pipeline logique de `map`
+- `design.md` — §4.4 Pipeline logique de `scaffold`
+- `design.md` — §5.5.1 `scaffold`
+- `design.md` — §9.3 Command behavior
+
+Eval refs:
+- `evals.md` — `fx67h`
+- `evals.md` — `fx88a`
+
+ADR refs:
+- `ADR-0017` — Deterministic TSX product file support
+- `ADR-0008` — Atomic config write path
+- `ADR-0015` — Deterministic TypeScript export scaffold
+
+Dependencies:
+- T16.2.
+
+Implementation scope:
+- Allow `.tsx` `--seed` paths in `map` preconditions and product-file
+  membership validation.
+- Keep failed `map` no-mutation guarantees.
+- Update scaffold anchor generation to strip either `.ts` or `.tsx`.
+- Extract supported top-level exports from `.tsx` with the existing scaffold
+  rules.
+
+Out of scope:
+- JSX-derived anchors.
+- Re-export or semantic export resolution.
+
+Done when:
+- `map` can write a canonical mapping with a `.tsx` seed.
+- `scaffold` emits deterministic Markdown for `.tsx` exports.
+- Existing `map` and scaffold failure priorities remain unchanged.
+
+Suggested verification:
+- Run command and scaffold unit tests.
+- Run B-map `fx67h`.
+- Run B-scaffold `fx88a`.
+
+### T16.4 — Close TSX release readiness
+
+Purpose:
+- Verify M16 does not imply framework, package, or full resolver support.
+
+Contract refs:
+- `contract.md` — §1.1 Grammar profiles
+- `contract.md` — §10 TypeScript graph rules
+- `contract.md` — §12 Determinism, paths, platforms and stability
+- `contract.md` — §13 JSON guaranteed output and exit codes
+
+Design refs:
+- `design.md` — §7.3 Product file discovery
+- `design.md` — §7.4 TypeScript graph construction
+- `design.md` — §14 Decisions explicitly deferred
+
+Eval refs:
+- `evals.md` — B-graph M16
+- `evals.md` — affected B-scan goldens
+- `evals.md` — B-map M16
+- `evals.md` — B-scaffold M16
+- `evals.md` — C6 unsupported extension conversion
+- `evals.md` — §10 Release gates
+
+ADR refs:
+- `ADR-0017` — Deterministic TSX product file support
+
+Dependencies:
+- T16.3.
+
+Implementation scope:
+- Run applicable M16 fixtures and regressions.
+- Run affected B-scan goldens whose unsupported-target shape changes under
+  `.tsx` product-file support.
+- Run docs consistency and task lint.
+- Run fresh `codex review` in `critical` mode on the bounded M16 diff.
+- Update `docs/tasks.md` execution state only after task-level done criteria
+  from `operating-model.md` §19.1 are satisfied.
+
+Out of scope:
+- Publishing a new artifact unless separately requested.
+- Any feature beyond `ADR-0017`.
+
+Done when:
+- All M16 fixtures and applicable regressions pass.
+- Fresh critical review has a clean verdict or all findings are resolved.
+- `docs/tasks.md` records M16 completion only after review.
+
+Suggested verification:
+- Run `npm run test:fixtures -- --family B-graph`.
+- Run `npm run test:fixtures -- --family B-scan`.
+- Run `npm run test:fixtures -- --family B-map`.
+- Run `npm run test:fixtures -- --family B-scaffold`.
+- Run `npm run check:goldens`.
+- Run `npm run test:metamorphic`.
+- Run `npm run test:docs`.
+- Run `npm run lint`.
+- Run `npm test`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -6347,6 +6619,7 @@ Suggested verification:
 | `fx00b`, `fx00f`, `fx00i` Markdown decode/profile | T3.6, T5.1, T5.2 | M3, M5 | fixture | Markdown strict UTF-8, BOM, CommonMark boundary |
 | `fx00c`, `fx00g`, `fx00j` YAML spec decode/profile | T3.6, T5.1, T5.3 | M3, M5 | fixture | YAML spec strict UTF-8, BOM, YAML profile |
 | `fx00d`, `fx00h`, `fx00k`, `fx00l` product decode/profile | T3.6, T6.2 | M3, M6 | fixture | Product BOM, non-UTF-8, TS profile, JSX rejection |
+| `fx00p_profile_tsx_jsx_success` | T16.1 | M16 | fixture/golden | `ScriptKind.TSX` parser boundary and JSX acceptance in `.tsx` product files |
 | `fx00e_config_non_utf8` | T3.6, T4.1, T4.7 | M3, M4 | fixture | Config non-UTF-8 returns `2` |
 | `fx00m_map_decode_spec_non_utf8_no_mutation` | T5.5, T8.3, T8.5 | M5, M8 | fixture | Map spec decode failure returns `3`, no mutation |
 | `fx00n_map_decode_product_non_utf8_no_mutation` | T6.7, T8.3, T8.5 | M6, M8 | fixture | Map product decode failure returns `3`, no mutation |
@@ -6369,6 +6642,7 @@ Suggested verification:
 | B-graph `fx37`–`fx38e` | T6.2, T6.4, T6.7 | M6 | fixture | Parse failures, outside-root candidates, existence-test failures |
 | B-graph `fx38f`–`fx38l` | T11.1, T11.2, T11.3 | M11 | fixture/golden | v1.1 explicit `.js` specifier source-candidate resolution |
 | B-graph `fx38m`–`fx38w` | T15.1, T15.2, T15.3 | M15 | fixture/golden | M15 deterministic `tsconfig.json` alias loading, alias resolution, JSON v4 visibility, and failure classification |
+| B-graph `fx38x`–`fx38z`, `fx89`–`fx93` | T16.1, T16.2 | M16 | fixture/golden | M16 `.tsx` product-file discovery, parsing, exact/extensionless/index/alias/re-export resolution, `.js -> .tsx` source-candidate behavior, and `.ts` before `.tsx` precedence |
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
@@ -6380,12 +6654,14 @@ Suggested verification:
 | B-map `fx63`–`fx67` | T8.1, T8.2, T8.3, T8.5, T8.6 | M8 | fixture | Anchor/seed validation and option order |
 | B-map `fx67a`–`fx67d` | T4.7, T5.5, T6.7, T8.2, T8.3, T8.5 | M4–M8 | fixture | Config/spec/product/existence failures with no mutation |
 | B-map `fx67f`–`fx67g` | T15.3 | M15 | fixture/golden | M15 alias-aware graph validation before map writes and no mutation on tsconfig failure |
+| B-map `fx67h` | T16.3 | M16 | fixture/golden | M16 `.tsx` seed mapping and canonical YAML mutation |
 | B-cli M15 `fx76a`–`fx76b` | T15.3 | M15 | fixture | M15 tsconfig failure code `3` remains below argument code `4` and config code `2` priorities |
 | B-cli `fx68`–`fx70` | T2.1, T2.2, T2.5 | M2 | fixture | Unknown command, unknown option, invalid combinations |
 | B-cli `fx71`, `fx71a`–`fx71e` | T2.2, T2.5, T7.1, T7.6 | M2, M7 | fixture | Scan option order and human scan modes |
 | B-cli `fx72`–`fx75` | T2.5, T2.6, T4.7, T6.7, T7.6 | M2–M7 | fixture | Exit-code priority and internal error |
 | B-cli `fx76` | T4.5, T8.5 | M4, M8 | fixture | Atomic write failure exits `1`, no partial mutation |
 | B-scaffold `fx77`–`fx88` | T14.1, T14.2, T14.3, T14.4 | M14 | fixture/golden | Deterministic draft Markdown scaffold, create-only output, no config mutation, collision disambiguation, rerunnable existing-anchor skips, and code `2`/`3`/`4` failures |
+| B-scaffold `fx88a` | T16.3 | M16 | fixture/golden | M16 scaffold from `.tsx` exports with `.tsx` stripped from generated module anchors |
 | C1 filesystem order invariance | T1.6, T6.1, T7.5, T9.1 | M1, M6, M7, M9 | metamorphic | Stable ordering independent of FS enumeration |
 | C2 YAML editorial reorder invariance | T4.1, T4.4, T8.4, T9.1 | M4, M8, M9 | metamorphic | Same config semantics, canonical output after map |
 | C3 spec noise invariance | T5.2, T5.3, T5.4, T9.1 | M5, M9 | metamorphic | No anchor from unsupported spec noise |

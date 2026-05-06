@@ -1,6 +1,6 @@
 # ADR-0012: TypeScript ESM `.js` specifier source resolution
 
-Status: Accepted
+Status: Accepted, amended by ADR-0017 for `.js -> .tsx` source candidates
 Date: 2026-04-29
 Owner: AnchorMap maintainers
 
@@ -28,21 +28,33 @@ AnchorMap v1.1 should support relative explicit `.js` specifiers in `.ts`
 source files by first testing the sibling `.ts` source candidate produced by
 replacing the terminal `.js` with `.ts`.
 
+`ADR-0017` amends this rule for `.tsx` product files: after the sibling `.ts`
+source candidate, AnchorMap tests the sibling `.tsx` source candidate before
+the exact `.js` diagnostic candidate.
+
 This extends `ADR-0006` for candidate construction only. It does not replace the
 `typescript@6.0.3` parser profile, does not make `.js` a supported product-file
 extension, and does not adopt TypeScript or Node module resolution.
 
 For an explicit `.js` specifier:
 
-1. the source candidate `<specifier without terminal .js>.ts` is considered
-   before the exact `.js` diagnostic candidate;
-2. if that `.ts` source candidate exists, is under `product_root`, and is not
+1. the candidate `<specifier without terminal .js>.ts` is considered first; if
+   that path ends with `.d.ts`, it remains diagnostic-only instead of
+   supported;
+2. the source candidate `<specifier without terminal .js>.tsx` is considered
+   after the `.ts` or `.d.ts` candidate and before the exact `.js` diagnostic
+   candidate;
+3. if the `.ts` source candidate exists, is under `product_root`, and is not
    under `ignore_roots`, it is the supported target;
-3. if both the `.ts` source candidate and the exact `.js` file exist in
-   supported scope, the `.ts` source candidate wins;
-4. if no source `.ts` candidate is retained but the exact `.js` file exists in
-   supported scope, the occurrence produces `unsupported_local_target`;
-5. unresolved, out-of-scope, and ignored-target classification remains governed
+4. if no `.ts` source candidate is retained and the `.tsx` source candidate
+   exists, is under `product_root`, and is not under `ignore_roots`, the `.tsx`
+   source candidate is the supported target;
+5. if both a source candidate and the exact `.js` file exist in supported scope,
+   the source candidate wins, with `.ts` ahead of `.tsx`;
+6. if no source `.ts` or `.tsx` candidate is retained but a diagnostic-only
+   `.d.ts` or exact `.js` candidate exists in supported scope, the occurrence
+   produces `unsupported_local_target`;
+7. unresolved, out-of-scope, and ignored-target classification remains governed
    by the existing ordered graph-finding rules.
 
 ## Alternatives considered
@@ -120,17 +132,21 @@ until the implementation task deliberately activates the extension.
 The v1.1 B-graph fixtures must cover:
 
 - `.js` specifier to `.ts` source resolution;
+- `.js` specifier to `.tsx` source resolution after `ADR-0017`;
 - import and re-export forms;
-- explicit `index.js` to `index.ts` source resolution;
+- explicit `index.js` to `index.ts` or `index.tsx` source resolution;
 - priority when both `.ts` and `.js` exist;
-- exact `.js` unsupported-target diagnostics when no `.ts` source exists;
+- priority when both `.ts` and `.tsx` sources exist;
+- exact `.js` unsupported-target diagnostics when no `.ts` or `.tsx` source
+  exists;
 - unresolved explicit `.js` specifiers.
 
 ## Design impact
 
 `ts_graph` must add a distinct candidate-definition branch for explicit `.js`
-specifiers when the v1.1 extension is activated. The parser profile and
-product-file discovery rules remain unchanged.
+specifiers when the v1.1 extension is activated. `ADR-0017` amends that branch
+to add the `.tsx` source candidate after `.ts`. The parser profile and
+product-file discovery rules remain governed by `ADR-0006` and `ADR-0017`.
 
 ## Rollback / supersession
 

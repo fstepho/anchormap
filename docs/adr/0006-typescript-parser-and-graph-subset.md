@@ -1,6 +1,6 @@
 # ADR-0006: TypeScript parser and graph subset
 
-Status: Accepted
+Status: Accepted, amended by ADR-0017 for `.tsx` product files
 Date: 2026-04-24
 Owner: AnchorMap maintainers
 
@@ -33,12 +33,12 @@ The same exact TypeScript package is used by the project build and by the
 runtime parser dependency. AnchorMap does not maintain separate "compiler
 TypeScript" and "product parser TypeScript" versions.
 
-The `ts_graph` wrapper must:
+For `.ts` product files, the `ts_graph` wrapper must:
 
 - pass only text already returned by `repo_fs.readUtf8StrictNoBom`;
 - parse each `product_file` with
   `ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)`;
-- never parse product files with `ScriptKind.TSX`;
+- parse with `ScriptKind.TS`; `.tsx` parsing is governed by `ADR-0017`;
 - treat any non-empty `sourceFile.parseDiagnostics` as a parse failure;
 - extract supported edges only from `ImportDeclaration` and
   `ExportDeclaration` nodes with relative string-literal module specifiers;

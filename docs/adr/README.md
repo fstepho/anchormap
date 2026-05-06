@@ -46,17 +46,18 @@ An ADR is usually not required for:
 | `ADR-0003` | Test runner and fixture harness | Accepted |
 | `ADR-0004` | Markdown parser profile | Accepted |
 | `ADR-0005` | YAML parser and config input profile | Accepted |
-| `ADR-0006` | TypeScript parser and graph subset | Accepted |
+| `ADR-0006` | TypeScript parser and graph subset | Accepted, amended by ADR-0017 |
 | `ADR-0007` | Canonical JSON and YAML rendering | Accepted |
 | `ADR-0008` | Atomic config write path | Accepted |
 | `ADR-0009` | Packaging and distribution | Accepted |
 | `ADR-0010` | Source formatting and linting tool | Accepted |
 | `ADR-0011` | Release CLI Node launch profile | Accepted |
-| `ADR-0012` | TypeScript ESM `.js` specifier source resolution | Accepted |
+| `ADR-0012` | TypeScript ESM `.js` specifier source resolution | Accepted, amended by ADR-0017 |
 | `ADR-0013` | AnchorMap documentation anchor formats | Accepted |
 | `ADR-0014` | SCREAMING_SNAKE dotted anchor segments | Accepted |
 | `ADR-0015` | Deterministic TypeScript export scaffold | Accepted |
 | `ADR-0016` | Deterministic tsconfig local alias resolution | Accepted |
+| `ADR-0017` | Deterministic TSX product file support | Accepted |
 
 ## Template
 
