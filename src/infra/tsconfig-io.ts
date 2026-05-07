@@ -13,9 +13,14 @@ export interface LocalAlias {
 	readonly targetPrefix: string;
 }
 
+export interface ResolutionAlias extends LocalAlias {
+	readonly visibility: "public_local" | "internal_resolution";
+}
+
 export interface TsconfigAliasState {
 	readonly tsconfigPath: RepoPath | null;
 	readonly localAliases: readonly LocalAlias[];
+	readonly resolutionAliases: readonly ResolutionAlias[];
 }
 
 export interface TsconfigAliasError {
@@ -72,6 +77,7 @@ export function loadLocalAliases(
 				state: {
 					tsconfigPath: null,
 					localAliases: [],
+					resolutionAliases: [],
 				},
 			};
 		}
@@ -93,7 +99,8 @@ export function loadLocalAliases(
 		kind: "ok",
 		state: {
 			tsconfigPath: ROOT_TSCONFIG_PATH,
-			localAliases: aliases.localAliases,
+			localAliases: aliases.publicLocalAliases,
+			resolutionAliases: aliases.resolutionAliases,
 		},
 	};
 }
@@ -296,14 +303,18 @@ function normalizeAliases(
 	config: Config,
 	files: readonly ParsedTsconfigFile[],
 ):
-	| { kind: "ok"; localAliases: readonly LocalAlias[] }
+	| {
+			kind: "ok";
+			publicLocalAliases: readonly LocalAlias[];
+			resolutionAliases: readonly ResolutionAlias[];
+	  }
 	| { kind: "error"; error: TsconfigAliasError } {
 	const baseUrls = computeEffectiveBaseUrls(files);
 	if (baseUrls.kind === "error") {
 		return baseUrls;
 	}
 
-	const normalizedAliasesByPath = new Map<RepoPath, readonly LocalAlias[]>();
+	const normalizedAliasesByPath = new Map<RepoPath, readonly ResolutionAlias[]>();
 	for (const file of files) {
 		if (file.paths === undefined) {
 			continue;
@@ -323,14 +334,18 @@ function normalizeAliases(
 
 	const pathsProvider = files.find((file) => file.paths !== undefined);
 	if (pathsProvider === undefined) {
-		return { kind: "ok", localAliases: [] };
+		return { kind: "ok", publicLocalAliases: [], resolutionAliases: [] };
 	}
 
+	const resolutionAliases = [...(normalizedAliasesByPath.get(pathsProvider.path) ?? [])].sort(
+		compareLocalAliases,
+	);
 	return {
 		kind: "ok",
-		localAliases: [...(normalizedAliasesByPath.get(pathsProvider.path) ?? [])].sort(
-			compareLocalAliases,
-		),
+		publicLocalAliases: resolutionAliases
+			.filter((alias) => alias.visibility === "public_local")
+			.map(({ prefix, targetPrefix }) => ({ prefix, targetPrefix })),
+		resolutionAliases,
 	};
 }
 
@@ -339,9 +354,9 @@ function normalizePathMappings(
 	paths: Readonly<Record<string, readonly string[]>>,
 	baseUrl: RootRelativePath,
 ):
-	| { kind: "ok"; localAliases: readonly LocalAlias[] }
+	| { kind: "ok"; localAliases: readonly ResolutionAlias[] }
 	| { kind: "error"; error: TsconfigAliasError } {
-	const localAliases: LocalAlias[] = [];
+	const localAliases: ResolutionAlias[] = [];
 	for (const [alias, targets] of Object.entries(paths)) {
 		const normalized = normalizeAlias(config, alias, targets, baseUrl);
 		if (normalized.kind === "error") {
@@ -385,7 +400,7 @@ function normalizeAlias(
 	alias: string,
 	targets: readonly string[],
 	baseUrl: RootRelativePath,
-): { kind: "ok"; localAlias: LocalAlias } | { kind: "error"; error: TsconfigAliasError } {
+): { kind: "ok"; localAlias: ResolutionAlias } | { kind: "error"; error: TsconfigAliasError } {
 	const prefix = normalizeAliasPrefix(alias);
 	if (prefix.kind === "error") {
 		return prefix;
@@ -403,7 +418,8 @@ function normalizeAlias(
 		kind: "ok",
 		localAlias: {
 			prefix: prefix.value,
-			targetPrefix: targetPrefix.value,
+			targetPrefix: targetPrefix.value.targetPrefix,
+			visibility: targetPrefix.value.visibility,
 		},
 	};
 }
@@ -432,7 +448,15 @@ function normalizeTargetPrefix(
 	config: Config,
 	baseUrl: RootRelativePath,
 	target: string,
-): { kind: "ok"; value: string } | { kind: "error"; error: TsconfigAliasError } {
+):
+	| {
+			kind: "ok";
+			value: {
+				readonly targetPrefix: string;
+				readonly visibility: ResolutionAlias["visibility"];
+			};
+	  }
+	| { kind: "error"; error: TsconfigAliasError } {
 	if (
 		containsControlCharacter(target) ||
 		target.includes("\\") ||
@@ -453,11 +477,19 @@ function normalizeTargetPrefix(
 	}
 
 	const repoPath = validateRepoPath(normalized.path);
-	if (repoPath.kind !== "ok" || !isSameOrDescendantOf(repoPath.repoPath, config.productRoot)) {
-		return unsupportedTsconfigError(`paths target ${target} is outside product_root`);
+	if (repoPath.kind !== "ok") {
+		return unsupportedTsconfigError(`paths target ${target} is outside repo root`);
 	}
 
-	return { kind: "ok", value: `${repoPathToString(repoPath.repoPath)}/` };
+	return {
+		kind: "ok",
+		value: {
+			targetPrefix: `${repoPathToString(repoPath.repoPath)}/`,
+			visibility: isSameOrDescendantOf(repoPath.repoPath, config.productRoot)
+				? "public_local"
+				: "internal_resolution",
+		},
+	};
 }
 
 function normalizeExtendsPath(

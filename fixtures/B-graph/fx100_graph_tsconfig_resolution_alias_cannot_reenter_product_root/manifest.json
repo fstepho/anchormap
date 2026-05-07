@@ -1,0 +1,19 @@
+{
+	"id": "fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root",
+	"family": "B-graph",
+	"purpose": "scan --json prevents an internal resolution alias from creating an edge after suffix normalization re-enters product_root.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "slice", "scan", "golden"],
+	"groups": ["m17"]
+}

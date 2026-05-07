@@ -1,0 +1,19 @@
+{
+	"id": "fx98_graph_tsconfig_alias_target_escapes_repo_root",
+	"family": "B-graph",
+	"purpose": "scan --json still rejects a tsconfig alias target that escapes the repository root.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "slice", "failure"],
+	"groups": ["m17"]
+}

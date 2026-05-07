@@ -1,1 +1,3 @@
-export const value = 1;
+import { dep } from "@/dep";
+
+export const value = dep;

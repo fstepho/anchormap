@@ -1,0 +1,28 @@
+{
+	"id": "fx67i_map_succeeds_with_out_of_slice_alias_finding",
+	"family": "B-map",
+	"purpose": "map succeeds after graph validation when the graph contains only an out-of-slice alias finding.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "expected_files",
+		"files": ["anchormap.yaml"]
+	},
+	"tags": ["map", "tsconfig", "alias", "slice", "write", "golden"],
+	"groups": ["m17"]
+}

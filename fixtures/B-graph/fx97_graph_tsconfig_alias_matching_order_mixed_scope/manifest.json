@@ -1,0 +1,19 @@
+{
+	"id": "fx97_graph_tsconfig_alias_matching_order_mixed_scope",
+	"family": "B-graph",
+	"purpose": "scan --json applies one canonical alias matching order across public and internal aliases.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "slice", "ordering", "scan", "golden"],
+	"groups": ["m17"]
+}

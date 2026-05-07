@@ -1,0 +1,19 @@
+{
+	"id": "fx99_graph_tsconfig_invalid_extends_still_blocks",
+	"family": "B-graph",
+	"purpose": "scan --json still rejects invalid tsconfig extends while allowing slice-compatible aliases elsewhere.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "extends", "failure"],
+	"groups": ["m17"]
+}

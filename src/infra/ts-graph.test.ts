@@ -16,7 +16,7 @@ import {
 	productGraphHasSupportedLocalDependencySyntax,
 	sourceFileHasLocalDependencySyntax,
 } from "./ts-graph";
-import type { LocalAlias } from "./tsconfig-io";
+import type { LocalAlias, ResolutionAlias } from "./tsconfig-io";
 
 type ParsedSourceFile = ts.SourceFile & {
 	readonly parseDiagnostics: readonly ts.Diagnostic[];
@@ -24,6 +24,10 @@ type ParsedSourceFile = ts.SourceFile & {
 
 const CWD = "/repo";
 const AT_ALIAS: readonly LocalAlias[] = [{ prefix: "@/", targetPrefix: "src/" }];
+const MIXED_RESOLUTION_ALIASES: readonly ResolutionAlias[] = [
+	{ prefix: "@shared/", targetPrefix: "shared/", visibility: "internal_resolution" },
+	{ prefix: "@/", targetPrefix: "src/", visibility: "public_local" },
+];
 
 function repoPath(value: string): RepoPath {
 	const result = validateRepoPath(value);
@@ -930,6 +934,83 @@ test("resolves matching alias import and export declarations to local product fi
 		]);
 		assert.deepEqual(result.productGraph.graphFindings, []);
 		assert.equal(productGraphHasSupportedLocalDependencySyntax(result.productGraph), true);
+	}
+});
+
+test("classifies used internal resolution aliases as out-of-scope without adding edges", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts"), repoPath("src/dep.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes(
+				"import { dep } from '@/dep';\nimport { helper } from '@shared/helper';\n",
+			),
+			"src/dep.ts": bytes("export const dep = 1;\n"),
+			"shared/helper.ts": bytes("export const helper = 1;\n"),
+		}),
+		resolutionAliases: MIXED_RESOLUTION_ALIASES,
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), [
+			"src/dep.ts",
+		]);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "out_of_scope_static_edge",
+				importer: "src/index.ts",
+				target_path: "shared/helper.ts",
+			},
+		]);
+	}
+});
+
+test("classifies absent internal resolution alias targets as unresolved", () => {
+	const result = buildProductGraph(config(), [repoPath("src/index.ts")], {
+		cwd: CWD,
+		fs: createReadFileFs({
+			"src/index.ts": bytes("import { helper } from '@shared/missing';\n"),
+		}),
+		resolutionAliases: MIXED_RESOLUTION_ALIASES,
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "@shared/missing",
+			},
+		]);
+	}
+});
+
+test("prevents internal resolution aliases from re-entering product_root through suffix normalization", () => {
+	const result = buildProductGraph(
+		config(),
+		[repoPath("src/index.ts"), repoPath("src/inside.ts")],
+		{
+			cwd: CWD,
+			fs: createReadFileFs({
+				"src/index.ts": bytes("import { inside } from '@shared/../src/inside';\n"),
+				"src/inside.ts": bytes("export const inside = 1;\n"),
+			}),
+			resolutionAliases: MIXED_RESOLUTION_ALIASES,
+		},
+	);
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(result.productGraph.edgesByImporter.get(repoPath("src/index.ts")), []);
+		assert.deepEqual(result.productGraph.graphFindings, [
+			{
+				kind: "unresolved_static_edge",
+				importer: "src/index.ts",
+				specifier: "@shared/../src/inside",
+			},
+		]);
 	}
 });
 

@@ -20,6 +20,7 @@ test("missing tsconfig.json returns an empty alias state without reading parents
 	const state = assertLocalAliasesOk(result);
 	assert.equal(state.tsconfigPath, null);
 	assert.deepEqual(state.localAliases, []);
+	assert.deepEqual(state.resolutionAliases, []);
 });
 
 test("decodes UTF-8 with an initial BOM and parses JSONC aliases in canonical order", () => {
@@ -45,6 +46,11 @@ test("decodes UTF-8 with an initial BOM and parses JSONC aliases in canonical or
 		{ prefix: "@long/", targetPrefix: "src/long/" },
 		{ prefix: "#/", targetPrefix: "src/hash/" },
 		{ prefix: "@/", targetPrefix: "src/root/" },
+	]);
+	assert.deepEqual(state.resolutionAliases, [
+		{ prefix: "@long/", targetPrefix: "src/long/", visibility: "public_local" },
+		{ prefix: "#/", targetPrefix: "src/hash/", visibility: "public_local" },
+		{ prefix: "@/", targetPrefix: "src/root/", visibility: "public_local" },
 	]);
 });
 
@@ -259,11 +265,33 @@ test("rejects prototype-polluted tsconfig objects instead of reading inherited f
 	}
 });
 
-test("rejects alias targets that normalize outside product_root", () => {
+test("separates public local aliases from internal resolution aliases in canonical order", () => {
 	const result = loadLocalAliases(config(), {
 		cwd: CWD,
 		fs: createVirtualFs({
-			"tsconfig.json": '{ "compilerOptions": { "paths": { "@/*": ["tests/*"] } } }',
+			"tsconfig.json":
+				'{ "compilerOptions": { "paths": { "@/*": ["src/root/*"], "@shared/*": ["shared/*"], "@long/*": ["src/long/*"] } } }',
+		}),
+	});
+
+	const state = assertLocalAliasesOk(result);
+	assert.deepEqual(state.localAliases, [
+		{ prefix: "@long/", targetPrefix: "src/long/" },
+		{ prefix: "@/", targetPrefix: "src/root/" },
+	]);
+	assert.deepEqual(state.resolutionAliases, [
+		{ prefix: "@shared/", targetPrefix: "shared/", visibility: "internal_resolution" },
+		{ prefix: "@long/", targetPrefix: "src/long/", visibility: "public_local" },
+		{ prefix: "@/", targetPrefix: "src/root/", visibility: "public_local" },
+	]);
+});
+
+test("rejects alias targets that normalize outside repo root", () => {
+	const result = loadLocalAliases(config(), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			"tsconfig.json":
+				'{ "compilerOptions": { "baseUrl": "src", "paths": { "@/*": ["../../outside/*"] } } }',
 		}),
 	});
 

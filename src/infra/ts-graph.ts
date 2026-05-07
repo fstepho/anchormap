@@ -22,7 +22,7 @@ import {
 } from "../domain/repo-path";
 import type { Config } from "./config-io";
 import { decodeUtf8StrictNoBom } from "./repo-fs";
-import type { LocalAlias } from "./tsconfig-io";
+import type { LocalAlias, ResolutionAlias } from "./tsconfig-io";
 
 export interface ProductGraph {
 	readonly productFiles: readonly RepoPath[];
@@ -68,6 +68,7 @@ export interface BuildProductGraphOptions {
 	readonly cwd?: string;
 	readonly fs?: ProductGraphFs;
 	readonly localAliases?: readonly LocalAlias[];
+	readonly resolutionAliases?: readonly ResolutionAlias[];
 }
 
 export type ParseTypeScriptProductTextResult =
@@ -91,8 +92,16 @@ type CandidateDefinition = {
 
 type StaticEdgeResolutionBase =
 	| { readonly kind: "relative"; readonly specifier: string }
-	| { readonly kind: "repo_root"; readonly specifier: string }
+	| {
+			readonly kind: "repo_root";
+			readonly specifier: string;
+			readonly visibility: ResolutionAlias["visibility"];
+	  }
 	| { readonly kind: "external" };
+
+type InternalStaticEdgeResolutionCandidate = StaticEdgeResolutionCandidate & {
+	readonly visibility: ResolutionAlias["visibility"];
+};
 
 type StaticEdgeInputs = {
 	readonly supportedStaticEdgeInputs: readonly SupportedStaticEdgeInput[];
@@ -113,7 +122,9 @@ export function buildProductGraph(
 ): BuildProductGraphResult {
 	const cwd = options.cwd ?? process.cwd();
 	const fs = options.fs ?? nodeProductGraphFs;
-	const localAliases = normalizeLocalAliases(options.localAliases ?? []);
+	const resolutionAliases = normalizeResolutionAliases(
+		options.resolutionAliases ?? publicResolutionAliases(options.localAliases ?? []),
+	);
 	const parsedFiles: ParsedProductFile[] = [];
 	const sortedProductFiles = normalizeProductFiles(productFiles);
 
@@ -123,7 +134,7 @@ export function buildProductGraph(
 			return read;
 		}
 
-		const parsed = collectProductFileStaticEdgeInputs(productFile, read.text, localAliases);
+		const parsed = collectProductFileStaticEdgeInputs(productFile, read.text, resolutionAliases);
 		if (parsed.kind === "error") {
 			return parsed;
 		}
@@ -135,7 +146,7 @@ export function buildProductGraph(
 		});
 	}
 
-	const resolution = resolveSupportedStaticEdges(config, cwd, fs, parsedFiles, localAliases);
+	const resolution = resolveSupportedStaticEdges(config, cwd, fs, parsedFiles, resolutionAliases);
 	if (resolution.kind === "error") {
 		return resolution;
 	}
@@ -192,7 +203,7 @@ function getTypeScript(): typeof ts {
 function collectProductFileStaticEdgeInputs(
 	path: RepoPath,
 	text: string,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ):
 	| { kind: "ok"; staticEdgeInputs: StaticEdgeInputs }
 	| { kind: "error"; error: ProductGraphError } {
@@ -217,7 +228,7 @@ function collectProductFileStaticEdgeInputs(
 
 function collectSimpleProductFileStaticEdgeInputs(
 	text: string,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ): StaticEdgeInputs | undefined {
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
 	const lines = text.split(/\r\n|\n|\r/);
@@ -279,7 +290,7 @@ export function extractSupportedStaticEdgeInputs(
 	localAliases: readonly LocalAlias[] = [],
 ): SupportedStaticEdgeInput[] {
 	return [
-		...collectStaticEdgeInputs(sourceFile, normalizeLocalAliases(localAliases))
+		...collectStaticEdgeInputs(sourceFile, publicResolutionAliases(localAliases))
 			.supportedStaticEdgeInputs,
 	];
 }
@@ -292,7 +303,7 @@ export function extractUnsupportedStaticEdgeInputs(
 
 function collectStaticEdgeInputs(
 	sourceFile: ts.SourceFile,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ): StaticEdgeInputs {
 	const tsCompiler = getTypeScript();
 	const supportedStaticEdgeInputs: SupportedStaticEdgeInput[] = [];
@@ -325,7 +336,22 @@ export function buildStaticEdgeResolutionCandidates(
 	specifier: string,
 	localAliases: readonly LocalAlias[] = [],
 ): StaticEdgeResolutionCandidate[] {
-	const resolutionBase = staticEdgeResolutionBase(specifier, normalizeLocalAliases(localAliases));
+	return buildInternalStaticEdgeResolutionCandidates(
+		importer,
+		specifier,
+		publicResolutionAliases(localAliases),
+	).map(({ path, support }) => ({ path, support }));
+}
+
+function buildInternalStaticEdgeResolutionCandidates(
+	importer: RepoPath,
+	specifier: string,
+	localAliases: readonly ResolutionAlias[],
+): InternalStaticEdgeResolutionCandidate[] {
+	const resolutionBase = staticEdgeResolutionBase(
+		specifier,
+		normalizeResolutionAliases(localAliases),
+	);
 	if (resolutionBase.kind === "external") {
 		return [];
 	}
@@ -344,6 +370,8 @@ export function buildStaticEdgeResolutionCandidates(
 			{
 				path: normalized.repoPath,
 				support: definition.support,
+				visibility:
+					resolutionBase.kind === "repo_root" ? resolutionBase.visibility : "public_local",
 			},
 		];
 	});
@@ -354,7 +382,7 @@ export function sourceFileHasLocalDependencySyntax(
 	localAliases: readonly LocalAlias[] = [],
 ): boolean {
 	const tsCompiler = getTypeScript();
-	const normalizedLocalAliases = normalizeLocalAliases(localAliases);
+	const normalizedLocalAliases = publicResolutionAliases(localAliases);
 	let hasLocalDependencySyntax = false;
 
 	function visit(node: ts.Node): void {
@@ -381,7 +409,7 @@ export function sourceFileHasLocalDependencySyntax(
 
 function supportedStaticEdgeInputFromNode(
 	node: ts.Node,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ): SupportedStaticEdgeInput | undefined {
 	const tsCompiler = getTypeScript();
 	if (
@@ -446,14 +474,14 @@ function isLocalDependencySpecifier(specifier: string): boolean {
 
 function isSupportedStaticEdgeSpecifier(
 	specifier: string,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ): boolean {
 	return staticEdgeResolutionBase(specifier, localAliases).kind !== "external";
 }
 
 function staticEdgeResolutionBase(
 	specifier: string,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ): StaticEdgeResolutionBase {
 	if (isLocalDependencySpecifier(specifier)) {
 		return { kind: "relative", specifier };
@@ -464,6 +492,7 @@ function staticEdgeResolutionBase(
 		return {
 			kind: "repo_root",
 			specifier: `${localAlias.targetPrefix}${specifier.slice(localAlias.prefix.length)}`,
+			visibility: localAlias.visibility,
 		};
 	}
 
@@ -472,8 +501,8 @@ function staticEdgeResolutionBase(
 
 function matchingLocalAlias(
 	specifier: string,
-	localAliases: readonly LocalAlias[],
-): LocalAlias | undefined {
+	localAliases: readonly ResolutionAlias[],
+): ResolutionAlias | undefined {
 	if (specifier.includes("\\") || specifier.startsWith("./") || specifier.startsWith("../")) {
 		return undefined;
 	}
@@ -562,7 +591,7 @@ function resolveSupportedStaticEdges(
 	cwd: string,
 	fs: ProductGraphFs,
 	parsedFiles: readonly ParsedProductFile[],
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ):
 	| {
 			kind: "ok";
@@ -624,7 +653,7 @@ function resolveSupportedStaticEdge(
 	candidateExistenceCache: Map<RepoPath, boolean>,
 	importer: RepoPath,
 	edgeInput: SupportedStaticEdgeInput,
-	localAliases: readonly LocalAlias[],
+	localAliases: readonly ResolutionAlias[],
 ):
 	| { kind: "supported_target"; target: RepoPath }
 	| { kind: "finding"; finding: Finding }
@@ -632,7 +661,7 @@ function resolveSupportedStaticEdge(
 	let firstOutOfScopeTarget: RepoPath | undefined;
 	let firstUnsupportedTarget: RepoPath | undefined;
 
-	for (const candidate of buildStaticEdgeResolutionCandidates(
+	for (const candidate of buildInternalStaticEdgeResolutionCandidates(
 		importer,
 		edgeInput.specifier,
 		localAliases,
@@ -643,13 +672,18 @@ function resolveSupportedStaticEdge(
 			return exists;
 		}
 		if (exists.exists) {
-			if (candidate.support === "supported" && isInSupportedProductScope(config, candidatePath)) {
+			if (
+				candidate.visibility === "public_local" &&
+				candidate.support === "supported" &&
+				isInSupportedProductScope(config, candidatePath)
+			) {
 				return { kind: "supported_target", target: candidatePath };
 			}
 			if (firstOutOfScopeTarget === undefined && isOutOfProductScope(config, candidatePath)) {
 				firstOutOfScopeTarget = candidatePath;
 			}
 			if (
+				candidate.visibility === "public_local" &&
 				firstUnsupportedTarget === undefined &&
 				candidate.support === "diagnostic_only" &&
 				isInSupportedProductScope(config, candidatePath)
@@ -727,6 +761,19 @@ function isSameOrDescendantOf(path: RepoPath, possibleAncestor: RepoPath): boole
 }
 
 function normalizeLocalAliases(localAliases: readonly LocalAlias[]): readonly LocalAlias[] {
+	return [...localAliases].sort(compareLocalAliases);
+}
+
+function publicResolutionAliases(localAliases: readonly LocalAlias[]): readonly ResolutionAlias[] {
+	return normalizeLocalAliases(localAliases).map((localAlias) => ({
+		...localAlias,
+		visibility: "public_local",
+	}));
+}
+
+function normalizeResolutionAliases(
+	localAliases: readonly ResolutionAlias[],
+): readonly ResolutionAlias[] {
 	return [...localAliases].sort(compareLocalAliases);
 }
 

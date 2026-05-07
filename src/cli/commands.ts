@@ -546,7 +546,7 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		productFilesResult.productFiles,
 		{
 			cwd: context.cwd,
-			localAliases: localAliasesResult.state.localAliases,
+			resolutionAliases: localAliasesResult.state.resolutionAliases,
 		},
 	);
 	if (productGraphResult.kind === "error") {
@@ -645,7 +645,7 @@ function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandRe
 		productFilesResult.productFiles,
 		{
 			cwd: context.cwd,
-			localAliases: localAliasesResult.state.localAliases,
+			resolutionAliases: localAliasesResult.state.resolutionAliases,
 		},
 	);
 	if (productGraphResult.kind === "error") {

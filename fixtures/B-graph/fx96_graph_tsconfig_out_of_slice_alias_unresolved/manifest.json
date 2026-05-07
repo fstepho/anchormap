@@ -1,0 +1,19 @@
+{
+	"id": "fx96_graph_tsconfig_out_of_slice_alias_unresolved",
+	"family": "B-graph",
+	"purpose": "scan --json reports unresolved_static_edge for a used internal resolution alias with no existing candidate.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["graph", "tsconfig", "alias", "slice", "scan", "golden"],
+	"groups": ["m17"]
+}

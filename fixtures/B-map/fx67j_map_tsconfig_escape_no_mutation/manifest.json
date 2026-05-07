@@ -1,0 +1,27 @@
+{
+	"id": "fx67j_map_tsconfig_escape_no_mutation",
+	"family": "B-map",
+	"purpose": "map with a tsconfig alias target escaping the repository root exits 3 without mutating anchormap.yaml.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"map",
+		"--anchor",
+		"FR-014",
+		"--seed",
+		"src/index.ts"
+	],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["map", "tsconfig", "alias", "slice", "failure", "no_mutation"],
+	"groups": ["m17"]
+}
