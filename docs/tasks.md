@@ -29,8 +29,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
-- Last completed task: `T17.1 — Implement slice-compatible tsconfig alias resolution`
+- Next executable product task: None recorded.
+- Last completed task: `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -140,6 +140,7 @@
   - `T16.4 — Close TSX release readiness`
   - `T17.0 — Specify slice-compatible tsconfig alias scope`
   - `T17.1 — Implement slice-compatible tsconfig alias resolution`
+  - `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

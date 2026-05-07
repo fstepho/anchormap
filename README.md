@@ -10,7 +10,7 @@ a deletion-safety system.
 
 ## Public Demo
 
-A real-world demo is available at
+A reference demo is available at
 [fstepho/anchormap-h3-demo](https://github.com/fstepho/anchormap-h3-demo).
 
 It applies AnchorMap to the `src/` tree of
@@ -58,7 +58,11 @@ component ownership, JSX runtime behavior, or framework conventions.
 AnchorMap automatically reads `./tsconfig.json` when it is present. The
 supported alias subset is deliberately small: local relative `extends`, optional
 `compilerOptions.baseUrl`, and `compilerOptions.paths` entries with exactly one
-terminal `/*` key and exactly one terminal `/*` target under `product_root`.
+terminal `/*` key and exactly one terminal `/*` target under the repository
+root. Aliases that target `product_root` are public local aliases and are
+reported in `scan --json` as `config.local_aliases`; aliases that target the
+repository root but leave `product_root` are used only to classify references
+that leave the selected slice.
 
 ```jsonc
 {
@@ -76,14 +80,53 @@ With that config, static `import` and `export` declarations such as
 edges. A missing `./tsconfig.json`, or a supported config chain without
 effective `paths`, preserves relative-only graph behavior. A present
 `./tsconfig.json` that is unreadable, invalid, cyclic, non-local, or outside
-the supported alias subset makes `scan` and `map` fail with repository error
-code `3`.
+the supported deterministic alias subset makes `scan` and `map` fail with
+repository error code `3`.
 
 The following are outside the current support boundary: monorepos, `.js` and
 `.jsx` product files, declaration files as product files, TypeScript aliases
 beyond the deterministic local subset above, package specifier resolution,
 dynamic imports, `require`, project references, Node resolver conditions,
 framework semantics, and repository-wide inference beyond the configured roots.
+
+## Existing Codebase Slice Setup
+
+Run AnchorMap on an unmodified existing TypeScript codebase slice. No framework
+setup, no build integration, no tsconfig edits. AnchorMap reports what is
+deterministically traceable inside the slice, and marks references that leave
+that scope.
+
+A slice is one configured `product_root` inside a larger repository. Common
+examples are `app`, `src`, or `server`.
+
+Start at the existing repository root:
+
+```sh
+mkdir -p .specify/specs
+anchormap init --root app --spec-root .specify/specs
+anchormap scan --json > anchormap.scan.json
+```
+
+Keep the repository's original `./tsconfig.json`. AnchorMap reads only the root
+`./tsconfig.json` and local relative `extends` files. It does not read
+framework configuration, package exports, project references, workspace
+metadata, Git state, caches, network data, clocks, or environment variables as
+resolver truth.
+
+Interpret the first report as a slice boundary report:
+
+- `files[*].supported_local_targets` lists supported static references traced
+  inside `product_root`;
+- `out_of_scope_static_edge` means a supported static reference points to an
+  existing file outside the selected slice;
+- `unresolved_static_edge` means a supported local or alias reference could not
+  be resolved inside the deterministic subset;
+- aliases outside `product_root` are not rendered in `config.local_aliases`,
+  even when they are used internally to classify an outgoing reference.
+
+These findings are analysis results, not proof of dead code or ownership. To
+try a different slice, run `init` in a fresh checkout or replace
+`anchormap.yaml` intentionally with a new `product_root`.
 
 ## Minimal Example
 
