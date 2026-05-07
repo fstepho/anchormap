@@ -1,0 +1,38 @@
+AnchorMap dogfood brief
+
+Dogfood strict scan is a curated traceability signal, not full repo coverage.
+
+strict scan brief
+
+Scan status
+- schema_version: 4
+- analysis_health: clean
+- spec_root: dogfood/specs
+
+Coverage
+- product files: 62
+- usable mappings: 19
+- covered product files: 51 / 62
+- multi-covered product files: 28
+
+Anchors
+- observed: 19
+- active: 19
+- draft: 0
+
+Findings
+- untraced_product_file: 11
+
+Dogfood exploratory scan keeps broad docs/ anchors visible and is non-blocking.
+
+exploratory scan brief
+
+Scan status
+- result: failed
+- exit_code: 3
+- spec_root: docs
+
+Diagnostic
+- duplicate spec anchor M15 in docs/release-runbook.md and docs/tasks.md
+
+Interpretation: this brief is a non-contractual dogfood view over scan --json. It does not imply dead code, ownership, or architecture quality.

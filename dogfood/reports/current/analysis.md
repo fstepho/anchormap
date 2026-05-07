@@ -17,18 +17,20 @@ AnchorMap is useful when it keeps three states separate:
   untraced.
 
 The strict scan is clean but deliberately incomplete. That is the reference
-posture: it shows that the curated map is internally coherent, while keeping 10
+posture: it shows that the curated map is internally coherent, while keeping 11
 product files visible outside the map.
 
-The schema v3 output qualifies coverage. A reader can distinguish active and
+The schema v4 output qualifies coverage. A reader can distinguish active and
 draft anchors, direct seeding, focused single-anchor coverage, broad
 cross-cutting overlap, and missing traceability without a repo-specific
 interpretation layer.
 
-The exploratory scan is the counterweight. It shows that broad documentation
-discovery can generate many formal identifiers without creating a useful runtime
-trace map. This is why AnchorMap reports structural traceability, not ownership,
-conformance, dead code, or safe deletion.
+The exploratory scan is the counterweight. It is intentionally non-blocking:
+when broad documentation discovery succeeds it can generate many formal
+identifiers without creating a useful runtime trace map, and when it fails it
+keeps documentation anchor collisions visible. This is why AnchorMap reports
+structural traceability, not ownership, conformance, dead code, or safe
+deletion.
 
 ## Quick Read
 
@@ -37,7 +39,7 @@ Dogfood produces two complementary views:
 - the strict scan, based on `dogfood/specs`, measures a small curated
   traceability map;
 - the exploratory scan, based on `docs`, keeps the repository's real
-  documentation noise visible.
+  documentation noise visible, including duplicate-anchor failures.
 
 The strict scan is therefore not proof of complete repository coverage. It
 shows what AnchorMap can make explicit when anchors and mappings are deliberate.
@@ -46,10 +48,10 @@ shows what AnchorMap can make explicit when anchors and mappings are deliberate.
 
 The strict scan reports these specificity signals:
 
-- direct seeding is visible (`38 / 60` product files);
+- direct seeding is visible (`38 / 62` product files);
 - selective coverage is visible (`23` single-cover files);
-- cross-cutting overlap is visible (`27` multi-cover files);
-- traceability gaps are visible (`10` uncovered files).
+- cross-cutting overlap is visible (`28` multi-cover files);
+- traceability gaps are visible (`11` uncovered files).
 
 These metrics stay inside AnchorMap's product boundary: structural
 traceability, not ownership, conformance, dead code, or safe deletion.
@@ -58,7 +60,7 @@ traceability, not ownership, conformance, dead code, or safe deletion.
 
 Observed state:
 
-- `schema_version = 3`;
+- `schema_version = 4`;
 - `analysis_health = clean`;
 - 19 observed anchors;
 - 19 active anchors;
@@ -67,15 +69,15 @@ Observed state:
 - no `unmapped_anchor`;
 - no `stale_mapping_anchor`;
 - no `broken_seed_path`;
-- 60 product files;
-- 50 covered files;
-- 10 uncovered files emitted as `untraced_product_file`.
+- 62 product files;
+- 51 covered files;
+- 11 uncovered files emitted as `untraced_product_file`.
 
 Traceability metrics:
 
 - 38 directly seeded product files;
 - 23 single-cover product files;
-- 27 multi-cover product files.
+- 28 multi-cover product files.
 
 The important signal is that uncovered files are visible. The strict scan makes
 those files reviewable as traceability gaps instead of mixing them with broad
@@ -91,7 +93,7 @@ The strict anchors cover the expected cores:
 - `SPEC.ANCHOR_DISCOVERY` traces anchor validation and discovery;
 - `GRAPH.LOCAL_TS_REACHABILITY` traces the local TypeScript graph;
 - `SCAN.COVERAGE_FINDINGS` traces the scan and finding model;
-- `SCAN.TRACEABILITY_METRICS` traces the schema v3 metrics model without
+- `SCAN.TRACEABILITY_METRICS` traces the schema v4 metrics model without
   claiming the renderer as a direct seed;
 - `RENDER.JSON_CANONICAL` traces canonical JSON rendering;
 - `HARNESS.FIXTURE_ORACLES` traces fixture harness oracles;
@@ -138,7 +140,7 @@ evaluation, and rendering.
 
 ## What The Strict Scan Exposes
 
-The 10 `untraced_product_file` findings are the clearest gap signal.
+The 11 `untraced_product_file` findings are the clearest gap signal.
 
 The strict dogfood map promotes selected focused or boundary-level tests that
 directly protect durable obligations. Wider integration-style suites remain
@@ -157,6 +159,7 @@ The untraced files are:
 - `src/infra/scaffold.test.ts`;
 - `src/infra/spec-index.test.ts`;
 - `src/infra/ts-graph.test.ts`.
+- `src/infra/tsconfig-io.test.ts`.
 
 This does not mean those files are unused or removable. It means they are not
 tied to a durable anchor in the strict dogfood map. The set is concentrated in
@@ -172,22 +175,21 @@ The useful interpretation is:
 
 ## Exploratory Scan
 
-Observed state:
+Current observed state:
 
-- `schema_version = 3`;
-- `analysis_health = clean`;
-- 127 observed anchors under `docs`;
-- 127 active anchors;
-- 0 draft anchors;
-- 0 stored mappings in this temporary scan;
-- 127 `unmapped_anchor` findings.
+- no exploratory JSON is emitted for the current run;
+- the scan exits with code `3`;
+- the blocking diagnostic is duplicate spec anchor `M15` in
+  `docs/release-runbook.md` and `docs/tasks.md`.
 
-This result is intentionally non-blocking. It shows that `docs` contains many
+This result is intentionally non-blocking. It shows that `docs` contains broad
 observable identifiers (`T*`, `M*`, `S*`, `ADR-*`) that are useful as document
-structure, but are not a curated runtime traceability map.
+structure, but are not a curated runtime traceability map and can collide when
+the whole `docs` tree is treated as one spec root.
 
 The exploratory scan qualifies the strict scan: the strict map gives a clean
-curated signal, while the broad docs scan keeps documentation noise visible.
+curated signal, while the broad docs pass keeps documentation noise visible
+even when that noise appears as an indexing failure.
 
 ## Conclusion
 

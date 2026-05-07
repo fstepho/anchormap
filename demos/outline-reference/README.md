@@ -25,59 +25,89 @@ git clone https://github.com/outline/outline.git outline-anchormap-demo
 cd outline-anchormap-demo
 ```
 
-Install or point at an AnchorMap build:
+Install AnchorMap or point at a local build:
 
 ```sh
 npm install -g anchormap
+# or:
+# export ANCHORMAP_BIN="node /path/to/anchormap/dist/anchormap.js"
 ```
 
-Create one active demo spec and initialize AnchorMap for the `app` slice:
+If `ANCHORMAP_BIN` is not set, the commands below use the installed
+`anchormap` binary:
+
+```sh
+ANCHORMAP_BIN="${ANCHORMAP_BIN:-anchormap}"
+```
+
+Initialize AnchorMap for the `app` slice and scaffold draft anchors:
 
 ```sh
 mkdir -p .specify/specs
-cat > .specify/specs/anchormap-outline-slice.md <<'EOF'
-# OUTLINE.APP.SLICE Outline app slice smoke
-EOF
 
-anchormap init --root app --spec-root .specify/specs
+$ANCHORMAP_BIN init --root app --spec-root .specify/specs
+$ANCHORMAP_BIN scaffold --output .specify/specs/scaffold.generated.md
 ```
 
-Run the first scan using Outline's unchanged root `tsconfig.json`:
+Run a first scan using Outline's unchanged root `tsconfig.json`:
 
 ```sh
 test -f tsconfig.json
-anchormap scan --json > anchormap.outline-app.scan.json
+$ANCHORMAP_BIN scan --json > anchormap.outline-app.scaffold.json
 ```
 
-Optional local formatting for inspection:
+Promote three scaffolded anchors into a temporary active spec:
 
 ```sh
-node -e 'const fs=require("node:fs"); const p="anchormap.outline-app.scan.json"; console.log(JSON.stringify(JSON.parse(fs.readFileSync(p,"utf8")), null, 2));'
+cat > .specify/specs/outline-demo-active.md <<'EOF'
+# ACTIONS.DEFINITIONS.API_KEYS.CREATE_API_KEY
+
+Allows a user to start the API key creation flow from the action menu.
+
+# ACTIONS.DEFINITIONS.DOCUMENTS.CREATE_DOCUMENT
+
+Allows a user to create a new document from document actions.
+
+# ACTIONS.DEFINITIONS.TEAMS.DESKTOP_LOGIN_TEAM
+
+Allows a desktop login action to route the user into a team session.
+EOF
+```
+
+Map those anchors one at a time:
+
+```sh
+$ANCHORMAP_BIN map \
+  --anchor ACTIONS.DEFINITIONS.API_KEYS.CREATE_API_KEY \
+  --seed app/actions/definitions/apiKeys.tsx
+
+$ANCHORMAP_BIN map \
+  --anchor ACTIONS.DEFINITIONS.DOCUMENTS.CREATE_DOCUMENT \
+  --seed app/actions/definitions/documents.tsx
+
+$ANCHORMAP_BIN map \
+  --anchor ACTIONS.DEFINITIONS.TEAMS.DESKTOP_LOGIN_TEAM \
+  --seed app/actions/definitions/teams.tsx
+```
+
+Run the mapped scan:
+
+```sh
+$ANCHORMAP_BIN scan --json > anchormap.outline-app.mapped.json
 ```
 
 ## Read The Result
 
-Use this quick pass:
+Use the non-contractual scan brief helper from this repository:
 
 ```sh
-node - <<'NODE'
-const fs = require("node:fs");
-const report = JSON.parse(fs.readFileSync("anchormap.outline-app.scan.json", "utf8"));
-const files = Object.entries(report.files);
-const traced = files.filter(([, file]) => file.supported_local_targets.length > 0);
-const leaving = report.findings.filter((finding) => finding.kind === "out_of_scope_static_edge");
-const unresolved = report.findings.filter((finding) => finding.kind === "unresolved_static_edge");
-
-console.log(`schema_version: ${report.schema_version}`);
-console.log(`product_root: ${report.config.product_root}`);
-console.log(`tsconfig_path: ${report.config.tsconfig_path}`);
-console.log(`public local aliases: ${report.config.local_aliases.length}`);
-console.log(`product files: ${files.length}`);
-console.log(`files with traced in-slice references: ${traced.length}`);
-console.log(`references leaving selected scope: ${leaving.length}`);
-console.log(`unresolved supported references: ${unresolved.length}`);
-NODE
+ANCHORMAP_REPO=/path/to/anchormap
+node "$ANCHORMAP_REPO/demos/outline-reference/scan-brief.mjs" anchormap.outline-app.mapped.json
 ```
+
+The helper reads AnchorMap's `scan --json` output and prints a bounded demo
+brief. It does not replace `scan --json`, define additional product behavior,
+infer ownership, or identify dead code.
 
 The expected M17 readout is bounded:
 
@@ -95,6 +125,6 @@ The expected M17 readout is bounded:
 Remove only the demo artifacts created by this runbook:
 
 ```sh
-rm -f anchormap.yaml anchormap.outline-app.scan.json
+rm -f anchormap.yaml anchormap.outline-app.scaffold.json anchormap.outline-app.mapped.json
 rm -rf .specify
 ```

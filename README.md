@@ -19,7 +19,8 @@ It applies AnchorMap to the `src/` tree of
 
 The demo includes a 308-anchor scaffold draft, 3 promoted active anchors, 3
 explicit mappings, clean analysis health, a pretty-printed full scan output,
-and a short scan summary.
+and a short scan brief with the same status, coverage, anchors, findings, and
+interpretation vocabulary used by the reference runbooks.
 
 ## Install
 
@@ -127,6 +128,11 @@ Interpret the first report as a slice boundary report:
 These findings are analysis results, not proof of dead code or ownership. To
 try a different slice, run `init` in a fresh checkout or replace
 `anchormap.yaml` intentionally with a new `product_root`.
+
+For a reference runbook against an existing codebase slice, see
+[`demos/outline-reference`](demos/outline-reference/README.md). It uses
+Outline's original `tsconfig.json` and presents the result as a degraded slice
+boundary report, not as the clean public demo.
 
 ## Minimal Example
 

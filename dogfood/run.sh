@@ -38,14 +38,21 @@ cp -R "$REPO_DIR/docs" "$EXPLORATORY_DIR/docs"
   "$ANCHORMAP" scan --json > scan_strict.json
 )
 
+EXPLORATORY_STATUS=0
 (
   cd "$EXPLORATORY_DIR"
   "$ANCHORMAP" init --root src --spec-root docs > /dev/null
-  "$ANCHORMAP" scan --json > scan_docs_exploratory.json
-)
+  "$ANCHORMAP" scan --json > scan_docs_exploratory.json 2> scan_docs_exploratory.error.txt
+) || EXPLORATORY_STATUS=$?
 
 cp "$STRICT_DIR/scan_strict.json" "$REPORT_DIR/scan_strict.json"
-cp "$EXPLORATORY_DIR/scan_docs_exploratory.json" "$REPORT_DIR/scan_docs_exploratory.json"
+if [ "$EXPLORATORY_STATUS" -eq 0 ]; then
+  cp "$EXPLORATORY_DIR/scan_docs_exploratory.json" "$REPORT_DIR/scan_docs_exploratory.json"
+  rm -f "$REPORT_DIR/scan_docs_exploratory.error.txt"
+else
+  cp "$EXPLORATORY_DIR/scan_docs_exploratory.error.txt" "$REPORT_DIR/scan_docs_exploratory.error.txt"
+  rm -f "$REPORT_DIR/scan_docs_exploratory.json" "$REPORT_DIR/scan_docs_exploratory.pretty.json"
+fi
 
 node -e '
 const fs = require("node:fs");
@@ -84,6 +91,15 @@ function summarize(path) {
 }
 
 function linesFor(label, specRoot, summary) {
+  if (summary.status === "failed") {
+    return [
+      `${label} spec_root: ${specRoot}`,
+      `${label} status:          failed`,
+      `${label} exit_code:       ${summary.exitCode}`,
+      `${label} error:           ${summary.error}`,
+    ];
+  }
+
   const lines = [
     `${label} spec_root: ${specRoot}`,
     `${label} analysis_health:  ${summary.analysisHealth}`,
@@ -101,21 +117,94 @@ function linesFor(label, specRoot, summary) {
   return lines;
 }
 
+function briefFor(label, specRoot, summary) {
+  if (summary.status === "failed") {
+    return [
+      `${label} scan brief`,
+      "",
+      "Scan status",
+      "- result: failed",
+      `- exit_code: ${summary.exitCode}`,
+      `- spec_root: ${specRoot}`,
+      "",
+      "Diagnostic",
+      `- ${summary.error}`,
+    ];
+  }
+
+  const trace = summary.traceabilitySummary;
+  const lines = [
+    `${label} scan brief`,
+    "",
+    "Scan status",
+    `- schema_version: ${summary.schemaVersion}`,
+    `- analysis_health: ${summary.analysisHealth}`,
+    `- spec_root: ${specRoot}`,
+    "",
+    "Coverage",
+    `- product files: ${trace.product_file_count}`,
+    `- usable mappings: ${trace.usable_mapping_count}`,
+    `- covered product files: ${trace.covered_product_file_count} / ${trace.product_file_count}`,
+    `- multi-covered product files: ${trace.multi_cover_product_file_count}`,
+    "",
+    "Anchors",
+    `- observed: ${trace.observed_anchor_count}`,
+    `- active: ${trace.active_anchor_count}`,
+    `- draft: ${trace.draft_anchor_count}`,
+    "",
+    "Findings",
+  ];
+  const findingEntries = Object.entries(summary.findingKinds).sort(([a], [b]) => a.localeCompare(b));
+  if (findingEntries.length === 0) {
+    lines.push("- none");
+  } else {
+    for (const [kind, count] of findingEntries) {
+      lines.push(`- ${kind}: ${count}`);
+    }
+  }
+  return lines;
+}
+
 writePrettyJson(process.argv[1]);
-writePrettyJson(process.argv[2]);
 
 const strict = summarize(process.argv[1]);
-const exploratory = summarize(process.argv[2]);
+const exploratoryStatus = Number(process.argv[5]);
+let exploratory;
+if (exploratoryStatus === 0) {
+  writePrettyJson(process.argv[2]);
+  exploratory = summarize(process.argv[2]);
+} else {
+  exploratory = {
+    status: "failed",
+    exitCode: exploratoryStatus,
+    error: fs.readFileSync(process.argv[6], "utf8").trim(),
+  };
+}
 fs.writeFileSync(
   process.argv[3],
-  `${JSON.stringify({ strict, exploratory }, null, 2)}\n`,
+  `${JSON.stringify({ strict: { status: "ok", ...strict }, exploratory }, null, 2)}\n`,
 );
-process.stdout.write([
+const brief = [
+  "AnchorMap dogfood brief",
+  "",
   "Dogfood strict scan is a curated traceability signal, not full repo coverage.",
-  ...linesFor("strict", "dogfood/specs", strict),
+  "",
+  ...briefFor("strict", "dogfood/specs", strict),
   "",
   "Dogfood exploratory scan keeps broad docs/ anchors visible and is non-blocking.",
+  "",
+  ...briefFor("exploratory", "docs", exploratory),
+  "",
+  "Interpretation: this brief is a non-contractual dogfood view over scan --json. It does not imply dead code, ownership, or architecture quality.",
+  "",
+].join("\n");
+fs.writeFileSync(process.argv[4], brief);
+process.stdout.write([
+  brief,
+  "",
+  ...linesFor("strict", "dogfood/specs", strict),
+  "",
   ...linesFor("exploratory", "docs", exploratory),
   "",
 ].join("\n"));
-' "$REPORT_DIR/scan_strict.json" "$REPORT_DIR/scan_docs_exploratory.json" "$REPORT_DIR/summary.json"
+' "$REPORT_DIR/scan_strict.json" "$REPORT_DIR/scan_docs_exploratory.json" "$REPORT_DIR/summary.json" "$REPORT_DIR/brief.txt" "$EXPLORATORY_STATUS" "$REPORT_DIR/scan_docs_exploratory.error.txt"
