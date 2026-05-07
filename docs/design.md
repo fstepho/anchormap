@@ -54,6 +54,7 @@ ADRs courantes :
 - `ADR-0015` — Deterministic TypeScript export scaffold (`Accepted`)
 - `ADR-0016` — Deterministic tsconfig local alias resolution (`Accepted`)
 - `ADR-0017` — Deterministic TSX product file support (`Accepted`)
+- `ADR-0018` — Slice-compatible tsconfig alias resolution (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -82,7 +83,7 @@ current working directory
   -> repo_fs
   -> config_io.loadConfig
   -> spec_index
-  -> tsconfig_io.loadLocalAliases (M15)
+  -> tsconfig_io.loadLocalAliases (M15/M17)
   -> ts_graph
   -> scan_engine
   -> render
@@ -101,7 +102,7 @@ args
   -> commands.validateMapAnchor
   -> ts_graph.discoverProductFiles
   -> commands.validateMapSeedsInProductFiles
-  -> tsconfig_io.loadLocalAliases (M15)
+  -> tsconfig_io.loadLocalAliases (M15/M17)
   -> ts_graph.buildProductGraph (validation dépôt requise, résultat ignoré)
   -> config_io.writeConfigAtomic
   -> commands (optional human output)
@@ -277,6 +278,8 @@ API cible :
 - `ProductGraph buildProductGraph(config: Config, fs: RepoFs, productFiles: SortedSet<RepoPath>)`
 - extension M15 cible :
   `ProductGraph buildProductGraph(config: Config, fs: RepoFs, productFiles: SortedSet<RepoPath>, localAliases: SortedList<LocalAlias>)`
+- extension M17 cible :
+  `ProductGraph buildProductGraph(config: Config, fs: RepoFs, productFiles: SortedSet<RepoPath>, resolutionAliases: SortedList<ResolutionAlias>)`
 
 Structure cible :
 
@@ -346,6 +349,39 @@ Décisions clés :
   vide ;
 - les aliases normalisés sont une entrée Observed du scan, pas de l'état
   persistant AnchorMap.
+
+Extension M17 cible :
+
+```text
+TsconfigAliasState {
+  tsconfigPath: RepoPath | null
+  publicLocalAliases: SortedList<LocalAlias>
+  resolutionAliases: SortedList<ResolutionAlias>
+}
+
+ResolutionAlias {
+  prefix: string
+  targetPrefix: string
+  visibility: "public_local" | "internal_resolution"
+}
+```
+
+Décisions M17 :
+
+- `tsconfig_io` conserve la même frontière de lecture : seulement
+  `./tsconfig.json` et ses `extends` locaux relatifs ;
+- une cible d'alias déterministe sous `product_root` produit un alias public
+  local rendu dans `config.local_aliases` ;
+- une cible d'alias déterministe sous la racine du dépôt mais hors
+  `product_root` produit un alias de résolution interne non rendu ;
+- une cible qui sort de la racine du dépôt, un `extends` invalide, un cycle, un
+  symlink inspecté, un JSONC invalide ou une forme non déterministe produit
+  `UnsupportedRepoError` ;
+- `resolutionAliases` contient les aliases publics et internes dans un seul
+  ordre canonique de matching ; `publicLocalAliases` est le sous-ensemble public
+  filtré dans le même ordre pour le rendu JSON ;
+- `scan_engine` et `render` ne reçoivent que `publicLocalAliases` pour
+  `config.local_aliases`.
 
 ### 5.5 `scan_engine`
 
@@ -765,6 +801,30 @@ Les frontières restent inchangées :
 - aucun resolver TypeScript complet, Node, package, cache, Git, réseau, horloge
   ou environnement n'est utilisé.
 
+Extension M17 cible :
+
+- `commands` transmet à `ts_graph` l'ensemble `resolutionAliases` produit par
+  `tsconfig_io`, pas seulement le sous-ensemble rendu publiquement ;
+- le matching d'aliases utilise un seul ordre canonique pour aliases publics et
+  aliases internes ;
+- un alias public qui résout vers un candidat supporté sous `product_root`
+  produit un edge supporté comme en M15 ;
+- un alias interne qui résout vers un candidat existant hors `product_root`
+  produit un finding `out_of_scope_static_edge` ;
+- un alias interne ne produit jamais d'edge supporté, même si le suffixe du
+  specifier normalise lexicalement vers un candidat existant sous
+  `product_root` ;
+- un alias interne qui ne résout vers aucun candidat existant produit
+  `unresolved_static_edge` ;
+- un alias interne inutilisé ne produit aucun finding ;
+- `map` continue de construire le graphe avant écriture pour forcer les lectures
+  requises, mais n'échoue pas seulement parce que ce graphe contient des
+  findings `out_of_scope_static_edge` issus d'aliases hors slice ;
+- un `TsconfigAliasState` invalide bloque toujours `scan` et `map` avant toute
+  mutation ;
+- `scaffold` ne charge pas `tsconfig_io` et reste limité aux `product_files`
+  découverts sous `product_root`.
+
 ### 7.5 Validation des mappings
 
 Pour chaque mapping stocké trié par `anchor_id` :
@@ -1179,7 +1239,8 @@ Le design v1.0 repousse volontairement :
 
 - plugin system ;
 - abstraction multi-langage ;
-- support des aliases TypeScript au-delà du sous-ensemble M15 déterministe ;
+- support des aliases TypeScript au-delà du sous-ensemble M15/M17
+  déterministe ;
 - prise en charge des monorepos ;
 - cache persistant ;
 - API serveur ;

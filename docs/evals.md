@@ -45,6 +45,7 @@ Ce document est **hors scope** pour :
 | Scaffold Markdown depuis exports TypeScript publics | § 9.4 | B-scaffold |
 | Résolution du graphe statique, classification et findings | §§ 10, 11 | B-graph, C5, C6 |
 | Aliases locaux déterministes depuis `tsconfig.json` | §§ 10.1.1, 10.2.2, 12.2.4, 13.2.1 | B-graph M15, B-map, B-cli, goldens |
+| Onboarding par slice de code existant avec aliases `tsconfig.json` mixtes | §§ 5.3.1, 9.2, 9.3, 10.1.1, 10.2.2, 12.2.4, 12.3, 13.2.1 | B-graph M17, B-map M17, B-cli M15, goldens |
 | Fichiers produit `.tsx` déterministes | §§ 1.1, 6.5, 9.2, 9.4, 10, 12.3 | B-graph M16, B-map, B-scaffold, goldens |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
@@ -72,6 +73,10 @@ Couverture minimale :
 - refus des champs inconnus et des clés YAML dupliquées ;
 - invariants `seed_files` non vide et sans doublon ;
 - ordre canonique des clés JSON et des collections ;
+- séparation déterministe entre aliases publics locaux sous `product_root`,
+  aliases de résolution hors slice et aliases invalides ;
+- ordre de matching canonique identique pour aliases publics et aliases de
+  résolution ;
 - déduplication et tri canonique des findings ;
 - écriture canonique de `anchormap.yaml`, y compris `mappings: {}` ;
 - absence de clés JSON hors contrat.
@@ -270,9 +275,9 @@ pas partie du gate v1.0 tant que l'extension n'est pas implémentée et activée
 
 #### 5.4.2 Fixtures M15 planifiées pour aliases locaux `tsconfig.json`
 
-Ces fixtures planifient l'extension M15 définie par `ADR-0016`. Elles ne font
-pas partie du gate courant tant que l'extension n'est pas implémentée et
-activée.
+Ces fixtures vérifient l'extension M15 définie par `ADR-0016` et restent des
+régressions obligatoires pour les extensions ultérieures qui amendent la
+frontière `tsconfig.json`.
 
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
@@ -286,7 +291,7 @@ activée.
 | `fx38s_graph_tsconfig_unsupported_paths_shape` | `paths` hors sous-ensemble M15 | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
 | `fx38t_graph_tsconfig_local_extends` | `extends` local relatif avec héritage nearest-`paths` | 0 | golden JSON exact ; aliases normalisés et triés déterministiquement |
 | `fx38u_graph_tsconfig_extends_cycle_or_package` | `extends` cyclique ou non local | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
-| `fx38v_graph_tsconfig_alias_target_outside_product_root` | alias cible hors `product_root` | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx38v_graph_tsconfig_alias_target_outside_product_root` | M17 requalifie un alias cible hors `product_root` mais sous racine dépôt | 0 | golden JSON exact ; `config.local_aliases = []` pour cet alias ; utilisation par un `product_file` produit `out_of_scope_static_edge` ; `analysis_health = degraded` |
 
 #### 5.4.3 Fixtures M16 planifiées pour fichiers produit `.tsx`
 
@@ -302,6 +307,22 @@ Ces fixtures vérifient l'extension M16 définie par `ADR-0017`.
 | `fx91_graph_ts_before_tsx_precedence` | specifiers extensionless, `.js`, et alias local retiennent `.ts` quand `.ts` et `.tsx` existent | 0 | golden JSON exact ; `supported_local_targets` retient les chemins `.ts` ; aucun edge supporté vers les siblings `.tsx` |
 | `fx92_graph_tsx_reexport` | `export ... from "./view.tsx"` retient `view.tsx` | 0 | golden JSON exact ; edge local pris en compte pour les formes de re-export supportées |
 | `fx93_graph_extensionless_index_tsx_resolution` | import extensionless retient `<path>/index.tsx` en absence de `<path>.ts`, `<path>.tsx`, et `<path>/index.ts` | 0 | golden JSON exact ; `supported_local_targets` retient le chemin `index.tsx` ; aucun finding pour le specifier |
+
+#### 5.4.4 Fixtures M17 planifiées pour onboarding par slice existante
+
+Ces fixtures vérifient l'extension M17 définie par `ADR-0018`, qui amende
+`ADR-0016` sans changer la surface CLI, le schéma `anchormap.yaml` ou le schéma
+JSON v4.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx94_graph_tsconfig_mixed_slice_aliases` | `tsconfig.json` contient un alias public sous `product_root` et un alias de résolution hors slice | 0 | golden JSON exact ; seul l'alias public apparaît dans `config.local_aliases` ; edge in-slice supporté ; référence hors slice utilisée produit `out_of_scope_static_edge` |
+| `fx95_graph_tsconfig_unused_out_of_slice_alias_clean` | alias de résolution hors slice non utilisé par les fichiers produit | 0 | golden JSON exact ; `analysis_health = clean` quand aucun autre finding n'existe ; alias absent de `config.local_aliases` |
+| `fx96_graph_tsconfig_out_of_slice_alias_unresolved` | alias de résolution hors slice utilisé mais sans candidat existant | 0 | finding `unresolved_static_edge` exact avec le specifier aliasé ; aucun `target_path` |
+| `fx97_graph_tsconfig_alias_matching_order_mixed_scope` | aliases publics et hors slice se chevauchent | 0 | longest alias wins selon l'ordre canonique unique ; même ordre pour aliases publics et internes ; golden JSON exact |
+| `fx98_graph_tsconfig_alias_target_escapes_repo_root` | cible `paths` normalisée hors racine du dépôt | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON |
+| `fx99_graph_tsconfig_invalid_extends_still_blocks` | `extends` local invalide, cyclique ou hors racine | 3 | `scan --json` échec ; `stdout` vide ; aucun JSON ; priorité code `3` inchangée |
+| `fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root` | alias de résolution hors slice avec suffixe lexical qui revient sous `product_root` | 0 | finding `unresolved_static_edge` exact ; aucun edge supporté vers le fichier produit existant |
 
 ### 5.5 Famille B-repo — limites de support du dépôt et découverte
 
@@ -407,6 +428,16 @@ Ces fixtures vérifient que `map` accepte la même frontière `product_file`
 | Fixture ID | But principal | Exit | Oracles obligatoires |
 | --- | --- | ---: | --- |
 | `fx67h_map_tsx_seed` | `map` crée un mapping vers un seed `.tsx` | 0 | `anchormap.yaml` final exact avec seed `.tsx` |
+
+#### 5.7.4 Fixtures M17 planifiées pour `map` et aliases hors slice
+
+Ces fixtures vérifient que `map` conserve la validation de graphe aliasée sans
+traiter les findings `out_of_scope_static_edge` comme des bloqueurs d'écriture.
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx67i_map_succeeds_with_out_of_slice_alias_finding` | mapping valide alors que le graphe contient une référence aliasée hors `product_root` | 0 | YAML canonique exact ; `map` réussit malgré le finding de graphe ; aucune sortie JSON |
+| `fx67j_map_tsconfig_escape_no_mutation` | `map` avec alias `paths` sortant de la racine dépôt | 3 | `anchormap.yaml` byte-identique ; aucun fichier temporaire ou auxiliaire résiduel |
 
 ### 5.8 Famille B-cli — surface CLI, échecs machine et priorité des codes
 

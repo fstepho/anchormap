@@ -227,9 +227,16 @@ traités comme dépendances locales supportées s'ils correspondent exactement �
 un alias local déterministe lu depuis `./tsconfig.json` selon la section
 10.2.2.
 
+Extension M17 planifiée : lorsque l'onboarding par slice de code existant est
+actif, les aliases déterministes qui ciblent la racine du dépôt mais sortent de
+`product_root` peuvent aussi être utilisés pour la classification du graphe.
+Ils ne deviennent pas des aliases publics rendus dans `config.local_aliases` et
+ne créent pas de couverture locale.
+
 Les specifiers non relatifs qui ne correspondent à aucun alias local supporté
-restent traités comme externes : ils ne participent pas au calcul de couverture
-locale et ne produisent pas de finding.
+et, lorsque M17 est active, à aucun alias de résolution, restent traités comme
+externes : ils ne participent pas au calcul de couverture locale et ne
+produisent pas de finding.
 
 ### 5.4 Candidats hors racine du dépôt
 
@@ -785,6 +792,10 @@ anchormap map --anchor <anchor_id> --seed <path> [--seed <path> ...] [--replace]
 - chaque `--seed` doit exister, être un `product_file`, et être hors `ignore_roots` ;
 - toute impossibilité de lire `./anchormap.yaml` relève du code `2` ;
 - toute impossibilité d'indexer les specs courantes, de découvrir les `product_files`, de lire un `product_file`, ou d'effectuer un test d'existence requis par les sections 10 et 12.3 relève du code `3`.
+- extension M17 planifiée : des findings de graphe `out_of_scope_static_edge`
+  produits par des aliases `tsconfig.json` hors slice ne font pas échouer
+  `map` à eux seuls ; un `./tsconfig.json` invalide reste une erreur dépôt de
+  code `3` et ne peut pas précéder une mutation ;
 - si l'anchor fournie existe uniquement comme draft anchor, la commande échoue
   avec le code `4` sans mutation ;
 - si aucun mapping n'existe pour l'anchor, la commande crée le mapping ;
@@ -837,6 +848,13 @@ Extension M15 planifiée : lorsque les aliases locaux `tsconfig.json` sont
 activés, `scan` lit aussi `./tsconfig.json`, s'il existe, avant la construction
 du graphe TypeScript. Les aliases normalisés deviennent visibles dans
 `config.local_aliases` du JSON v4 selon la section 13.2.1.
+
+Extension M17 planifiée : `scan` conserve le schéma JSON v4. Les aliases
+déterministes ciblant `product_root` sont les seuls rendus dans
+`config.local_aliases`. Les aliases déterministes qui ciblent la racine du
+dépôt mais sortent de `product_root` restent internes à la résolution du graphe.
+S'ils ne sont pas utilisés par un `product_file`, ils ne produisent aucun
+finding.
 
 #### 9.3.4 Règle de contribution d'un mapping
 
@@ -919,6 +937,8 @@ anchormap scaffold --output <path>
   déclaration locale porte un nom ;
 - les re-exports, imports, JSDoc, déclarations non exportées et formes qui
   exigeraient une résolution sémantique sont ignorés ;
+- `scaffold` ne lit pas `./tsconfig.json` et ne résout pas les aliases
+  `tsconfig.json` ;
 - chaque candidat produit un `AnchorId` de base déterministe à partir du chemin
   module relatif à `product_root` et du nom exporté ;
 - si plusieurs candidats produisent le même `AnchorId` de base, `scaffold`
@@ -1038,6 +1058,12 @@ Quand l'extension M15 est active, les mêmes déclarations TypeScript
 `ImportDeclaration` et `ExportDeclaration` sont aussi supportées lorsqu'elles
 portent un specifier chaîne littérale non relatif qui correspond à un alias
 local `tsconfig.json` normalisé selon la section 10.2.2.
+
+Extension M17 planifiée : les mêmes déclarations sont aussi classifiées
+lorsqu'elles correspondent à un alias de résolution `tsconfig.json` déterministe
+ciblant la racine du dépôt mais sortant de `product_root`. Ces specifiers
+restent des occurrences syntaxiques supportées, mais une cible existante hors
+`product_root` produit `out_of_scope_static_edge` au lieu d'un edge supporté.
 
 Les formes reconnues mais hors support de la section 10.4 restent limitées aux
 specifiers relatifs ; `require("@/x")` et `import("@/x")` restent hors contrat
@@ -1216,6 +1242,42 @@ Conséquences explicites :
   monorepo, cache, réseau, Git, horloge ou variable d'environnement n'intervient
   dans la résolution.
 
+Extension M17 planifiée : l'onboarding par slice de code existant amende
+`ADR-0016` sans changer la surface CLI, le schéma `anchormap.yaml`, le schéma
+JSON v4, ni les fichiers `tsconfig` lus.
+
+Quand M17 est active, la lecture de `./tsconfig.json` et des `extends` locaux
+relatifs produit une liste canonique unique d'aliases déterministes, classés
+ainsi :
+
+- **alias public local** : alias déterministe dont la cible normalisée reste
+  sous `product_root`. Il est utilisé pour la résolution du graphe et rendu
+  dans `config.local_aliases` ;
+- **alias de résolution** : alias déterministe dont la cible normalisée reste
+  sous la racine du dépôt mais sort de `product_root`. Il est utilisé seulement
+  pour classifier les occurrences supportées du graphe et n'est pas rendu dans
+  `config.local_aliases` ;
+- **alias invalide** : alias ou chaîne `tsconfig` mal formé, non déterministe,
+  sortant de la racine du dépôt, utilisant un `extends` invalide ou cyclique,
+  rencontrant un symlink inspecté, ou provenant d'un JSONC invalide. La présence
+  d'un tel cas rend le dépôt hors support et produit le code de sortie `3`.
+
+Un alias de résolution suit le même ordre de matching canonique qu'un alias
+public local. Après réécriture du specifier en base de candidat relative à la
+racine du dépôt, la liste de candidats de la section 10.2 s'applique, mais la
+règle 1 de classification ne peut jamais retenir un edge supporté pour un alias
+de résolution interne :
+
+- si le premier candidat existant retenu par l'ordre de classification est hors
+  `product_root`, l'occurrence produit `out_of_scope_static_edge` ;
+- si un candidat atteint par alias de résolution interne existe sous
+  `product_root`, y compris après normalisation lexicale d'un suffixe contenant
+  `..`, il ne produit pas d'edge supporté et l'occurrence produit
+  `unresolved_static_edge` ;
+- si aucun candidat n'existe, l'occurrence produit `unresolved_static_edge` ;
+- si l'alias de résolution n'est utilisé par aucune occurrence supportée, il ne
+  produit aucun finding.
+
 ### 10.3 Ce qui ne produit pas de dépendance locale supportée
 
 Ne produisent pas de dépendance locale supportée :
@@ -1234,6 +1296,10 @@ Conséquences explicites :
   alias local supporté ne sont plus des imports de package pour la résolution du
   graphe ; les specifiers non relatifs sans alias correspondant restent ignorés
   sans finding ;
+- extension M17 planifiée : les specifiers non relatifs qui correspondent à un
+  alias de résolution hors `product_root` ne créent pas d'edge supporté, mais
+  peuvent produire `out_of_scope_static_edge` ou `unresolved_static_edge` selon
+  la section 10.2.2 ;
 - les occurrences supportées de la section 10.1 dont la classification aboutit à une cible hors `product_root`, sous `ignore_roots`, d'extension non supportée, ou non résolue, émettent respectivement `out_of_scope_static_edge`, `unsupported_local_target` ou `unresolved_static_edge` selon la section 10.2 ;
 - les formes reconnues mais hors support de la section 10.4 émettent `unsupported_static_edge`.
 
@@ -1427,6 +1493,13 @@ Pour chaque cible `paths` supportée :
 Les aliases normalisés sont triés par longueur décroissante de `prefix`, puis
 par ordre binaire UTF-8 de `prefix`, puis par ordre binaire UTF-8 de `target`.
 
+Extension M17 planifiée : la normalisation accepte aussi les cibles `paths`
+déterministes qui restent sous la racine du dépôt mais sortent de
+`product_root`. L'ordre canonique ci-dessus s'applique à l'ensemble complet des
+aliases déterministes, publics et internes. `config.local_aliases` rend ensuite
+uniquement le sous-ensemble public dont la cible est sous `product_root`, dans
+ce même ordre canonique filtré.
+
 ### 12.3 Portée de découverte, lisibilité et garde-fous
 
 La découverte récursive de fichiers est limitée à :
@@ -1475,6 +1548,12 @@ activés, `scan` et `map` considèrent aussi le dépôt hors support si
 `./tsconfig.json` est présent mais illisible, non décodable selon la section 1.1,
 invalide, ou hors sous-ensemble alias M15 supporté.
 
+Extension M17 planifiée : une cible d'alias déterministe hors `product_root`
+mais sous la racine du dépôt n'est plus, à elle seule, un cas hors support. Les
+aliases ou chaînes `tsconfig` mal formés, non déterministes, sortant de la
+racine du dépôt, cycliques, invalides ou rencontrant un symlink inspecté restent
+des cas hors support de code `3`.
+
 L'impossibilité de charger ou valider `anchormap.yaml`, y compris YAML invalide, multi-document, racine non mapping ou clés dupliquées, relève de la configuration et produit le code de sortie `2`, pas le code `3`.
 ### 12.4 Plateformes supportées
 
@@ -1516,6 +1595,11 @@ Le chemin quotidien n'utilise :
 Extension M15 planifiée : `./tsconfig.json` peut devenir une entrée observée du
 dépôt pour la résolution locale d'aliases. Il ne devient pas un état persisté
 propre à AnchorMap et ne permet pas de source de vérité implicite hors fichier.
+
+Extension M17 planifiée : `./tsconfig.json` peut décrire plus d'aliases que la
+slice `product_root` sélectionnée. AnchorMap n'en déduit aucune surface produit
+globale : les aliases hors slice servent seulement à classifier les références
+sortantes effectivement écrites dans les `product_files`.
 
 ## 13. JSON garanti et codes de sortie
 
@@ -1594,6 +1678,11 @@ Contraintes normatives du schéma v4 :
 - `target` est le préfixe de chemin cible normalisé avec `/` terminal, par
   exemple `"src/"` ;
 - les entrées de `config.local_aliases` sont triées selon la section 12.2.4.
+
+Extension M17 planifiée : le schéma reste JSON v4 et aucun champ n'est ajouté.
+`config.local_aliases` contient seulement les aliases publics locaux dont la
+cible est sous `product_root`. Les aliases de résolution hors slice ne sont pas
+rendus.
 
 ### 13.3 `observed_anchors`
 

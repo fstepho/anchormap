@@ -1,6 +1,6 @@
 # ADR-0016: Deterministic tsconfig local alias resolution
 
-Status: Accepted
+Status: Accepted, amended by ADR-0018
 Date: 2026-05-05
 Owner: AnchorMap maintainers
 
@@ -156,6 +156,14 @@ This ADR can be superseded only by an explicit product decision to adopt a
 broader TypeScript resolver strategy or to return to relative-only graph
 resolution.
 
+## Amendment
+
+`ADR-0018` amends this decision for existing-codebase slice onboarding. Aliases
+whose deterministic targets remain under the repository root but outside
+`product_root` may be retained as internal resolution aliases. They are not
+rendered in `config.local_aliases`, do not create covered local edges, and only
+produce graph findings when used by product files.
+
 ## Links
 
 - `docs/brief.md`
@@ -165,3 +173,4 @@ resolution.
 - `docs/tasks.md`
 - `docs/adr/0006-typescript-parser-and-graph-subset.md`
 - `docs/adr/0012-typescript-esm-js-specifier-source-resolution.md`
+- `docs/adr/0018-slice-compatible-tsconfig-alias-resolution.md`

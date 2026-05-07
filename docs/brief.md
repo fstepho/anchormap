@@ -287,6 +287,41 @@ contraintes suivantes :
 - l'extension ne crée aucun mapping, candidat de mapping ou lien de propriété
   automatiquement.
 
+## 6.9 Segment vNext prévu : onboarding par slice de code existant
+
+AnchorMap M17 cible aussi l'adoption dans un dépôt TypeScript existant dont
+l'utilisateur veut analyser une surface produit bornée, par exemple
+`product_root: app`, `product_root: src` ou `product_root: server`, sans
+modifier le `tsconfig.json` déjà présent.
+
+La promesse publique de cette extension est :
+
+> "Run AnchorMap on an unmodified existing TypeScript codebase slice. No
+> framework setup, no build integration, no tsconfig edits. AnchorMap reports
+> what is deterministically traceable inside the slice, and marks references
+> that leave that scope."
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- une slice est exactement le sous-arbre `product_root` configuré dans
+  `anchormap.yaml`, pas une découverte automatique de surface produit ;
+- la CLI, le schéma `anchormap.yaml` et le schéma JSON restent inchangés ;
+- AnchorMap continue de lire uniquement `./tsconfig.json` et ses `extends`
+  locaux relatifs ;
+- les aliases déterministes qui ciblent `product_root` restent visibles comme
+  aliases publics dans `config.local_aliases` ;
+- les aliases déterministes qui ciblent la racine du dépôt mais sortent de
+  `product_root` peuvent seulement servir à classifier les références qui
+  quittent la slice ;
+- une référence utilisée depuis un fichier produit vers une cible existante
+  hors slice devient une dégradation explicite, pas une preuve de dépendance
+  couverte ;
+- un alias hors slice inutilisé ne produit aucune conclusion ;
+- `scaffold` reste hors résolution d'aliases `tsconfig.json` ;
+- aucun support de framework, build tool, project references, monorepo global,
+  détection de dead code ou résolution TypeScript complète n'est promis.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :

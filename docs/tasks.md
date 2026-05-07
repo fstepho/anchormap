@@ -9,8 +9,9 @@
 - `contract.md` remains normative for observable CLI behavior.
 - `evals.md` remains normative for verification gates.
 - No new product scope is introduced here except the user-authorized M14
-  scaffold extension, M15 deterministic local alias extension, and M16
-  deterministic TSX product-file extension tracked below.
+  scaffold extension, M15 deterministic local alias extension, M16
+  deterministic TSX product-file extension, and M17 existing-codebase slice
+  onboarding extension tracked below.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -28,8 +29,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: None recorded.
-- Last completed task: `T16.4 — Close TSX release readiness`
+- Next executable product task: `T17.1 — Implement slice-compatible tsconfig alias resolution`
+- Last completed task: `T17.0 — Specify slice-compatible tsconfig alias scope`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -137,6 +138,7 @@
   - `T16.2 — Resolve static edges to TSX`
   - `T16.3 — Preserve map and scaffold behavior with TSX`
   - `T16.4 — Close TSX release readiness`
+  - `T17.0 — Specify slice-compatible tsconfig alias scope`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -184,6 +186,7 @@
 | M14 — vNext deterministic scaffold | Generate a create-only Markdown spec draft from observed TypeScript exports without creating mappings or inferring intent | `scaffold` command contract, ADR-0015, export extraction, Markdown renderer, create-only write path, draft-aware scan, B-scaffold fixtures | B-scaffold `fx77`–`fx87`; B-scan draft fixture; B-map draft fixture; B-cli command-surface regressions; docs/ADR consistency | M13 done; user-approved scaffold plan | `anchormap scaffold --output <path>` writes exact draft Markdown from public exports, `scan --json` surfaces draft anchors without unmapped-anchor noise, never mutates `anchormap.yaml`, fails without output mutation on invalid preconditions, and preserves the Observed/Human boundary |
 | M15 — vNext deterministic local alias resolution | Resolve common local TypeScript aliases from `./tsconfig.json` without adopting full TypeScript or Node module resolution | ADR-0016, `tsconfig_io`, alias-aware `ts_graph`, JSON schema v4, B-graph/B-map/B-cli fixtures and goldens | B-graph `fx38m`–`fx38w`; B-map `fx67f`–`fx67g`; B-cli `fx76a`–`fx76b`; schema/golden regressions | M14 done; user-approved M15 plan | `scan --json` exposes normalized alias resolver state and follows supported `@/* -> src/*` style aliases, missing `tsconfig.json` preserves relative-only behavior, invalid present `tsconfig.json` exits `3`, and `map` preserves no-mutation guarantees on alias-resolution failures |
 | M16 — vNext deterministic TSX product files | Support `.tsx` as syntax-only TypeScript product files without React, framework, or full resolver semantics | ADR-0017, `product_files`, `ts_graph`, `map`, `scaffold`, B-graph/B-map/B-scaffold fixtures and goldens | B-graph `fx38x`–`fx38z`, `fx89`–`fx93`; B-map `fx67h`; B-scaffold `fx88a`; affected B-scan goldens; product parser profile regressions | M15 done; user-approved TSX plan | `.tsx` files are discovered, parsed with `ScriptKind.TSX`, mappable as seeds, reachable through static edges including `.js -> .tsx`, and scaffolded from exports while `.js`, `.jsx`, `.d.ts`, monorepo, package, and framework semantics remain out of scope |
+| M17 — Existing Codebase Slice Onboarding | Run AnchorMap on an unmodified existing TypeScript codebase slice while separating traced in-slice references from references that leave the selected scope | ADR-0018, slice-compatible `tsconfig_io`, alias-aware `ts_graph`, README and reference demo runbook updates | M17 B-graph slice alias fixtures; M17 B-map alias fixture; `fx38v` requalification; M15 alias and B-cli priority regressions; docs/ADR consistency | M16 done; user-approved M17 plan | A user can keep the repository's existing `tsconfig.json`, select one `product_root` such as `app`, `src`, or `server`, and get a deterministic schema v4 report that traces aliases inside the slice while reporting existing out-of-slice targets and unresolved targets without failing the first run |
 
 ## Milestone dependency graph
 
@@ -208,6 +211,7 @@ M1 Fixture harness
                                    -> M14 vNext deterministic scaffold
                                       -> M15 vNext deterministic local alias resolution
                                          -> M16 vNext deterministic TSX product files
+                                            -> M17 Existing Codebase Slice Onboarding
 ```
 
 ## M1 — Fixture harness
@@ -6610,6 +6614,269 @@ Suggested verification:
 - Run `npm test`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M17 — Existing Codebase Slice Onboarding
+
+### T17.0 — Specify slice-compatible tsconfig alias scope
+
+Purpose:
+- Define how AnchorMap uses a repository's existing `tsconfig.json` when the
+  selected `product_root` is only one slice of a larger TypeScript codebase.
+- Preserve M15's deterministic resolver boundary while making first-run
+  onboarding degrade through findings instead of failing solely because aliases
+  point outside the selected slice.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §5.3.1 Extension M15 planned local aliases
+- `contract.md` — §9.2 `map`
+- `contract.md` — §9.3 `scan`
+- `contract.md` — §9.4 `scaffold`
+- `contract.md` — §10 TypeScript graph rules
+- `contract.md` — §12 Determinism, paths, platforms and stability
+- `contract.md` — §13 JSON guaranteed output and exit codes
+
+Design refs:
+- `design.md` — §5.4.1 `tsconfig_io` M15
+- `design.md` — §7.4.2 Extension M15 planned local aliases
+- `design.md` — §14 Decisions explicitly deferred
+
+Eval refs:
+- `evals.md` — §4.1 Level A invariant coverage
+- `evals.md` — §5.4.2 Fixtures M15 planned local aliases
+- `evals.md` — §5.4.4 Fixtures M17 planned onboarding by existing slice
+- `evals.md` — §5.7.2 Fixtures M15 map aliases
+- `evals.md` — §5.7.4 Fixtures M17 planned map out-of-slice aliases
+- `evals.md` — §10 Release gates
+
+ADR refs:
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+- `ADR-0018` — Slice-compatible tsconfig alias resolution
+
+Dependencies:
+- T16.4.
+
+Implementation scope:
+- Update `brief.md`, `contract.md`, `design.md`, `evals.md`, and this task
+  plan for M17.
+- Add and register `ADR-0018`, explicitly amending `ADR-0016`.
+- Specify the product framing: users can run AnchorMap on an unmodified
+  existing TypeScript codebase slice, such as `product_root: app`, `src`, or
+  `server`, without framework setup, build integration, or `tsconfig.json`
+  edits.
+- Specify that M17 does not change the CLI, `anchormap.yaml` schema, JSON
+  schema version `4`, or the rule that only root `./tsconfig.json` and local
+  relative `extends` are read.
+- Define internal alias classes:
+  - public local alias: deterministic alias targeting under `product_root`,
+    rendered in `config.local_aliases`;
+  - resolution alias: deterministic alias targeting under repository root,
+    used internally by graph resolution;
+  - invalid alias: malformed, non-deterministic, escaping repository root,
+    invalid `extends`, cycle, symlink, invalid JSONC, or equivalent unsupported
+    boundary, still failing with code `3`.
+- Specify graph findings for product files that use out-of-slice resolution
+  aliases:
+  - existing target outside `product_root` produces `out_of_scope_static_edge`;
+  - absent target produces `unresolved_static_edge`;
+  - unused out-of-slice aliases produce no finding.
+- Specify one canonical alias matching order shared by public and out-of-slice
+  aliases.
+- Specify that `map` does not fail merely because graph validation emits
+  out-of-scope alias findings, while invalid `tsconfig.json` still blocks and
+  preserves no-mutation behavior.
+- Specify that `scaffold` remains outside tsconfig alias resolution.
+- Add eval coverage for mixed in-slice/out-of-slice aliases, aliases escaping
+  repository root, stable ordering, invalid `extends`, `fx38v` requalification,
+  unused out-of-slice aliases, and `map` success despite out-of-slice alias
+  findings.
+
+Out of scope:
+- Full TypeScript project support.
+- Full TypeScript, Node, package, framework, monorepo, project-reference, or
+  dead-code resolution semantics.
+- New CLI flags, config fields, JSON fields, or schema version changes.
+- Runtime implementation before this task has clean critical review.
+
+Done when:
+- The brief, contract, design, evals, ADR register, and task plan agree on
+  slice-compatible tsconfig alias scope.
+- `ADR-0018` is accepted and clearly amends `ADR-0016`.
+- M17 fixture IDs and verification gates are durable in `evals.md`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+- `docs/tasks.md` remains structurally valid.
+
+Suggested verification:
+- Run `npm run check:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T17.1 — Implement slice-compatible tsconfig alias resolution
+
+Purpose:
+- Let mixed existing-codebase `paths` aliases be used deterministically without
+  failing the first scan when some aliases leave the selected product slice.
+- Keep invalid or non-deterministic tsconfig inputs as code `3` blockers.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — M17 slice-compatible tsconfig alias scope added by T17.0
+- `contract.md` — §9.2 `map`
+- `contract.md` — §9.3 `scan`
+- `contract.md` — §10 TypeScript graph rules
+- `contract.md` — §12.3 Required reads and failure classification
+- `contract.md` — §13 JSON guaranteed output and exit codes
+
+Design refs:
+- `design.md` — M17 `tsconfig_io` and `ts_graph` design added by T17.0
+- `design.md` — §4.1 Pipeline logique de `scan`
+- `design.md` — §4.2 Pipeline logique de `map`
+- `design.md` — §5.4 `ts_graph`
+- `design.md` — §5.6 `commands`
+
+Eval refs:
+- `evals.md` — M17 B-graph slice alias fixtures added by T17.0
+- `evals.md` — M17 B-map alias fixture added by T17.0
+- `evals.md` — B-cli M15 `fx76a`–`fx76b`
+- `evals.md` — B-graph M15 alias regressions
+
+ADR refs:
+- `ADR-0018` — Slice-compatible tsconfig alias resolution
+- `ADR-0016` — Deterministic tsconfig local alias resolution
+- `ADR-0012` — TypeScript ESM `.js` specifier source resolution
+
+Dependencies:
+- T17.0 with clean critical review.
+
+Implementation scope:
+- Extend `tsconfig_io` so deterministic aliases targeting under repository
+  root but outside `product_root` are retained as internal resolution aliases
+  while only aliases targeting under `product_root` render in
+  `config.local_aliases`.
+- Preserve code `3` for malformed, non-deterministic, escaping repository root,
+  invalid `extends`, cycle, symlink, invalid JSONC, and unsupported
+  tsconfig-boundary cases.
+- Use one canonical matching order across public local aliases and internal
+  out-of-slice resolution aliases.
+- In `ts_graph`, resolve supported static imports and exports through
+  out-of-slice aliases.
+- Classify an existing out-of-slice alias target used by a product file as
+  `out_of_scope_static_edge`.
+- Classify an absent out-of-slice alias target used by a product file as
+  `unresolved_static_edge`.
+- Ensure a resolution alias cannot create a supported covered edge even when
+  its specifier suffix normalizes lexically back under `product_root`.
+- Ensure unused out-of-slice aliases produce no graph finding.
+- Preserve `.js -> .ts/.tsx` candidate ordering and all existing relative and
+  in-slice alias behavior.
+- Ensure `map` can proceed through graph validation when the graph contains
+  out-of-scope alias findings, while still blocking and preserving
+  no-mutation behavior on invalid tsconfig inputs.
+- Requalify `fx38v` from code `3` to successful degraded scan and add the M17
+  fixtures specified by T17.0.
+
+Out of scope:
+- CLI or `anchormap.yaml` schema changes.
+- JSON schema version or field changes.
+- `scaffold` alias resolution.
+- TypeScript language-service or package resolver adoption.
+
+Done when:
+- Existing codebases with mixed in-slice and out-of-slice `paths` aliases scan
+  successfully without editing `tsconfig.json`.
+- Successful JSON remains schema version `4` and renders only public local
+  aliases under `config.local_aliases`.
+- Reports separate in-slice traced targets, existing out-of-slice static edges,
+  and unresolved alias targets.
+- Invalid tsconfig boundary cases still exit code `3`.
+- `map` succeeds when its only graph-validation findings are out-of-scope alias
+  findings and still preserves no mutation on invalid tsconfig failures.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run tsconfig boundary unit tests.
+- Run ts-graph unit tests.
+- Run targeted M15/M17 B-graph fixtures.
+- Run the M17 B-map alias fixture.
+- Run B-cli priority fixtures for invalid tsconfig.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T17.2 — Document existing codebase slice onboarding and refresh demo runbook
+
+Purpose:
+- Make the M17 adoption story explicit and bounded for users trying AnchorMap
+  on an existing TypeScript repository.
+- Keep public docs from implying full TypeScript, framework, dead-code, or
+  monorepo traceability support.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — M17 slice-compatible tsconfig alias scope added by T17.0
+- `contract.md` — §9.3 `scan`
+- `contract.md` — §13 JSON guaranteed output and exit codes
+
+Design refs:
+- `design.md` — M17 onboarding and resolver boundaries added by T17.0
+- `design.md` — §14 Decisions explicitly deferred
+
+Eval refs:
+- `evals.md` — M17 existing-codebase slice fixtures added by T17.0
+- `evals.md` — docs consistency checks
+
+ADR refs:
+- `ADR-0018` — Slice-compatible tsconfig alias resolution
+
+Dependencies:
+- T17.1.
+
+Implementation scope:
+- Add a README section titled `Existing Codebase Slice Setup`.
+- Define a slice concretely as one configured `product_root` inside a larger
+  repository, with examples such as `app`, `src`, and `server`.
+- Use the public framing:
+  `Run AnchorMap on an unmodified existing TypeScript codebase slice. No
+  framework setup, no build integration, no tsconfig edits. AnchorMap reports
+  what is deterministically traceable inside the slice, and marks references
+  that leave that scope.`
+- Avoid implying full TypeScript resolver support, framework awareness,
+  dead-code detection, or global monorepo traceability.
+- Replace public-facing wording such as "real repo" with "existing repository",
+  "existing codebase", or "reference demo" where that wording describes the
+  M17 onboarding story.
+- Update the Outline reference demo runbook so it uses Outline's original
+  `tsconfig.json` instead of requiring an edited alias-only config.
+- Refresh the demo runbook so the one-minute story is: AnchorMap traced this
+  product slice; these references leave the selected scope.
+- Run applicable docs and product checks for the changed documentation and
+  fixtures.
+
+Out of scope:
+- Publishing a new artifact unless separately requested.
+- Adding framework-specific setup guidance.
+- Expanding the resolver beyond `ADR-0018`.
+
+Done when:
+- README documents existing-codebase slice setup with the bounded product
+  promise.
+- The Outline reference demo runbook uses the unmodified original
+  `tsconfig.json`.
+- Public docs avoid "real repo" positioning for this story.
+- The documented demo can be executed without modifying `tsconfig.json`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run `npm run check:docs`.
+- Run targeted M17 fixtures used by the demo.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -6647,6 +6914,7 @@ Suggested verification:
 | B-graph `fx38f`–`fx38l` | T11.1, T11.2, T11.3 | M11 | fixture/golden | v1.1 explicit `.js` specifier source-candidate resolution |
 | B-graph `fx38m`–`fx38w` | T15.1, T15.2, T15.3 | M15 | fixture/golden | M15 deterministic `tsconfig.json` alias loading, alias resolution, JSON v4 visibility, and failure classification |
 | B-graph `fx38x`–`fx38z`, `fx89`–`fx93` | T16.1, T16.2 | M16 | fixture/golden | M16 `.tsx` product-file discovery, parsing, exact/extensionless/index/alias/re-export resolution, `.js -> .tsx` source-candidate behavior, and `.ts` before `.tsx` precedence |
+| B-graph M17 slice alias fixtures, including requalified `fx38v` | T17.0, T17.1 | M17 | fixture/golden | Mixed in-slice and out-of-slice aliases, unused out-of-slice aliases, stable matching order, invalid tsconfig boundaries, existing out-of-slice target findings, and absent alias target findings |
 | B-repo `fx39`–`fx42c` | T4.3, T5.1, T6.1, T6.7 | M4–M6 | fixture | Case collisions, symlinks, no parent search, enumeration failures |
 | B-config `fx43`–`fx43g` | T4.1, T4.7 | M4 | fixture | Missing/unreadable/non-UTF-8/invalid/multidoc/root/duplicate/BOM config |
 | B-config `fx44`–`fx49` | T4.2, T4.7 | M4 | fixture | Schema, unknown fields, version, spec roots, seed list invariants |
@@ -6659,6 +6927,7 @@ Suggested verification:
 | B-map `fx67a`–`fx67d` | T4.7, T5.5, T6.7, T8.2, T8.3, T8.5 | M4–M8 | fixture | Config/spec/product/existence failures with no mutation |
 | B-map `fx67f`–`fx67g` | T15.3 | M15 | fixture/golden | M15 alias-aware graph validation before map writes and no mutation on tsconfig failure |
 | B-map `fx67h` | T16.3 | M16 | fixture/golden | M16 `.tsx` seed mapping and canonical YAML mutation |
+| B-map M17 alias fixture | T17.0, T17.1 | M17 | fixture/golden | `map` succeeds despite out-of-slice alias graph findings and still preserves no mutation on invalid tsconfig failures |
 | B-cli M15 `fx76a`–`fx76b` | T15.3 | M15 | fixture | M15 tsconfig failure code `3` remains below argument code `4` and config code `2` priorities |
 | B-cli `fx68`–`fx70` | T2.1, T2.2, T2.5 | M2 | fixture | Unknown command, unknown option, invalid combinations |
 | B-cli `fx71`, `fx71a`–`fx71e` | T2.2, T2.5, T7.1, T7.6 | M2, M7 | fixture | Scan option order and human scan modes |
@@ -6694,6 +6963,7 @@ Suggested verification:
 | User-facing release docs | T10.4 | M10 | documentation check | Install/use docs preserve v1.0 scope and avoid pruning/deletion-safety claims |
 | Publication dry-run and runbook | T10.5 | M10 | publication check | Reusable tarball, npm integrity, shasum, SHA-256, dry-run, and runbook evidence are archived |
 | Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9, T10 install, T10.5 tarball, and checksum evidence |
+| Existing codebase slice setup docs and Outline reference demo | T17.2 | M17 | documentation/demo | README and demo runbook present the bounded M17 promise, use an unmodified existing `tsconfig.json`, and avoid implying full TypeScript, framework, dead-code, or global monorepo support |
 
 ## Agent execution protocol
 
