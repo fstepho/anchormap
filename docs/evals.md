@@ -48,6 +48,7 @@ Ce document est **hors scope** pour :
 | Onboarding par slice de code existant avec aliases `tsconfig.json` mixtes | §§ 5.3.1, 9.2, 9.3, 10.1.1, 10.2.2, 12.2.4, 12.3, 13.2.1 | B-graph M17, B-map M17, B-cli M15, goldens |
 | Fichiers produit `.tsx` déterministes | §§ 1.1, 6.5, 9.2, 9.4, 10, 12.3 | B-graph M16, B-map, B-scaffold, goldens |
 | Commandes d'artefacts SaaS-ready 1 (`check`, `diff`, `explain`, `report`) | §§ 9.5–9.8, 12.6, 13.10–13.13 | B-check, B-diff, B-explain, B-report, goldens, C13 |
+| Commandes d'artefacts SaaS-ready 2 (`bundle`, scan v5, JUnit, SARIF) | §§ 9.8–9.9, 12.6, 13.2.2, 13.14–13.16 | B-bundle, B-scan-v5, B-report-JUnit, B-report-SARIF, goldens, C14 |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
 | Absence de dépendance au réseau, au temps, à Git, à un cache persistant ou aux variables d'environnement comme source de vérité | §§ 4.1, 12.6 | C8, C9, C10, C11, C12, C13 |
@@ -541,8 +542,47 @@ fichiers produit `.tsx` sans sémantique JSX ou framework.
 | `fx136_report_scan_check_markdown` | rapport Markdown depuis scan + check | 0 | Markdown golden exact avec violations de policy |
 | `fx137_report_scan_check_diff_markdown` | rapport Markdown depuis scan + check + diff | 0 | Markdown golden exact avec impact PR et actions mécaniques |
 | `fx138_report_scan_diff_markdown` | rapport Markdown depuis scan + diff sans check | 0 | Markdown golden exact avec impact PR sans section de policy |
-| `fx139_report_invalid_format` | format autre que `markdown` | 4 | `stdout` vide ; aucune mutation |
+| `fx139_report_invalid_format` | format non supporté, par exemple `html` | 4 | `stdout` vide ; aucune mutation |
 | `fx140_report_invalid_artifact` | scan, check ou diff illisible, JSON invalide, schéma inconnu ou non supporté, ou non conforme à son objet fermé | 4 | `stdout` vide ; aucune sortie partielle |
+
+### 5.14 Famille B-bundle — bundle local SaaS-ready 2
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx141_bundle_full_json_v4` | scan v4 + check + diff + metadata explicite | 0 | `ArtifactBundle` JSON golden exact ; hashes SHA-256 exacts ; aucune mutation |
+| `fx142_bundle_full_json_v5` | scan v5 avec source locations + check + diff + metadata explicite | 0 | JSON golden exact ; `bundle --scan` accepte scan v5 ; source locations conservées ; hashes exacts ; aucune mutation |
+| `fx143_bundle_invalid_metadata` | metadata absente, JSON invalide, objet ouvert ou valeur hors domaine | 4 | `stdout` vide ; aucun JSON partiel ; aucune mutation |
+| `fx144_bundle_invalid_artifact` | scan, check ou diff illisible, schéma inconnu/non supporté ou objet ouvert | 4 | `stdout` vide ; aucun JSON partiel ; aucune lecture dépôt |
+| `fx145_bundle_no_implicit_ci_git` | metadata explicite différente de l'état Git/CI/environnement courant | 0 | bundle reflète uniquement `--metadata` ; aucune lecture Git/CI implicite observable ; aucune détection sémantique de secret dans les metadata |
+
+### 5.15 Famille B-scan-v5 — source locations sans snippets
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx146_scan_v5_markdown_source_location` | anchor Markdown ATX active | 0 | scan v5 JSON golden exact avec `source.kind = markdown_atx_heading`, line/column/heading_level ; aucun snippet source ou spec |
+| `fx147_scan_v5_yaml_source_location` | anchor YAML root `id` | 0 | scan v5 JSON golden exact avec `source.kind = yaml_root_id`, line/column ; aucun contenu YAML complet |
+| `fx148_scan_v5_closed_observed_anchor` | objet `observed_anchors` v5 fermé | 0 | golden valide l'absence de clés hors contrat et l'ordre `spec_path`, `mapping_state`, `source` |
+| `fx149_existing_artifact_commands_accept_scan_v4_v5` | `check --scan`, `diff`, `explain --scan` et `report --scan` sur scans v4/v5 supportés | 0 | sorties golden exactes ; v4/v5 et v5/v4 acceptés pour `diff` |
+| `fx150_artifact_commands_reject_unknown_scan_schema` | scan schema inconnu | 4 | `stdout` vide ; aucun résultat machine faux |
+
+### 5.16 Famille B-report-JUnit — JUnit depuis `PolicyResult`
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx151_report_junit_policy_pass` | `PolicyResult` pass | 0 | XML JUnit golden exact avec zéro failure ; aucune mutation |
+| `fx152_report_junit_policy_fail` | violations multiples | 0 | XML JUnit golden exact ; une testcase échouée par violation avec nom contractuel exact ; échappement XML exact |
+| `fx153_report_junit_invalid_artifact` | check artifact invalide ou schema non supporté | 4 | `stdout` vide ; aucune sortie partielle |
+| `fx154_report_junit_rejects_extra_inputs` | `--scan` ou `--diff` avec `--format junit` | 4 | `stdout` vide ; combinaison d'options rejetée |
+
+### 5.17 Famille B-report-SARIF — SARIF local sans upload
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx155_report_sarif_scan_v4_file_level` | scan v4 avec findings | 0 | SARIF JSON golden exact ; locations fichier seules ; aucun snippet |
+| `fx156_report_sarif_scan_v5_regions` | scan v5 avec source locations | 0 | SARIF JSON golden exact avec `region.startLine` / `startColumn` pour anchors localisées |
+| `fx157_report_sarif_with_check_and_diff` | scan + check + diff | 0 | SARIF golden exact avec résultats findings, violations sans location et pertes de couverture ; aucun upload |
+| `fx158_report_sarif_invalid_artifact` | scan, check ou diff invalide ou schema non supporté | 4 | `stdout` vide ; aucune sortie partielle |
+| `fx159_report_sarif_no_source_snippets` | scan v5 dont les specs contiennent du texte sensible autour de l'anchor | 0 | SARIF ne contient ni snippet, ni contenu complet de spec, ni source contents |
 
 ## 6. Goldens et oracles exacts
 
@@ -756,6 +796,29 @@ Oracles obligatoires :
 - les échecs techniques de ces commandes gardent `stdout` vide et ne produisent
   pas de faux résultat machine.
 
+### 8.14 C14 — Isolation des artefacts SaaS-ready 2
+
+Pour les releases incluant M20, les commandes `bundle`, `report --format
+junit`, `report --format sarif`, ainsi que les commandes d'artefacts acceptant
+les scans v4/v5, doivent être exécutées dans une matrice de variation qui
+modifie Git, l'horloge, le fuseau, la locale, le réseau, l'environnement, les
+variables CI et les fichiers du dépôt non fournis comme artefacts, policy ou
+metadata explicites.
+
+Oracles obligatoires :
+
+- les sorties sont byte-identiques lorsque les artefacts, policies et metadata
+  d'entrée explicites sont byte-identiques ;
+- `bundle` reflète seulement le contenu de `--metadata`, ne lit aucune donnée
+  Git/CI implicite et ne fait aucune détection sémantique de secret dans les
+  metadata ;
+- les reports JUnit et SARIF ne contiennent aucun snippet, contenu source,
+  contenu complet de spec, snippet de spec, log CI, variable d'environnement
+  ou instruction d'upload ;
+- aucune commande ne crée, modifie ou supprime de fichier dans le dépôt ;
+- les échecs techniques gardent `stdout` vide et ne produisent pas de faux
+  résultat machine.
+
 ## 9. Matrice cross-platform obligatoire
 
 ### 9.1 Plateformes supportées
@@ -774,6 +837,7 @@ Sur **chaque** plateforme supportée, la release candidate doit exécuter :
 - 100% des fixtures de niveau B ;
 - 100% des tests métamorphiques C1 à C12 ;
 - pour les releases incluant M19, 100% des tests C13 ;
+- pour les releases incluant M20, 100% des tests C14 ;
 - 100% des goldens JSON ;
 - 100% des goldens YAML ;
 - la campagne de reruns déterministes C7.
@@ -898,6 +962,7 @@ Passe si et seulement si :
 
 - tous les tests C1 à C12 passent ;
 - pour les releases incluant M19, les tests C13 passent ;
+- pour les releases incluant M20, les tests C14 passent ;
 - tous les reruns déterministes C7 sont byte-identiques ;
 - aucune dépendance à la locale, à Git, au temps, au réseau, à un cache persistant ou à des variables d'environnement comme source de vérité n'est observée.
 

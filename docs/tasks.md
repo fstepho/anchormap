@@ -12,10 +12,13 @@
   scaffold extension, M15 deterministic local alias extension, M16
   deterministic TSX product-file extension, and M17 existing-codebase slice
   onboarding extension tracked below, plus the user-authorized M19 CLI
-  SaaS-ready 1 local artifact workflow.
+  SaaS-ready 1 local artifact workflow and the user-authorized M20 CLI
+  SaaS-ready 2 artifact bundle and report formats scope.
 - `T18.0` is non-product, non-contractual TSX adoption evidence and remains
   outside release gates.
 - `T19.0` is process/spec planning for the user-authorized CLI SaaS-ready 1
+  scope and must not touch runtime behavior.
+- `T20.0` is process/spec planning for the user-authorized CLI SaaS-ready 2
   scope and must not touch runtime behavior.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
@@ -34,8 +37,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: None recorded.
-- Last completed task: `T19.6 — Close CLI SaaS-ready 1 readiness`
+- Next executable product task: `T20.2 — Implement scan schema v5 source locations and v4/v5 compatibility`
+- Last completed task: `T20.0 — Specify CLI SaaS-ready 2 authorities and task plan`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -154,6 +157,7 @@
   - `T19.4 — Implement artifact-only `anchormap explain``
   - `T19.5 — Implement Markdown `anchormap report``
   - `T19.6 — Close CLI SaaS-ready 1 readiness`
+  - `T20.0 — Specify CLI SaaS-ready 2 authorities and task plan`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -203,6 +207,7 @@
 | M16 — vNext deterministic TSX product files | Support `.tsx` as syntax-only TypeScript product files without React, framework, or full resolver semantics | ADR-0017, `product_files`, `ts_graph`, `map`, `scaffold`, B-graph/B-map/B-scaffold fixtures and goldens | B-graph `fx38x`–`fx38z`, `fx89`–`fx93`; B-map `fx67h`; B-scaffold `fx88a`; affected B-scan goldens; product parser profile regressions | M15 done; user-approved TSX plan | `.tsx` files are discovered, parsed with `ScriptKind.TSX`, mappable as seeds, reachable through static edges including `.js -> .tsx`, and scaffolded from exports while `.js`, `.jsx`, `.d.ts`, monorepo, package, and framework semantics remain out of scope |
 | M17 — Existing Codebase Slice Onboarding | Run AnchorMap on an unmodified existing TypeScript codebase slice while separating traced in-slice references from references that leave the selected scope | ADR-0018, slice-compatible `tsconfig_io`, alias-aware `ts_graph`, README and reference demo runbook updates | M17 B-graph slice alias fixtures; M17 B-map alias fixture; `fx38v` requalification; M15 alias and B-cli priority regressions; docs/ADR consistency | M16 done; user-approved M17 plan | A user can keep the repository's existing `tsconfig.json`, select one `product_root` such as `app`, `src`, or `server`, and get a deterministic schema v4 report that traces aliases inside the slice while reporting existing out-of-slice targets and unresolved targets without failing the first run |
 | M19 — CLI SaaS-ready 1 local artifact workflow | Make AnchorMap scan artifacts actionable in local CI/PR workflows without SaaS upload, Git refs, schema v5, bundle, JUnit, or SARIF | ADR-0019 through ADR-0023, `check`, `diff`, `explain`, Markdown `report`, artifact I/O, fixtures and goldens | B-check `fx117`–`fx123`; B-diff `fx124`–`fx128`; B-explain `fx129`–`fx134`; B-report `fx135`–`fx140`; B-cli priority regressions; C13 artifact-command isolation | M17 done; T18.0 done; user-authorized SaaS-ready 1 plan | `check --json` distinguishes policy fail code `5` from technical failures, `diff` compares scan artifacts only, `explain` works from a scan artifact alone, and Markdown `report` serializes existing artifacts without inventing facts |
+| M20 — CLI SaaS-ready 2 artifact bundle and report formats | Make local CLI artifacts SaaS-ingestion-ready without upload, implicit CI/Git metadata discovery, AnchorMap-derived snippets, or runtime SaaS dependencies | ADR-0024 through ADR-0026, `bundle`, scan schema v5 source locations, JUnit report, SARIF report, v4/v5 artifact compatibility | B-bundle `fx141`–`fx145`; B-scan-v5 `fx146`–`fx150`; B-report-JUnit `fx151`–`fx154`; B-report-SARIF `fx155`–`fx159`; C14 SaaS-ready 2 artifact isolation | M19 done; user-authorized SaaS-ready 2 plan | `bundle --json` assembles explicit artifacts and closed declarative metadata with hashes, scan v5 adds source locations without snippets, JUnit/SARIF render locally from artifacts, and v4/v5 compatibility stays closed and deterministic |
 
 ## Milestone dependency graph
 
@@ -229,6 +234,7 @@ M1 Fixture harness
                                         -> M16 vNext deterministic TSX product files
                                            -> M17 Existing Codebase Slice Onboarding
                                              -> M19 CLI SaaS-ready 1 local artifact workflow
+                                               -> M20 CLI SaaS-ready 2 artifact bundle and report formats
 ```
 
 ## M1 — Fixture harness
@@ -7363,6 +7369,367 @@ Suggested verification:
 - Run `npm run lint`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M20 — CLI SaaS-ready 2 artifact bundle and report formats
+
+### T20.0 — Specify CLI SaaS-ready 2 authorities and task plan
+
+Purpose:
+- Adopt only the SaaS-ready 2 slice of `docs/cli-saas-readiness-plan.md` into
+  durable project authorities.
+- Create executable, traceable tasks for CLI-SaaS 6, CLI-SaaS 7, and the
+  JUnit/SARIF extension of CLI-SaaS 5 without changing runtime behavior.
+
+Reading mode:
+- critical.
+
+Process refs:
+- `AGENTS.md` — process-doc and ADR maintenance intake.
+- `operating-model.md` — §14.2 Règles de review de diff.
+- `operating-model.md` — §18.1 Mode autopilot.
+- `operating-model.md` — §19.1 Tâche.
+- `agent-loop.md` — critical reading mode and autopilot checklist.
+
+Exploratory input:
+- `docs/cli-saas-readiness-plan.md` — Version CLI SaaS-ready 2 only:
+  CLI-SaaS 6, CLI-SaaS 7, and CLI-SaaS 5 JUnit/SARIF extension.
+
+Implementation scope:
+- Add accepted ADRs for artifact bundle and explicit CI metadata boundary, scan
+  schema v5 source locations and v4/v5 artifact compatibility, and local
+  JUnit/SARIF report formats.
+- Update `docs/contract.md`, `docs/evals.md`, and `docs/design.md` with
+  traceable SaaS-ready 2 behavior only.
+- Add M20 implementation, compatibility, isolation, and closure tasks.
+- Validate `docs/tasks.md` structurally.
+
+Out of scope:
+- Runtime implementation.
+- Upload SaaS, dashboard, GitHub App, API server, automatic Git or CI metadata,
+  network, cache, AI/LLM, source snippets, spec snippets, call graph, symbol
+  observation, mapping annotations, `anchormap.yaml` v2, or config migration.
+- Weakening any SaaS-ready 1 contract, eval, fixture, or task authority.
+
+Done when:
+- ADRs, contract, evals, design, and tasks contain traceable SaaS-ready 2
+  authority.
+- Existing SaaS-ready 1 authority remains intact.
+- `docs/tasks.md` selects no runtime M20 task until this planning task is
+  complete.
+- `docs/tasks.md` validates with the repo-local structural lint.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run `sh scripts/lint-tasks.sh`.
+- Run `npm run test:docs`.
+
+### T20.1 — Implement `anchormap bundle`
+
+Purpose:
+- Add the local SaaS-ready bundle artifact over explicit scan, check, diff and
+  metadata inputs.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9 Commandes common artifact rule.
+- `contract.md` — §9.9 `anchormap bundle`.
+- `contract.md` — §12.6 Aucune donnée implicite.
+- `contract.md` — §13.2.2 scan JSON v5 source locations.
+- `contract.md` — §13.16 `ArtifactBundle`.
+
+Design refs:
+- `design.md` — §4.6 `bundle` pipeline.
+- `design.md` — §5.8 `artifact_io`.
+- `design.md` — §5.13 `metadata_io`.
+- `design.md` — §5.14 `bundle_model`.
+- `design.md` — §9.4 `bundle`.
+
+Eval refs:
+- `evals.md` — §5.14 B-bundle `fx141`–`fx145`.
+- `evals.md` — §8.14 C14 artifact isolation.
+- `evals.md` — Gate B and Gate D SaaS-ready 2 requirements.
+
+ADR refs:
+- `ADR-0024` — Artifact bundle and CI metadata boundary.
+- `ADR-0025` — Scan schema v5 source locations.
+
+Dependencies:
+- T20.0.
+- T20.2 for full scan v5 bundle coverage.
+
+Implementation scope:
+- Extend the parser with exactly the `bundle --scan --check --diff --metadata
+  --json` form.
+- Validate scan, check, diff, and metadata artifacts as explicit read-only
+  inputs, including scan v4/v5 acceptance after T20.2 provides scan v5.
+- Render canonical `ArtifactBundle` JSON with canonical embedded artifacts and
+  SHA-256 hashes.
+- Add B-bundle fixtures and goldens.
+
+Out of scope:
+- Upload, authentication, SaaS API calls, automatic Git/CI metadata discovery,
+  environment variables, logs, source contents, or optional bundle inputs.
+
+Done when:
+- `bundle --json` succeeds only from explicit valid artifacts and metadata,
+  including scan v4 and scan v5 inputs.
+- Invalid artifacts or metadata exit `4` with empty `stdout`.
+- Bundle output adds no source/spec snippets, secrets, logs, network facts,
+  cache facts, environment facts, clock facts, or implicit Git/CI state from
+  AnchorMap-derived artifacts or implicit sources. Explicit closed metadata is
+  copied as user-provided declarative input without semantic secret detection.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-bundle fixtures `fx141`–`fx145`.
+- Run bundle/model/hash unit tests.
+- Run C14 bundle isolation subtests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T20.2 — Implement scan schema v5 source locations and v4/v5 compatibility
+
+Purpose:
+- Add source-location metadata to scan artifacts without embedding source or
+  spec snippets.
+- Preserve closed artifact compatibility for SaaS-ready 1 and SaaS-ready 2
+  commands.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §13.2.2 scan JSON v5 source locations.
+- `contract.md` — §13.7 canonical JSON serialization.
+- `contract.md` — §9 Commandes common artifact rule.
+- `contract.md` — §12.6 Aucune donnée implicite.
+
+Design refs:
+- `design.md` — §5.3 `spec_index`.
+- `design.md` — §5.7 `render`.
+- `design.md` — §5.8 `artifact_io`.
+- `design.md` — §4.6 scan v5 pipeline.
+
+Eval refs:
+- `evals.md` — §5.15 B-scan-v5 `fx146`–`fx150`.
+- `evals.md` — §6.1 JSON goldens.
+- `evals.md` — Gate B closed-object requirements.
+
+ADR refs:
+- `ADR-0025` — Scan schema v5 source locations.
+
+Dependencies:
+- T20.0.
+
+Implementation scope:
+- Capture Markdown ATX and YAML root `id` source locations at the spec parser
+  boundary.
+- Render scan schema v5 with closed `source` objects and canonical ordering.
+- Update artifact validators for already-existing scan artifact consumers:
+  `check --scan`, `diff`, `explain --scan`, and `report --scan` support scan
+  v4 and v5, while unknown schemas still fail closed. Bundle-specific scan v5
+  acceptance belongs to T20.1 after `bundle` exists.
+- Add B-scan-v5 fixtures and goldens.
+
+Out of scope:
+- Source snippets, full spec contents, symbol locations, call graph,
+  ownership, compliance claims, or changing `anchormap.yaml`.
+
+Done when:
+- `scan --json` renders schema v5 with source coordinates and no snippets.
+- Already-existing scan artifact commands accept supported v4/v5 combinations
+  and reject unknown schemas with code `4` and empty `stdout`.
+- Existing SaaS-ready 1 artifact semantics remain valid.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-scan-v5 fixtures `fx146`–`fx150`.
+- Run affected scan JSON goldens.
+- Run artifact validator compatibility tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T20.3 — Implement JUnit report format
+
+Purpose:
+- Add CI-generic JUnit XML output from `PolicyResult` artifacts.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.8 `anchormap report`.
+- `contract.md` — §13.14 JUnit report.
+- `contract.md` — §13.1 machine stream discipline.
+
+Design refs:
+- `design.md` — §4.6 `report junit` pipeline.
+- `design.md` — §5.12 `report_model`.
+- `design.md` — §9.4 `report`.
+- `design.md` — §9.6 Commandes machine.
+
+Eval refs:
+- `evals.md` — §5.16 B-report-JUnit `fx151`–`fx154`.
+- `evals.md` — Gate B and Gate C machine-output requirements.
+
+ADR refs:
+- `ADR-0026` — JUnit and SARIF reports without upload.
+
+Dependencies:
+- T20.0.
+
+Implementation scope:
+- Extend `report` parser to accept exactly the JUnit form.
+- Render stable JUnit XML from `PolicyResult` violations.
+- Add XML escaping and B-report-JUnit fixtures/goldens.
+
+Out of scope:
+- Scan-derived JUnit tests, repository reads, SARIF, upload, CI metadata, source
+  snippets, or changing Markdown report behavior.
+
+Done when:
+- `report --check <check.json> --format junit` renders stable XML.
+- Invalid artifacts or invalid JUnit option combinations exit `4` with empty
+  `stdout`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-report-JUnit fixtures `fx151`–`fx154`.
+- Run report renderer unit tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T20.4 — Implement SARIF report format
+
+Purpose:
+- Add local SARIF JSON output from scan, optional check, and optional diff
+  artifacts without upload or snippets.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.8 `anchormap report`.
+- `contract.md` — §13.15 SARIF report.
+- `contract.md` — §13.2.2 scan schema v5 source locations.
+
+Design refs:
+- `design.md` — §4.6 `report sarif` pipeline.
+- `design.md` — §5.12 `report_model`.
+- `design.md` — §9.4 `report`.
+- `design.md` — §9.6 Commandes machine.
+
+Eval refs:
+- `evals.md` — §5.17 B-report-SARIF `fx155`–`fx159`.
+- `evals.md` — §8.14 C14 artifact isolation.
+- `evals.md` — Gate B and Gate D SaaS-ready 2 requirements.
+
+ADR refs:
+- `ADR-0026` — JUnit and SARIF reports without upload.
+- `ADR-0025` — Scan schema v5 source locations.
+
+Dependencies:
+- T20.2.
+
+Implementation scope:
+- Extend `report` parser to accept exactly the SARIF forms.
+- Render stable SARIF JSON from scan findings, optional policy violations, and
+  optional diff lost-coverage signals.
+- Use v5 source locations for SARIF regions when present and file-level
+  locations for v4 scans.
+- Add B-report-SARIF fixtures and goldens.
+
+Out of scope:
+- SARIF upload, GitHub App behavior, dashboard behavior, source snippets,
+  source contents, fixes, fingerprints, AI recommendations, or repository
+  reads.
+
+Done when:
+- `report --format sarif` renders deterministic SARIF for v4 and v5 scans.
+- SARIF contains no snippets, source contents, logs, environment data or upload
+  instructions.
+- Invalid inputs exit `4` with empty `stdout`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-report-SARIF fixtures `fx155`–`fx159`.
+- Run SARIF renderer unit tests.
+- Run C14 SARIF no-snippet subtests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T20.5 — Close CLI SaaS-ready 2 compatibility and isolation
+
+Purpose:
+- Verify the complete SaaS-ready 2 workflow after T20.1 through T20.4.
+- Close v4/v5 artifact compatibility and isolation gates for bundle, JUnit and
+  SARIF.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.8 through §9.9.
+- `contract.md` — §12.6.
+- `contract.md` — §13.2.2 and §13.14 through §13.16.
+
+Design refs:
+- `design.md` — §4.6.
+- `design.md` — §5.8 and §5.12 through §5.14.
+- `design.md` — §9.4 and §9.6.
+
+Eval refs:
+- `evals.md` — B-bundle, B-scan-v5, B-report-JUnit, B-report-SARIF.
+- `evals.md` — C14 SaaS-ready 2 artifact isolation.
+- `evals.md` — Gate A, Gate B, Gate C and Gate D SaaS-ready 2 requirements.
+
+ADR refs:
+- `ADR-0024` through `ADR-0026`.
+
+Dependencies:
+- T20.1.
+- T20.2.
+- T20.3.
+- T20.4.
+
+Implementation scope:
+- Run full applicable product, docs, golden, and lint checks for the
+  SaaS-ready 2 surface.
+- Confirm M19 SaaS-ready 1 behavior remains compatible and unweakened.
+- Confirm excluded upload SaaS, implicit CI/Git metadata, source snippets,
+  AI/LLM, symbol observation, and `anchormap.yaml` v2 remain absent from CLI
+  behavior and docs.
+
+Out of scope:
+- Publishing, SaaS upload, dashboard, GitHub App, API server, mapping
+  annotations, symbol observation, or config v2 migration.
+
+Done when:
+- All M20 fixtures and goldens pass.
+- Applicable static, product, docs, and isolation checks pass.
+- No runtime behavior depends on Git, CI variables, network, cache, clock, or
+  environment as product source of truth.
+- No JUnit or SARIF output contains source/spec snippets, logs, environment
+  data or upload instructions. Bundle output adds no such data from
+  AnchorMap-derived artifacts or implicit sources, and copies explicit closed
+  metadata only as user-provided declarative input without semantic secret
+  detection.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-bundle, B-scan-v5, B-report-JUnit and B-report-SARIF fixtures.
+- Run the C14 SaaS-ready 2 artifact isolation test.
+- Run `npm run check:goldens`.
+- Run `npm run test:product`.
+- Run `npm run test:docs`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -7425,6 +7792,10 @@ Suggested verification:
 | B-diff `fx124`–`fx128` | T19.3 | M19 | fixture/golden | Scan-vs-scan diff, same-scope/scope-changed comparability, invalid artifacts, and human mode |
 | B-explain `fx129`–`fx134` | T19.4 | M19 | fixture/golden | Anchor/file explanations reconstructed from scan artifact alone, missing subjects, invalid args, and invalid artifact failures |
 | B-report `fx135`–`fx140` | T19.5 | M19 | fixture/golden | Markdown report from scan/check/diff artifacts, stable sections, mechanical actions, invalid format, and invalid artifact failures |
+| B-bundle `fx141`–`fx145` | T20.1 | M20 | fixture/golden | Local bundle from explicit scan/check/diff/metadata, canonical hashes, scan v4/v5 bundle acceptance, invalid inputs, and no implicit CI/Git metadata |
+| B-scan-v5 `fx146`–`fx150` | T20.2 | M20 | fixture/golden | Scan schema v5 source locations, closed observed-anchor schema, v4/v5 compatibility for existing artifact consumers, and unknown schema rejection |
+| B-report-JUnit `fx151`–`fx154` | T20.3 | M20 | fixture/golden | JUnit XML from PolicyResult, pass/fail rendering, XML escaping, invalid artifact and option rejection |
+| B-report-SARIF `fx155`–`fx159` | T20.4 | M20 | fixture/golden | SARIF JSON from scan/check/diff, v4 file locations, v5 regions, no snippets, invalid artifacts |
 | C1 filesystem order invariance | T1.6, T6.1, T7.5, T9.1 | M1, M6, M7, M9 | metamorphic | Stable ordering independent of FS enumeration |
 | C2 YAML editorial reorder invariance | T4.1, T4.4, T8.4, T9.1 | M4, M8, M9 | metamorphic | Same config semantics, canonical output after map |
 | C3 spec noise invariance | T5.2, T5.3, T5.4, T9.1 | M5, M9 | metamorphic | No anchor from unsupported spec noise |
@@ -7438,6 +7809,7 @@ Suggested verification:
 | C11 no network/env source of truth | T9.2 | M9 | isolation | No network required, env changes do not alter output |
 | C12 no cache and no scan writes | T1.5, T7.1, T9.2 | M1, M7, M9 | isolation | Scan leaves no repo/cache artifacts |
 | C13 artifact-command isolation | T19.6 | M19 | isolation | `check --scan`, `diff`, `explain --scan`, and `report` ignore implicit Git/CI/time/network/cache state and do not mutate the repository |
+| C14 SaaS-ready 2 artifact isolation | T20.5 | M20 | isolation | `bundle`, JUnit/SARIF reports, and v4/v5 artifact commands ignore implicit Git/CI/time/network/cache state, avoid snippets, and do not mutate the repository |
 | Cross-platform matrix §9 | T9.3 | M9 | gate | Linux x86_64 and macOS arm64 |
 | Performance `small` and `medium` | T9.4 | M9 | benchmark | Release gate; p95/RSS budgets |
 | Performance `large` | T9.4 | M9 | benchmark | Informational only, archived |

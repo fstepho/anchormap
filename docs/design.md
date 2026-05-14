@@ -55,6 +55,14 @@ ADRs courantes :
 - `ADR-0016` — Deterministic tsconfig local alias resolution (`Accepted`)
 - `ADR-0017` — Deterministic TSX product file support (`Accepted`)
 - `ADR-0018` — Slice-compatible tsconfig alias resolution (`Accepted`)
+- `ADR-0019` — CLI artifact surface and artifact mode (`Accepted`)
+- `ADR-0020` — Policy check and exit code 5 (`Accepted`)
+- `ADR-0021` — Scan artifact diff (`Accepted`)
+- `ADR-0022` — Explain from scan artifact (`Accepted`)
+- `ADR-0023` — Markdown report from artifacts (`Accepted`)
+- `ADR-0024` — Artifact bundle and CI metadata boundary (`Accepted`)
+- `ADR-0025` — Scan schema v5 source locations (`Accepted`)
+- `ADR-0026` — JUnit and SARIF reports without upload (`Accepted`)
 
 ## 3. Sources de vérité et frontières
 
@@ -67,7 +75,7 @@ Le design repose sur quatre catégories de données, sans recouvrement implicite
   les reçoit en argument ;
 - **Derived** : graphe local, états de mapping, `supported_local_targets`,
   `reached_files`, `covering_anchor_ids`, findings, `analysis_health`, JSON de
-  sortie et artefacts dérivés de SaaS-ready 1.
+  sortie et artefacts dérivés de SaaS-ready 1 et SaaS-ready 2.
 
 Règles de frontière :
 
@@ -178,6 +186,31 @@ Le pipeline `check artifact` ne lit jamais le dépôt. Le pipeline `check live`
 est le seul nouveau chemin qui relance l'analyse, et il consomme ensuite le
 même `ScanResult` en mémoire qu'un artefact de scan parsé.
 
+### 4.6 Pipelines logiques SaaS-ready 2
+
+```text
+scan v5:
+args -> commands -> scan pipeline with spec source locations -> renderScanV5 -> commands
+
+report junit:
+args -> commands -> artifact_io.loadPolicyResult
+  -> report_model -> renderJUnitReport -> commands
+
+report sarif:
+args -> commands -> artifact_io.loadScan/loadPolicyResult?/loadDiff?
+  -> report_model -> renderSarifReport -> commands
+
+bundle:
+args -> commands -> artifact_io.loadScan/loadPolicyResult/loadDiff
+  -> metadata_io.loadMetadata -> bundle_model -> renderBundleJson -> commands
+```
+
+Les pipelines `report junit`, `report sarif` et `bundle` ne lisent jamais le
+dépôt. `scan v5` est le seul chemin SaaS-ready 2 qui inspecte les specs afin de
+capturer les locations d'anchors déjà observées. Les renderers JUnit, SARIF et
+bundle sérialisent uniquement des modèles parsés et validés ; ils ne relancent
+aucun calcul d'analyse.
+
 ## 5. Découpage en modules
 
 ### 5.1 `repo_fs`
@@ -282,6 +315,7 @@ SpecOccurrence {
   specPath: RepoPath
   sourceKind: "markdown" | "yaml"
   status: "active" | "draft"
+  sourceLocation?: AnchorSourceLocation
 }
 ```
 
@@ -293,6 +327,10 @@ Décisions clés :
   des draft anchors ; les doublons draft ne bloquent pas, et une active anchor
   du même ID gagne pour les comportements trusted ;
 - aucune donnée issue des specs n’est persistée.
+- en SaaS-ready 2, `spec_index` conserve seulement les coordonnées d'anchor
+  nécessaires au scan v5 (`line`, `column`, `heading_level` pour Markdown ATX ;
+  `line`, `column` pour YAML root `id`) et ne conserve jamais la ligne source
+  complète ni le contenu de spec.
 
 ### 5.4 `ts_graph`
 
@@ -540,6 +578,11 @@ Responsabilités :
 `artifact_io` ne rend rien et ne classe pas les codes de sortie ; il produit
 des erreurs typées pour `commands`.
 
+En SaaS-ready 2, `artifact_io` accepte les scans v4 et v5 pour les commandes
+d'artefacts qui déclarent cette compatibilité. La validation reste fermée :
+aucun objet ouvert, schema inconnu ou schema non supporté par la commande n'est
+converti en modèle de domaine.
+
 ### 5.9 `policy_io` et `policy_engine`
 
 `policy_io` lit et valide la policy YAML fermée de `check`.
@@ -564,9 +607,37 @@ présentes dans l'artefact.
 
 ### 5.12 `report_model`
 
-`report_model` assemble une vue Markdown depuis les artefacts parsés. Il peut
-calculer des agrégats mécaniques de présentation, mais ne produit aucun
-finding, mapping, edge, métrique ou fait produit nouveau.
+`report_model` assemble une vue de report depuis les artefacts parsés. Il peut
+calculer des agrégats mécaniques de présentation pour Markdown, JUnit ou SARIF,
+mais ne produit aucun finding, mapping, edge, métrique ou fait produit nouveau.
+
+Les renderers de report vivent sous `render` :
+
+- `renderMarkdownReport` produit le Markdown SaaS-ready 1 existant ;
+- `renderJUnitReport` produit le XML JUnit depuis `PolicyResult`, avec noms
+  de testcases dérivés seulement du kind et des champs de chaque violation ;
+- `renderSarifReport` produit le JSON SARIF depuis scan, check optionnel et
+  diff optionnel, avec `message.text` stable et violations de policy sans
+  location.
+
+Ces renderers ne lisent jamais le dépôt et ne rendent aucun snippet, contenu
+source ou contenu de spec.
+
+### 5.13 `metadata_io`
+
+`metadata_io` lit et valide le JSON fermé fourni à `bundle --metadata`. Il ne
+lit pas Git, l'environnement, les variables CI, le réseau, le cache ou
+l'horloge. Il ne vérifie pas les metadata contre le dépôt courant ; il produit
+un modèle déclaratif explicitement fourni par l'utilisateur. Il ne fait aucune
+détection sémantique de secret ou de log dans les chaînes de metadata.
+
+### 5.14 `bundle_model`
+
+`bundle_model` consomme un scan artifact validé, un `PolicyResult`, un
+`TraceabilityDiff` et les metadata validées. Il construit `ArtifactBundle` en
+embarquant les artefacts dans leur forme canonique et en calculant les SHA-256
+sur les bytes canoniques embarqués. Il ne modifie pas les artefacts et ne
+déduit aucune provenance commune entre eux.
 
 ## 6. Modèle de données interne
 
@@ -1209,10 +1280,18 @@ Règle d’application : une précondition utilisateur déjà décidable à part
 
 #### `report`
 
-- parser et valider `--format markdown`, `--scan`, et les artefacts optionnels ;
+- parser et valider `--format markdown`, `--format junit` ou
+  `--format sarif`, ainsi que les artefacts requis par le format ;
 - charger les artefacts explicitement fournis ;
 - assembler `report_model` ;
-- rendre le Markdown stable.
+- rendre le Markdown, XML JUnit ou JSON SARIF stable.
+
+#### `bundle`
+
+- parser et valider `--scan`, `--check`, `--diff`, `--metadata` et `--json` ;
+- charger les artefacts et metadata explicitement fournis ;
+- assembler `bundle_model` ;
+- rendre `ArtifactBundle` JSON stable.
 
 ### 9.5 Règle spécifique aux commandes d’écriture
 
@@ -1230,6 +1309,12 @@ Pour `init` et `map` :
 - policy fail `check --json` (`5`) : `PolicyResult` JSON sur `stdout`,
   `stderr` vide ;
 - succès `report --format markdown` (`0`) : Markdown sur `stdout`, `stderr`
+  vide ;
+- succès `report --format junit` (`0`) : XML JUnit sur `stdout`, `stderr`
+  vide ;
+- succès `report --format sarif` (`0`) : JSON SARIF sur `stdout`, `stderr`
+  vide ;
+- succès `bundle --json` (`0`) : `ArtifactBundle` JSON sur `stdout`, `stderr`
   vide ;
 - échec technique (`1`, `2`, `3`, `4`) : `stdout` vide ; `stderr`
   éventuellement renseigné avec un texte humain hors contrat.
@@ -1368,7 +1453,8 @@ Le design v1.0 repousse volontairement :
 - cache persistant ;
 - API serveur ;
 - historique de scans ;
-- bundle, upload SaaS, JUnit, SARIF et scan schema v5 pour SaaS-ready 1 ;
+- upload SaaS, dashboard, GitHub App, lectures Git/CI implicites,
+  `anchormap.yaml` v2 et symbol observation pour SaaS-ready 2 ;
 - suggestion automatique de mappings ;
 - mise à jour incrémentale basée sur diff Git ;
 - durabilité post-commit renforcée par `fsync` du répertoire parent dans le chemin contractuel d’écriture.

@@ -698,7 +698,7 @@ exposée dans `scan --json`.
 
 ## 9. Commandes
 
-La CLI expose exactement huit commandes :
+La CLI expose exactement neuf commandes :
 
 - `init`
 - `map`
@@ -708,6 +708,7 @@ La CLI expose exactement huit commandes :
 - `diff`
 - `explain`
 - `report`
+- `bundle`
 
 Aucune autre commande n'est dans le périmètre.
 
@@ -730,11 +731,11 @@ Règle commune à `scaffold` :
 - sur tout code de sortie non nul, le fichier `--output` reste absent s'il était absent avant commande, et reste byte-identique s'il existait avant commande ;
 - aucun fichier temporaire ou auxiliaire propre à AnchorMap ne peut subsister dans le répertoire courant après un code non nul ;
 
-- `scan`, `check`, `diff`, `explain` et `report` n'écrivent jamais sur disque
-  et ne modifient aucun fichier du dépôt.
+- `scan`, `check`, `diff`, `explain`, `report` et `bundle` n'écrivent jamais
+  sur disque et ne modifient aucun fichier du dépôt.
 
 Règle commune aux commandes d'artefacts (`check`, `diff`, `explain`,
-`report`) :
+`report`, `bundle`) :
 
 - tout chemin d'artefact fourni en option est interprété comme un chemin
   utilisateur explicite et ouvert seulement pour lecture ;
@@ -748,9 +749,16 @@ Règle commune aux commandes d'artefacts (`check`, `diff`, `explain`,
   `diff`, `explain --scan` ou `report --scan` doit porter
   `schema_version = 4` ; toute autre `schema_version` de scan, même connue par
   une version antérieure du contrat, produit le code `4` ;
-- les artefacts produits ne contiennent jamais de contenu source complet, de
-  secrets, de logs CI, de branche, de commit, de numéro de PR, ni d'état Git
-  implicite ;
+- dans SaaS-ready 2, tout artefact de scan consommé par `check --scan`,
+  `diff`, `explain --scan`, `report --scan` ou `bundle --scan` doit porter
+  `schema_version = 4` ou `schema_version = 5` ; toute autre
+  `schema_version` de scan produit le code `4` ;
+- les artefacts produits n'introduisent jamais de contenu source complet, de
+  contenu complet de spec, de snippet de spec, de secret, de log CI, ni d'état
+  Git implicite depuis le dépôt, Git, CI, l'environnement, le réseau, le cache
+  ou l'horloge ; seul `bundle` peut recopier branche, commit, numéro de PR,
+  fournisseur ou URL de run lorsque ces valeurs proviennent du fichier
+  `--metadata` explicite et fermé ;
 - les suggested actions, lorsqu'elles existent, sont mécaniques et dérivées
   uniquement de findings contractuels, violations de policy ou deltas de diff
   présents dans les artefacts d'entrée.
@@ -1135,6 +1143,8 @@ Il ne relance pas `scan`, ne lit pas le dépôt, ne lit pas `anchormap.yaml` et 
 compare jamais des refs Git.
 SaaS-ready 1 supporte uniquement les artefacts de scan dont
 `schema_version = 4`. Toute autre `schema_version` de scan produit le code `4`.
+SaaS-ready 2 supporte les comparaisons `v4/v4`, `v5/v5`, `v4/v5` et `v5/v4`.
+Toute autre `schema_version` de scan produit le code `4`.
 
 #### 9.6.3 Comparabilité
 
@@ -1189,25 +1199,101 @@ l'artefact.
 Sérialiser des artefacts machine existants en Markdown stable pour usage
 humain, notamment commentaire PR local.
 
-#### 9.8.2 Forme supportée
+#### 9.8.2 Formes supportées
 
 ```bash
 anchormap report --scan <scan.json> --format markdown
 anchormap report --scan <scan.json> --check <check.json> --format markdown
 anchormap report --scan <scan.json> --diff <diff.json> --format markdown
 anchormap report --scan <scan.json> --check <check.json> --diff <diff.json> --format markdown
+anchormap report --check <check.json> --format junit
+anchormap report --scan <scan.json> --format sarif
+anchormap report --scan <scan.json> --check <check.json> --format sarif
+anchormap report --scan <scan.json> --diff <diff.json> --format sarif
+anchormap report --scan <scan.json> --check <check.json> --diff <diff.json> --format sarif
 ```
 
-`--scan` est obligatoire. `--check` et `--diff` sont optionnels et indépendants.
-La seule valeur supportée de `--format` est `markdown`.
+Pour `--format markdown`, `--scan` est obligatoire. `--check` et `--diff` sont
+optionnels et indépendants.
+
+Pour `--format junit`, `--check` est obligatoire et `--scan` / `--diff` ne sont
+pas supportés.
+
+Pour `--format sarif`, `--scan` est obligatoire. `--check` et `--diff` sont
+optionnels et indépendants.
 
 `report` ne relance aucune analyse et ne lit pas le dépôt. Il sérialise
-uniquement les artefacts explicitement fournis. Il ne produit ni JUnit, ni
-SARIF, ni HTML, ni bundle dans SaaS-ready 1.
+uniquement les artefacts explicitement fournis. Il ne produit ni HTML, ni
+bundle. Dans SaaS-ready 1, seul `--format markdown` est supporté. Dans
+SaaS-ready 2, `--format junit` et `--format sarif` sont supportés en plus de
+`markdown`.
 `report` ne prouve pas que les artefacts fournis proviennent du même run : il
 valide seulement que chaque artefact fourni est conforme à son schéma
 contractuel supporté, puis sérialise ces artefacts sans affirmer leur
 provenance commune.
+
+`report --format junit` transforme les violations de `PolicyResult` en
+testcases échoués. `report --format sarif` transforme les findings du scan, les
+violations de policy optionnelles et les pertes de couverture optionnelles du
+diff en résultats SARIF. Aucun format de report ne contient de contenu source,
+de snippet de source, de contenu complet de spec, de snippet de spec, de logs
+CI, d'instruction d'upload, ni de donnée implicite Git, CI, réseau, cache,
+horloge ou environnement.
+
+### 9.9 `anchormap bundle`
+
+#### 9.9.1 But
+
+Assembler un artefact JSON local unique destiné à une future consommation SaaS,
+sans upload, sans lecture Git, sans lecture CI implicite et sans contenu source.
+
+#### 9.9.2 Forme supportée
+
+```bash
+anchormap bundle --scan <scan.json> --check <check.json> --diff <diff.json> --metadata <metadata.json> --json
+```
+
+Tous les arguments sont obligatoires. `bundle` consomme uniquement les quatre
+fichiers explicitement fournis. Il ne relance pas `scan`, ne lit pas le dépôt,
+ne lit pas `anchormap.yaml`, ne lit pas Git, ne lit pas l'environnement, ne lit
+pas les variables CI, ne consulte pas le réseau, ne consulte pas de cache et ne
+consulte pas l'horloge.
+
+`--metadata` est un fichier JSON UTF-8 fermé. AnchorMap le valide et le recopie
+comme metadata fournie par l'utilisateur ; il ne vérifie jamais son contenu
+contre Git, CI, le réseau ou le dépôt courant. Les metadata ne changent jamais
+les artefacts `scan`, `check`, `diff`, `report` ou les décisions de policy.
+
+#### 9.9.3 Metadata supportée
+
+Le fichier `--metadata` contient exactement les clés suivantes, dans cet ordre
+canonique après parsing :
+
+1. `provider`
+2. `repository`
+3. `commit`
+4. `branch`
+5. `pull_request`
+6. `run_url`
+
+Contraintes normatives :
+
+- `provider` vaut `github`, `gitlab`, `generic` ou `other` ;
+- `repository`, `commit`, `branch` et `run_url` valent une chaîne non vide ou
+  `null` ;
+- `pull_request` vaut un entier supérieur ou égal à `1` ou `null` ;
+- aucune clé supplémentaire n'est autorisée ;
+- aucune valeur de metadata n'est interprétée comme source de vérité produit ;
+- AnchorMap applique seulement ces contraintes syntaxiques fermées aux
+  metadata. Il ne tente pas de détecter sémantiquement si une valeur explicite
+  représente un secret, un log CI, une variable d'environnement, du contenu
+  source, du contenu complet de spec ou un snippet de spec ;
+- la garantie d'absence de secret, log CI, variable d'environnement, contenu
+  source, contenu complet de spec et snippet de spec signifie que `bundle`
+  n'ajoute aucune donnée de cette nature depuis une source implicite et que le
+  schéma de metadata n'offre aucune clé hors schéma pour la stocker. Les
+  valeurs de metadata explicites restent des libellés déclaratifs fournis par
+  l'utilisateur.
 
 ## 10. Dépendances statiques locales supportées
 
@@ -1751,7 +1837,7 @@ Toute autre plateforme est hors contrat pour v1.0.
 ### 12.5 Sorties stables
 
 Pour les artefacts JSON machine garantis (`scan --json`, `check --json`,
-`diff --json`, `explain --json`), AnchorMap garantit :
+`diff --json`, `explain --json`, `bundle --json`), AnchorMap garantit :
 
 - `schema_version` explicite ;
 - encodage UTF-8 sans BOM ;
@@ -1760,7 +1846,8 @@ Pour les artefacts JSON machine garantis (`scan --json`, `check --json`,
 - ordre canonique des collections ;
 - chemins canoniques ;
 - findings dédupliqués et triés de manière canonique ;
-- sérialisation JSON exacte selon les sections 13.7 et 13.10 à 13.12.
+- sérialisation JSON exacte selon les sections 13.7 et 13.10 à 13.12 et
+  13.16.
 
 Pour `init` et `map`, AnchorMap garantit l'écriture YAML canonique exacte selon la section 7.5.
 
@@ -1768,6 +1855,12 @@ Pour `scaffold`, AnchorMap garantit l'écriture Markdown exacte selon la section
 9.4.5.
 
 Pour `report --format markdown`, AnchorMap garantit un Markdown UTF-8 stable,
+terminé par un unique `\n`, dérivé exclusivement des artefacts fournis.
+
+Pour `report --format junit`, AnchorMap garantit un XML UTF-8 stable, terminé
+par un unique `\n`, dérivé exclusivement de l'artefact `check` fourni.
+
+Pour `report --format sarif`, AnchorMap garantit un JSON SARIF UTF-8 stable,
 terminé par un unique `\n`, dérivé exclusivement des artefacts fournis.
 
 ### 12.6 Aucune donnée implicite
@@ -1784,6 +1877,11 @@ Extension SaaS-ready 1 : les commandes `check`, `diff`, `explain` et `report`
 conservent cette règle. Les chemins d'artefacts et de policy sont des entrées
 explicites de l'utilisateur, pas des découvertes implicites. Le contenu des
 artefacts est la seule source de vérité de leur commande en mode artifact.
+
+Extension SaaS-ready 2 : `bundle` conserve cette règle. Le fichier
+`--metadata` est une entrée explicite fournie par l'utilisateur, pas une
+découverte implicite. Son contenu est recopié comme metadata déclarative et ne
+devient jamais une source de vérité produit vérifiée par AnchorMap.
 
 Extension M15 planifiée : `./tsconfig.json` peut devenir une entrée observée du
 dépôt pour la résolution locale d'aliases. Il ne devient pas un état persisté
@@ -1805,6 +1903,9 @@ Le contrat machine s'applique à :
 - `diff --json`
 - `explain --json`
 - `report --format markdown`
+- `report --format junit`
+- `report --format sarif`
+- `bundle --json`
 
 Pour `scan --json` :
 
@@ -1837,6 +1938,25 @@ Pour `report --format markdown` :
 - si le code de sortie est `0`, `stdout` contient le Markdown stable défini en
   section 13.13 ; `stderr` est vide ;
 - si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide.
+
+Pour `report --format junit` :
+
+- si le code de sortie est `0`, `stdout` contient le XML stable défini en
+  section 13.14 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide.
+
+Pour `report --format sarif` :
+
+- si le code de sortie est `0`, `stdout` contient le JSON SARIF stable défini
+  en section 13.15 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide.
+
+Pour `bundle --json` :
+
+- si le code de sortie est `0`, `stdout` contient exactement un objet JSON
+  conforme à la section 13.16 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide et aucun
+  JSON n'est émis.
 
 ### 13.2 Schéma de succès exact
 
@@ -1906,6 +2026,46 @@ Contraintes normatives du schéma v4 :
 - les entrées de `config.local_aliases` sont triées selon la section 12.2.4.
 
 Extension M17 planifiée : le schéma reste JSON v4 et aucun champ n'est ajouté.
+
+#### 13.2.2 Extension SaaS-ready 2 : JSON v5 et source locations
+
+Quand l'extension SaaS-ready 2 est active, `scan --json` rend un schéma JSON
+v5.
+
+Contraintes normatives du schéma v5 :
+
+- `schema_version` vaut toujours l'entier `5` ;
+- les clés racine restent celles de la section 13.2 ;
+- `config` conserve exactement la forme du schéma v4 défini en section
+  13.2.1 ;
+- chaque entrée `observed_anchors[anchor_id]` est un objet fermé contenant
+  exactement `spec_path`, puis `mapping_state`, puis `source` ;
+- `source` est obligatoire pour chaque anchor observée ;
+- aucune clé supplémentaire n'est autorisée.
+
+Formes exactes de `source` :
+
+- pour une anchor issue d'un heading ATX Markdown :
+  `{"kind":"markdown_atx_heading","line":<integer>,"column":<integer>,"heading_level":<integer>}` ;
+- pour une anchor issue d'un `id` racine YAML :
+  `{"kind":"yaml_root_id","line":<integer>,"column":<integer>}`.
+
+Contraintes normatives :
+
+- `line` et `column` sont des entiers one-based supérieurs ou égaux à `1` ;
+- `heading_level` vaut un entier de `1` à `6` ;
+- pour `markdown_atx_heading`, `line` est la ligne source physique du heading
+  ATX détecté et `column` est la colonne source physique du premier caractère
+  de l'AnchorId détectée dans le texte du heading source. La colonne ne pointe
+  jamais vers le marqueur ATX `#` ni vers les espaces qui suivent ce marqueur ;
+- pour `yaml_root_id`, `line` est la ligne source physique qui contient la
+  valeur scalaire `id` détectée et `column` est la colonne source physique du
+  premier caractère de la valeur scalaire AnchorId. La colonne ne pointe jamais
+  vers la clé `id`, le séparateur `:`, les espaces de séparation, ni les
+  délimiteurs YAML éventuels de la chaîne scalaire ;
+- `source` décrit l'occurrence d'anchor observée et ne crée aucun fait
+  symbol-level, call graph, ownership, conformité fonctionnelle ou
+  recommandation.
 `config.local_aliases` contient seulement les aliases publics locaux dont la
 cible est sous `product_root`. Les aliases de résolution hors slice ne sont pas
 rendus.
@@ -2066,8 +2226,9 @@ Aucune autre forme et aucune clé supplémentaire ne sont autorisées.
 
 ### 13.7 Sérialisation JSON canonique exacte
 
-Pour `scan --json`, `check --json`, `diff --json` et `explain --json`, les
-bytes du résultat machine sont rendus exactement selon les règles suivantes :
+Pour `scan --json`, `check --json`, `diff --json`, `explain --json` et
+`bundle --json`, les bytes du résultat machine sont rendus exactement selon les
+règles suivantes :
 
 - un seul objet JSON sur une seule ligne, suivi d'un unique `\n` final ;
 - aucun espace, aucune tabulation et aucun saut de ligne hors des chaînes JSON et du `\n` final ;
@@ -2083,8 +2244,9 @@ bytes du résultat machine sont rendus exactement selon les règles suivantes :
 - pour `check --json`, ordre des clés racine selon la section 13.10 ;
 - pour `diff --json`, ordre des clés racine selon la section 13.11 ;
 - pour `explain --json`, ordre des clés racine selon la section 13.12 ;
-- dans les objets fermés des sections 13.10 à 13.12, les clés sont rendues
-  exactement dans l'ordre où elles sont listées par la forme normative
+- pour `bundle --json`, ordre des clés racine selon la section 13.16 ;
+- dans les objets fermés des sections 13.10 à 13.12 et 13.16, les clés sont
+  rendues exactement dans l'ordre où elles sont listées par la forme normative
   applicable ;
 - dans `config`, l'ordre des clés est `version`, puis `product_root`, puis `spec_roots`, puis `ignore_roots` ;
 - extension M15 planifiée : dans le schéma JSON v4, l'ordre des clés de
@@ -2094,6 +2256,10 @@ bytes du résultat machine sont rendus exactement selon les règles suivantes :
   l'ordre des clés est `prefix`, puis `target` ;
 - les clés de `observed_anchors`, `stored_mappings` et `files` sont triées lexicographiquement ;
 - dans chaque entrée de `observed_anchors`, l'ordre des clés est `spec_path`, puis `mapping_state` ;
+- extension SaaS-ready 2 : dans chaque entrée de `observed_anchors` du schéma
+  v5, l'ordre des clés est `spec_path`, puis `mapping_state`, puis `source` ;
+- extension SaaS-ready 2 : dans `source`, l'ordre des clés est celui de la
+  forme exacte listée en section 13.2.2 ;
 - dans chaque entrée de `stored_mappings`, l'ordre des clés est `state`, puis `seed_files`, puis `reached_files` ;
 - dans chaque entrée de `files`, l'ordre des clés est `covering_anchor_ids`, puis `supported_local_targets` ;
 - dans `traceability_metrics`, l'ordre des clés est `summary`, puis `anchors` ;
@@ -2116,8 +2282,12 @@ bytes du résultat machine sont rendus exactement selon les règles suivantes :
 - l'entier `schema_version` est rendu exactement sous la forme `3`.
 - extension M15 planifiée : dans le schéma JSON v4, l'entier `schema_version`
   est rendu exactement sous la forme `4`.
+- extension SaaS-ready 2 : dans le schéma JSON v5, l'entier `schema_version`
+  est rendu exactement sous la forme `5`.
 - dans les schémas SaaS-ready 1 des sections 13.10 à 13.12, l'entier
   `schema_version` est rendu exactement sous la forme `1`.
+- dans le schéma SaaS-ready 2 de la section 13.16, l'entier `schema_version`
+  est rendu exactement sous la forme `1`.
 
 ### 13.8 Codes de sortie
 
@@ -2402,3 +2572,240 @@ Corps exact des sections :
 `canonical-json-violation` et `canonical-json-finding` utilisent les mêmes
 règles d'échappement, d'ordre de clés et d'absence d'espaces que la section
 13.7 pour l'objet concerné, sans saut de ligne interne.
+
+### 13.14 JUnit report
+
+`report --format junit` rend un document XML stable depuis un artefact
+`PolicyResult` fourni par `--check`.
+
+Contraintes normatives :
+
+- le document est encodé en UTF-8 sans BOM et terminé par un unique `\n` ;
+- il ne contient aucune déclaration XML ;
+- il contient exactement un élément racine `<testsuite>` ;
+- la sérialisation est multi-ligne, sans indentation et sans ligne vide ;
+- la première ligne est exactement la balise ouvrante `<testsuite>` avec les
+  attributs contractuels ;
+- chaque `<testcase>` est rendu sur une seule ligne ;
+- la dernière ligne est exactement `</testsuite>` ;
+- aucun espace n'est émis hors des espaces séparant les attributs dans une
+  balise ;
+- l'ordre des attributs de `<testsuite>` est `name`, `tests`, `failures` ;
+- `name` vaut `anchormap.policy` ;
+- `tests` vaut le nombre de violations de `PolicyResult.violations`, ou `1`
+  lorsque ce tableau est vide ;
+- `failures` vaut le nombre de violations ;
+- lorsque `violations` est vide, le document contient un unique
+  `<testcase name="policy pass" classname="anchormap.policy"/>` auto-fermant ;
+- lorsqu'au moins une violation existe, chaque violation produit un
+  `<testcase>` dans l'ordre de `PolicyResult.violations`, avec attributs
+  `name`, puis `classname`, puis un enfant `<failure message="policy violation">`
+  dont le texte est la violation rendue en JSON canonique selon la section
+  13.7 ;
+- un testcase échoué n'est jamais auto-fermant et sa ligne a exactement la
+  forme `<testcase name="<name>" classname="anchormap.policy"><failure message="policy violation"><escaped-canonical-json-violation></failure></testcase>` ;
+- le `name` d'un testcase échoué est déterministe et vaut exactement :
+  - `policy.violation.analysis_health_degraded` pour
+    `{"kind":"analysis_health_degraded"}` ;
+  - `policy.violation.finding_kind_present.<finding_kind>` pour
+    `{"kind":"finding_kind_present","finding_kind":<finding_kind>,"count":<integer>}` ;
+  - `policy.violation.covered_product_file_percent_below_threshold.actual-<actual>.threshold-<threshold>`
+    pour
+    `{"kind":"covered_product_file_percent_below_threshold","actual":<integer>,"threshold":<integer>}` ;
+  - `policy.violation.untraced_product_files_above_threshold.actual-<actual>.threshold-<threshold>`
+    pour
+    `{"kind":"untraced_product_files_above_threshold","actual":<integer>,"threshold":<integer>}` ;
+- `classname` vaut toujours `anchormap.policy` ;
+- dans les valeurs d'attribut XML, `&`, `<`, `"`, tabulation, saut de ligne et
+  retour chariot sont échappés respectivement en `&amp;`, `&lt;`, `&quot;`,
+  `&#x9;`, `&#xA;` et `&#xD;`; l'apostrophe et `>` ne sont pas échappés ;
+- dans le texte de `<failure>`, le JSON canonique de la violation est calculé
+  d'abord, puis `&`, `<` et `>` sont échappés dans cet ordre en `&amp;`,
+  `&lt;` et `&gt;`; les guillemets JSON restent des octets `"` ;
+- pour un `PolicyResult` passant, `stdout` est la concaténation exacte de ces
+  trois lignes, chacune terminée par `\n` :
+
+```text
+<testsuite name="anchormap.policy" tests="1" failures="0">
+<testcase name="policy pass" classname="anchormap.policy"/>
+</testsuite>
+```
+
+- pour un `PolicyResult` avec violations, `stdout` est la concaténation exacte
+  de :
+  - la ligne `<testsuite name="anchormap.policy" tests="<violation-count>" failures="<violation-count>">\n` ;
+  - une ligne par violation, dans l'ordre de `PolicyResult.violations`, de
+    forme `<testcase name="<violation-test-name>" classname="anchormap.policy"><failure message="policy violation"><escaped-canonical-json-violation></failure></testcase>\n` ;
+  - la ligne `</testsuite>\n` ;
+- le XML ne contient aucun contenu source, snippet de source, contenu complet
+  de spec, snippet de spec, log CI, metadata Git, metadata CI, instruction
+  d'upload ou variable d'environnement.
+
+### 13.15 SARIF report
+
+`report --format sarif` rend un document JSON SARIF stable depuis un artefact
+`ScanResult` fourni par `--scan` et, optionnellement, des artefacts
+`PolicyResult` et `TraceabilityDiff`.
+
+Contraintes normatives :
+
+- le document est encodé en UTF-8 sans BOM et terminé par un unique `\n` ;
+- le JSON est rendu selon les règles d'échappement et d'absence d'espaces de
+  la section 13.7 ;
+- l'objet racine contient exactement `version`, puis `runs` ;
+- `version` vaut `"2.1.0"` ;
+- `runs` contient un unique run ;
+- le run contient exactement `tool`, puis `results` ;
+- `tool.driver.name` vaut `"AnchorMap"` ;
+- `tool.driver.informationUri` vaut `"https://github.com/fstepho/anchormap"` ;
+- `tool.driver.rules` contient une règle stable pour chaque kind de finding,
+  violation de policy ou signal de diff effectivement rendu dans `results`,
+  triée par `id` ;
+- `tool` est un objet fermé contenant exactement `driver` ;
+- `driver` est un objet fermé contenant exactement `name`, puis
+  `informationUri`, puis `rules` ;
+- chaque règle est un objet fermé contenant exactement `id`, puis `name`, puis
+  `shortDescription` ;
+- `shortDescription` est un objet fermé contenant exactement `text` ;
+- `results` est trié par `ruleId`, puis clé de location, puis
+  `message.text`, puis rendu JSON canonique du résultat. La clé de location vaut
+  `locations[0].physicalLocation.artifactLocation.uri` lorsqu'une location est
+  rendue, et la chaîne vide `""` pour un résultat sans location.
+
+IDs de règles SARIF :
+
+- pour un finding de scan, `ruleId` et `rules[].id` valent
+  `anchormap.finding.<finding_kind>` ;
+- pour une violation de policy, `ruleId` et `rules[].id` valent
+  `anchormap.policy.<violation_kind>` ;
+- pour une entrée de `diff.files.lost_coverage`, `ruleId` et `rules[].id`
+  valent `anchormap.diff.lost_coverage`.
+
+Champs de règles SARIF :
+
+- pour un finding de scan, `name` vaut `<finding_kind>` et
+  `shortDescription.text` vaut `AnchorMap scan finding <finding_kind>` ;
+- pour une violation de policy, `name` vaut `<violation_kind>` et
+  `shortDescription.text` vaut `AnchorMap policy violation <violation_kind>` ;
+- pour une entrée de `diff.files.lost_coverage`, `name` vaut `lost_coverage`
+  et `shortDescription.text` vaut `AnchorMap diff lost coverage`.
+
+Champs de résultats SARIF :
+
+- chaque résultat localisé est un objet fermé contenant exactement `ruleId`,
+  puis `level`, puis `message`, puis `locations` ;
+- chaque résultat sans location est un objet fermé contenant exactement
+  `ruleId`, puis `level`, puis `message` ;
+- `level` vaut toujours `warning` ;
+- `message` est un objet fermé contenant exactement `text` ;
+- `locations` contient un unique objet fermé contenant exactement
+  `physicalLocation` ;
+- `physicalLocation` contient exactement `artifactLocation`, puis `region`
+  lorsqu'une région est disponible, et exactement `artifactLocation` sinon ;
+- `artifactLocation` est un objet fermé contenant exactement `uri` ;
+- `region` est un objet fermé contenant exactement `startLine`, puis
+  `startColumn`.
+
+Sources des résultats SARIF :
+
+- chaque finding du scan produit un résultat ;
+- chaque violation du `PolicyResult` optionnel produit un résultat ;
+- chaque entrée de `diff.files.lost_coverage` du `TraceabilityDiff` optionnel
+  produit un résultat ;
+- aucune autre donnée ne produit de résultat.
+
+Localisation :
+
+- pour un finding `unmapped_anchor`, la location contient
+  `artifactLocation.uri = observed_anchors[anchor_id].spec_path` et, en scan
+  v5, la région de `observed_anchors[anchor_id].source` ;
+- pour un finding `stale_mapping_anchor`, aucune location n'est rendue ;
+- pour un finding `broken_seed_path`, la location fichier contient
+  `artifactLocation.uri = seed_path` ;
+- pour un finding `unresolved_static_edge`, `unsupported_static_edge`,
+  `out_of_scope_static_edge` ou `unsupported_local_target`, la location fichier
+  contient `artifactLocation.uri = importer` ;
+- pour un finding `untraced_product_file`, la location fichier contient
+  `artifactLocation.uri = path` ;
+- pour un finding `unmapped_anchor` issu d'un scan v4 sans source location, la
+  location contient seulement `artifactLocation.uri` ;
+- une violation de policy `PolicyResult` n'est pas associée à une location
+  source par le schéma de la section 13.10 et produit donc un résultat SARIF
+  sans clé `locations` ;
+- une entrée `diff.files.lost_coverage` produit une location fichier avec
+  `artifactLocation.uri` égal au chemin perdu ;
+- les URIs sont des `RepoPath` canoniques ;
+- aucune `snippet`, `region.snippet.text`, `artifact.contents`,
+  `partialFingerprints`, `fixes`, `properties` ou instruction d'upload n'est
+  rendue.
+
+Messages :
+
+- chaque résultat contient une clé `message` dont l'objet fermé contient
+  exactement la clé `text` ;
+- pour un finding de scan, `message.text` vaut exactement
+  `scan finding: <canonical-json-finding>` ;
+- pour une violation de policy, `message.text` vaut exactement
+  `policy violation: <canonical-json-violation>` ;
+- pour une entrée de `diff.files.lost_coverage`, `message.text` vaut
+  exactement `diff lost coverage: <canonical-json-path>` ;
+- `canonical-json-finding`, `canonical-json-violation` et
+  `canonical-json-path` utilisent les règles d'échappement, d'ordre de clés et
+  d'absence d'espaces de la section 13.7 pour la valeur concernée, sans saut de
+  ligne interne ;
+- les messages ne présentent jamais `untraced_product_file` ou une perte de
+  couverture comme preuve de dead code ou de suppression sûre.
+
+### 13.16 `ArtifactBundle`
+
+L'objet JSON de `bundle --json` contient exactement les clés racine suivantes :
+
+1. `schema_version`
+2. `tool`
+3. `metadata`
+4. `artifacts`
+5. `hashes`
+
+Contraintes normatives :
+
+- `schema_version` vaut toujours l'entier `1` ;
+- `tool` est un objet fermé contenant exactement `name`, puis `version` ;
+- `tool.name` vaut toujours `"anchormap"` ;
+- `tool.version` vaut la version publiée de la CLI embarquée dans l'artefact
+  package ; elle ne provient jamais de Git, de l'environnement, du réseau, du
+  cache ou de l'horloge ;
+- `metadata` est l'objet fermé validé depuis `--metadata`, rendu selon l'ordre
+  de la section 9.9.3 ;
+- `artifacts` est un objet fermé contenant exactement `scan`, puis `check`,
+  puis `diff` ;
+- `artifacts.scan` est le scan validé et rendu dans sa forme canonique
+  supportée v4 ou v5 ;
+- `artifacts.check` est le `PolicyResult` validé et rendu dans sa forme
+  canonique ;
+- `artifacts.diff` est le `TraceabilityDiff` validé et rendu dans sa forme
+  canonique ;
+- `hashes` est un objet fermé contenant exactement `scan_sha256`, puis
+  `check_sha256`, puis `diff_sha256` ;
+- chaque hash est une chaîne hexadécimale minuscule de 64 caractères ;
+- chaque hash est le SHA-256 des bytes JSON canoniques de l'artefact embarqué,
+  avec l'unique `\n` final qu'AnchorMap aurait rendu pour cet artefact machine ;
+- hors valeurs de metadata explicitement fournies, le bundle ne contient aucun
+  contenu source, snippet de source, contenu complet de spec, snippet de spec,
+  secret, log CI, variable d'environnement, donnée réseau, donnée d'horloge,
+  état Git implicite ou résultat d'upload. AnchorMap ne détecte pas
+  sémantiquement ces catégories dans les valeurs de metadata ; il garantit que
+  le schéma est fermé et qu'aucune donnée implicite de cette nature n'est
+  ajoutée ;
+- le bundle ne prouve pas que les artefacts et metadata proviennent du même
+  run. Il affirme seulement que les artefacts et metadata explicites ont été
+  validés et assemblés localement.
+
+`bundle` supporte les artefacts suivants :
+
+- `scan.schema_version = 4` ou `5` ;
+- `check.schema_version = 1` ;
+- `diff.schema_version = 1`.
+
+Toute clé supplémentaire, schema inconnu, schema non supporté par `bundle`, ou
+incompatibilité avec un objet fermé produit le code `4`, `stdout` vide et aucun
+JSON partiel.

@@ -64,6 +64,9 @@ An ADR is usually not required for:
 | `ADR-0021` | Scan artifact diff | Accepted |
 | `ADR-0022` | Explain from scan artifact | Accepted |
 | `ADR-0023` | Markdown report from artifacts | Accepted |
+| `ADR-0024` | Artifact bundle and CI metadata boundary | Accepted |
+| `ADR-0025` | Scan schema v5 source locations | Accepted |
+| `ADR-0026` | JUnit and SARIF reports without upload | Accepted |
 
 ## Template
 
