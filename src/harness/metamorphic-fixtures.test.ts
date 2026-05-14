@@ -40,6 +40,16 @@ const REPRESENTATIVE_JSON_AND_YAML_FIXTURES = requireFixtureTargets([
 	"c2_yaml_reorder_map_baseline",
 ]);
 const C8_LOCALE_SENSITIVE_FIXTURES = requireFixtureTargets(["c8_locale_collation_order"]);
+const C13_ARTIFACT_COMMAND_FIXTURES = requireFixtureTargets([
+	"fx118_check_policy_fail_json",
+	"fx121_check_invalid_scan_artifact",
+	"fx124_diff_same_scope_json",
+	"fx126_diff_invalid_base_artifact",
+	"fx129_explain_anchor_json",
+	"fx134_explain_invalid_scan_artifact",
+	"fx135_report_scan_markdown",
+	"fx140_report_invalid_artifact",
+]);
 
 interface RunResult {
 	readonly fixture: LoadedFixtureManifest;
@@ -464,6 +474,78 @@ test("C12 no persistent cache and no scan writes: representative scan fixtures l
 	}
 });
 
+test("C13 artifact-command isolation: artifact commands ignore implicit state and do not mutate repositories or cache", async () => {
+	const datePreload = createFixedDatePreload("2040-11-12T13:14:15.160Z");
+	const networkBlockPreload = createNetworkBlockPreload();
+	const isolationPreload = createCompositePreload("artifact-isolation", [
+		datePreload.path,
+		networkBlockPreload.path,
+	]);
+	try {
+		await assertNetworkBlockPreloadCoversCommonNodeApis(networkBlockPreload);
+
+		for (const target of C13_ARTIFACT_COMMAND_FIXTURES) {
+			const baselineRun = await runFixtureTarget(target);
+			try {
+				const cacheSandbox = createCacheSandbox();
+				try {
+					const cachePreRunSnapshot = captureFilesystemSnapshot(cacheSandbox.rootDir);
+					networkBlockPreload.clearAttempts();
+					const isolatedRun = await runFixtureTarget(target, {
+						env: {
+							...cacheSandbox.env,
+							ANCHORMAP_C11_NETWORK_ATTEMPT_LOG: networkBlockPreload.attemptLogPath,
+							ANCHORMAP_NON_CONTRACT_PROBE: "changed",
+							CI: "true",
+							GITHUB_ACTIONS: "true",
+							LANG: "C",
+							LC_ALL: "C",
+							NO_COLOR: "1",
+							TZ: "Pacific/Kiritimati",
+						},
+						preload: isolationPreload,
+						setupSandbox: (sandbox) => {
+							writeValidGitMetadata(sandbox);
+							writeFileSync(
+								resolve(sandbox.sandboxDir, "unprovided-repository-noise.txt"),
+								"not an explicit artifact or policy input\n",
+							);
+						},
+					});
+					try {
+						assertNoNetworkAttempts(
+							networkBlockPreload,
+							`C13 ${target.fixtureId} blocked network run must not attempt network APIs`,
+						);
+						assertC13TechnicalFailureStdoutContract(baselineRun);
+						assertC13TechnicalFailureStdoutContract(isolatedRun);
+						assertEquivalentFixtureRunBytes(
+							baselineRun,
+							isolatedRun,
+							`C13 ${target.fixtureId} implicit state must not change output bytes`,
+						);
+						const cachePostRunSnapshot = captureFilesystemSnapshot(cacheSandbox.rootDir);
+						assertNoFilesystemDiff(
+							diffFilesystemSnapshots(cachePreRunSnapshot, cachePostRunSnapshot),
+							`C13 ${target.fixtureId} must not create or modify persistent cache artifacts`,
+						);
+					} finally {
+						isolatedRun.sandbox.dispose();
+					}
+				} finally {
+					cacheSandbox.dispose();
+				}
+			} finally {
+				baselineRun.sandbox.dispose();
+			}
+		}
+	} finally {
+		isolationPreload.dispose();
+		networkBlockPreload.dispose();
+		datePreload.dispose();
+	}
+});
+
 async function withMetamorphicRuns(
 	pair: MetamorphicPair,
 	callback: (baseline: RunResult, transformed: RunResult) => Promise<void> | void,
@@ -530,11 +612,13 @@ async function runLoadedFixture(
 				`stderr preview: ${JSON.stringify(process.stderr.toString("utf8").slice(0, 240))}`,
 			].join("\n"),
 		);
-		assert.equal(
-			process.stderr.toString("utf8"),
-			"",
-			`${fixture.manifest.id} stderr must be empty`,
-		);
+		if (fixture.manifest.stderr.kind === "empty") {
+			assert.equal(
+				process.stderr.toString("utf8"),
+				"",
+				`${fixture.manifest.id} stderr must be empty`,
+			);
+		}
 		const postRunSnapshot = captureFilesystemSnapshot(sandbox.sandboxDir);
 		const diff = diffFilesystemSnapshots(preRunSnapshot, postRunSnapshot);
 		assertFixtureFilesystemOracleFromSnapshots(fixture, postRunSnapshot, diff);
@@ -562,6 +646,23 @@ function assertEquivalentFixtureRunBytes(left: RunResult, right: RunResult, mess
 			);
 		}
 	}
+}
+
+function assertC13TechnicalFailureStdoutContract(run: RunResult): void {
+	if (run.process.exitCode === 0 || run.process.exitCode === 5) {
+		return;
+	}
+
+	assert.equal(
+		run.fixture.manifest.stdout.kind,
+		"empty",
+		`C13 ${run.fixture.manifest.id} technical-failure fixture must oracle empty stdout`,
+	);
+	assert.equal(
+		run.process.stdout.length,
+		0,
+		`C13 ${run.fixture.manifest.id} technical failures must not emit machine stdout`,
+	);
 }
 
 function assertBuffersEqual(actual: Buffer, expected: Buffer, message: string): void {
@@ -911,6 +1012,16 @@ function createPreloadFile(
 			rmSync(preloadDir, { recursive: true, force: true });
 		},
 	};
+}
+
+function createCompositePreload(
+	label: string,
+	preloadPaths: readonly string[],
+): { readonly path: string; dispose(): void } {
+	return createPreloadFile(
+		label,
+		`${preloadPaths.map((path) => `require(${JSON.stringify(path)});`).join("\n")}\n`,
+	);
 }
 
 async function withNodeOptionsPreload<T>(
