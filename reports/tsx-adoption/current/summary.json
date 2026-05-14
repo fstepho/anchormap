@@ -1,0 +1,25 @@
+{
+	"schema_version": 1,
+	"task": "T18.0",
+	"status": "pass",
+	"lanes": {
+		"local": {
+			"status": "pass",
+			"source": "demos/tsx-adoption/local-minimal",
+			"analysis_health": "clean",
+			"product_file_count": 4,
+			"artifacts": {
+				"compact_json": "local-scan.compact.json",
+				"pretty_json": "local-scan.pretty.json"
+			}
+		},
+		"external": {
+			"status": "unavailable",
+			"repository": "https://github.com/dan5py/react-vite-ts.git",
+			"commit": "6c09ea115c02e28c3c66588d9617cbc132625478",
+			"command": "git fetch",
+			"exit_code": 128,
+			"reason": "fatal: unable to access 'https://github.com/dan5py/react-vite-ts.git/': Could not resolve host: github.com"
+		}
+	}
+}

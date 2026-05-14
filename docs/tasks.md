@@ -12,6 +12,8 @@
   scaffold extension, M15 deterministic local alias extension, M16
   deterministic TSX product-file extension, and M17 existing-codebase slice
   onboarding extension tracked below.
+- `T18.0` is non-product, non-contractual TSX adoption evidence and remains
+  outside release gates.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -30,7 +32,7 @@
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
 - Next executable product task: None recorded.
-- Last completed task: `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
+- Last completed task: `T18.0 — Add non-blocking TSX adoption corpus evidence`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -141,6 +143,7 @@
   - `T17.0 — Specify slice-compatible tsconfig alias scope`
   - `T17.1 — Implement slice-compatible tsconfig alias resolution`
   - `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
+  - `T18.0 — Add non-blocking TSX adoption corpus evidence`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -6879,6 +6882,89 @@ Suggested verification:
 - Run `npm run lint`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## T18 — Non-Blocking Adoption Evidence
+
+### T18.0 — Add non-blocking TSX adoption corpus evidence
+
+Purpose:
+- Preserve a visible TSX adoption signal after M16/M17 without expanding the
+  product contract, release gates, or fixture goldens.
+- Exercise AnchorMap against one deterministic repo-local TSX mini corpus and
+  one pinned external TSX repository when network access is available.
+
+Reading mode:
+- standard.
+
+Contract refs:
+- None. This task is explicitly non-product and non-contractual.
+
+Design refs:
+- None. This task does not change runtime design.
+
+Eval refs:
+- None. This task does not add or modify release gates, Level B fixtures, or
+  contractual goldens.
+
+Operating-model refs:
+- `operating-model.md` — §14.2 Règles de review de diff
+- `operating-model.md` — §19.1 Tâche
+
+Dependencies:
+- T17.2.
+
+Implementation scope:
+- Add `scripts/tsx-adoption-corpus.mjs` and npm script `adoption:tsx` running
+  `npm run build && node scripts/tsx-adoption-corpus.mjs`.
+- Add `demos/tsx-adoption/README.md` explaining the corpus status as adoption
+  evidence, not Fixture B, not a contractual golden, and not a release gate.
+- Add `demos/tsx-adoption/local-minimal/` with a stable `.tsx` mini project,
+  root `tsconfig.json` alias `@/* -> src/*`, active specs, and active
+  mappings.
+- In the local lane, copy the mini corpus to a temporary sandbox, run
+  `scan --json`, and assert schema version `4`, `analysis_health = clean`,
+  `.tsx` files, alias visibility, expected TSX edges, and scan no-mutation.
+- In the external lane, initialize a temporary Git repository, fetch
+  `dan5py/react-vite-ts` at
+  `6c09ea115c02e28c3c66588d9617cbc132625478`, check out detached, install no
+  dependencies, run AnchorMap `init`, `scaffold`, three active maps, and
+  `scan --json`.
+- Assert the pinned external TSX/alias edges:
+  `src/main.tsx -> src/App.tsx`,
+  `src/App.tsx -> src/components/CountBtn.tsx`, and
+  `src/components/CountBtn.tsx -> src/lib/utils.ts`.
+- Accept `analysis_health = clean` for the external lane, or
+  `analysis_health = degraded` only when findings are limited to the CSS/SVG
+  asset imports in the pinned repository.
+- If the external fetch is unavailable, write `external.status =
+  "unavailable"` in the report and exit `0`; invariant violations after a
+  successful fetch remain blocking.
+- Add current generated evidence under `reports/tsx-adoption/current/`.
+- Add package-script coverage in `src/package-scripts.test.ts`.
+
+Out of scope:
+- `docs/contract.md`, `docs/evals.md`, CLI runtime, JSON schema, product graph
+  semantics, and contractual fixtures or goldens.
+- Installing external repository dependencies.
+- Treating Git, network, cache, clock, or environment as a product source of
+  truth.
+- Making the external corpus a release gate.
+
+Done when:
+- `npm run adoption:tsx` passes, with the local lane blocking and the external
+  lane either passing at the pinned commit or reporting `unavailable`.
+- The generated report states that the corpus is non-contractual and outside
+  release gates.
+- Package-script coverage includes `adoption:tsx`.
+- Fresh standard review has a clean verdict or all findings are resolved.
+- `docs/tasks.md` remains structurally valid.
+
+Suggested verification:
+- Run `npm run adoption:tsx`.
+- Run `npm run test:docs`.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -6966,6 +7052,7 @@ Suggested verification:
 | Publication dry-run and runbook | T10.5 | M10 | publication check | Reusable tarball, npm integrity, shasum, SHA-256, dry-run, and runbook evidence are archived |
 | Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9, T10 install, T10.5 tarball, and checksum evidence |
 | Existing codebase slice setup docs and Outline reference demo | T17.2 | M17 | documentation/demo | README and demo runbook present the bounded M17 promise, use an unmodified existing `tsconfig.json`, and avoid implying full TypeScript, framework, dead-code, or global monorepo support |
+| Non-blocking TSX adoption corpus evidence | T18.0 | non-release | adoption evidence | Repo-local mini corpus is blocking for `adoption:tsx`; pinned external corpus is non-blocking when network or repository access is unavailable; neither lane is a Level B fixture, contractual golden, or release gate |
 
 ## Agent execution protocol
 

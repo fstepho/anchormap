@@ -1,0 +1,8 @@
+{
+	"status": "unavailable",
+	"repository": "https://github.com/dan5py/react-vite-ts.git",
+	"commit": "6c09ea115c02e28c3c66588d9617cbc132625478",
+	"command": "git fetch",
+	"exit_code": 128,
+	"reason": "fatal: unable to access 'https://github.com/dan5py/react-vite-ts.git/': Could not resolve host: github.com"
+}

@@ -1,0 +1,147 @@
+{
+	"schema_version": 4,
+	"config": {
+		"version": 1,
+		"product_root": "src",
+		"spec_roots": [
+			"specs"
+		],
+		"ignore_roots": [],
+		"tsconfig_path": "tsconfig.json",
+		"local_aliases": [
+			{
+				"prefix": "@/",
+				"target": "src/"
+			}
+		]
+	},
+	"analysis_health": "clean",
+	"observed_anchors": {
+		"APP.BUTTON": {
+			"spec_path": "specs/requirements.md",
+			"mapping_state": "usable"
+		},
+		"APP.MAIN": {
+			"spec_path": "specs/requirements.md",
+			"mapping_state": "usable"
+		},
+		"APP.VIEW": {
+			"spec_path": "specs/requirements.md",
+			"mapping_state": "usable"
+		}
+	},
+	"stored_mappings": {
+		"APP.BUTTON": {
+			"state": "usable",
+			"seed_files": [
+				"src/components/Button.tsx"
+			],
+			"reached_files": [
+				"src/components/Button.tsx",
+				"src/lib/format.ts"
+			]
+		},
+		"APP.MAIN": {
+			"state": "usable",
+			"seed_files": [
+				"src/main.tsx"
+			],
+			"reached_files": [
+				"src/App.tsx",
+				"src/components/Button.tsx",
+				"src/lib/format.ts",
+				"src/main.tsx"
+			]
+		},
+		"APP.VIEW": {
+			"state": "usable",
+			"seed_files": [
+				"src/App.tsx"
+			],
+			"reached_files": [
+				"src/App.tsx",
+				"src/components/Button.tsx",
+				"src/lib/format.ts"
+			]
+		}
+	},
+	"files": {
+		"src/App.tsx": {
+			"covering_anchor_ids": [
+				"APP.MAIN",
+				"APP.VIEW"
+			],
+			"supported_local_targets": [
+				"src/components/Button.tsx"
+			]
+		},
+		"src/components/Button.tsx": {
+			"covering_anchor_ids": [
+				"APP.BUTTON",
+				"APP.MAIN",
+				"APP.VIEW"
+			],
+			"supported_local_targets": [
+				"src/lib/format.ts"
+			]
+		},
+		"src/lib/format.ts": {
+			"covering_anchor_ids": [
+				"APP.BUTTON",
+				"APP.MAIN",
+				"APP.VIEW"
+			],
+			"supported_local_targets": []
+		},
+		"src/main.tsx": {
+			"covering_anchor_ids": [
+				"APP.MAIN"
+			],
+			"supported_local_targets": [
+				"src/App.tsx"
+			]
+		}
+	},
+	"traceability_metrics": {
+		"summary": {
+			"product_file_count": 4,
+			"stored_mapping_count": 3,
+			"usable_mapping_count": 3,
+			"observed_anchor_count": 3,
+			"active_anchor_count": 3,
+			"draft_anchor_count": 0,
+			"covered_product_file_count": 4,
+			"uncovered_product_file_count": 0,
+			"directly_seeded_product_file_count": 3,
+			"single_cover_product_file_count": 1,
+			"multi_cover_product_file_count": 3
+		},
+		"anchors": {
+			"APP.BUTTON": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 2,
+				"transitive_reached_file_count": 1,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 2
+			},
+			"APP.MAIN": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 4,
+				"transitive_reached_file_count": 3,
+				"unique_reached_file_count": 1,
+				"shared_reached_file_count": 3
+			},
+			"APP.VIEW": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 3,
+				"transitive_reached_file_count": 2,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 3
+			}
+		}
+	},
+	"findings": []
+}

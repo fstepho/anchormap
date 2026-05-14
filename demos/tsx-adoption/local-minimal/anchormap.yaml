@@ -1,0 +1,14 @@
+version: 1
+product_root: 'src'
+spec_roots:
+  - 'specs'
+mappings:
+  'APP.BUTTON':
+    seed_files:
+      - 'src/components/Button.tsx'
+  'APP.MAIN':
+    seed_files:
+      - 'src/main.tsx'
+  'APP.VIEW':
+    seed_files:
+      - 'src/App.tsx'
