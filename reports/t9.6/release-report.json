@@ -17,16 +17,16 @@
 				{
 					"id": "level_b_fixture_report_passed",
 					"status": "pass",
-					"scoped_record_count": 83,
+					"scoped_record_count": 132,
 					"failed_scoped_record_count": 0
 				},
 				{
 					"id": "level_b_fixture_report_matches_current_manifests",
 					"status": "pass",
-					"expected_count": 83,
-					"actual_count": 83,
-					"total_count": 103,
-					"passed_count": 103
+					"expected_count": 132,
+					"actual_count": 132,
+					"total_count": 152,
+					"passed_count": 152
 				},
 				{
 					"id": "level_b_fixture_report_records_well_formed",
@@ -68,10 +68,10 @@
 					"id": "golden_report_matches_current_stdout_golden_manifests",
 					"status": "pass",
 					"missing_stdout_golden_fixtures": [],
-					"expected_count": 44,
-					"actual_count": 44,
-					"total_count": 44,
-					"passed_count": 44
+					"expected_count": 67,
+					"actual_count": 67,
+					"total_count": 67,
+					"passed_count": 67
 				},
 				{
 					"id": "golden_report_records_well_formed",
@@ -91,12 +91,12 @@
 				{
 					"id": "json_goldens_present",
 					"status": "pass",
-					"json_golden_count": 44
+					"json_golden_count": 67
 				},
 				{
 					"id": "yaml_goldens_present",
 					"status": "pass",
-					"yaml_golden_count": 11
+					"yaml_golden_count": 18
 				},
 				{
 					"id": "yaml_expected_file_fixtures_passed",
@@ -106,7 +106,7 @@
 				{
 					"id": "all_level_b_fixture_oracles_passed",
 					"status": "pass",
-					"scoped_record_count": 83,
+					"scoped_record_count": 132,
 					"failed_scoped_record_count": 0
 				},
 				{
@@ -132,7 +132,7 @@
 				{
 					"id": "b_cli_fixtures_passed",
 					"status": "pass",
-					"scoped_record_count": 14,
+					"scoped_record_count": 16,
 					"failed_scoped_record_count": 0
 				},
 				{

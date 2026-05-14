@@ -1,6 +1,6 @@
 {
 	"name": "anchormap",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Audit structural traceability between spec anchors and TypeScript code.",
 	"license": "MIT",
 	"private": false,
