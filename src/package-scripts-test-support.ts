@@ -55,6 +55,8 @@ export const EXPECTED_PACKAGE_FILES = [
 	"bin/anchormap",
 	"dist/anchormap.js",
 	"dist/cli/command-args.js",
+	"dist/cli/command-preconditions.js",
+	"dist/cli/command-result.js",
 	"dist/cli/commands.js",
 	"dist/domain/anchor-id.js",
 	"dist/domain/canonical-order.js",
