@@ -698,12 +698,16 @@ exposée dans `scan --json`.
 
 ## 9. Commandes
 
-La CLI expose exactement quatre commandes :
+La CLI expose exactement huit commandes :
 
 - `init`
 - `map`
 - `scan`
 - `scaffold`
+- `check`
+- `diff`
+- `explain`
+- `report`
 
 Aucune autre commande n'est dans le périmètre.
 
@@ -726,7 +730,30 @@ Règle commune à `scaffold` :
 - sur tout code de sortie non nul, le fichier `--output` reste absent s'il était absent avant commande, et reste byte-identique s'il existait avant commande ;
 - aucun fichier temporaire ou auxiliaire propre à AnchorMap ne peut subsister dans le répertoire courant après un code non nul ;
 
-- `scan` n'écrit jamais sur disque et ne modifie aucun fichier du dépôt.
+- `scan`, `check`, `diff`, `explain` et `report` n'écrivent jamais sur disque
+  et ne modifient aucun fichier du dépôt.
+
+Règle commune aux commandes d'artefacts (`check`, `diff`, `explain`,
+`report`) :
+
+- tout chemin d'artefact fourni en option est interprété comme un chemin
+  utilisateur explicite et ouvert seulement pour lecture ;
+- aucun artefact d'entrée n'est découvert implicitement depuis Git, une
+  variable CI, un cache, le réseau, l'horloge ou un emplacement conventionnel ;
+- un artefact d'entrée illisible, non UTF-8, non JSON lorsqu'un JSON est requis,
+  non conforme à son schéma fermé, ou portant une `schema_version` inconnue ou
+  non supportée par la commande produit une erreur technique et ne produit pas
+  de faux résultat machine ;
+- dans SaaS-ready 1, tout artefact de scan consommé par `check --scan`,
+  `diff`, `explain --scan` ou `report --scan` doit porter
+  `schema_version = 4` ; toute autre `schema_version` de scan, même connue par
+  une version antérieure du contrat, produit le code `4` ;
+- les artefacts produits ne contiennent jamais de contenu source complet, de
+  secrets, de logs CI, de branche, de commit, de numéro de PR, ni d'état Git
+  implicite ;
+- les suggested actions, lorsqu'elles existent, sont mécaniques et dérivées
+  uniquement de findings contractuels, violations de policy ou deltas de diff
+  présents dans les artefacts d'entrée.
 
 ### 9.1 `anchormap init`
 
@@ -1024,6 +1051,163 @@ ligne final.
 
 La sortie terminal humaine de `scaffold` est hors contrat.
 Le code de sortie et l'effet de fichier sont contractuels.
+
+### 9.5 `anchormap check`
+
+#### 9.5.1 But
+
+Transformer un scan valide en décision de policy locale, sans changer la
+sémantique de `scan`.
+
+#### 9.5.2 Formes supportées
+
+```bash
+anchormap check --policy <path>
+anchormap check --policy <path> --json
+anchormap check --scan <scan.json> --policy <path>
+anchormap check --scan <scan.json> --policy <path> --json
+```
+
+Dans toutes les formes, `check` lit et valide la policy explicite avant toute
+analyse live ou chargement d'artefact de scan. Sans `--scan`, `check` exécute
+ensuite le pipeline logique de `scan` puis applique la policy au résultat en
+mémoire. Avec `--scan`, `check` consomme uniquement l'artefact de scan fourni et
+ne lit ni le dépôt ni `anchormap.yaml`.
+
+#### 9.5.3 Policy supportée
+
+La policy est un fichier YAML UTF-8 lu explicitement depuis `--policy`.
+AnchorMap ne crée, ne réécrit et ne migre jamais ce fichier.
+
+La policy supportée est un objet fermé pouvant contenir exactement les clés
+suivantes :
+
+1. `version`
+2. `fail_on`
+3. `thresholds`
+
+Contraintes normatives :
+
+- `version` est obligatoire et vaut l'entier `1` ;
+- `fail_on` est optionnel ; s'il est présent, c'est un objet fermé ;
+- `fail_on.analysis_health`, s'il est présent, vaut `degraded` ;
+- `fail_on.finding_kinds`, s'il est présent, est une liste d'éléments
+  distincts dont chaque valeur est un `finding.kind` autorisé par la section
+  11.1 ;
+- `thresholds` est optionnel ; s'il est présent, c'est un objet fermé ;
+- `thresholds.min_covered_product_file_percent`, s'il est présent, est un
+  entier de `0` à `100` inclus ;
+- `thresholds.max_untraced_product_files`, s'il est présent, est un entier
+  supérieur ou égal à `0` ;
+- `thresholds.max_untraced_product_files` porte sur le nombre de findings
+  `untraced_product_file` émis, pas directement sur
+  `traceability_metrics.summary.uncovered_product_file_count` ;
+- une clé inconnue, une valeur hors domaine ou une policy non décodable produit
+  le code `4`.
+
+#### 9.5.4 Décision
+
+`check` produit `decision = "pass"` si aucune règle de policy supportée n'est
+violée.
+
+`check` produit `decision = "fail"` si au moins une violation de policy est
+constatée sur un scan valide.
+
+Un échec de policy n'est pas une erreur technique. Avec `--json`, il produit un
+JSON valide sur `stdout` et le code de sortie `5`. Sans `--json`, le texte
+humain est hors contrat et le code de sortie reste `5`.
+
+### 9.6 `anchormap diff`
+
+#### 9.6.1 But
+
+Comparer deux artefacts `scan --json` sans dépendre de Git.
+
+#### 9.6.2 Formes supportées
+
+```bash
+anchormap diff --base <base.scan.json> --head <head.scan.json>
+anchormap diff --base <base.scan.json> --head <head.scan.json> --json
+```
+
+`diff` consomme exactement les deux artefacts fournis par `--base` et `--head`.
+Il ne relance pas `scan`, ne lit pas le dépôt, ne lit pas `anchormap.yaml` et ne
+compare jamais des refs Git.
+SaaS-ready 1 supporte uniquement les artefacts de scan dont
+`schema_version = 4`. Toute autre `schema_version` de scan produit le code `4`.
+
+#### 9.6.3 Comparabilité
+
+`comparability` vaut :
+
+- `same_scope` lorsque les deux scans ont un objet `config`
+  byte-sémantiquement identique après parsing canonique ;
+- `scope_changed` lorsque les deux scans sont valides mais que leur objet
+  `config` diffère.
+
+`scope_changed` n'empêche pas la production d'un diff : il avertit seulement
+que les deltas mélangent changement de contenu analysé et changement de portée.
+
+### 9.7 `anchormap explain`
+
+#### 9.7.1 But
+
+Produire une vue ciblée d'une anchor ou d'un fichier depuis un scan valide.
+
+#### 9.7.2 Formes supportées
+
+```bash
+anchormap explain --anchor <anchor_id> --scan <scan.json>
+anchormap explain --anchor <anchor_id> --scan <scan.json> --json
+anchormap explain --file <path> --scan <scan.json>
+anchormap explain --file <path> --scan <scan.json> --json
+```
+
+Exactement un sujet est obligatoire : `--anchor` ou `--file`.
+
+Dans SaaS-ready 1, `--scan` est obligatoire. `explain` fonctionne depuis cet
+artefact seul : il ne relance pas `scan`, ne lit pas le dépôt, ne lit pas
+`anchormap.yaml` et ne consulte aucune source externe.
+
+#### 9.7.3 Reconstruction
+
+Pour un sujet `anchor`, `explain` lit `observed_anchors`,
+`stored_mappings`, `files`, `traceability_metrics` et `findings` depuis le scan
+fourni. Les chemins explicatifs sont reconstruits par parcours déterministe des
+`files[*].supported_local_targets` depuis les `seed_files` du mapping
+exploitable. Les voisins sont visités en ordre lexicographique de `RepoPath` et
+le premier chemin canonique vers chaque fichier est retenu.
+
+Pour un sujet `file`, `explain` lit uniquement l'entrée `files[path]`, les
+findings associés au chemin et les métriques de couverture déjà présentes dans
+l'artefact.
+
+### 9.8 `anchormap report`
+
+#### 9.8.1 But
+
+Sérialiser des artefacts machine existants en Markdown stable pour usage
+humain, notamment commentaire PR local.
+
+#### 9.8.2 Forme supportée
+
+```bash
+anchormap report --scan <scan.json> --format markdown
+anchormap report --scan <scan.json> --check <check.json> --format markdown
+anchormap report --scan <scan.json> --diff <diff.json> --format markdown
+anchormap report --scan <scan.json> --check <check.json> --diff <diff.json> --format markdown
+```
+
+`--scan` est obligatoire. `--check` et `--diff` sont optionnels et indépendants.
+La seule valeur supportée de `--format` est `markdown`.
+
+`report` ne relance aucune analyse et ne lit pas le dépôt. Il sérialise
+uniquement les artefacts explicitement fournis. Il ne produit ni JUnit, ni
+SARIF, ni HTML, ni bundle dans SaaS-ready 1.
+`report` ne prouve pas que les artefacts fournis proviennent du même run : il
+valide seulement que chaque artefact fourni est conforme à son schéma
+contractuel supporté, puis sérialise ces artefacts sans affirmer leur
+provenance commune.
 
 ## 10. Dépendances statiques locales supportées
 
@@ -1566,7 +1750,8 @@ Toute autre plateforme est hors contrat pour v1.0.
 
 ### 12.5 Sorties stables
 
-Pour `scan --json`, AnchorMap garantit :
+Pour les artefacts JSON machine garantis (`scan --json`, `check --json`,
+`diff --json`, `explain --json`), AnchorMap garantit :
 
 - `schema_version` explicite ;
 - encodage UTF-8 sans BOM ;
@@ -1575,12 +1760,15 @@ Pour `scan --json`, AnchorMap garantit :
 - ordre canonique des collections ;
 - chemins canoniques ;
 - findings dédupliqués et triés de manière canonique ;
-- sérialisation JSON exacte selon la section 13.7.
+- sérialisation JSON exacte selon les sections 13.7 et 13.10 à 13.12.
 
 Pour `init` et `map`, AnchorMap garantit l'écriture YAML canonique exacte selon la section 7.5.
 
 Pour `scaffold`, AnchorMap garantit l'écriture Markdown exacte selon la section
 9.4.5.
+
+Pour `report --format markdown`, AnchorMap garantit un Markdown UTF-8 stable,
+terminé par un unique `\n`, dérivé exclusivement des artefacts fournis.
 
 ### 12.6 Aucune donnée implicite
 
@@ -1591,6 +1779,11 @@ Le chemin quotidien n'utilise :
 - ni horloge ;
 - ni réseau ;
 - ni variable d'environnement comme source de vérité.
+
+Extension SaaS-ready 1 : les commandes `check`, `diff`, `explain` et `report`
+conservent cette règle. Les chemins d'artefacts et de policy sont des entrées
+explicites de l'utilisateur, pas des découvertes implicites. Le contenu des
+artefacts est la seule source de vérité de leur commande en mode artifact.
 
 Extension M15 planifiée : `./tsconfig.json` peut devenir une entrée observée du
 dépôt pour la résolution locale d'aliases. Il ne devient pas un état persisté
@@ -1605,12 +1798,45 @@ sortantes effectivement écrites dans les `product_files`.
 
 ### 13.1 Périmètre du contrat machine
 
-Le contrat machine s'applique uniquement à `scan --json`.
+Le contrat machine s'applique à :
+
+- `scan --json`
+- `check --json`
+- `diff --json`
+- `explain --json`
+- `report --format markdown`
 
 Pour `scan --json` :
 
 - si le code de sortie est `0`, `stdout` contient exactement un objet JSON conforme aux sections 13.2 à 13.7, encodé en UTF-8 sans BOM et terminé par un unique `\n` ; `stderr` est vide ;
 - si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide et aucun JSON n'est émis ; `stderr` peut être vide ou contenir une ligne UTF-8 terminée par `\n`, dont le contenu est hors contrat.
+
+Pour `check --json` :
+
+- si le code de sortie est `0` ou `5`, `stdout` contient exactement un objet
+  JSON conforme à la section 13.10 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide et aucun
+  JSON n'est émis ; `stderr` suit la même règle hors contrat que `scan --json`.
+
+Pour `diff --json` :
+
+- si le code de sortie est `0`, `stdout` contient exactement un objet JSON
+  conforme à la section 13.11 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide et aucun
+  JSON n'est émis.
+
+Pour `explain --json` :
+
+- si le code de sortie est `0`, `stdout` contient exactement un objet JSON
+  conforme à la section 13.12 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide et aucun
+  JSON n'est émis.
+
+Pour `report --format markdown` :
+
+- si le code de sortie est `0`, `stdout` contient le Markdown stable défini en
+  section 13.13 ; `stderr` est vide ;
+- si le code de sortie est `1`, `2`, `3` ou `4`, `stdout` est vide.
 
 ### 13.2 Schéma de succès exact
 
@@ -1840,11 +2066,12 @@ Aucune autre forme et aucune clé supplémentaire ne sont autorisées.
 
 ### 13.7 Sérialisation JSON canonique exacte
 
-Pour `scan --json`, les bytes du succès sont rendus exactement selon les règles suivantes :
+Pour `scan --json`, `check --json`, `diff --json` et `explain --json`, les
+bytes du résultat machine sont rendus exactement selon les règles suivantes :
 
 - un seul objet JSON sur une seule ligne, suivi d'un unique `\n` final ;
 - aucun espace, aucune tabulation et aucun saut de ligne hors des chaînes JSON et du `\n` final ;
-- ordre des clés racine :
+- pour `scan --json`, ordre des clés racine :
   1. `schema_version`
   2. `config`
   3. `analysis_health`
@@ -1853,6 +2080,12 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
   6. `files`
   7. `traceability_metrics`
   8. `findings`
+- pour `check --json`, ordre des clés racine selon la section 13.10 ;
+- pour `diff --json`, ordre des clés racine selon la section 13.11 ;
+- pour `explain --json`, ordre des clés racine selon la section 13.12 ;
+- dans les objets fermés des sections 13.10 à 13.12, les clés sont rendues
+  exactement dans l'ordre où elles sont listées par la forme normative
+  applicable ;
 - dans `config`, l'ordre des clés est `version`, puis `product_root`, puis `spec_roots`, puis `ignore_roots` ;
 - extension M15 planifiée : dans le schéma JSON v4, l'ordre des clés de
   `config` est `version`, puis `product_root`, puis `spec_roots`, puis
@@ -1867,10 +2100,13 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - dans `traceability_metrics.summary`, l'ordre des clés est celui de la section 13.5.1 ;
 - les clés de `traceability_metrics.anchors` sont triées lexicographiquement ;
 - dans chaque entrée de `traceability_metrics.anchors`, l'ordre des clés est celui de la section 13.5.1 ;
-- les tableaux `config.spec_roots`, `config.ignore_roots`, `seed_files`, `reached_files`, `covering_anchor_ids` et `supported_local_targets` sont triés lexicographiquement ;
+- les tableaux `config.spec_roots`, `config.ignore_roots`, `seed_files`,
+  `reached_files`, `covering_anchor_ids`, `supported_local_targets`, tableaux
+  d'anchors, tableaux de chemins, tableaux de violations et tableaux de
+  changements sont triés selon leur règle normative propre ;
 - extension M15 planifiée : le tableau `config.local_aliases` est trié selon
   la section 12.2.4 ;
-- `findings` est trié selon la section 11.6 ;
+- tout champ `findings` est trié selon la section 11.6 ;
 - toute chaîne JSON est rendue entre guillemets doubles `"` ;
 - dans les chaînes JSON, `"` est échappé en `\"`, `\` en `\\` ;
 - tout caractère de contrôle `U+0000..U+001F` est échappé en `\u00xx` hexadécimal minuscule ;
@@ -1880,6 +2116,8 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - l'entier `schema_version` est rendu exactement sous la forme `3`.
 - extension M15 planifiée : dans le schéma JSON v4, l'entier `schema_version`
   est rendu exactement sous la forme `4`.
+- dans les schémas SaaS-ready 1 des sections 13.10 à 13.12, l'entier
+  `schema_version` est rendu exactement sous la forme `1`.
 
 ### 13.8 Codes de sortie
 
@@ -1888,8 +2126,10 @@ Pour `scan --json`, les bytes du succès sont rendus exactement selon les règle
 - `2` : config absente, illisible, non décodable selon la section 1.1, ou invalide ;
 - `3` : dépôt hors support, lecture requise du dépôt impossible, ou analyse impossible ;
 - `4` : arguments invalides ou précondition non satisfaite.
+- `5` : échec de policy `check` après scan et policy valides.
 
 Les findings ne changent pas le code de sortie.
+Le code `5` n'est pas une erreur technique et n'est produit que par `check`.
 
 ### 13.9 Priorité des codes de sortie
 
@@ -1901,3 +2141,264 @@ Quand plusieurs conditions d'échec sont simultanément présentes, la priorité
 4. `1` : erreur interne.
 
 Une exécution réussie retourne `0`.
+Pour `check`, la décision de policy est évaluée seulement après absence
+d'erreur technique ; une policy fail retourne alors `5`.
+
+### 13.10 `PolicyResult`
+
+L'objet JSON de `check --json` contient exactement les clés racine suivantes :
+
+1. `schema_version`
+2. `decision`
+3. `source_scan_schema_version`
+4. `analysis_health`
+5. `violations`
+6. `summary`
+
+Contraintes normatives :
+
+- `schema_version` vaut toujours l'entier `1` ;
+- `decision` vaut `pass` ou `fail` ;
+- `source_scan_schema_version` vaut la `schema_version` entière du scan
+  consommé ;
+- `analysis_health` vaut la valeur du scan consommé ;
+- `violations` est trié selon `kind`, puis champs spécifiques lexicographiques ;
+- `summary` est dérivé de `traceability_metrics.summary` et contient exactement
+  `observed_anchor_count`, `usable_mapping_count`, `product_file_count`,
+  `covered_product_file_count`, `uncovered_product_file_count`,
+  `covered_product_file_percent` et `untraced_product_file_count`.
+- `covered_product_file_percent` est un entier. Si `product_file_count = 0`, il
+  vaut `100`. Sinon, il vaut
+  `floor(covered_product_file_count * 100 / product_file_count)` et est rendu
+  comme un entier JSON sans fraction.
+
+Formes de violations autorisées :
+
+- `{"kind":"analysis_health_degraded"}`
+- `{"kind":"finding_kind_present","finding_kind":<finding_kind>,"count":<integer>}`
+- `{"kind":"covered_product_file_percent_below_threshold","actual":<integer>,"threshold":<integer>}`
+- `{"kind":"untraced_product_files_above_threshold","actual":<integer>,"threshold":<integer>}`
+
+`untraced_product_file_count` est le nombre de findings
+`untraced_product_file` présents dans le scan consommé.
+
+### 13.11 `TraceabilityDiff`
+
+L'objet JSON de `diff --json` contient exactement les clés racine suivantes :
+
+1. `schema_version`
+2. `base_scan_schema_version`
+3. `head_scan_schema_version`
+4. `comparability`
+5. `analysis_health_change`
+6. `anchors`
+7. `mappings`
+8. `files`
+9. `findings`
+10. `metrics_delta`
+
+Contraintes normatives :
+
+- `schema_version` vaut toujours l'entier `1` ;
+- `comparability` vaut `same_scope` ou `scope_changed` selon la section 9.6.3 ;
+- `analysis_health_change` contient exactement `from`, puis `to` ;
+- `anchors` contient exactement `added`, `removed`,
+  `mapping_state_changed` ;
+- `mappings` contient exactement `added`, `removed`, `state_changed` ;
+- `files` contient exactement `added`, `removed`, `became_covered`,
+  `lost_coverage`, `covering_anchor_ids_changed`,
+  `supported_local_targets_changed` ;
+- `findings` contient exactement `added`, puis `removed` ;
+- `metrics_delta` est un objet fermé contenant exactement les clés de
+  `traceability_metrics.summary`, dans l'ordre de la section 13.5.1 ;
+- chaque valeur de `metrics_delta` est l'entier `head - base` pour la clé
+  correspondante ;
+- tous les tableaux de chemins et d'anchors sont triés lexicographiquement ;
+- les findings ajoutés ou supprimés conservent les formes fermées de la section
+  13.6 et le tri canonique de la section 11.6.
+
+Formes exactes des entrées de changement :
+
+- `anchors.added` et `anchors.removed` sont des tableaux d'`anchor_id`.
+- `anchors.mapping_state_changed` contient des objets fermés
+  `{"anchor_id":<anchor_id>,"from":<mapping_state>,"to":<mapping_state>}`.
+- `mappings.added` et `mappings.removed` sont des tableaux d'`anchor_id`.
+- `mappings.state_changed` contient des objets fermés
+  `{"anchor_id":<anchor_id>,"from":<state>,"to":<state>}`.
+- `files.added`, `files.removed`, `files.became_covered` et
+  `files.lost_coverage` sont des tableaux de `RepoPath`.
+- `files.became_covered` et `files.lost_coverage` sont calculés uniquement sur
+  l'intersection des chemins présents dans `base.files` et `head.files`. Les
+  fichiers ajoutés ou supprimés sont rendus seulement dans `files.added` et
+  `files.removed`.
+- `files.covering_anchor_ids_changed` contient des objets fermés
+  `{"path":<path>,"from":<anchor_id[]>,"to":<anchor_id[]>}`.
+- `files.supported_local_targets_changed` contient des objets fermés
+  `{"path":<path>,"from":<path[]>,"to":<path[]>}`.
+- `files.covering_anchor_ids_changed` et
+  `files.supported_local_targets_changed` sont calculés uniquement sur
+  l'intersection des chemins présents dans `base.files` et `head.files`. Les
+  fichiers ajoutés ou supprimés ne produisent pas d'entrée de changement de
+  propriété.
+- Deux findings sont égaux si leur rendu JSON canonique, selon la section 13.7
+  et les formes fermées de la section 13.6, est byte-identique.
+
+Les entrées de changement objet sont triées par `anchor_id` ou `path`, puis par
+leurs champs `from` et `to` selon l'ordre canonique applicable aux valeurs.
+
+### 13.12 `ExplainResult`
+
+L'objet JSON de `explain --json` contient exactement les clés racine suivantes :
+
+1. `schema_version`
+2. `subject`
+3. `observed`
+4. `mapping`
+5. `file`
+6. `coverage`
+7. `findings`
+
+Contraintes normatives :
+
+- `schema_version` vaut toujours l'entier `1` ;
+- `subject.kind` vaut `anchor` ou `file` ;
+- pour `subject.kind = "anchor"`, `subject` contient `kind`, puis
+  `anchor_id`, et `file` vaut `null` ;
+- pour `subject.kind = "file"`, `subject` contient `kind`, puis `path`, et
+  `observed` et `mapping` valent `null` ;
+- `observed` pour une anchor contient exactement `present`, `spec_path` et
+  `mapping_state` ;
+- `mapping` pour une anchor contient exactement `present`, `state`,
+  `seed_files` et `reached_file_count` ;
+- `file` pour un fichier contient exactement `present`,
+  `covering_anchor_ids` et `supported_local_targets` ;
+- `coverage` contient exactement les champs applicables au sujet : pour une
+  anchor, `reached_files`; pour un fichier, `covered`, `single_cover` et
+  `multi_cover`;
+- chaque entrée `coverage.reached_files` contient exactement `path`, puis
+  `path_from_seed` ;
+- `findings` contient uniquement les findings du scan qui concernent le sujet,
+  dans les formes fermées de la section 13.6 et l'ordre canonique.
+
+Pour un sujet anchor, `coverage.reached_files` contient une entrée pour chaque
+`reached_file` du mapping stocké rendu dans `stored_mappings[anchor_id]`.
+Chaque `path_from_seed` est un tableau de `RepoPath` depuis un seed jusqu'au
+fichier atteint, inclus aux deux extrémités. Si plusieurs seeds ou chemins
+atteignent le même fichier, le chemin retenu est le premier découvert par BFS
+déterministe : seeds initiaux triés lexicographiquement, voisins de chaque
+fichier visités en ordre `RepoPath` lexicographique, et aucun remplacement d'un
+chemin déjà découvert.
+
+Pour un sujet anchor, un finding concerne le sujet si son champ `anchor_id`
+vaut l'anchor demandée.
+
+Pour un sujet file, un finding concerne le sujet si l'un des champs suivants
+existe et vaut le `RepoPath` demandé : `path`, `importer`, `target_path` ou
+`seed_path`.
+
+Valeurs exactes lorsque le sujet anchor est absent des specs courantes :
+
+- pour une anchor absente, `observed.present = false`, `observed.spec_path =
+  null` et `observed.mapping_state = "absent"` ;
+- si aucun mapping stocké n'existe pour cette anchor, `mapping.present =
+  false`, `mapping.state = "absent"`, `mapping.seed_files = []`,
+  `mapping.reached_file_count = 0` et `coverage.reached_files = []` ;
+- si un mapping stocké existe pour cette anchor, `mapping.present = true`,
+  `mapping.state` vaut l'état rendu dans `stored_mappings`, `mapping.seed_files`
+  contient les seed files rendus dans `stored_mappings`, et
+  `mapping.reached_file_count` vaut le nombre de `reached_files` rendu dans
+  `stored_mappings` ;
+- `findings` contient les findings concernant cette anchor absente ou son
+  mapping stocké ;
+
+Valeurs exactes lorsque le sujet file est absent :
+
+- pour un fichier absent, `file.present = false`,
+  `file.covering_anchor_ids = []`, `file.supported_local_targets = []`,
+  `coverage.covered = false`, `coverage.single_cover = false`,
+  `coverage.multi_cover = false` et `findings` contient les findings du scan
+  qui concernent le `RepoPath` demandé selon la règle de sujet file ci-dessus.
+
+### 13.13 Markdown report
+
+`report --format markdown` rend un document Markdown stable avec les sections
+canoniques suivantes, dans cet ordre :
+
+1. `# AnchorMap traceability report`
+2. `## Summary`
+3. `## Policy violations` si un artefact `--check` est fourni
+4. `## Change impact` si un artefact `--diff` est fourni
+5. `## Findings`
+6. `## Suggested actions` si au moins une action mécanique est dérivable
+
+Le Markdown :
+
+- est encodé en UTF-8 sans BOM ;
+- se termine par un unique `\n` ;
+- sépare chaque section par une seule ligne vide ;
+- ne contient aucun contenu source complet ;
+- ne mentionne aucune branche, commit, PR, CI ou donnée d'environnement sauf si
+  cette donnée est déjà présente dans un artefact AnchorMap contractuel
+  supporté ;
+- ne présente jamais `untraced_product_file` comme preuve de dead code ou de
+  suppression sûre ;
+- peut suggérer seulement des actions mécaniques comme ajouter un mapping pour
+  une `unmapped_anchor`, corriger un seed cassé, inspecter un edge non résolu,
+  ou examiner une perte de couverture issue du diff.
+
+Corps exact des sections :
+
+- `## Summary` contient exactement, dans cet ordre :
+  - `- Analysis health: <analysis_health>`
+  - `- Observed anchors: <observed_anchor_count>`
+  - `- Usable mappings: <usable_mapping_count>`
+  - `- Covered product files: <covered_product_file_count>/<product_file_count> (<covered_product_file_percent>%)`
+  - `- Findings: <finding_count>`
+- `covered_product_file_percent` est calculé comme en section 13.10.
+- `## Policy violations`, lorsqu'un `--check` est fourni, commence par
+  `Decision: <PASS|FAIL>`. Si `violations` est vide, la ligne suivante est
+  `- none`. Sinon, chaque violation est rendue sur une ligne
+  `- <canonical-json-violation>` dans l'ordre de `PolicyResult.violations`.
+- `## Change impact`, lorsqu'un `--diff` est fourni, contient exactement, dans
+  cet ordre :
+  - `- Comparability: <comparability>`
+  - `- Analysis health: <from> -> <to>`
+  - `- Anchors added: <count>`
+  - `- Anchors removed: <count>`
+  - `- Anchor mapping states changed: <count>`
+  - `- Mappings added: <count>`
+  - `- Mappings removed: <count>`
+  - `- Mapping states changed: <count>`
+  - `- Files added: <count>`
+  - `- Files removed: <count>`
+  - `- Files became covered: <count>`
+  - `- Files lost coverage: <count>`
+  - `- Findings added: <count>`
+  - `- Findings removed: <count>`
+- `## Findings` contient `- none` si le scan `findings` est vide. Sinon, chaque
+  finding est rendu sur une ligne `- <canonical-json-finding>` dans l'ordre de
+  scan.
+- `## Suggested actions`, lorsqu'elle est présente, rend les actions dans
+  l'ordre suivant : `unmapped_anchor`, `broken_seed_path`,
+  `unresolved_static_edge`, `unsupported_static_edge`,
+  `out_of_scope_static_edge`, `unsupported_local_target`, puis fichiers de
+  `diff.files.lost_coverage`.
+- Les lignes d'action exactes sont :
+  - `- Add a mapping for <anchor_id>.`
+  - `- Fix or remove seed <seed_path> for <anchor_id>.`
+  - `- Inspect unresolved edge <importer> -> <specifier>.`
+  - `- Inspect unsupported edge <importer> -> <specifier>.`
+  - `- Inspect out-of-scope edge <importer> -> <target_path>.`
+  - `- Inspect unsupported local target <importer> -> <target_path>.`
+  - `- Inspect lost coverage for <path>.`
+- Une action est rendue une seule fois après déduplication byte-identique.
+  Si aucune action mécanique n'est dérivable, la section `## Suggested actions`
+  est omise.
+- Les placeholders `<anchor_id>`, `<seed_path>`, `<importer>`, `<specifier>`,
+  `<target_path>` et `<path>` sont rendus avec le même rendu de chaîne JSON que
+  la section 13.7, guillemets inclus. Par exemple, un specifier contenant un
+  saut de ligne est rendu avec `\n` dans une seule ligne Markdown.
+
+`canonical-json-violation` et `canonical-json-finding` utilisent les mêmes
+règles d'échappement, d'ordre de clés et d'absence d'espaces que la section
+13.7 pour l'objet concerné, sans saut de ligne interne.

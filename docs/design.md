@@ -58,19 +58,29 @@ ADRs courantes :
 
 ## 3. Sources de vérité et frontières
 
-Le design repose sur trois catégories de données, sans recouvrement implicite :
+Le design repose sur quatre catégories de données, sans recouvrement implicite :
 
 - **Observed** : contenu du dépôt courant sous la racine analysée, y compris `product_files`, spec files et occurrences d’anchors ;
-- **Human** : contenu validé de `./anchormap.yaml`, et uniquement lui ;
-- **Derived** : graphe local, états de mapping, `supported_local_targets`, `reached_files`, `covering_anchor_ids`, findings, `analysis_health` et JSON de sortie.
+- **Human traceability facts** : contenu validé de `./anchormap.yaml`, et
+  uniquement lui ;
+- **Control inputs** : policies explicites lues seulement lorsqu'une commande
+  les reçoit en argument ;
+- **Derived** : graphe local, états de mapping, `supported_local_targets`,
+  `reached_files`, `covering_anchor_ids`, findings, `analysis_health`, JSON de
+  sortie et artefacts dérivés de SaaS-ready 1.
 
 Règles de frontière :
 
 - `./anchormap.yaml` est l’unique source de vérité persistée propre à AnchorMap ;
+- les `Control inputs` gouvernent une décision de commande mais ne deviennent
+  pas des faits de traçabilité humaine ;
 - aucune donnée Derived n’est stockée sur disque ;
-- aucune donnée Observed n’est promue implicitement en donnée Human ;
+- aucune donnée Observed n’est promue implicitement en donnée Human traceability
+  facts ;
 - tout fichier `.md`, `.yml`, `.yaml`, `.ts` ou `.tsx` consommé est converti en texte uniquement par la frontière de décodage UTF-8 stricte de `repo_fs` ;
 - le rendu ne recalcule rien : il sérialise uniquement des données déjà dérivées et triées ;
+- les commandes en mode artefact ne lisent que les artefacts fournis
+  explicitement et ne retournent jamais au dépôt pour compléter une donnée ;
 - les écritures de `anchormap.yaml` passent par une frontière explicite **préparation / pre_commit / commit** ;
 - aucun module autre que `config_io` ne possède la sémantique du commit de `anchormap.yaml`.
 
@@ -142,6 +152,31 @@ args
 `scaffold` lit les specs courantes uniquement pour éviter de générer des
 anchors déjà observées. Il ne crée aucun mapping et ne modifie jamais
 `anchormap.yaml`.
+
+### 4.5 Pipelines logiques SaaS-ready 1
+
+```text
+check live:
+args -> commands -> policy_io -> scan pipeline -> policy_engine -> render -> commands
+
+check artifact:
+args -> commands -> policy_io -> artifact_io.loadScan -> policy_engine -> render -> commands
+
+diff:
+args -> commands -> artifact_io.loadScan(base/head) -> diff_engine -> render -> commands
+
+explain:
+args -> commands -> artifact_io.loadScan -> explain_engine -> render -> commands
+
+report:
+args -> commands -> artifact_io.loadScan/loadPolicyResult/loadDiff
+  -> report_model -> renderMarkdownReport -> commands
+```
+
+Les pipelines `diff`, `explain` et `report` ne lisent jamais le dépôt.
+Le pipeline `check artifact` ne lit jamais le dépôt. Le pipeline `check live`
+est le seul nouveau chemin qui relance l'analyse, et il consomme ensuite le
+même `ScanResult` en mémoire qu'un artefact de scan parsé.
 
 ## 5. Découpage en modules
 
@@ -448,7 +483,7 @@ Responsabilités :
 - orchestrer les modules ;
 - choisir le rendu humain ou JSON ;
 - posséder l’écriture effective sur `stdout` / `stderr` ;
-- garantir le contrat `stdout` / `stderr` de `scan --json` ;
+- garantir le contrat `stdout` / `stderr` des commandes machine ;
 - classer l’issue de la commande en un unique code de sortie.
 
 Pour `scaffold`, `commands` valide l'argument `--output`, charge la config,
@@ -461,6 +496,8 @@ Décisions clés :
 - `commands` est l’unique owner de la conversion `AppError -> exit code` ;
 - aucun module sous `commands` ne connaît les codes de sortie ;
 - `commands` applique la priorité contractuelle **`4` puis `2` puis `3` puis `1`**, une seule fois, à la frontière du process ;
+- `commands` applique le code `5` seulement au résultat métier `check`
+  `decision = fail`, après absence d'erreur technique ;
 - dans `map`, toute précondition utilisateur détectable à partir des arguments ou de la config validée est contrôlée avant les opérations dépôt susceptibles de produire le code `3` ;
 - `commands` n’écrit jamais `anchormap.yaml` directement : il appelle uniquement `config_io.writeConfigAtomic` ;
 - pour `init` et `map`, un retour réussi de `config_io.writeConfigAtomic` vaut commit réussi ; `commands` n’a ensuite aucun chemin non nul autorisé ;
@@ -485,6 +522,51 @@ Décisions clés :
   exact du contrat ;
 - `render` retourne des bytes ou des strings en mémoire ; `commands` reste seul owner de `stdout` / `stderr` ;
 - tout échec de sérialisation d’un `ScanResult` valide remonte comme `InternalError`.
+
+### 5.8 `artifact_io`
+
+Responsabilités :
+
+- lire des artefacts JSON depuis les chemins explicitement fournis par
+  l'utilisateur ;
+- décoder en UTF-8 strict ;
+- parser JSON et valider les objets fermés supportés (`ScanResult`,
+  `PolicyResult`, `TraceabilityDiff`) ;
+- rejeter toute `schema_version` inconnue avant construction d'un modèle de
+  domaine ;
+- ne jamais consulter le dépôt, Git, le réseau, l'environnement, l'horloge ou
+  un cache.
+
+`artifact_io` ne rend rien et ne classe pas les codes de sortie ; il produit
+des erreurs typées pour `commands`.
+
+### 5.9 `policy_io` et `policy_engine`
+
+`policy_io` lit et valide la policy YAML fermée de `check`.
+
+`policy_engine` consomme un `ScanResult` valide et une policy valide pour
+produire un `PolicyResult` trié. Il ne connaît pas les codes de sortie et ne
+lit aucun fichier.
+
+### 5.10 `diff_engine`
+
+`diff_engine` consomme deux `ScanResult` valides et produit un
+`TraceabilityDiff` trié. Il ne compare jamais des refs Git et ne lit aucun
+fichier.
+
+### 5.11 `explain_engine`
+
+`explain_engine` consomme un `ScanResult` valide et un sujet `anchor` ou
+`file`. Pour les anchors, il reconstruit les chemins explicatifs par BFS
+déterministe sur `supported_local_targets`, avec voisins en ordre
+lexicographique. Pour les fichiers, il sélectionne uniquement les données déjà
+présentes dans l'artefact.
+
+### 5.12 `report_model`
+
+`report_model` assemble une vue Markdown depuis les artefacts parsés. Il peut
+calculer des agrégats mécaniques de présentation, mais ne produit aucun
+finding, mapping, edge, métrique ou fait produit nouveau.
 
 ## 6. Modèle de données interne
 
@@ -1015,6 +1097,8 @@ Règles :
 - une erreur déjà typée n’est jamais reclassée par un module inférieur ;
 - `config_io` et `scaffold` sont les seuls modules autorisés à produire `WriteError` ;
 - `WriteError` ne peut être produit qu’avant commit et après cleanup confirmé.
+- une policy fail de `check` est un résultat métier sérialisable, pas un
+  `AppError` ni une erreur technique.
 
 ### 9.3 Priorité contractuelle
 
@@ -1026,7 +1110,9 @@ Pour respecter le contrat, les handlers de commande doivent suivre cet ordre de 
 4. **échec du chemin d’écriture pré-commit après validations** -> `WriteError` -> code `1`
 5. **tout autre échec inattendu** -> `InternalError` -> code `1`
 
-Cette séquence matérialise explicitement la priorité **`4` > `2` > `3` > `1`**.
+Cette séquence matérialise explicitement la priorité technique
+**`4` > `2` > `3` > `1`**. Le code `5` est évalué seulement après succès des
+préconditions techniques de `check`, comme résultat de commande non technique.
 
 Règle d’application : une précondition utilisateur déjà décidable à partir des arguments ou d’un état validé doit être contrôlée avant de lancer une étape ultérieure susceptible de produire un code moins prioritaire. `commands` ne masque pas une erreur `2` ou `3` déjà produite par un module inférieur, mais il ordonnance les contrôles pour éviter d’exécuter inutilement une lecture dépôt quand un code `4` est déjà certain.
 
@@ -1096,6 +1182,38 @@ Règle d’application : une précondition utilisateur déjà décidable à part
   finale ;
 - écrire le Markdown create-only.
 
+#### `check`
+
+- parser et valider les arguments ;
+- charger une policy explicite ;
+- soit charger un scan artifact explicite, soit exécuter le pipeline `scan` en
+  mémoire ;
+- appliquer `policy_engine` ;
+- rendre le JSON ou texte humain ;
+- retourner `0` pour pass ou `5` pour fail, sauf erreur technique antérieure.
+
+#### `diff`
+
+- parser et valider `--base`, `--head` et `--json` ;
+- charger les deux scan artifacts ;
+- appliquer `diff_engine` ;
+- rendre le JSON ou texte humain.
+
+#### `explain`
+
+- parser et valider exactement un sujet `--anchor` ou `--file`, ainsi que
+  `--scan` ;
+- charger le scan artifact ;
+- appliquer `explain_engine` ;
+- rendre le JSON ou texte humain.
+
+#### `report`
+
+- parser et valider `--format markdown`, `--scan`, et les artefacts optionnels ;
+- charger les artefacts explicitement fournis ;
+- assembler `report_model` ;
+- rendre le Markdown stable.
+
 ### 9.5 Règle spécifique aux commandes d’écriture
 
 Pour `init` et `map` :
@@ -1104,12 +1222,17 @@ Pour `init` et `map` :
 - après commit, seul un retour succès est autorisé ;
 - tout texte humain de succès est hors contrat et ne doit jamais faire échouer la commande.
 
-### 9.6 `scan --json`
+### 9.6 Commandes machine
 
 `commands` garantit :
 
-- succès (`0`) : JSON sur `stdout`, `stderr` vide ;
-- échec (`1`, `2`, `3`, `4`) : `stdout` vide ; `stderr` éventuellement renseigné avec un texte humain hors contrat.
+- succès JSON (`0`) : JSON sur `stdout`, `stderr` vide ;
+- policy fail `check --json` (`5`) : `PolicyResult` JSON sur `stdout`,
+  `stderr` vide ;
+- succès `report --format markdown` (`0`) : Markdown sur `stdout`, `stderr`
+  vide ;
+- échec technique (`1`, `2`, `3`, `4`) : `stdout` vide ; `stderr`
+  éventuellement renseigné avec un texte humain hors contrat.
 
 ## 10. Testabilité
 
@@ -1245,6 +1368,7 @@ Le design v1.0 repousse volontairement :
 - cache persistant ;
 - API serveur ;
 - historique de scans ;
+- bundle, upload SaaS, JUnit, SARIF et scan schema v5 pour SaaS-ready 1 ;
 - suggestion automatique de mappings ;
 - mise à jour incrémentale basée sur diff Git ;
 - durabilité post-commit renforcée par `fsync` du répertoire parent dans le chemin contractuel d’écriture.

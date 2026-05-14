@@ -142,7 +142,7 @@ v1.0 exclut explicitement :
 - `status`, `refresh`, `decide` ;
 - historique de décisions ;
 - bootstrap par candidats ;
-- CI/CD ;
+- CI/CD implicite ou piloté par une intégration serveur ;
 - plugin IDE ;
 - API séparée de navigation ou de reporting.
 
@@ -322,6 +322,29 @@ contraintes suivantes :
 - aucun support de framework, build tool, project references, monorepo global,
   détection de dead code ou résolution TypeScript complète n'est promis.
 
+## 6.10 Segment vNext prévu : artefacts CLI locaux pour CI/PR
+
+AnchorMap CLI SaaS-ready 1 cible l'exploitation locale des résultats
+AnchorMap par CI, commentaires PR et une future couche SaaS, sans déplacer la
+source de vérité hors de la CLI.
+
+Cette extension reste dans le périmètre produit seulement si elle conserve les
+contraintes suivantes :
+
+- dans SaaS-ready 1, la surface CI/PR est livrée exclusivement par des
+  commandes CLI locales et des sorties `stdout` ; les fichiers fournis aux
+  commandes sont des entrées explicites lues seulement ;
+- aucune commande ne lit Git, les variables CI, le réseau, un cache persistant
+  ou l'horloge comme source de vérité produit ;
+- `report` est une sérialisation stable d'artefacts machine existants, pas une
+  nouvelle analyse ni une source d'information supplémentaire ;
+- une future couche SaaS pourra consommer les mêmes artefacts, mais aucun
+  upload, dashboard, GitHub App, API serveur ou stockage SaaS n'est promis par
+  cette extension ;
+- les décisions restent prudentes : pas de preuve de conformité fonctionnelle,
+  pas de recommandation intelligente, pas d'inférence d'ownership, pas de call
+  graph et pas de conclusion de suppression sûre.
+
 ## 7. Workflow utilisateur v1.0
 
 Le workflow nominal est volontairement court :
@@ -419,7 +442,11 @@ Si un seul critère est atteint, le produit doit être rescopé ou arrêté.
 Pour garder v1.0 cohérent, les décisions suivantes sont gelées :
 
 - pas de parent search pour la config ;
-- pas de persistance autre que `anchormap.yaml` ;
+- pas de persistance mutable possédée par AnchorMap autre que
+  `anchormap.yaml` ;
+- les fichiers de policy et les artefacts machine fournis aux commandes de ce
+  segment sont des entrées explicites lues seulement ; AnchorMap ne les crée,
+  ne les migre et ne les modifie pas implicitement ;
 - pas de commande de suppression de mapping ;
 - pas de réconciliation de rename, split ou merge ;
 - pas de classement métier (`shared`, `infra`, `leaf`, `domain`) ;

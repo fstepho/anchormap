@@ -59,6 +59,11 @@ An ADR is usually not required for:
 | `ADR-0016` | Deterministic tsconfig local alias resolution | Accepted, amended by ADR-0018 |
 | `ADR-0017` | Deterministic TSX product file support | Accepted |
 | `ADR-0018` | Slice-compatible tsconfig alias resolution | Accepted |
+| `ADR-0019` | CLI artifact surface and artifact mode | Accepted |
+| `ADR-0020` | Policy check and exit code 5 | Accepted |
+| `ADR-0021` | Scan artifact diff | Accepted |
+| `ADR-0022` | Explain from scan artifact | Accepted |
+| `ADR-0023` | Markdown report from artifacts | Accepted |
 
 ## Template
 

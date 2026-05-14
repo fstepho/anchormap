@@ -11,9 +11,12 @@
 - No new product scope is introduced here except the user-authorized M14
   scaffold extension, M15 deterministic local alias extension, M16
   deterministic TSX product-file extension, and M17 existing-codebase slice
-  onboarding extension tracked below.
+  onboarding extension tracked below, plus the user-authorized M19 CLI
+  SaaS-ready 1 local artifact workflow.
 - `T18.0` is non-product, non-contractual TSX adoption evidence and remains
   outside release gates.
+- `T19.0` is process/spec planning for the user-authorized CLI SaaS-ready 1
+  scope and must not touch runtime behavior.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -31,8 +34,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: None recorded.
-- Last completed task: `T18.0 — Add non-blocking TSX adoption corpus evidence`
+- Next executable product task: `T19.1 — Implement artifact input boundary and CLI parsers`
+- Last completed task: `T19.0 — Specify CLI SaaS-ready 1 authorities and task plan`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -144,6 +147,7 @@
   - `T17.1 — Implement slice-compatible tsconfig alias resolution`
   - `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
   - `T18.0 — Add non-blocking TSX adoption corpus evidence`
+  - `T19.0 — Specify CLI SaaS-ready 1 authorities and task plan`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -192,6 +196,7 @@
 | M15 — vNext deterministic local alias resolution | Resolve common local TypeScript aliases from `./tsconfig.json` without adopting full TypeScript or Node module resolution | ADR-0016, `tsconfig_io`, alias-aware `ts_graph`, JSON schema v4, B-graph/B-map/B-cli fixtures and goldens | B-graph `fx38m`–`fx38w`; B-map `fx67f`–`fx67g`; B-cli `fx76a`–`fx76b`; schema/golden regressions | M14 done; user-approved M15 plan | `scan --json` exposes normalized alias resolver state and follows supported `@/* -> src/*` style aliases, missing `tsconfig.json` preserves relative-only behavior, invalid present `tsconfig.json` exits `3`, and `map` preserves no-mutation guarantees on alias-resolution failures |
 | M16 — vNext deterministic TSX product files | Support `.tsx` as syntax-only TypeScript product files without React, framework, or full resolver semantics | ADR-0017, `product_files`, `ts_graph`, `map`, `scaffold`, B-graph/B-map/B-scaffold fixtures and goldens | B-graph `fx38x`–`fx38z`, `fx89`–`fx93`; B-map `fx67h`; B-scaffold `fx88a`; affected B-scan goldens; product parser profile regressions | M15 done; user-approved TSX plan | `.tsx` files are discovered, parsed with `ScriptKind.TSX`, mappable as seeds, reachable through static edges including `.js -> .tsx`, and scaffolded from exports while `.js`, `.jsx`, `.d.ts`, monorepo, package, and framework semantics remain out of scope |
 | M17 — Existing Codebase Slice Onboarding | Run AnchorMap on an unmodified existing TypeScript codebase slice while separating traced in-slice references from references that leave the selected scope | ADR-0018, slice-compatible `tsconfig_io`, alias-aware `ts_graph`, README and reference demo runbook updates | M17 B-graph slice alias fixtures; M17 B-map alias fixture; `fx38v` requalification; M15 alias and B-cli priority regressions; docs/ADR consistency | M16 done; user-approved M17 plan | A user can keep the repository's existing `tsconfig.json`, select one `product_root` such as `app`, `src`, or `server`, and get a deterministic schema v4 report that traces aliases inside the slice while reporting existing out-of-slice targets and unresolved targets without failing the first run |
+| M19 — CLI SaaS-ready 1 local artifact workflow | Make AnchorMap scan artifacts actionable in local CI/PR workflows without SaaS upload, Git refs, schema v5, bundle, JUnit, or SARIF | ADR-0019 through ADR-0023, `check`, `diff`, `explain`, Markdown `report`, artifact I/O, fixtures and goldens | B-check `fx117`–`fx123`; B-diff `fx124`–`fx128`; B-explain `fx129`–`fx134`; B-report `fx135`–`fx140`; B-cli priority regressions; C13 artifact-command isolation | M17 done; T18.0 done; user-authorized SaaS-ready 1 plan | `check --json` distinguishes policy fail code `5` from technical failures, `diff` compares scan artifacts only, `explain` works from a scan artifact alone, and Markdown `report` serializes existing artifacts without inventing facts |
 
 ## Milestone dependency graph
 
@@ -215,8 +220,9 @@ M1 Fixture harness
                                 -> M13 v1.2 Traceability metrics
                                    -> M14 vNext deterministic scaffold
                                       -> M15 vNext deterministic local alias resolution
-                                         -> M16 vNext deterministic TSX product files
-                                            -> M17 Existing Codebase Slice Onboarding
+                                        -> M16 vNext deterministic TSX product files
+                                           -> M17 Existing Codebase Slice Onboarding
+                                             -> M19 CLI SaaS-ready 1 local artifact workflow
 ```
 
 ## M1 — Fixture harness
@@ -6965,6 +6971,392 @@ Suggested verification:
 - Run `npm run lint`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M19 — CLI SaaS-ready 1 local artifact workflow
+
+### T19.0 — Specify CLI SaaS-ready 1 authorities and task plan
+
+Purpose:
+- Adopt only the SaaS-ready 1 slice of `docs/cli-saas-readiness-plan.md` into
+  durable project authorities.
+- Create executable, traceable tasks for CLI-SaaS 1 through CLI-SaaS 5 without
+  changing runtime behavior.
+
+Reading mode:
+- critical.
+
+Process refs:
+- `AGENTS.md` — process-doc and ADR maintenance intake.
+- `operating-model.md` — §14.2 Règles de review de diff.
+- `operating-model.md` — §18.1 Mode autopilot.
+- `operating-model.md` — §19.1 Tâche.
+- `agent-loop.md` — critical reading mode and autopilot checklist.
+
+Exploratory input:
+- `docs/cli-saas-readiness-plan.md` — CLI-SaaS 1 through CLI-SaaS 5 only.
+
+Implementation scope:
+- Amend `docs/brief.md` only to authorize local artifact-based CI/PR output and
+  read-only policy/artifact inputs.
+- Add accepted ADRs for the CLI artifact surface, policy check/code `5`,
+  scan-artifact diff, artifact-only explain, and Markdown report.
+- Update `docs/contract.md`, `docs/evals.md`, and `docs/design.md` with
+  traceable SaaS-ready 1 behavior only.
+- Add M19 tasks for implementation, fixtures, checks, and closure.
+- Validate `docs/tasks.md` structurally.
+
+Out of scope:
+- Runtime implementation.
+- Bundle, JUnit, SARIF, scan schema v5, upload SaaS, dashboard, GitHub App,
+  automatic Git or CI metadata, network, cache, AI, call graph, symbol
+  observation, mapping annotations, or `anchormap.yaml` v2.
+
+Done when:
+- Brief, ADRs, contract, evals, design, and tasks contain traceable
+  SaaS-ready 1 authority.
+- `docs/tasks.md` selects no runtime task until this planning task is complete.
+- `docs/tasks.md` validates with the repo-local structural lint.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run `sh scripts/lint-tasks.sh`.
+- Run `npm run test:docs`.
+
+### T19.1 — Implement artifact input boundary and CLI parsers
+
+Purpose:
+- Materialize CLI-SaaS 1 by adding the shared artifact-mode boundary and the
+  parser surface for `check`, `diff`, `explain`, and `report`.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9 Commandes common artifact rule.
+- `contract.md` — §9.5 `check`.
+- `contract.md` — §9.6 `diff`.
+- `contract.md` — §9.7 `explain`.
+- `contract.md` — §9.8 `report`.
+- `contract.md` — §12.6 Aucune donnée implicite.
+- `contract.md` — §13.1 Périmètre du contrat machine.
+
+Design refs:
+- `design.md` — §4.5 Pipelines logiques SaaS-ready 1.
+- `design.md` — §5.6 `commands`.
+- `design.md` — §5.8 `artifact_io`.
+- `design.md` — §9 Politique d'erreurs et codes de sortie.
+
+Eval refs:
+- `evals.md` — §5.10 through §5.13 artifact invalid-input fixtures.
+- `evals.md` — §5.8 B-cli command-surface fixtures.
+
+ADR refs:
+- `ADR-0019` — CLI artifact surface and artifact mode.
+
+Dependencies:
+- T19.0.
+
+Implementation scope:
+- Extend the parser to recognize only the SaaS-ready 1 command forms.
+- Add shared scan-artifact JSON parsing and schema validation for supported
+  scan schema v4.
+- Ensure unknown commands, unknown options, invalid combinations, invalid
+  artifact paths, invalid JSON, open objects, and unknown schemas fail with code
+  `4` and empty machine stdout.
+- Add fixture skeletons and command-surface tests needed by later T19 tasks.
+
+Out of scope:
+- Policy evaluation, diff computation, explain computation, Markdown report
+  rendering, bundle, JUnit, SARIF, upload, Git refs, or scan schema v5.
+
+Done when:
+- New command forms are parsed and invalid forms are rejected deterministically.
+- Shared artifact input validation is available to T19.2 through T19.5.
+- Technical failures do not emit fake machine results.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run targeted CLI parser and artifact I/O unit tests.
+- Run B-cli fixtures that cover command surface regressions.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T19.2 — Implement `anchormap check`
+
+Purpose:
+- Add the CI policy gate over live or artifact scan input.
+- Preserve the distinction between policy failure and technical failure.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.5 `anchormap check`.
+- `contract.md` — §13.1 `check --json`.
+- `contract.md` — §13.10 `PolicyResult`.
+- `contract.md` — §13.8 Codes de sortie.
+- `contract.md` — §13.9 Priorité des codes de sortie.
+
+Design refs:
+- `design.md` — §4.5 `check` pipelines.
+- `design.md` — §5.9 `policy_io` et `policy_engine`.
+- `design.md` — §9.4 `check`.
+- `design.md` — §9.6 Commandes machine.
+
+Eval refs:
+- `evals.md` — §5.10 B-check `fx117`–`fx123`.
+- `evals.md` — §6.1 JSON goldens.
+- `evals.md` — Gate B and Gate C policy-fail requirements.
+
+ADR refs:
+- `ADR-0020` — Policy check and exit code 5.
+
+Dependencies:
+- T19.1.
+
+Implementation scope:
+- Implement closed YAML policy parsing.
+- Implement deterministic `PolicyResult` calculation and JSON rendering.
+- Wire live mode through the existing scan pipeline and artifact mode through
+  `artifact_io`.
+- Add B-check fixtures and goldens for pass, policy fail, human fail, invalid
+  policy, invalid scan artifact, live config error, and live repo error.
+
+Out of scope:
+- Policy fields beyond the closed schema.
+- Suggested remediation intelligence.
+- Git, CI environment, network, cache, or policy persistence.
+
+Done when:
+- `check --json` policy pass exits `0` with valid JSON.
+- `check --json` policy fail exits `5` with valid JSON on `stdout`.
+- Technical failures exit `1`, `2`, `3`, or `4` with empty `stdout`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-check fixtures `fx117`–`fx123`.
+- Run policy-engine unit tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T19.3 — Implement scan-vs-scan `anchormap diff`
+
+Purpose:
+- Compare two scan artifacts without Git or repository reads.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.6 `anchormap diff`.
+- `contract.md` — §13.11 `TraceabilityDiff`.
+- `contract.md` — §12.6 Aucune donnée implicite.
+
+Design refs:
+- `design.md` — §4.5 `diff` pipeline.
+- `design.md` — §5.10 `diff_engine`.
+- `design.md` — §9.4 `diff`.
+
+Eval refs:
+- `evals.md` — §5.11 B-diff `fx124`–`fx128`.
+- `evals.md` — §6.1 JSON goldens.
+- `evals.md` — C9 through C12 isolation.
+
+ADR refs:
+- `ADR-0021` — Scan artifact diff.
+
+Dependencies:
+- T19.1.
+
+Implementation scope:
+- Implement `TraceabilityDiff` over two parsed scan artifacts.
+- Implement `same_scope` and `scope_changed` comparability.
+- Add B-diff fixtures and goldens for same-scope deltas, scope change, invalid
+  base, invalid head, and human mode.
+
+Out of scope:
+- `anchormap diff main HEAD` or any Git ref syntax.
+- Reading the repository or regenerating scans.
+- Supporting unknown future scan schemas.
+
+Done when:
+- `diff --json` compares only the two explicit scan artifacts.
+- Invalid artifacts produce code `4`, empty `stdout`, and no fake diff.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-diff fixtures `fx124`–`fx128`.
+- Run diff-engine unit tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T19.4 — Implement artifact-only `anchormap explain`
+
+Purpose:
+- Explain one anchor or one file from a scan artifact alone.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.7 `anchormap explain`.
+- `contract.md` — §13.12 `ExplainResult`.
+
+Design refs:
+- `design.md` — §4.5 `explain` pipeline.
+- `design.md` — §5.11 `explain_engine`.
+- `design.md` — §9.4 `explain`.
+
+Eval refs:
+- `evals.md` — §5.12 B-explain `fx129`–`fx134`.
+- `evals.md` — §6.1 JSON goldens.
+
+ADR refs:
+- `ADR-0022` — Explain from scan artifact.
+
+Dependencies:
+- T19.1.
+
+Implementation scope:
+- Implement exactly-one-subject validation for `--anchor` and `--file`.
+- Require `--scan` in SaaS-ready 1.
+- Reconstruct anchor paths by deterministic BFS over
+  `files[*].supported_local_targets`.
+- Render `ExplainResult` JSON and human output.
+- Add B-explain fixtures and goldens for anchor, file, missing subjects, invalid
+  args, and invalid scan artifact.
+
+Out of scope:
+- Live repository explain without `--scan`.
+- Source locations, symbols, framework semantics, or source-code snippets.
+
+Done when:
+- `explain` works from a scan artifact alone.
+- Missing anchor/file subjects produce valid JSON results, not technical errors.
+- Invalid args and invalid artifacts produce code `4` with empty `stdout`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-explain fixtures `fx129`–`fx134`.
+- Run explain-engine unit tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T19.5 — Implement Markdown `anchormap report`
+
+Purpose:
+- Serialize existing scan, check, and diff artifacts into stable Markdown.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.8 `anchormap report`.
+- `contract.md` — §13.13 Markdown report.
+
+Design refs:
+- `design.md` — §4.5 `report` pipeline.
+- `design.md` — §5.12 `report_model`.
+- `design.md` — §9.4 `report`.
+
+Eval refs:
+- `evals.md` — §5.13 B-report `fx135`–`fx140`.
+- `evals.md` — §6.1.1 Markdown goldens.
+
+ADR refs:
+- `ADR-0023` — Markdown report from artifacts.
+
+Dependencies:
+- T19.2.
+- T19.3.
+
+Implementation scope:
+- Implement `report --format markdown` with `--scan` required and `--check` /
+  `--diff` optional.
+- Render stable Markdown from parsed artifacts only.
+- Add mechanical suggested actions derived only from contractual findings,
+  policy violations, or diff deltas.
+- Add B-report fixtures and Markdown goldens.
+
+Out of scope:
+- JUnit, SARIF, HTML, bundle, upload, CI metadata, source snippets, or smart
+  recommendations.
+
+Done when:
+- Markdown report output is byte-stable and covered by goldens.
+- Report does not invent facts beyond input artifacts.
+- Invalid format or artifacts produce code `4` with empty `stdout`.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-report fixtures `fx135`–`fx140`.
+- Run Markdown report renderer unit tests.
+- Run `npm run test:product`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T19.6 — Close CLI SaaS-ready 1 readiness
+
+Purpose:
+- Verify the complete SaaS-ready 1 workflow after T19.1 through T19.5.
+
+Reading mode:
+- critical.
+
+Contract refs:
+- `contract.md` — §9.5 through §9.8.
+- `contract.md` — §13.10 through §13.13.
+
+Design refs:
+- `design.md` — §4.5.
+- `design.md` — §5.8 through §5.12.
+- `design.md` — §9.6.
+
+Eval refs:
+- `evals.md` — B-check, B-diff, B-explain, B-report.
+- `evals.md` — Gate B, Gate C, C9 through C13.
+
+ADR refs:
+- `ADR-0019` through `ADR-0023`.
+
+Dependencies:
+- T19.2.
+- T19.3.
+- T19.4.
+- T19.5.
+
+Implementation scope:
+- Run the full applicable product, docs, golden, and lint checks for the new
+  CLI surface.
+- Add or update release-readiness evidence only if existing repo-local release
+  checks require it.
+- Confirm excluded SaaS-ready 2 and later scope remains absent from CLI
+  behavior and docs.
+
+Out of scope:
+- Publishing a new artifact unless separately requested.
+- Bundle, JUnit, SARIF, scan schema v5, upload SaaS, dashboard, GitHub App,
+  mapping annotations, symbol observation, or config v2 migration.
+
+Done when:
+- All M19 fixtures and goldens pass.
+- Applicable static, product, docs, and isolation checks pass.
+- No runtime behavior depends on Git, CI variables, network, cache, clock, or
+  environment as product source of truth.
+- Fresh critical review has a clean verdict or all findings are resolved.
+
+Suggested verification:
+- Run B-check, B-diff, B-explain, and B-report fixtures.
+- Run the C13 artifact-command isolation test.
+- Run `npm run check:goldens`.
+- Run `npm run test:product`.
+- Run `npm run test:docs`.
+- Run `npm run lint`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -7023,6 +7415,10 @@ Suggested verification:
 | B-cli `fx76` | T4.5, T8.5 | M4, M8 | fixture | Atomic write failure exits `1`, no partial mutation |
 | B-scaffold `fx77`–`fx88` | T14.1, T14.2, T14.3, T14.4 | M14 | fixture/golden | Deterministic draft Markdown scaffold, create-only output, no config mutation, collision disambiguation, rerunnable existing-anchor skips, and code `2`/`3`/`4` failures |
 | B-scaffold `fx88a` | T16.3 | M16 | fixture/golden | M16 scaffold from `.tsx` exports with `.tsx` stripped from generated module anchors |
+| B-check `fx117`–`fx123` | T19.2 | M19 | fixture/golden | Policy pass/fail, code `5`, JSON-on-policy-fail, technical failures with empty stdout, and no mutation |
+| B-diff `fx124`–`fx128` | T19.3 | M19 | fixture/golden | Scan-vs-scan diff, same-scope/scope-changed comparability, invalid artifacts, and human mode |
+| B-explain `fx129`–`fx134` | T19.4 | M19 | fixture/golden | Anchor/file explanations reconstructed from scan artifact alone, missing subjects, invalid args, and invalid artifact failures |
+| B-report `fx135`–`fx140` | T19.5 | M19 | fixture/golden | Markdown report from scan/check/diff artifacts, stable sections, mechanical actions, invalid format, and invalid artifact failures |
 | C1 filesystem order invariance | T1.6, T6.1, T7.5, T9.1 | M1, M6, M7, M9 | metamorphic | Stable ordering independent of FS enumeration |
 | C2 YAML editorial reorder invariance | T4.1, T4.4, T8.4, T9.1 | M4, M8, M9 | metamorphic | Same config semantics, canonical output after map |
 | C3 spec noise invariance | T5.2, T5.3, T5.4, T9.1 | M5, M9 | metamorphic | No anchor from unsupported spec noise |
@@ -7035,6 +7431,7 @@ Suggested verification:
 | C10 time/timezone independence | T9.2 | M9 | isolation | No clock or timezone source of truth |
 | C11 no network/env source of truth | T9.2 | M9 | isolation | No network required, env changes do not alter output |
 | C12 no cache and no scan writes | T1.5, T7.1, T9.2 | M1, M7, M9 | isolation | Scan leaves no repo/cache artifacts |
+| C13 artifact-command isolation | T19.6 | M19 | isolation | `check --scan`, `diff`, `explain --scan`, and `report` ignore implicit Git/CI/time/network/cache state and do not mutate the repository |
 | Cross-platform matrix §9 | T9.3 | M9 | gate | Linux x86_64 and macOS arm64 |
 | Performance `small` and `medium` | T9.4 | M9 | benchmark | Release gate; p95/RSS budgets |
 | Performance `large` | T9.4 | M9 | benchmark | Informational only, archived |

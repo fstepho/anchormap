@@ -47,9 +47,10 @@ Ce document est **hors scope** pour :
 | Aliases locaux déterministes depuis `tsconfig.json` | §§ 10.1.1, 10.2.2, 12.2.4, 13.2.1 | B-graph M15, B-map, B-cli, goldens |
 | Onboarding par slice de code existant avec aliases `tsconfig.json` mixtes | §§ 5.3.1, 9.2, 9.3, 10.1.1, 10.2.2, 12.2.4, 12.3, 13.2.1 | B-graph M17, B-map M17, B-cli M15, goldens |
 | Fichiers produit `.tsx` déterministes | §§ 1.1, 6.5, 9.2, 9.4, 10, 12.3 | B-graph M16, B-map, B-scaffold, goldens |
+| Commandes d'artefacts SaaS-ready 1 (`check`, `diff`, `explain`, `report`) | §§ 9.5–9.8, 12.6, 13.10–13.13 | B-check, B-diff, B-explain, B-report, goldens, C13 |
 | États des mappings, couverture, `analysis_health` | §§ 6.6–6.9, 9.3, 11, 13.3–13.6 | B-scan, goldens |
 | Déterminisme byte-for-byte, ordre canonique, fermeture des objets JSON | §§ 4.1, 4.7, 7.5, 11.6, 12.6, 13.2–13.7 | A, goldens, C1, C7, D |
-| Absence de dépendance au réseau, au temps, à Git, à un cache persistant ou aux variables d'environnement comme source de vérité | §§ 4.1, 12.6 | C8, C9, C10, C11, C12 |
+| Absence de dépendance au réseau, au temps, à Git, à un cache persistant ou aux variables d'environnement comme source de vérité | §§ 4.1, 12.6 | C8, C9, C10, C11, C12, C13 |
 | Racine du dépôt et absence de recherche implicite dans les parents | § 12.1 | B-cli |
 | Matrice de plateformes supportées | § 12.4 | D |
 | Dépendances contractuelles figées | § 1.1 | F |
@@ -499,11 +500,57 @@ fichiers produit `.tsx` sans sémantique JSX ou framework.
 | --- | --- | ---: | --- |
 | `fx88a_scaffold_tsx_exports` | scaffold depuis exports `.tsx` | 0 | Markdown golden exact ; anchors dérivées du chemin sans suffixe `.tsx` |
 
+### 5.10 Famille B-check — policy locale et code `5`
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx117_check_policy_pass_json` | scan valide + policy satisfaite | 0 | `PolicyResult` JSON golden exact ; `stderr` vide ; aucune mutation |
+| `fx118_check_policy_fail_json` | scan valide + policy violée | 5 | `PolicyResult` JSON golden exact sur `stdout` ; `stderr` vide ; aucune mutation |
+| `fx119_check_policy_fail_human` | policy violée sans `--json` | 5 | code exact ; absence de mutation ; texte humain non oraclé |
+| `fx120_check_invalid_policy` | policy absente, invalide ou hors schéma fermé | 4 | `stdout` vide ; aucun JSON ; aucune mutation |
+| `fx121_check_invalid_scan_artifact` | `--scan` non décodable, JSON invalide, schéma inconnu ou non supporté, ou objet ouvert | 4 | `stdout` vide ; aucun JSON ; aucune lecture dépôt |
+| `fx122_check_live_config_error` | mode live avec config absente ou invalide | 2 | `stdout` vide ; aucun JSON |
+| `fx123_check_live_repo_error` | mode live avec dépôt hors support | 3 | `stdout` vide ; aucun JSON |
+
+### 5.11 Famille B-diff — comparaison scan-vs-scan
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx124_diff_same_scope_json` | deux scans de même portée avec deltas anchors/mappings/files/findings | 0 | `TraceabilityDiff` JSON golden exact ; `comparability: same_scope` |
+| `fx125_diff_scope_changed_json` | scans valides schema v4 avec `config` différent | 0 | JSON golden exact ; `comparability: scope_changed` |
+| `fx126_diff_invalid_base_artifact` | base illisible, JSON invalide ou schéma inconnu ou non supporté | 4 | `stdout` vide ; aucun JSON ; head non utilisé pour inventer un résultat |
+| `fx127_diff_invalid_head_artifact` | head illisible, JSON invalide ou schéma inconnu ou non supporté | 4 | `stdout` vide ; aucun JSON |
+| `fx128_diff_human_success` | diff sans `--json` | 0 | code exact ; absence de mutation ; texte humain non oraclé |
+
+### 5.12 Famille B-explain — reconstruction depuis scan artifact
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx129_explain_anchor_json` | anchor mappée avec chemin explicatif transitive | 0 | `ExplainResult` JSON golden exact ; BFS déterministe |
+| `fx130_explain_file_json` | fichier couvert par plusieurs anchors | 0 | `ExplainResult` JSON golden exact |
+| `fx131_explain_missing_anchor` | anchor absente du scan artifact | 0 | JSON golden exact avec `present: false` ; aucune lecture dépôt |
+| `fx132_explain_missing_file` | fichier absent du scan artifact | 0 | JSON golden exact avec `present: false` |
+| `fx133_explain_invalid_subject_args` | `--anchor` et `--file` absents ou simultanés | 4 | `stdout` vide ; aucun JSON |
+| `fx134_explain_invalid_scan_artifact` | scan artifact invalide ou schéma inconnu ou non supporté | 4 | `stdout` vide ; aucun JSON ; aucune lecture dépôt |
+
+### 5.13 Famille B-report — Markdown depuis artefacts
+
+| Fixture ID | But principal | Exit | Oracles obligatoires |
+| --- | --- | ---: | --- |
+| `fx135_report_scan_markdown` | rapport Markdown depuis scan seul | 0 | Markdown golden exact ; aucune mutation |
+| `fx136_report_scan_check_markdown` | rapport Markdown depuis scan + check | 0 | Markdown golden exact avec violations de policy |
+| `fx137_report_scan_check_diff_markdown` | rapport Markdown depuis scan + check + diff | 0 | Markdown golden exact avec impact PR et actions mécaniques |
+| `fx138_report_scan_diff_markdown` | rapport Markdown depuis scan + diff sans check | 0 | Markdown golden exact avec impact PR sans section de policy |
+| `fx139_report_invalid_format` | format autre que `markdown` | 4 | `stdout` vide ; aucune mutation |
+| `fx140_report_invalid_artifact` | scan, check ou diff illisible, JSON invalide, schéma inconnu ou non supporté, ou non conforme à son objet fermé | 4 | `stdout` vide ; aucune sortie partielle |
+
 ## 6. Goldens et oracles exacts
 
 ### 6.1 Goldens JSON obligatoires
 
-Chaque fixture de succès `scan --json` doit avoir un golden exact versionné qui valide simultanément :
+Chaque fixture de succès `scan --json`, `check --json`, `diff --json` et
+`explain --json`, ainsi que `check --json` avec policy fail de code `5`, doit
+avoir un golden exact versionné qui valide simultanément :
 
 - encodage UTF-8 ;
 - fin de ligne unique `\n` ;
@@ -513,6 +560,20 @@ Chaque fixture de succès `scan --json` doit avoir un golden exact versionné qu
 - fermeture stricte des objets ;
 - absence de clés supplémentaires ;
 - normalisation POSIX des chemins.
+
+### 6.1.1 Goldens Markdown obligatoires
+
+Chaque fixture de succès `report --format markdown` doit avoir un golden exact
+versionné qui valide simultanément :
+
+- encodage UTF-8 ;
+- fin de ligne unique `\n` ;
+- ordre canonique des sections ;
+- absence de contenu source complet, secret, logs CI, branche, commit, PR ou
+  état Git implicite ;
+- absence de claim de dead code, suppression sûre, conformité fonctionnelle ou
+  recommandation intelligente ;
+- suggested actions limitées aux actions mécaniques dérivées des artefacts.
 
 ### 6.2 Goldens YAML obligatoires
 
@@ -676,6 +737,25 @@ Oracle :
 - aucune création de cache persistant nécessaire au succès ;
 - le second run produit le même résultat byte-for-byte sans dépendre d'un artefact laissé par le premier.
 
+### 8.13 C13 — Isolation des commandes d'artefacts SaaS-ready 1
+
+Pour les releases incluant M19, les commandes `check --scan`, `diff`,
+`explain --scan` et `report` doivent être exécutées dans une matrice de
+variation qui modifie Git, l'horloge, le fuseau, la locale, le réseau,
+l'environnement et les fichiers du dépôt non fournis comme policy ou artefacts
+d'entrée explicites.
+
+Oracles obligatoires :
+
+- les commandes produisent des sorties byte-identiques lorsque leurs policies
+  et artefacts d'entrée explicites sont byte-identiques ;
+- aucune commande ne lit Git, variable CI, réseau, cache, horloge ou fichier
+  non fourni comme policy ou artefact d'entrée explicite pour produire un
+  résultat ;
+- aucune commande ne crée, modifie ou supprime de fichier dans le dépôt ;
+- les échecs techniques de ces commandes gardent `stdout` vide et ne produisent
+  pas de faux résultat machine.
+
 ## 9. Matrice cross-platform obligatoire
 
 ### 9.1 Plateformes supportées
@@ -693,6 +773,7 @@ Sur **chaque** plateforme supportée, la release candidate doit exécuter :
 
 - 100% des fixtures de niveau B ;
 - 100% des tests métamorphiques C1 à C12 ;
+- pour les releases incluant M19, 100% des tests C13 ;
 - 100% des goldens JSON ;
 - 100% des goldens YAML ;
 - la campagne de reruns déterministes C7.
@@ -793,15 +874,22 @@ Passe si et seulement si :
 - aucun champ hors contrat n'est présent ;
 - toutes les fermetures d'objets JSON sont respectées ;
 - tous les cas d'échec `scan --json` vérifient `stdout` vide et absence de JSON.
+- tous les cas d'échec technique des commandes machine vérifient `stdout` vide
+  et absence de faux résultat machine ;
+- `check --json` avec policy fail vérifie au contraire un JSON valide sur
+  `stdout` et le code `5`.
 
 ### Gate C — Codes de sortie, préconditions et priorité
 
 Passe si et seulement si :
 
 - toutes les fixtures B-cli, y compris les fixtures explicites de priorité et les formes `scan` avec et sans `--json`, passent ;
-- les codes `0`, `1`, `2`, `3`, `4` sont chacun couverts par au moins une éval dédiée ;
+- les codes `0`, `1`, `2`, `3`, `4` et `5` sont chacun couverts par au moins
+  une éval dédiée ;
 - `anchormap scan` sans `--json` est couvert en succès et en échecs `1`, `2`, `3`, `4` sans oracle sur le texte humain ;
 - la priorité `4 > 2 > 3 > 1` est validée par les fixtures `fx72` à `fx75` ;
+- le code `5` est vérifié comme résultat de policy `check`, après absence
+  d'erreur technique, et ne remplace jamais les codes `1`, `2`, `3` ou `4` ;
 - la surface CLI supportée est vérifiée : commandes inconnues, options inconnues et combinaisons non supportées échouent avec le code `4`.
 
 ### Gate D — Déterminisme et isolation
@@ -809,6 +897,7 @@ Passe si et seulement si :
 Passe si et seulement si :
 
 - tous les tests C1 à C12 passent ;
+- pour les releases incluant M19, les tests C13 passent ;
 - tous les reruns déterministes C7 sont byte-identiques ;
 - aucune dépendance à la locale, à Git, au temps, au réseau, à un cache persistant ou à des variables d'environnement comme source de vérité n'est observée.
 
