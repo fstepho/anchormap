@@ -21,7 +21,7 @@ import {
 import {
 	runDiffCommand,
 	runExplainCommand,
-	runReportCommandStub,
+	runReportCommand,
 	validateRawCheckArgs,
 	validateRawDiffArgs,
 	validateRawExplainArgs,
@@ -148,7 +148,7 @@ const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	check: runCheckCommand,
 	diff: runDiffCommand,
 	explain: runExplainCommand,
-	report: runReportCommandStub,
+	report: runReportCommand,
 };
 
 export function runAnchormap(argv: readonly string[], options: AnchormapRunOptions = {}): number {

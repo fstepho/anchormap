@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { normalizeCliPathArg } from "../cli/command-preconditions";
 import { type AppError, usageError } from "../cli/command-result";
 import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
+import type { TraceabilityDiff } from "../domain/diff-engine";
 import type { Finding, StaticEdgeSyntaxKind } from "../domain/finding";
+import type { PolicyResult } from "../domain/policy-engine";
 import { type RepoPath, repoPathToString, validateRepoPath } from "../domain/repo-path";
 import type {
 	AnalysisHealth,
@@ -17,10 +16,20 @@ import type {
 	TraceabilityMetricsView,
 	TraceabilitySummaryView,
 } from "../domain/scan-result";
-import { decodeUtf8StrictNoBom } from "./repo-fs";
+import { loadJsonArtifactText } from "./artifact-file-io";
+import { parseTraceabilityDiffArtifactJson } from "./artifact-json-validation";
+import { parsePolicyResultArtifactJson } from "./artifact-policy-validation";
+
+export { parsePolicyResultArtifactJson, parseTraceabilityDiffArtifactJson };
 
 export type LoadScanArtifactResult =
 	| { kind: "ok"; scan: ScanResultView }
+	| { kind: "error"; error: AppError };
+export type LoadPolicyResultArtifactResult =
+	| { kind: "ok"; policyResult: PolicyResult }
+	| { kind: "error"; error: AppError };
+export type LoadTraceabilityDiffArtifactResult =
+	| { kind: "ok"; diff: TraceabilityDiff }
 	| { kind: "error"; error: AppError };
 
 type JsonObject = Record<string, unknown>;
@@ -75,24 +84,36 @@ export function loadScanArtifact(
 	options: { cwd?: string; optionName?: string } = {},
 ): LoadScanArtifactResult {
 	const optionName = options.optionName ?? "--scan";
-	const normalizedPath = normalizeCliPathArg(pathArg, optionName);
-	if (normalizedPath.kind === "usage_error") {
-		return { kind: "error", error: usageError(normalizedPath.message) };
+	const loaded = loadJsonArtifactText(pathArg, optionName, options.cwd);
+	if (loaded.kind === "error") {
+		return loaded;
 	}
 
-	let bytes: Uint8Array;
-	try {
-		bytes = readFileSync(join(options.cwd ?? process.cwd(), repoPathToString(normalizedPath.path)));
-	} catch {
-		return { kind: "error", error: usageError(`${optionName} artifact could not be read`) };
+	return parseScanArtifactJson(loaded.text, loaded.label);
+}
+
+export function loadPolicyResultArtifact(
+	pathArg: string,
+	options: { cwd?: string; optionName?: string } = {},
+): LoadPolicyResultArtifactResult {
+	const loaded = loadJsonArtifactText(pathArg, options.optionName ?? "--check", options.cwd);
+	if (loaded.kind === "error") {
+		return loaded;
 	}
 
-	const decoded = decodeUtf8StrictNoBom(bytes);
-	if (decoded.kind === "decode_error") {
-		return { kind: "error", error: usageError(`${optionName} artifact is not valid UTF-8`) };
+	return parsePolicyResultArtifactJson(loaded.text, loaded.label);
+}
+
+export function loadTraceabilityDiffArtifact(
+	pathArg: string,
+	options: { cwd?: string; optionName?: string } = {},
+): LoadTraceabilityDiffArtifactResult {
+	const loaded = loadJsonArtifactText(pathArg, options.optionName ?? "--diff", options.cwd);
+	if (loaded.kind === "error") {
+		return loaded;
 	}
 
-	return parseScanArtifactJson(decoded.text, optionName);
+	return parseTraceabilityDiffArtifactJson(loaded.text, loaded.label);
 }
 
 export function parseScanArtifactJson(

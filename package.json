@@ -34,9 +34,13 @@
 		"dist/domain/finding.js",
 		"dist/domain/policy-engine.js",
 		"dist/domain/repo-path.js",
+		"dist/domain/report-model.js",
 		"dist/domain/scan-engine.js",
 		"dist/domain/scan-result.js",
+		"dist/infra/artifact-file-io.js",
+		"dist/infra/artifact-json-validation.js",
 		"dist/infra/artifact-io.js",
+		"dist/infra/artifact-policy-validation.js",
 		"dist/infra/config-io.js",
 		"dist/infra/config-yaml-render.js",
 		"dist/infra/product-files.js",
@@ -46,6 +50,7 @@
 		"dist/infra/spec-index.js",
 		"dist/infra/ts-graph.js",
 		"dist/infra/tsconfig-io.js",
+		"dist/render/render-markdown-report.js",
 		"dist/render/render-json.js"
 	],
 	"repository": {

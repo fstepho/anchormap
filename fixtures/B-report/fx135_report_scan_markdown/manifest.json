@@ -1,0 +1,27 @@
+{
+	"id": "fx135_report_scan_markdown",
+	"family": "B-report",
+	"purpose": "report renders stable Markdown from a scan artifact alone.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--format",
+		"markdown"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "markdown", "golden", "artifact_io"],
+	"groups": ["m19"]
+}

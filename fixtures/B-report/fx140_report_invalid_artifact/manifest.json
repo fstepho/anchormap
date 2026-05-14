@@ -1,0 +1,29 @@
+{
+	"id": "fx140_report_invalid_artifact",
+	"family": "B-report",
+	"purpose": "report rejects invalid scan, check, or diff artifacts with code 4 and empty stdout.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/invalid-check.json",
+		"--format",
+		"markdown"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "artifact_io", "cli_boundary"],
+	"groups": ["m19"]
+}

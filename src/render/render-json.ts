@@ -283,6 +283,10 @@ function renderPolicyViolation(violation: PolicyViolation): string {
 	}
 }
 
+export function renderCanonicalPolicyViolation(violation: PolicyViolation): string {
+	return renderPolicyViolation(violation);
+}
+
 function renderConfig(config: ConfigView): string {
 	return renderObject([
 		["version", renderNumber(config.version)],
@@ -409,6 +413,14 @@ function renderFinding(finding: Finding): string {
 				["path", renderString(finding.path)],
 			]);
 	}
+}
+
+export function renderCanonicalFinding(finding: Finding): string {
+	return renderFinding(finding);
+}
+
+export function renderCanonicalString(value: string): string {
+	return renderString(value);
 }
 
 function renderRecord<Value>(

@@ -1,0 +1,29 @@
+{
+	"id": "fx136_report_scan_check_markdown",
+	"family": "B-report",
+	"purpose": "report renders stable Markdown from scan and check artifacts with policy violations.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--format",
+		"markdown"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "markdown", "golden", "artifact_io", "policy"],
+	"groups": ["m19"]
+}

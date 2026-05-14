@@ -2,13 +2,20 @@ import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { diffScanResults } from "../domain/diff-engine";
 import { explainScanSubject } from "../domain/explain-engine";
 import type { RepoPath } from "../domain/repo-path";
-import { loadScanArtifact } from "../infra/artifact-io";
+import { buildMarkdownReportModel } from "../domain/report-model";
 import {
+	loadPolicyResultArtifact,
+	loadScanArtifact,
+	loadTraceabilityDiffArtifact,
+} from "../infra/artifact-io";
+import {
+	renderCanonicalString,
 	renderExplainResultHuman,
 	renderExplainResultJson,
 	renderTraceabilityDiffHuman,
 	renderTraceabilityDiffJson,
 } from "../render/render-json";
+import { renderMarkdownReport } from "../render/render-markdown-report";
 import type {
 	ParsedCheckArgs,
 	ParsedDiffArgs,
@@ -167,7 +174,7 @@ export function runExplainCommand(context: ArtifactCommandContext): AnchormapCom
 	};
 }
 
-export function runReportCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {
+export function runReportCommand(context: ArtifactCommandContext): AnchormapCommandResult {
 	const args = context.reportArgs;
 	if (args === undefined) {
 		return internalError("report arguments were not parsed");
@@ -178,7 +185,32 @@ export function runReportCommandStub(context: ArtifactCommandContext): Anchormap
 		return scan.error;
 	}
 
-	return internalError("Markdown report rendering is not implemented");
+	const check =
+		args.check === undefined
+			? undefined
+			: loadPolicyResultArtifact(args.check, { cwd: context.cwd, optionName: "--check" });
+	if (check?.kind === "error") {
+		return check.error;
+	}
+
+	const diff =
+		args.diff === undefined
+			? undefined
+			: loadTraceabilityDiffArtifact(args.diff, { cwd: context.cwd, optionName: "--diff" });
+	if (diff?.kind === "error") {
+		return diff.error;
+	}
+
+	const model = buildMarkdownReportModel({
+		scan: scan.scan,
+		...(check !== undefined ? { check: check.policyResult } : {}),
+		...(diff !== undefined ? { diff: diff.diff } : {}),
+		renderString: renderCanonicalString,
+	});
+	return {
+		kind: "success",
+		stdout: renderMarkdownReport(model),
+	};
 }
 
 function normalizeRequiredCliPath(

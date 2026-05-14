@@ -191,6 +191,81 @@ test("artifact commands fail invalid scan artifacts as usage errors with empty s
 	}
 });
 
+test("report artifact mode renders markdown from explicit artifacts", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), minimalScanArtifactJson());
+
+		const result = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan.json",
+			"--format",
+			"markdown",
+		]);
+
+		assert.equal(result.exitCode, 0);
+		assert.equal(result.stderr, "");
+		assert.equal(
+			result.stdout,
+			[
+				"# AnchorMap traceability report",
+				"",
+				"## Summary",
+				"- Analysis health: clean",
+				"- Observed anchors: 0",
+				"- Usable mappings: 0",
+				"- Covered product files: 0/0 (100%)",
+				"- Findings: 0",
+				"",
+				"## Findings",
+				"- none",
+				"",
+			].join("\n"),
+		);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("report rejects invalid optional check and diff artifacts with empty stdout", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), minimalScanArtifactJson());
+		writeFileSync(join(cwd, "artifacts", "invalid.json"), '{"schema_version":1,"extra":true}\n');
+
+		const check = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan.json",
+			"--check",
+			"artifacts/invalid.json",
+			"--format",
+			"markdown",
+		]);
+		assert.equal(check.exitCode, 4);
+		assert.equal(check.stdout, "");
+		assert.notEqual(check.stderr, "");
+
+		const diff = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan.json",
+			"--diff",
+			"artifacts/invalid.json",
+			"--format",
+			"markdown",
+		]);
+		assert.equal(diff.exitCode, 4);
+		assert.equal(diff.stdout, "");
+		assert.notEqual(diff.stderr, "");
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("check artifact mode evaluates policy pass and fail with machine stdout", () => {
 	const cwd = createTempRepo();
 	try {

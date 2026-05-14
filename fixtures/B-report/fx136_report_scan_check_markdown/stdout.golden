@@ -1,0 +1,17 @@
+# AnchorMap traceability report
+
+## Summary
+- Analysis health: clean
+- Observed anchors: 1
+- Usable mappings: 1
+- Covered product files: 1/2 (50%)
+- Findings: 1
+
+## Policy violations
+Decision: FAIL
+- {"kind":"covered_product_file_percent_below_threshold","actual":50,"threshold":100}
+- {"kind":"finding_kind_present","finding_kind":"untraced_product_file","count":1}
+- {"kind":"untraced_product_files_above_threshold","actual":1,"threshold":0}
+
+## Findings
+- {"kind":"untraced_product_file","path":"src/unused.ts"}

@@ -1,0 +1,32 @@
+# AnchorMap traceability report
+
+## Summary
+- Analysis health: clean
+- Observed anchors: 2
+- Usable mappings: 2
+- Covered product files: 2/3 (66%)
+- Findings: 2
+
+## Change impact
+- Comparability: same_scope
+- Analysis health: degraded -> clean
+- Anchors added: 1
+- Anchors removed: 1
+- Anchor mapping states changed: 1
+- Mappings added: 1
+- Mappings removed: 1
+- Mapping states changed: 1
+- Files added: 1
+- Files removed: 1
+- Files became covered: 1
+- Files lost coverage: 1
+- Findings added: 2
+- Findings removed: 2
+
+## Findings
+- {"kind":"unmapped_anchor","anchor_id":"QA-003"}
+- {"kind":"untraced_product_file","path":"src/covered.ts"}
+
+## Suggested actions
+- Add a mapping for "QA-003".
+- Inspect lost coverage for "src/covered.ts".
