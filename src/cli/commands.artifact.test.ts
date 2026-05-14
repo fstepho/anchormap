@@ -282,6 +282,57 @@ test("diff artifact mode compares two explicit scans with machine and human outp
 	}
 });
 
+test("explain artifact mode explains anchor and file subjects from one explicit scan", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), explainScanArtifactJson());
+
+		const anchor = runCommand(cwd, [
+			"explain",
+			"--anchor",
+			"QA-001",
+			"--scan",
+			"artifacts/scan.json",
+			"--json",
+		]);
+		assert.equal(anchor.exitCode, 0);
+		assert.equal(anchor.stderr, "");
+		assert.equal(
+			anchor.stdout,
+			'{"schema_version":1,"subject":{"kind":"anchor","anchor_id":"QA-001"},"observed":{"present":true,"spec_path":"specs/requirements.md","mapping_state":"usable"},"mapping":{"present":true,"state":"usable","seed_files":["src/root.ts"],"reached_file_count":2},"file":null,"coverage":{"reached_files":[{"path":"src/leaf.ts","path_from_seed":["src/root.ts","src/leaf.ts"]},{"path":"src/root.ts","path_from_seed":["src/root.ts"]}]},"findings":[]}\n',
+		);
+
+		const file = runCommand(cwd, [
+			"explain",
+			"--file",
+			"src/leaf.ts",
+			"--scan",
+			"artifacts/scan.json",
+			"--json",
+		]);
+		assert.equal(file.exitCode, 0);
+		assert.equal(file.stderr, "");
+		assert.equal(
+			file.stdout,
+			'{"schema_version":1,"subject":{"kind":"file","path":"src/leaf.ts"},"observed":null,"mapping":null,"file":{"present":true,"covering_anchor_ids":["QA-001","QA-002"],"supported_local_targets":[]},"coverage":{"covered":true,"single_cover":false,"multi_cover":true},"findings":[]}\n',
+		);
+
+		const human = runCommand(cwd, [
+			"explain",
+			"--file",
+			"src/leaf.ts",
+			"--scan",
+			"artifacts/scan.json",
+		]);
+		assert.equal(human.exitCode, 0);
+		assert.equal(human.stderr, "");
+		assert.equal(human.stdout, "file: src/leaf.ts\npresent: true\ncovered: true\n");
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("check validates policy before loading scan artifacts", () => {
 	const cwd = createTempRepo();
 	try {
@@ -336,5 +387,52 @@ function scanWithOneUncoveredFileJson(): string {
 	scan.traceability_metrics.summary.product_file_count = 1;
 	scan.traceability_metrics.summary.uncovered_product_file_count = 1;
 	scan.findings = [{ kind: "untraced_product_file", path: "src/uncovered.ts" }];
+	return `${JSON.stringify(scan)}\n`;
+}
+
+function explainScanArtifactJson(): string {
+	const scan = JSON.parse(minimalScanArtifactJson());
+	scan.observed_anchors = {
+		"QA-001": {
+			spec_path: "specs/requirements.md",
+			mapping_state: "usable",
+		},
+	};
+	scan.stored_mappings = {
+		"QA-001": {
+			state: "usable",
+			seed_files: ["src/root.ts"],
+			reached_files: ["src/root.ts", "src/leaf.ts"],
+		},
+	};
+	scan.files = {
+		"src/root.ts": {
+			covering_anchor_ids: ["QA-001"],
+			supported_local_targets: ["src/leaf.ts"],
+		},
+		"src/leaf.ts": {
+			covering_anchor_ids: ["QA-002", "QA-001"],
+			supported_local_targets: [],
+		},
+	};
+	scan.traceability_metrics.summary.product_file_count = 2;
+	scan.traceability_metrics.summary.stored_mapping_count = 1;
+	scan.traceability_metrics.summary.usable_mapping_count = 1;
+	scan.traceability_metrics.summary.observed_anchor_count = 1;
+	scan.traceability_metrics.summary.active_anchor_count = 1;
+	scan.traceability_metrics.summary.covered_product_file_count = 2;
+	scan.traceability_metrics.summary.directly_seeded_product_file_count = 1;
+	scan.traceability_metrics.summary.single_cover_product_file_count = 1;
+	scan.traceability_metrics.summary.multi_cover_product_file_count = 1;
+	scan.traceability_metrics.anchors = {
+		"QA-001": {
+			seed_file_count: 1,
+			direct_seed_file_count: 1,
+			reached_file_count: 2,
+			transitive_reached_file_count: 1,
+			unique_reached_file_count: 1,
+			shared_reached_file_count: 1,
+		},
+	};
 	return `${JSON.stringify(scan)}\n`;
 }

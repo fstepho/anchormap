@@ -1,0 +1,1 @@
+{"schema_version":1,"subject":{"kind":"file","path":"src/shared.ts"},"observed":null,"mapping":null,"file":{"present":true,"covering_anchor_ids":["QA-001","QA-002"],"supported_local_targets":["src/a.ts","src/z.ts"]},"coverage":{"covered":true,"single_cover":false,"multi_cover":true},"findings":[]}

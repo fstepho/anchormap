@@ -20,7 +20,7 @@ import {
 } from "../render/render-json";
 import {
 	runDiffCommand,
-	runExplainCommandStub,
+	runExplainCommand,
 	runReportCommandStub,
 	validateRawCheckArgs,
 	validateRawDiffArgs,
@@ -147,7 +147,7 @@ const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	scaffold: runScaffoldCommand,
 	check: runCheckCommand,
 	diff: runDiffCommand,
-	explain: runExplainCommandStub,
+	explain: runExplainCommand,
 	report: runReportCommandStub,
 };
 

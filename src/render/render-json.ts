@@ -5,6 +5,7 @@ import type {
 	SupportedLocalTargetsChange,
 	TraceabilityDiff,
 } from "../domain/diff-engine";
+import type { ExplainReachedFile, ExplainResult } from "../domain/explain-engine";
 import type { Finding } from "../domain/finding";
 import type { PolicyResult, PolicySummary, PolicyViolation } from "../domain/policy-engine";
 import type {
@@ -43,6 +44,18 @@ export function renderTraceabilityDiffHuman(result: TraceabilityDiff): string {
 	return `comparability: ${result.comparability}\n`;
 }
 
+export function renderExplainResultJson(result: ExplainResult): string {
+	return `${renderExplainResultObject(result)}\n`;
+}
+
+export function renderExplainResultHuman(result: ExplainResult): string {
+	if (result.subject.kind === "anchor") {
+		return `anchor: ${result.subject.anchor_id}\nobserved: ${result.observed?.present ?? false}\nmapping: ${result.mapping?.present ?? false}\n`;
+	}
+
+	return `file: ${result.subject.path}\npresent: ${result.file?.present ?? false}\ncovered: ${"covered" in result.coverage ? result.coverage.covered : false}\n`;
+}
+
 function renderScanResultObject(result: ScanResultView): string {
 	return renderObject([
 		["schema_version", renderNumber(result.schema_version)],
@@ -79,6 +92,78 @@ function renderTraceabilityDiffObject(result: TraceabilityDiff): string {
 		["files", renderFileDiff(result.files)],
 		["findings", renderFindingDiff(result.findings)],
 		["metrics_delta", renderTraceabilitySummary(result.metrics_delta)],
+	]);
+}
+
+function renderExplainResultObject(result: ExplainResult): string {
+	return renderObject([
+		["schema_version", renderNumber(result.schema_version)],
+		["subject", renderExplainSubject(result.subject)],
+		["observed", result.observed === null ? "null" : renderExplainAnchorObserved(result.observed)],
+		["mapping", result.mapping === null ? "null" : renderExplainAnchorMapping(result.mapping)],
+		["file", result.file === null ? "null" : renderExplainFile(result.file)],
+		["coverage", renderExplainCoverage(result.coverage)],
+		["findings", renderArray(result.findings, renderFinding)],
+	]);
+}
+
+function renderExplainSubject(subject: ExplainResult["subject"]): string {
+	if (subject.kind === "anchor") {
+		return renderObject([
+			["kind", renderString(subject.kind)],
+			["anchor_id", renderString(subject.anchor_id)],
+		]);
+	}
+
+	return renderObject([
+		["kind", renderString(subject.kind)],
+		["path", renderString(subject.path)],
+	]);
+}
+
+function renderExplainAnchorObserved(observed: NonNullable<ExplainResult["observed"]>): string {
+	return renderObject([
+		["present", renderBoolean(observed.present)],
+		["spec_path", renderNullableString(observed.spec_path)],
+		["mapping_state", renderString(observed.mapping_state)],
+	]);
+}
+
+function renderExplainAnchorMapping(mapping: NonNullable<ExplainResult["mapping"]>): string {
+	return renderObject([
+		["present", renderBoolean(mapping.present)],
+		["state", renderString(mapping.state)],
+		["seed_files", renderStringArray(mapping.seed_files)],
+		["reached_file_count", renderNumber(mapping.reached_file_count)],
+	]);
+}
+
+function renderExplainFile(file: NonNullable<ExplainResult["file"]>): string {
+	return renderObject([
+		["present", renderBoolean(file.present)],
+		["covering_anchor_ids", renderStringArray(file.covering_anchor_ids)],
+		["supported_local_targets", renderStringArray(file.supported_local_targets)],
+	]);
+}
+
+function renderExplainCoverage(coverage: ExplainResult["coverage"]): string {
+	if ("reached_files" in coverage) {
+		return renderObject([
+			["reached_files", renderArray(coverage.reached_files, renderExplainReachedFile)],
+		]);
+	}
+
+	return renderObject([
+		["covered", renderBoolean(coverage.covered)],
+		["single_cover", renderBoolean(coverage.single_cover)],
+		["multi_cover", renderBoolean(coverage.multi_cover)],
+	]);
+}
+
+function renderExplainReachedFile(reachedFile: ExplainReachedFile): string {
+	return renderObject([
+		["path", renderString(reachedFile.path)],
+		["path_from_seed", renderStringArray(reachedFile.path_from_seed)],
 	]);
 }
 
@@ -354,6 +439,10 @@ function renderArray<Value>(
 
 function renderNumber(value: number): string {
 	return String(value);
+}
+
+function renderBoolean(value: boolean): string {
+	return value ? "true" : "false";
 }
 
 function renderString(value: string): string {

@@ -1,0 +1,1 @@
+{"schema_version":1,"subject":{"kind":"anchor","anchor_id":"QA-404"},"observed":{"present":false,"spec_path":null,"mapping_state":"absent"},"mapping":{"present":false,"state":"absent","seed_files":[],"reached_file_count":0},"file":null,"coverage":{"reached_files":[]},"findings":[]}

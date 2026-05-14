@@ -1,7 +1,14 @@
-import { validateAnchorId } from "../domain/anchor-id";
+import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
 import { diffScanResults } from "../domain/diff-engine";
+import { explainScanSubject } from "../domain/explain-engine";
+import type { RepoPath } from "../domain/repo-path";
 import { loadScanArtifact } from "../infra/artifact-io";
-import { renderTraceabilityDiffHuman, renderTraceabilityDiffJson } from "../render/render-json";
+import {
+	renderExplainResultHuman,
+	renderExplainResultJson,
+	renderTraceabilityDiffHuman,
+	renderTraceabilityDiffJson,
+} from "../render/render-json";
 import type {
 	ParsedCheckArgs,
 	ParsedDiffArgs,
@@ -57,6 +64,13 @@ export function validateRawExplainArgs(
 	const scan = normalizeRequiredCliPath(args.scan, "--scan");
 	if (scan.kind === "usage_error") {
 		return scan;
+	}
+
+	if (
+		(args.anchor === undefined && args.file === undefined) ||
+		(args.anchor !== undefined && args.file !== undefined)
+	) {
+		return { kind: "usage_error", message: "exactly one of --anchor or --file is required" };
 	}
 
 	if (args.anchor !== undefined) {
@@ -129,7 +143,7 @@ export function runDiffCommand(context: ArtifactCommandContext): AnchormapComman
 	};
 }
 
-export function runExplainCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {
+export function runExplainCommand(context: ArtifactCommandContext): AnchormapCommandResult {
 	const args = context.explainArgs;
 	if (args === undefined) {
 		return internalError("explain arguments were not parsed");
@@ -140,7 +154,17 @@ export function runExplainCommandStub(context: ArtifactCommandContext): Anchorma
 		return scan.error;
 	}
 
-	return internalError("explain computation is not implemented");
+	const subject =
+		args.anchor !== undefined
+			? { kind: "anchor" as const, anchor_id: args.anchor as AnchorId }
+			: { kind: "file" as const, path: args.file as RepoPath };
+	const explanation = explainScanSubject(scan.scan, subject);
+	return {
+		kind: "success",
+		stdout: args.json
+			? renderExplainResultJson(explanation)
+			: renderExplainResultHuman(explanation),
+	};
 }
 
 export function runReportCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {

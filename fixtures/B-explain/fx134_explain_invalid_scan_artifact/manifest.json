@@ -1,0 +1,28 @@
+{
+	"id": "fx134_explain_invalid_scan_artifact",
+	"family": "B-explain",
+	"purpose": "explain rejects invalid scan artifacts with code 4 and empty machine stdout.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"explain",
+		"--anchor",
+		"QA-001",
+		"--scan",
+		"artifacts/invalid-scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["explain", "artifact_io"],
+	"groups": ["m19"]
+}

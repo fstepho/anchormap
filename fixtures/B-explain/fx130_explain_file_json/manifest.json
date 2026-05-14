@@ -1,0 +1,28 @@
+{
+	"id": "fx130_explain_file_json",
+	"family": "B-explain",
+	"purpose": "explain --json summarizes a file covered by multiple anchors from one scan artifact.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"explain",
+		"--file",
+		"src/shared.ts",
+		"--scan",
+		"artifacts/scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["explain", "json", "golden", "artifact_io"],
+	"groups": ["m19"]
+}
