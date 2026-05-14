@@ -138,5 +138,16 @@
 		"token_source_file": "/Users/fstepho/.npmjs-token",
 		"temporary_npmrc_used": true,
 		"temporary_npmrc_removed_after_use": true
+	},
+	"repository_tag": {
+		"local_command": "git tag v1.2.1 3812cb8 && git tag --list v1.2.1",
+		"local_status": 0,
+		"tag": "v1.2.1",
+		"target_commit": "3812cb8265ccd98840378463069691e2f9883508",
+		"push_command": "git push origin v1.2.1",
+		"push_status": 0,
+		"remote": "origin",
+		"pushed": true,
+		"remote_ref": "refs/tags/v1.2.1"
 	}
 }
