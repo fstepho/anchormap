@@ -19,7 +19,7 @@ import {
 	renderScanResultJson,
 } from "../render/render-json";
 import {
-	runDiffCommandStub,
+	runDiffCommand,
 	runExplainCommandStub,
 	runReportCommandStub,
 	validateRawCheckArgs,
@@ -146,7 +146,7 @@ const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	scan: runScanCommandStub,
 	scaffold: runScaffoldCommand,
 	check: runCheckCommand,
-	diff: runDiffCommandStub,
+	diff: runDiffCommand,
 	explain: runExplainCommandStub,
 	report: runReportCommandStub,
 };

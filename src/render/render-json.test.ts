@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import type { AnchorId } from "../domain/anchor-id";
 import { validateAnchorId } from "../domain/anchor-id";
+import type { TraceabilityDiff } from "../domain/diff-engine";
 import {
 	createBrokenSeedPathFinding,
 	createOutOfScopeStaticEdgeFinding,
@@ -24,7 +25,11 @@ import {
 	createStoredMappingView,
 	createTraceabilityMetricsView,
 } from "../domain/scan-result";
-import { renderPolicyResultJson, renderScanResultJson } from "./render-json";
+import {
+	renderPolicyResultJson,
+	renderScanResultJson,
+	renderTraceabilityDiffJson,
+} from "./render-json";
 
 test("renders minimal scan result as one-line canonical JSON with final newline", () => {
 	const rendered = renderScanResultJson(
@@ -219,6 +224,56 @@ test("renders policy result with canonical root, violation, and summary key orde
 	assert.equal(
 		rendered,
 		'{"schema_version":1,"decision":"fail","source_scan_schema_version":4,"analysis_health":"degraded","violations":[{"kind":"analysis_health_degraded"},{"kind":"finding_kind_present","finding_kind":"untraced_product_file","count":2},{"kind":"covered_product_file_percent_below_threshold","actual":33,"threshold":75},{"kind":"untraced_product_files_above_threshold","actual":2,"threshold":0}],"summary":{"observed_anchor_count":1,"usable_mapping_count":1,"product_file_count":3,"covered_product_file_count":1,"uncovered_product_file_count":2,"covered_product_file_percent":33,"untraced_product_file_count":2}}\n',
+	);
+});
+
+test("renders traceability diff with canonical root and nested key order", () => {
+	const rendered = renderTraceabilityDiffJson({
+		schema_version: 1,
+		base_scan_schema_version: 4,
+		head_scan_schema_version: 4,
+		comparability: "same_scope",
+		analysis_health_change: { from: "clean", to: "degraded" },
+		anchors: {
+			added: [anchorId("QA-003")],
+			removed: [anchorId("QA-002")],
+			mapping_state_changed: [{ anchor_id: anchorId("QA-001"), from: "absent", to: "usable" }],
+		},
+		mappings: {
+			added: [anchorId("QA-003")],
+			removed: [anchorId("QA-999")],
+			state_changed: [{ anchor_id: anchorId("QA-001"), from: "invalid", to: "usable" }],
+		},
+		files: {
+			added: ["src/new.ts"],
+			removed: ["src/old.ts"],
+			became_covered: ["src/a.ts"],
+			lost_coverage: ["src/b.ts"],
+			covering_anchor_ids_changed: [{ path: "src/a.ts", from: [], to: [anchorId("QA-001")] }],
+			supported_local_targets_changed: [{ path: "src/a.ts", from: ["src/b.ts"], to: ["src/c.ts"] }],
+		},
+		findings: {
+			added: [createUntracedProductFileFinding({ path: repoPath("src/b.ts") })],
+			removed: [createUnmappedAnchorFinding({ anchor_id: anchorId("QA-001") })],
+		},
+		metrics_delta: {
+			product_file_count: 1,
+			stored_mapping_count: 0,
+			usable_mapping_count: 1,
+			observed_anchor_count: 0,
+			active_anchor_count: -1,
+			draft_anchor_count: 1,
+			covered_product_file_count: 1,
+			uncovered_product_file_count: -1,
+			directly_seeded_product_file_count: 1,
+			single_cover_product_file_count: 1,
+			multi_cover_product_file_count: 0,
+		},
+	} satisfies TraceabilityDiff);
+
+	assert.equal(
+		rendered,
+		'{"schema_version":1,"base_scan_schema_version":4,"head_scan_schema_version":4,"comparability":"same_scope","analysis_health_change":{"from":"clean","to":"degraded"},"anchors":{"added":["QA-003"],"removed":["QA-002"],"mapping_state_changed":[{"anchor_id":"QA-001","from":"absent","to":"usable"}]},"mappings":{"added":["QA-003"],"removed":["QA-999"],"state_changed":[{"anchor_id":"QA-001","from":"invalid","to":"usable"}]},"files":{"added":["src/new.ts"],"removed":["src/old.ts"],"became_covered":["src/a.ts"],"lost_coverage":["src/b.ts"],"covering_anchor_ids_changed":[{"path":"src/a.ts","from":[],"to":["QA-001"]}],"supported_local_targets_changed":[{"path":"src/a.ts","from":["src/b.ts"],"to":["src/c.ts"]}]},"findings":{"added":[{"kind":"untraced_product_file","path":"src/b.ts"}],"removed":[{"kind":"unmapped_anchor","anchor_id":"QA-001"}]},"metrics_delta":{"product_file_count":1,"stored_mapping_count":0,"usable_mapping_count":1,"observed_anchor_count":0,"active_anchor_count":-1,"draft_anchor_count":1,"covered_product_file_count":1,"uncovered_product_file_count":-1,"directly_seeded_product_file_count":1,"single_cover_product_file_count":1,"multi_cover_product_file_count":0}}\n',
 	);
 });
 

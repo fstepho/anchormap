@@ -1,5 +1,7 @@
 import { validateAnchorId } from "../domain/anchor-id";
+import { diffScanResults } from "../domain/diff-engine";
 import { loadScanArtifact } from "../infra/artifact-io";
+import { renderTraceabilityDiffHuman, renderTraceabilityDiffJson } from "../render/render-json";
 import type {
 	ParsedCheckArgs,
 	ParsedDiffArgs,
@@ -105,7 +107,7 @@ export function validateRawReportArgs(
 	};
 }
 
-export function runDiffCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {
+export function runDiffCommand(context: ArtifactCommandContext): AnchormapCommandResult {
 	const args = context.diffArgs;
 	if (args === undefined) {
 		return internalError("diff arguments were not parsed");
@@ -120,7 +122,11 @@ export function runDiffCommandStub(context: ArtifactCommandContext): AnchormapCo
 		return head.error;
 	}
 
-	return internalError("diff computation is not implemented");
+	const diff = diffScanResults(base.scan, head.scan);
+	return {
+		kind: "success",
+		stdout: args.json ? renderTraceabilityDiffJson(diff) : renderTraceabilityDiffHuman(diff),
+	};
 }
 
 export function runExplainCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {

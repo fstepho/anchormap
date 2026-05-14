@@ -1,3 +1,10 @@
+import type {
+	CoveringAnchorIdsChange,
+	MappingStateChange,
+	StoredMappingStateChange,
+	SupportedLocalTargetsChange,
+	TraceabilityDiff,
+} from "../domain/diff-engine";
 import type { Finding } from "../domain/finding";
 import type { PolicyResult, PolicySummary, PolicyViolation } from "../domain/policy-engine";
 import type {
@@ -28,6 +35,14 @@ export function renderPolicyResultHuman(result: PolicyResult): string {
 	return `decision: ${result.decision}\n`;
 }
 
+export function renderTraceabilityDiffJson(result: TraceabilityDiff): string {
+	return `${renderTraceabilityDiffObject(result)}\n`;
+}
+
+export function renderTraceabilityDiffHuman(result: TraceabilityDiff): string {
+	return `comparability: ${result.comparability}\n`;
+}
+
 function renderScanResultObject(result: ScanResultView): string {
 	return renderObject([
 		["schema_version", renderNumber(result.schema_version)],
@@ -49,6 +64,100 @@ function renderPolicyResultObject(result: PolicyResult): string {
 		["analysis_health", renderString(result.analysis_health)],
 		["violations", renderArray(result.violations, renderPolicyViolation)],
 		["summary", renderPolicySummary(result.summary)],
+	]);
+}
+
+function renderTraceabilityDiffObject(result: TraceabilityDiff): string {
+	return renderObject([
+		["schema_version", renderNumber(result.schema_version)],
+		["base_scan_schema_version", renderNumber(result.base_scan_schema_version)],
+		["head_scan_schema_version", renderNumber(result.head_scan_schema_version)],
+		["comparability", renderString(result.comparability)],
+		["analysis_health_change", renderAnalysisHealthChange(result.analysis_health_change)],
+		["anchors", renderAnchorDiff(result.anchors)],
+		["mappings", renderMappingDiff(result.mappings)],
+		["files", renderFileDiff(result.files)],
+		["findings", renderFindingDiff(result.findings)],
+		["metrics_delta", renderTraceabilitySummary(result.metrics_delta)],
+	]);
+}
+
+function renderAnalysisHealthChange(change: TraceabilityDiff["analysis_health_change"]): string {
+	return renderObject([
+		["from", renderString(change.from)],
+		["to", renderString(change.to)],
+	]);
+}
+
+function renderAnchorDiff(diff: TraceabilityDiff["anchors"]): string {
+	return renderObject([
+		["added", renderStringArray(diff.added)],
+		["removed", renderStringArray(diff.removed)],
+		["mapping_state_changed", renderArray(diff.mapping_state_changed, renderMappingStateChange)],
+	]);
+}
+
+function renderMappingStateChange(change: MappingStateChange): string {
+	return renderObject([
+		["anchor_id", renderString(change.anchor_id)],
+		["from", renderString(change.from)],
+		["to", renderString(change.to)],
+	]);
+}
+
+function renderMappingDiff(diff: TraceabilityDiff["mappings"]): string {
+	return renderObject([
+		["added", renderStringArray(diff.added)],
+		["removed", renderStringArray(diff.removed)],
+		["state_changed", renderArray(diff.state_changed, renderStoredMappingStateChange)],
+	]);
+}
+
+function renderStoredMappingStateChange(change: StoredMappingStateChange): string {
+	return renderObject([
+		["anchor_id", renderString(change.anchor_id)],
+		["from", renderString(change.from)],
+		["to", renderString(change.to)],
+	]);
+}
+
+function renderFileDiff(diff: TraceabilityDiff["files"]): string {
+	return renderObject([
+		["added", renderStringArray(diff.added)],
+		["removed", renderStringArray(diff.removed)],
+		["became_covered", renderStringArray(diff.became_covered)],
+		["lost_coverage", renderStringArray(diff.lost_coverage)],
+		[
+			"covering_anchor_ids_changed",
+			renderArray(diff.covering_anchor_ids_changed, renderCoveringAnchorIdsChange),
+		],
+		[
+			"supported_local_targets_changed",
+			renderArray(diff.supported_local_targets_changed, renderSupportedLocalTargetsChange),
+		],
+	]);
+}
+
+function renderCoveringAnchorIdsChange(change: CoveringAnchorIdsChange): string {
+	return renderObject([
+		["path", renderString(change.path)],
+		["from", renderStringArray(change.from)],
+		["to", renderStringArray(change.to)],
+	]);
+}
+
+function renderSupportedLocalTargetsChange(change: SupportedLocalTargetsChange): string {
+	return renderObject([
+		["path", renderString(change.path)],
+		["from", renderStringArray(change.from)],
+		["to", renderStringArray(change.to)],
+	]);
+}
+
+function renderFindingDiff(diff: TraceabilityDiff["findings"]): string {
+	return renderObject([
+		["added", renderArray(diff.added, renderFinding)],
+		["removed", renderArray(diff.removed, renderFinding)],
 	]);
 }
 

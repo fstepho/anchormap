@@ -1,0 +1,28 @@
+{
+	"id": "fx124_diff_same_scope_json",
+	"family": "B-diff",
+	"purpose": "diff --json compares two same-scope scan artifacts with anchor, mapping, file, finding, and metrics deltas.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"diff",
+		"--base",
+		"artifacts/base-scan.json",
+		"--head",
+		"artifacts/head-scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["diff", "json", "golden", "artifact_io"],
+	"groups": ["m19"]
+}

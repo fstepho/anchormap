@@ -34,8 +34,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: `T19.3 — Implement scan-vs-scan `anchormap diff``
-- Last completed task: `T19.2 — Implement `anchormap check``
+- Next executable product task: `T19.4 — Implement artifact-only `anchormap explain``
+- Last completed task: `T19.3 — Implement scan-vs-scan `anchormap diff``
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -150,6 +150,7 @@
   - `T19.0 — Specify CLI SaaS-ready 1 authorities and task plan`
   - `T19.1 — Implement artifact input boundary and CLI parsers`
   - `T19.2 — Implement `anchormap check``
+  - `T19.3 — Implement scan-vs-scan `anchormap diff``
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

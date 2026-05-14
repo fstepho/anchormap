@@ -1,0 +1,28 @@
+{
+	"id": "fx125_diff_scope_changed_json",
+	"family": "B-diff",
+	"purpose": "diff --json emits scope_changed when two valid scan artifacts have different config scope.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"diff",
+		"--base",
+		"artifacts/base-scan.json",
+		"--head",
+		"artifacts/head-scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["diff", "json", "golden", "scope_changed"],
+	"groups": ["m19"]
+}

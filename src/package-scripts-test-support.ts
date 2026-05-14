@@ -61,6 +61,7 @@ export const EXPECTED_PACKAGE_FILES = [
 	"dist/cli/commands.js",
 	"dist/domain/anchor-id.js",
 	"dist/domain/canonical-order.js",
+	"dist/domain/diff-engine.js",
 	"dist/domain/finding.js",
 	"dist/domain/policy-engine.js",
 	"dist/domain/repo-path.js",

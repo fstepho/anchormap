@@ -1,0 +1,27 @@
+{
+	"id": "fx128_diff_human_success",
+	"family": "B-diff",
+	"purpose": "diff without --json compares valid scan artifacts and emits non-oracled human output.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"diff",
+		"--base",
+		"artifacts/base-scan.json",
+		"--head",
+		"artifacts/head-scan.json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["diff", "human", "artifact_io"],
+	"groups": ["m19"]
+}

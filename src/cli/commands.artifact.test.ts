@@ -211,7 +211,7 @@ test("check artifact mode evaluates policy pass and fail with machine stdout", (
 			].join("\n"),
 		);
 
-		const pass = runCheck(cwd, [
+		const pass = runCommand(cwd, [
 			"check",
 			"--scan",
 			"artifacts/pass.json",
@@ -226,7 +226,7 @@ test("check artifact mode evaluates policy pass and fail with machine stdout", (
 			'{"schema_version":1,"decision":"pass","source_scan_schema_version":4,"analysis_health":"clean","violations":[],"summary":{"observed_anchor_count":0,"usable_mapping_count":0,"product_file_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"covered_product_file_percent":100,"untraced_product_file_count":0}}\n',
 		);
 
-		const fail = runCheck(cwd, [
+		const fail = runCommand(cwd, [
 			"check",
 			"--scan",
 			"artifacts/fail.json",
@@ -245,6 +245,43 @@ test("check artifact mode evaluates policy pass and fail with machine stdout", (
 	}
 });
 
+test("diff artifact mode compares two explicit scans with machine and human output", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "base.json"), minimalScanArtifactJson());
+		writeFileSync(join(cwd, "artifacts", "head.json"), scanWithOneUncoveredFileJson());
+
+		const machine = runCommand(cwd, [
+			"diff",
+			"--base",
+			"artifacts/base.json",
+			"--head",
+			"artifacts/head.json",
+			"--json",
+		]);
+		assert.equal(machine.exitCode, 0);
+		assert.equal(machine.stderr, "");
+		assert.equal(
+			machine.stdout,
+			'{"schema_version":1,"base_scan_schema_version":4,"head_scan_schema_version":4,"comparability":"same_scope","analysis_health_change":{"from":"clean","to":"clean"},"anchors":{"added":[],"removed":[],"mapping_state_changed":[]},"mappings":{"added":[],"removed":[],"state_changed":[]},"files":{"added":["src/uncovered.ts"],"removed":[],"became_covered":[],"lost_coverage":[],"covering_anchor_ids_changed":[],"supported_local_targets_changed":[]},"findings":{"added":[{"kind":"untraced_product_file","path":"src/uncovered.ts"}],"removed":[]},"metrics_delta":{"product_file_count":1,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":1,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0}}\n',
+		);
+
+		const human = runCommand(cwd, [
+			"diff",
+			"--base",
+			"artifacts/base.json",
+			"--head",
+			"artifacts/head.json",
+		]);
+		assert.equal(human.exitCode, 0);
+		assert.equal(human.stderr, "");
+		assert.equal(human.stdout, "comparability: same_scope\n");
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("check validates policy before loading scan artifacts", () => {
 	const cwd = createTempRepo();
 	try {
@@ -252,7 +289,7 @@ test("check validates policy before loading scan artifacts", () => {
 		writeFileSync(join(cwd, "artifacts", "invalid.json"), '{"schema_version":4,"extra":true}\n');
 		writeFileSync(join(cwd, "invalid-policy.yaml"), "version: 2\n");
 
-		const result = runCheck(cwd, [
+		const result = runCommand(cwd, [
 			"check",
 			"--scan",
 			"artifacts/invalid.json",
@@ -269,7 +306,7 @@ test("check validates policy before loading scan artifacts", () => {
 	}
 });
 
-function runCheck(
+function runCommand(
 	cwd: string,
 	argv: readonly string[],
 ): { exitCode: number; stdout: string; stderr: string } {
@@ -285,6 +322,10 @@ function runCheck(
 }
 
 function untracedScanArtifactJson(): string {
+	return scanWithOneUncoveredFileJson();
+}
+
+function scanWithOneUncoveredFileJson(): string {
 	const scan = JSON.parse(minimalScanArtifactJson());
 	scan.files = {
 		"src/uncovered.ts": {

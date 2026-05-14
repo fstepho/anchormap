@@ -1,0 +1,28 @@
+{
+	"id": "fx127_diff_invalid_head_artifact",
+	"family": "B-diff",
+	"purpose": "diff rejects an invalid head scan artifact with code 4 and empty machine stdout.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"diff",
+		"--base",
+		"artifacts/valid-scan.json",
+		"--head",
+		"artifacts/invalid-scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["artifact_io", "cli_boundary"],
+	"groups": ["m19"]
+}
