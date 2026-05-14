@@ -1,16 +1,24 @@
 import { validateAnchorId } from "../domain/anchor-id";
+import { evaluatePolicy } from "../domain/policy-engine";
 import { type RepoPath, validateRepoPath } from "../domain/repo-path";
 import { runScanEngine } from "../domain/scan-engine";
+import type { ScanResultView } from "../domain/scan-result";
+import { loadScanArtifact } from "../infra/artifact-io";
 import { type Config, loadConfig, writeConfigAtomic } from "../infra/config-io";
+import { loadPolicy } from "../infra/policy-io";
 import { discoverProductFiles } from "../infra/product-files";
 import { statRepoPath } from "../infra/repo-fs";
 import { buildScaffoldMarkdown, writeScaffoldOutputCreateOnly } from "../infra/scaffold";
 import { buildSpecIndex } from "../infra/spec-index";
 import { buildProductGraph } from "../infra/ts-graph";
 import { loadLocalAliases } from "../infra/tsconfig-io";
-import { renderScanResultHuman, renderScanResultJson } from "../render/render-json";
 import {
-	runCheckCommandStub,
+	renderPolicyResultHuman,
+	renderPolicyResultJson,
+	renderScanResultHuman,
+	renderScanResultJson,
+} from "../render/render-json";
+import {
 	runDiffCommandStub,
 	runExplainCommandStub,
 	runReportCommandStub,
@@ -137,7 +145,7 @@ const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	map: runMapCommandStub,
 	scan: runScanCommandStub,
 	scaffold: runScaffoldCommand,
-	check: runCheckCommandStub,
+	check: runCheckCommand,
 	diff: runDiffCommandStub,
 	explain: runExplainCommandStub,
 	report: runReportCommandStub,
@@ -381,7 +389,7 @@ function dispatchCommand(
 		if (machineOutputContract === undefined) {
 			context.stderr.write(stderrText);
 		}
-		return 0;
+		return result.exitCode ?? 0;
 	}
 
 	return writeFailure(result, context, stderrText, machineOutputContract);
@@ -581,45 +589,94 @@ function runInitCommand(context: AnchormapCommandContext): AnchormapCommandResul
 }
 
 function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {
-	const configResult = loadConfig({ cwd: context.cwd });
+	const scanResult = runLiveScan(context.cwd);
+	if (scanResult.kind === "error") {
+		return scanResult.error;
+	}
+
+	if (context.scanMode === "json") {
+		return commandSuccess({
+			stdout: renderScanResultJson(scanResult.scan),
+		});
+	}
+
+	return commandSuccess({
+		stdout: renderScanResultHuman(scanResult.scan),
+	});
+}
+
+function runCheckCommand(context: AnchormapCommandContext): AnchormapCommandResult {
+	const args = context.checkArgs;
+	if (args === undefined) {
+		return internalError("check arguments were not parsed");
+	}
+
+	const policy = loadPolicy(args.policy, { cwd: context.cwd, optionName: "--policy" });
+	if (policy.kind === "error") {
+		return policy.error;
+	}
+
+	const scan =
+		args.scan === undefined
+			? runLiveScan(context.cwd)
+			: loadScanArtifact(args.scan, { cwd: context.cwd, optionName: "--scan" });
+	if (scan.kind === "error") {
+		return scan.error;
+	}
+
+	const policyResult = evaluatePolicy(scan.scan, policy.policy);
+	const stdout = args.json
+		? renderPolicyResultJson(policyResult)
+		: renderPolicyResultHuman(policyResult);
+
+	return commandSuccess({
+		stdout,
+		exitCode: policyResult.decision === "fail" ? 5 : 0,
+	});
+}
+
+function runLiveScan(
+	cwd: string,
+): { kind: "ok"; scan: ScanResultView } | { kind: "error"; error: AppError } {
+	const configResult = loadConfig({ cwd });
 	if (configResult.kind === "error") {
-		return configResult.error;
+		return { kind: "error", error: configResult.error };
 	}
 
 	const inspectedPathCaseIndex = new Map<string, RepoPath>();
 	const specIndexResult = buildSpecIndex(configResult.config, {
-		cwd: context.cwd,
+		cwd,
 		inspectedPathCaseIndex,
 	});
 	if (specIndexResult.kind === "error") {
-		return specIndexResult.error;
+		return { kind: "error", error: specIndexResult.error };
 	}
 
 	const productFilesResult = discoverProductFiles(configResult.config, {
-		cwd: context.cwd,
+		cwd,
 		inspectedPathCaseIndex,
 	});
 	if (productFilesResult.kind === "error") {
-		return productFilesResult.error;
+		return { kind: "error", error: productFilesResult.error };
 	}
 
 	const localAliasesResult = loadLocalAliases(configResult.config, {
-		cwd: context.cwd,
+		cwd,
 	});
 	if (localAliasesResult.kind === "error") {
-		return localAliasesResult.error;
+		return { kind: "error", error: localAliasesResult.error };
 	}
 
 	const productGraphResult = buildProductGraph(
 		configResult.config,
 		productFilesResult.productFiles,
 		{
-			cwd: context.cwd,
+			cwd,
 			resolutionAliases: localAliasesResult.state.resolutionAliases,
 		},
 	);
 	if (productGraphResult.kind === "error") {
-		return productGraphResult.error;
+		return { kind: "error", error: productGraphResult.error };
 	}
 
 	const scanResult = runScanEngine({
@@ -629,15 +686,7 @@ function runScanCommandStub(context: AnchormapCommandContext): AnchormapCommandR
 		tsconfigAliasState: localAliasesResult.state,
 	});
 
-	if (context.scanMode === "json") {
-		return commandSuccess({
-			stdout: renderScanResultJson(scanResult),
-		});
-	}
-
-	return commandSuccess({
-		stdout: renderScanResultHuman(scanResult),
-	});
+	return { kind: "ok", scan: scanResult };
 }
 
 function runMapCommandStub(context: AnchormapCommandContext): AnchormapCommandResult {

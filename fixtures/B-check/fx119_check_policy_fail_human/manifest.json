@@ -1,0 +1,27 @@
+{
+	"id": "fx119_check_policy_fail_human",
+	"family": "B-check",
+	"purpose": "check without --json exits 5 for a policy failure without mutating files.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"check",
+		"--scan",
+		"artifacts/scan.json",
+		"--policy",
+		"policy.yaml"
+	],
+	"cwd": ".",
+	"exit_code": 5,
+	"stdout": {
+		"kind": "ignored"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["check", "human", "policy", "artifact_io"],
+	"groups": ["m19"]
+}

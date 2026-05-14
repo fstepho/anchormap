@@ -1,0 +1,28 @@
+{
+	"id": "fx118_check_policy_fail_json",
+	"family": "B-check",
+	"purpose": "check --scan --json emits PolicyResult on stdout and exits 5 when policy fails.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"check",
+		"--scan",
+		"artifacts/scan.json",
+		"--policy",
+		"policy.yaml",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 5,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["check", "json", "golden", "policy", "artifact_io"],
+	"groups": ["m19"]
+}

@@ -1,0 +1,22 @@
+{
+	"id": "fx123_check_live_repo_error",
+	"family": "B-check",
+	"purpose": "check live mode exits 3 with empty machine stdout when repository analysis fails.",
+	"command": ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+	"cwd": ".",
+	"exit_code": 3,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["check", "repo", "cli_boundary"],
+	"groups": ["m19"],
+	"fault_injection": {
+		"marker": "product_root_enumeration_failure"
+	}
+}

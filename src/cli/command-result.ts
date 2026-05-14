@@ -19,6 +19,7 @@ export interface AnchormapCommandSuccess {
 	kind: "success";
 	stdout?: string;
 	stderr?: string;
+	exitCode?: 0 | 5;
 }
 
 export type AnchormapCommandResult = AnchormapCommandSuccess | AppError;

@@ -1,0 +1,19 @@
+{
+	"id": "fx117_check_policy_pass_json",
+	"family": "B-check",
+	"purpose": "check --json runs a live scan and emits PolicyResult when policy passes.",
+	"command": ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["check", "json", "golden", "policy"],
+	"groups": ["m19"]
+}

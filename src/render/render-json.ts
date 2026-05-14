@@ -1,4 +1,5 @@
 import type { Finding } from "../domain/finding";
+import type { PolicyResult, PolicySummary, PolicyViolation } from "../domain/policy-engine";
 import type {
 	AnchorTraceabilityMetricsView,
 	ConfigView,
@@ -19,6 +20,14 @@ export function renderScanResultHuman(result: ScanResultView): string {
 	return `analysis_health: ${result.analysis_health}\n`;
 }
 
+export function renderPolicyResultJson(result: PolicyResult): string {
+	return `${renderPolicyResultObject(result)}\n`;
+}
+
+export function renderPolicyResultHuman(result: PolicyResult): string {
+	return `decision: ${result.decision}\n`;
+}
+
 function renderScanResultObject(result: ScanResultView): string {
 	return renderObject([
 		["schema_version", renderNumber(result.schema_version)],
@@ -30,6 +39,54 @@ function renderScanResultObject(result: ScanResultView): string {
 		["traceability_metrics", renderTraceabilityMetrics(result.traceability_metrics)],
 		["findings", renderArray(result.findings, renderFinding)],
 	]);
+}
+
+function renderPolicyResultObject(result: PolicyResult): string {
+	return renderObject([
+		["schema_version", renderNumber(result.schema_version)],
+		["decision", renderString(result.decision)],
+		["source_scan_schema_version", renderNumber(result.source_scan_schema_version)],
+		["analysis_health", renderString(result.analysis_health)],
+		["violations", renderArray(result.violations, renderPolicyViolation)],
+		["summary", renderPolicySummary(result.summary)],
+	]);
+}
+
+function renderPolicySummary(summary: PolicySummary): string {
+	return renderObject([
+		["observed_anchor_count", renderNumber(summary.observed_anchor_count)],
+		["usable_mapping_count", renderNumber(summary.usable_mapping_count)],
+		["product_file_count", renderNumber(summary.product_file_count)],
+		["covered_product_file_count", renderNumber(summary.covered_product_file_count)],
+		["uncovered_product_file_count", renderNumber(summary.uncovered_product_file_count)],
+		["covered_product_file_percent", renderNumber(summary.covered_product_file_percent)],
+		["untraced_product_file_count", renderNumber(summary.untraced_product_file_count)],
+	]);
+}
+
+function renderPolicyViolation(violation: PolicyViolation): string {
+	switch (violation.kind) {
+		case "analysis_health_degraded":
+			return renderObject([["kind", renderString(violation.kind)]]);
+		case "finding_kind_present":
+			return renderObject([
+				["kind", renderString(violation.kind)],
+				["finding_kind", renderString(violation.finding_kind)],
+				["count", renderNumber(violation.count)],
+			]);
+		case "covered_product_file_percent_below_threshold":
+			return renderObject([
+				["kind", renderString(violation.kind)],
+				["actual", renderNumber(violation.actual)],
+				["threshold", renderNumber(violation.threshold)],
+			]);
+		case "untraced_product_files_above_threshold":
+			return renderObject([
+				["kind", renderString(violation.kind)],
+				["actual", renderNumber(violation.actual)],
+				["threshold", renderNumber(violation.threshold)],
+			]);
+	}
 }
 
 function renderConfig(config: ConfigView): string {

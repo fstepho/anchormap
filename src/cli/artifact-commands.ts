@@ -11,7 +11,6 @@ import { type AnchormapCommandResult, internalError } from "./command-result";
 
 interface ArtifactCommandContext {
 	readonly cwd: string;
-	readonly checkArgs?: ParsedCheckArgs;
 	readonly diffArgs?: ParsedDiffArgs;
 	readonly explainArgs?: ParsedExplainArgs;
 	readonly reportArgs?: ParsedReportArgs;
@@ -104,22 +103,6 @@ export function validateRawReportArgs(
 			format: "markdown",
 		},
 	};
-}
-
-export function runCheckCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {
-	const args = context.checkArgs;
-	if (args === undefined) {
-		return internalError("check arguments were not parsed");
-	}
-
-	if (args.scan !== undefined) {
-		const scan = loadScanArtifact(args.scan, { cwd: context.cwd, optionName: "--scan" });
-		if (scan.kind === "error") {
-			return scan.error;
-		}
-	}
-
-	return internalError("check policy evaluation is not implemented");
 }
 
 export function runDiffCommandStub(context: ArtifactCommandContext): AnchormapCommandResult {

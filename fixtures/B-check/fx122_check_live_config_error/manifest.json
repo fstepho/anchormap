@@ -1,0 +1,19 @@
+{
+	"id": "fx122_check_live_config_error",
+	"family": "B-check",
+	"purpose": "check live mode exits 2 with empty machine stdout when config is missing.",
+	"command": ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+	"cwd": ".",
+	"exit_code": 2,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["check", "config", "cli_boundary"],
+	"groups": ["m19"]
+}

@@ -1,0 +1,4 @@
+version: 1
+fail_on:
+  finding_kinds:
+    - untraced_product_file

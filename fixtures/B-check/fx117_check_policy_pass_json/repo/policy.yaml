@@ -1,0 +1,8 @@
+version: 1
+fail_on:
+  analysis_health: degraded
+  finding_kinds:
+    - untraced_product_file
+thresholds:
+  min_covered_product_file_percent: 100
+  max_untraced_product_files: 0
