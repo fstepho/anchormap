@@ -14,6 +14,18 @@ import { statRepoPath } from "../infra/repo-fs";
 import type { ParsedMapArgs, ParsedScaffoldArgs } from "./command-args";
 import { type AppError, internalError, unsupportedRepoError, usageError } from "./command-result";
 
+export function normalizeCliPathArg(
+	value: string,
+	optionName: string,
+): { kind: "ok"; path: RepoPath } | { kind: "usage_error"; message: string } {
+	const result = normalizeUserPathArg(value);
+	if (result.kind === "validation_failure") {
+		return { kind: "usage_error", message: `${optionName} must be a valid repository path` };
+	}
+
+	return { kind: "ok", path: result.repoPath };
+}
+
 export function validateRawScaffoldArgs(
 	args: ParsedScaffoldArgs,
 ): { kind: "ok"; args: ParsedScaffoldArgs } | { kind: "usage_error"; message: string } {

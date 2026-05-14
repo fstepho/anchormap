@@ -216,9 +216,121 @@ test("rejects exit codes outside the published contract range", () => {
 		() =>
 			validateFixtureManifest({
 				...minimalFailureManifest(),
-				exit_code: 5,
+				exit_code: 6,
 			}),
-		/exit_code must be an integer in the contract range 0\.\.4/,
+		/exit_code must be an integer in the contract range 0\.\.5/,
+	);
+});
+
+test("reserves exit code 5 for check policy-failure fixtures", () => {
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
+			id: "harness_schema_valid_check_policy_failure",
+			command: ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+			exit_code: 5,
+			stdout: { kind: "golden" },
+			stderr: { kind: "empty" },
+			filesystem: { kind: "no_mutation" },
+		}),
+	);
+
+	for (const subcommand of ["diff", "explain", "report"] as const) {
+		assert.throws(
+			() =>
+				validateFixtureManifest({
+					...minimalFailureManifest(),
+					id: `harness_schema_invalid_${subcommand}_exit_5`,
+					command: ["node", "dist/anchormap.js", subcommand],
+					exit_code: 5,
+					stdout: { kind: "golden" },
+					stderr: { kind: "empty" },
+					filesystem: { kind: "no_mutation" },
+				}),
+			/exit_code 5 is reserved for check policy-failure fixtures/,
+		);
+	}
+});
+
+test("requires goldens for artifact command machine-output success fixtures", () => {
+	assert.throws(
+		() =>
+			validateFixtureManifest({
+				...minimalFailureManifest(),
+				id: "harness_schema_invalid_check_json_success_stdout",
+				command: ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+				exit_code: 0,
+				stdout: { kind: "empty" },
+				stderr: { kind: "empty" },
+			}),
+		/artifact command machine-output fixtures must use stdout\.kind "golden"/,
+	);
+
+	assert.throws(
+		() =>
+			validateFixtureManifest({
+				...minimalFailureManifest(),
+				id: "harness_schema_invalid_check_json_policy_fail_stderr",
+				command: ["node", "dist/anchormap.js", "check", "--policy", "policy.yaml", "--json"],
+				exit_code: 5,
+				stdout: { kind: "golden" },
+				stderr: { kind: "ignored" },
+			}),
+		/artifact command machine-output fixtures must use stderr\.kind "empty"/,
+	);
+
+	assert.throws(
+		() =>
+			validateFixtureManifest({
+				...minimalFailureManifest(),
+				id: "harness_schema_invalid_report_markdown_success_stdout",
+				command: [
+					"node",
+					"dist/anchormap.js",
+					"report",
+					"--scan",
+					"scan.json",
+					"--format",
+					"markdown",
+				],
+				exit_code: 0,
+				stdout: { kind: "ignored" },
+				stderr: { kind: "empty" },
+			}),
+		/artifact command machine-output fixtures must use stdout\.kind "golden"/,
+	);
+
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
+			id: "harness_schema_valid_diff_human_success",
+			command: ["node", "dist/anchormap.js", "diff", "--base", "base.json", "--head", "head.json"],
+			exit_code: 0,
+			stdout: { kind: "ignored" },
+			stderr: { kind: "ignored" },
+		}),
+	);
+
+	assert.throws(
+		() =>
+			validateFixtureManifest({
+				...minimalFailureManifest(),
+				id: "harness_schema_invalid_diff_json_failure_stdout",
+				command: [
+					"node",
+					"dist/anchormap.js",
+					"diff",
+					"--base",
+					"base.json",
+					"--head",
+					"head.json",
+					"--json",
+				],
+				exit_code: 4,
+				stdout: { kind: "golden" },
+				stderr: { kind: "empty" },
+			}),
+		/artifact command technical-failure fixtures must use stdout\.kind "empty"/,
 	);
 });
 

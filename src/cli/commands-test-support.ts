@@ -43,10 +43,30 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 				: "";
 			const scanSuffix = context.scanMode ? `:${context.scanMode}` : "";
 			const scaffoldSuffix = context.scaffoldArgs ? `:output=${context.scaffoldArgs.output}` : "";
-			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}${scaffoldSuffix}`;
+			const checkSuffix = context.checkArgs
+				? `:policy=${context.checkArgs.policy}:scan=${context.checkArgs.scan ?? ""}:json=${context.checkArgs.json}`
+				: "";
+			const diffSuffix = context.diffArgs
+				? `:base=${context.diffArgs.base}:head=${context.diffArgs.head}:json=${context.diffArgs.json}`
+				: "";
+			const explainSuffix = context.explainArgs
+				? `:scan=${context.explainArgs.scan}:anchor=${context.explainArgs.anchor ?? ""}:file=${context.explainArgs.file ?? ""}:json=${context.explainArgs.json}`
+				: "";
+			const reportSuffix = context.reportArgs
+				? `:scan=${context.reportArgs.scan}:check=${context.reportArgs.check ?? ""}:diff=${context.reportArgs.diff ?? ""}:format=${context.reportArgs.format}`
+				: "";
+			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}${scaffoldSuffix}${checkSuffix}${diffSuffix}${explainSuffix}${reportSuffix}`;
 			calls.push(`${command}:${context.args.join(" ")}${suffix}`);
-			if (context.scanMode === "json") {
+			if (
+				context.scanMode === "json" ||
+				context.checkArgs?.json ||
+				context.diffArgs?.json ||
+				context.explainArgs?.json
+			) {
 				return commandSuccess({ stdout: "{}\n" });
+			}
+			if (context.reportArgs) {
+				return commandSuccess({ stdout: "report\n" });
 			}
 			return commandSuccess();
 		};
@@ -57,6 +77,10 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 		map: record("map"),
 		scan: record("scan"),
 		scaffold: record("scaffold"),
+		check: record("check"),
+		diff: record("diff"),
+		explain: record("explain"),
+		report: record("report"),
 	};
 }
 
@@ -66,6 +90,10 @@ export function createHandlersReturning(result: AppError): AnchormapCommandHandl
 		map: () => result,
 		scan: () => result,
 		scaffold: () => result,
+		check: () => result,
+		diff: () => result,
+		explain: () => result,
+		report: () => result,
 	};
 }
 
@@ -165,4 +193,24 @@ export function assertNoAnchormapTemps(cwd: string): void {
 		),
 		false,
 	);
+}
+
+export function minimalScanArtifactJson(): string {
+	return `${JSON.stringify({
+		schema_version: 4,
+		config: {
+			version: 1,
+			product_root: "src",
+			spec_roots: ["specs"],
+			ignore_roots: [],
+			tsconfig_path: null,
+			local_aliases: [],
+		},
+		analysis_health: "clean",
+		observed_anchors: {},
+		stored_mappings: {},
+		files: {},
+		traceability_metrics: traceabilityMetrics({}),
+		findings: [],
+	})}\n`;
 }

@@ -1,0 +1,27 @@
+{
+	"id": "fx139_report_invalid_format",
+	"family": "B-report",
+	"purpose": "report rejects unsupported formats with code 4 and empty stdout.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/valid-scan.json",
+		"--format",
+		"html"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["cli_boundary"],
+	"groups": ["m19"]
+}

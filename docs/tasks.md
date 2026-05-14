@@ -34,8 +34,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: `T19.1 — Implement artifact input boundary and CLI parsers`
-- Last completed task: `T19.0 — Specify CLI SaaS-ready 1 authorities and task plan`
+- Next executable product task: `T19.2 — Implement `anchormap check``
+- Last completed task: `T19.1 — Implement artifact input boundary and CLI parsers`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -148,6 +148,7 @@
   - `T17.2 — Document existing codebase slice onboarding and refresh demo runbook`
   - `T18.0 — Add non-blocking TSX adoption corpus evidence`
   - `T19.0 — Specify CLI SaaS-ready 1 authorities and task plan`
+  - `T19.1 — Implement artifact input boundary and CLI parsers`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

@@ -10,11 +10,29 @@ import { buildProductGraph } from "../infra/ts-graph";
 import { loadLocalAliases } from "../infra/tsconfig-io";
 import { renderScanResultHuman, renderScanResultJson } from "../render/render-json";
 import {
+	runCheckCommandStub,
+	runDiffCommandStub,
+	runExplainCommandStub,
+	runReportCommandStub,
+	validateRawCheckArgs,
+	validateRawDiffArgs,
+	validateRawExplainArgs,
+	validateRawReportArgs,
+} from "./artifact-commands";
+import {
+	type ParsedCheckArgs,
+	type ParsedDiffArgs,
+	type ParsedExplainArgs,
 	type ParsedInitArgs,
 	type ParsedMapArgs,
+	type ParsedReportArgs,
 	type ParsedScaffoldArgs,
+	parseCheckArgs,
+	parseDiffArgs,
+	parseExplainArgs,
 	parseInitArgs,
 	parseMapArgs,
+	parseReportArgs,
 	parseScaffoldArgs,
 	parseScanArgs,
 	type ScanOutputMode,
@@ -45,10 +63,22 @@ import {
 	usageError,
 } from "./command-result";
 
-export type AnchormapCommandName = "init" | "map" | "scan" | "scaffold";
+export type AnchormapCommandName =
+	| "init"
+	| "map"
+	| "scan"
+	| "scaffold"
+	| "check"
+	| "diff"
+	| "explain"
+	| "report";
 export type {
+	ParsedCheckArgs,
+	ParsedDiffArgs,
+	ParsedExplainArgs,
 	ParsedInitArgs,
 	ParsedMapArgs,
+	ParsedReportArgs,
 	ParsedScaffoldArgs,
 	ScanOutputMode,
 } from "./command-args";
@@ -73,6 +103,10 @@ export interface AnchormapCommandContext {
 	initArgs?: ParsedInitArgs;
 	mapArgs?: ParsedMapArgs;
 	scaffoldArgs?: ParsedScaffoldArgs;
+	checkArgs?: ParsedCheckArgs;
+	diffArgs?: ParsedDiffArgs;
+	explainArgs?: ParsedExplainArgs;
+	reportArgs?: ParsedReportArgs;
 	scanMode?: ScanOutputMode;
 }
 
@@ -87,13 +121,26 @@ export interface AnchormapRunOptions {
 	handlers?: Partial<AnchormapCommandHandlers>;
 }
 
-const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>(["init", "map", "scan", "scaffold"]);
+const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>([
+	"init",
+	"map",
+	"scan",
+	"scaffold",
+	"check",
+	"diff",
+	"explain",
+	"report",
+]);
 
 const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	init: runInitCommand,
 	map: runMapCommandStub,
 	scan: runScanCommandStub,
 	scaffold: runScaffoldCommand,
+	check: runCheckCommandStub,
+	diff: runDiffCommandStub,
+	explain: runExplainCommandStub,
+	report: runReportCommandStub,
 };
 
 export function runAnchormap(argv: readonly string[], options: AnchormapRunOptions = {}): number {
@@ -200,6 +247,97 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 		);
 	}
 
+	if (command === "check") {
+		const parsedCheck = parseCheckArgs(args);
+		if (parsedCheck.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedCheck.message }, stderr);
+		}
+		const validatedCheck = validateRawCheckArgs(parsedCheck.args);
+		if (validatedCheck.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: validatedCheck.message }, stderr);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				checkArgs: validatedCheck.args,
+			},
+			handlers.check,
+		);
+	}
+
+	if (command === "diff") {
+		const parsedDiff = parseDiffArgs(args);
+		if (parsedDiff.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedDiff.message }, stderr);
+		}
+		const validatedDiff = validateRawDiffArgs(parsedDiff.args);
+		if (validatedDiff.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: validatedDiff.message }, stderr);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				diffArgs: validatedDiff.args,
+			},
+			handlers.diff,
+		);
+	}
+
+	if (command === "explain") {
+		const parsedExplain = parseExplainArgs(args);
+		if (parsedExplain.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedExplain.message }, stderr);
+		}
+		const validatedExplain = validateRawExplainArgs(parsedExplain.args);
+		if (validatedExplain.kind === "usage_error") {
+			return writeErrorDiagnostic(
+				{ kind: "UsageError", message: validatedExplain.message },
+				stderr,
+			);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				explainArgs: validatedExplain.args,
+			},
+			handlers.explain,
+		);
+	}
+
+	if (command === "report") {
+		const parsedReport = parseReportArgs(args);
+		if (parsedReport.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedReport.message }, stderr);
+		}
+		const validatedReport = validateRawReportArgs(parsedReport.args);
+		if (validatedReport.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: validatedReport.message }, stderr);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				reportArgs: validatedReport.args,
+			},
+			handlers.report,
+		);
+	}
+
 	throw new Error(`unhandled command ${command}`);
 }
 
@@ -209,6 +347,7 @@ function dispatchCommand(
 ): number {
 	const capturedStdout = createBufferedWriter();
 	const capturedStderr = createBufferedWriter();
+	const machineOutputContract = getMachineOutputContract(context);
 	let result: AnchormapCommandResult;
 
 	try {
@@ -227,38 +366,69 @@ function dispatchCommand(
 		capturedStderr.read() + (isCommandSuccess(result) ? (result.stderr ?? "") : "");
 
 	if (isCommandSuccess(result)) {
-		if (context.scanMode === "json") {
-			const scanJsonError = validateScanJsonSuccessOutput(stdoutText, stderrText);
-			if (scanJsonError) {
-				return writeErrorDiagnostic(scanJsonError, context.stderr);
+		if (machineOutputContract !== undefined) {
+			const machineOutputError = validateMachineSuccessOutput(
+				machineOutputContract,
+				stdoutText,
+				stderrText,
+			);
+			if (machineOutputError) {
+				return writeErrorDiagnostic(machineOutputError, context.stderr);
 			}
 		}
 
 		context.stdout.write(stdoutText);
-		if (context.scanMode !== "json") {
+		if (machineOutputContract === undefined) {
 			context.stderr.write(stderrText);
 		}
 		return 0;
 	}
 
-	return writeFailure(result, context, stderrText);
+	return writeFailure(result, context, stderrText, machineOutputContract);
 }
 
-function validateScanJsonSuccessOutput(
+type MachineOutputContract = {
+	readonly label: string;
+	readonly format: "json" | "markdown";
+};
+
+function getMachineOutputContract(
+	context: AnchormapCommandContext,
+): MachineOutputContract | undefined {
+	if (context.scanMode === "json") {
+		return { label: "scan --json", format: "json" };
+	}
+	if (context.checkArgs?.json) {
+		return { label: "check --json", format: "json" };
+	}
+	if (context.diffArgs?.json) {
+		return { label: "diff --json", format: "json" };
+	}
+	if (context.explainArgs?.json) {
+		return { label: "explain --json", format: "json" };
+	}
+	if (context.reportArgs !== undefined) {
+		return { label: "report --format markdown", format: "markdown" };
+	}
+	return undefined;
+}
+
+function validateMachineSuccessOutput(
+	contract: MachineOutputContract,
 	stdoutText: string,
 	stderrText: string,
 ): AppError | undefined {
 	if (stderrText.length > 0) {
-		return internalError("scan --json success wrote stderr");
+		return internalError(`${contract.label} success wrote stderr`);
 	}
 	if (stdoutText.length === 0) {
-		return internalError("scan --json success wrote no stdout");
+		return internalError(`${contract.label} success wrote no stdout`);
 	}
 	if (!stdoutText.endsWith("\n")) {
-		return internalError("scan --json success stdout missing final newline");
+		return internalError(`${contract.label} success stdout missing final newline`);
 	}
-	if (stdoutText.indexOf("\n") !== stdoutText.length - 1) {
-		return internalError("scan --json success stdout is not a single physical line");
+	if (contract.format === "json" && stdoutText.indexOf("\n") !== stdoutText.length - 1) {
+		return internalError(`${contract.label} success stdout is not a single physical line`);
 	}
 	return undefined;
 }
@@ -267,8 +437,9 @@ function writeFailure(
 	error: AppError,
 	context: AnchormapCommandContext,
 	capturedStderr: string,
+	machineOutputContract: MachineOutputContract | undefined,
 ): number {
-	if (context.scanMode === "json") {
+	if (machineOutputContract !== undefined) {
 		if (capturedStderr.length > 0) {
 			context.stderr.write(ensureFinalNewline(capturedStderr));
 		} else {

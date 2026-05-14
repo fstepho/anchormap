@@ -7,7 +7,7 @@ export const FIXTURE_EXPECTED_REPO_DIRNAME = "expected/repo";
 export const FIXTURE_STDOUT_GOLDEN_FILENAME = "stdout.golden";
 
 const MIN_EXIT_CODE = 0;
-const MAX_EXIT_CODE = 4;
+const MAX_EXIT_CODE = 5;
 
 const TOP_LEVEL_KEYS = new Set([
 	"id",
@@ -26,7 +26,16 @@ const TOP_LEVEL_KEYS = new Set([
 
 const STABLE_ID_PATTERN = /^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$/;
 const FAMILY_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/;
-const SUPPORTED_SUBCOMMANDS = new Set(["init", "map", "scan", "scaffold"]);
+const SUPPORTED_SUBCOMMANDS = new Set([
+	"init",
+	"map",
+	"scan",
+	"scaffold",
+	"check",
+	"diff",
+	"explain",
+	"report",
+]);
 const MISSING_SUBCOMMAND = "<missing>";
 const UNSUPPORTED_WRAPPER_LAUNCHERS = new Set([
 	"npm",
@@ -316,6 +325,16 @@ function validateManifestSemantics(manifest: FixtureManifest, context: Validatio
 
 	if (subcommand === "init" || subcommand === "map" || subcommand === "scaffold") {
 		validateHumanWriteCommandSemantics(manifest, context);
+		return;
+	}
+
+	if (
+		subcommand === "check" ||
+		subcommand === "diff" ||
+		subcommand === "explain" ||
+		subcommand === "report"
+	) {
+		validateArtifactCommandSemantics(manifest, subcommand, context);
 	}
 }
 
@@ -432,6 +451,68 @@ function validateHumanWriteCommandSemantics(
 	}
 }
 
+function validateArtifactCommandSemantics(
+	manifest: FixtureManifest,
+	subcommand: "check" | "diff" | "explain" | "report",
+	context: ValidationContext,
+): void {
+	if (manifest.filesystem.kind !== "no_mutation") {
+		fail('artifact command fixtures must use filesystem.kind "no_mutation"', context);
+	}
+
+	if (manifest.exit_code === 5 && subcommand !== "check") {
+		fail("exit_code 5 is reserved for check policy-failure fixtures", context);
+	}
+
+	const machineOutput = hasArtifactMachineOutput(manifest.command, subcommand);
+	if (machineOutput && (manifest.exit_code === 0 || manifest.exit_code === 5)) {
+		if (manifest.stdout.kind !== "golden") {
+			fail('artifact command machine-output fixtures must use stdout.kind "golden"', context);
+		}
+		if (manifest.stderr.kind !== "empty") {
+			fail('artifact command machine-output fixtures must use stderr.kind "empty"', context);
+		}
+		return;
+	}
+
+	if (manifest.exit_code === 0 || manifest.exit_code === 5) {
+		if (manifest.stdout.kind !== "ignored") {
+			fail('artifact command human-output fixtures must use stdout.kind "ignored"', context);
+		}
+		if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
+			fail(
+				'artifact command human-output fixtures may only use stderr.kind "ignored" or "empty"',
+				context,
+			);
+		}
+		return;
+	}
+
+	if (manifest.stdout.kind !== "empty") {
+		fail('artifact command technical-failure fixtures must use stdout.kind "empty"', context);
+	}
+
+	if (manifest.stderr.kind !== "ignored" && manifest.stderr.kind !== "empty") {
+		fail(
+			'artifact command technical-failure fixtures may only use stderr.kind "ignored" or "empty"',
+			context,
+		);
+	}
+}
+
+function hasArtifactMachineOutput(
+	command: string[],
+	subcommand: "check" | "diff" | "explain" | "report",
+): boolean {
+	const firstOptionIndex = command[0] === "node" ? 3 : 2;
+	const args = command.slice(firstOptionIndex);
+	if (subcommand === "report") {
+		return args.some((arg, index) => arg === "--format" && args[index + 1] === "markdown");
+	}
+
+	return args.includes("--json");
+}
+
 function validateUsageErrorCommandSemantics(
 	manifest: FixtureManifest,
 	context: ValidationContext,
@@ -494,7 +575,17 @@ function assertExistingRegularFile(
 function detectSubcommand(
 	command: string[],
 	context: ValidationContext,
-): "init" | "map" | "scan" | "scaffold" | typeof MISSING_SUBCOMMAND | undefined {
+):
+	| "init"
+	| "map"
+	| "scan"
+	| "scaffold"
+	| "check"
+	| "diff"
+	| "explain"
+	| "report"
+	| typeof MISSING_SUBCOMMAND
+	| undefined {
 	if (command[0] === "node") {
 		if (command.length < 2) {
 			fail('command using "node" must be ["node", "<script>", "<subcommand>", ...]', context);
@@ -516,7 +607,15 @@ function detectSubcommand(
 			return undefined;
 		}
 
-		return candidate as "init" | "map" | "scan" | "scaffold";
+		return candidate as
+			| "init"
+			| "map"
+			| "scan"
+			| "scaffold"
+			| "check"
+			| "diff"
+			| "explain"
+			| "report";
 	}
 
 	if (UNSUPPORTED_WRAPPER_LAUNCHERS.has(command[0])) {
@@ -532,7 +631,15 @@ function detectSubcommand(
 		return undefined;
 	}
 
-	return candidate as "init" | "map" | "scan" | "scaffold";
+	return candidate as
+		| "init"
+		| "map"
+		| "scan"
+		| "scaffold"
+		| "check"
+		| "diff"
+		| "explain"
+		| "report";
 }
 
 function requireStdoutOracle(value: unknown, context: ValidationContext): StdoutOracle {
