@@ -69,6 +69,28 @@ product files, React or framework behavior, full TypeScript resolver
 behavior, Node/package resolution, monorepo lookup, project references, dynamic
 imports, or `require` support.
 
+## M19 CLI Artifact Readiness Addendum
+
+For a release candidate that includes the M19 local artifact workflow, release
+readiness evidence must additionally record:
+
+- `check`, `diff`, `explain`, and `report` command forms match the contract;
+- B-check, B-diff, B-explain, and B-report fixtures pass;
+- C13 artifact-command isolation passes for success, policy-failure, and
+  technical-failure paths;
+- JSON and Markdown goldens for the artifact commands pass;
+- `check --json` policy failures emit JSON on `stdout` and exit `5`;
+- technical artifact-command failures keep `stdout` empty and exit with the
+  appropriate technical code;
+- README, release notes, and package metadata describe only the local artifact
+  workflow that is implemented.
+
+The M19 extension remains limited to explicit local artifacts. Release notes,
+README, and package metadata must not promise upload, hosted dashboards,
+GitHub App behavior, bundle output, JUnit, SARIF, scan schema v5, source
+snippets, symbol observation, call graph, CI metadata inference, Git ref diff
+syntax, or `anchormap.yaml` config v2 migration.
+
 ## Pre-Publish Checks
 
 Run the release gates and package evidence commands:

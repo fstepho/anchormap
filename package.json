@@ -9,7 +9,10 @@
 		"traceability",
 		"typescript",
 		"static-analysis",
-		"requirements"
+		"requirements",
+		"ci",
+		"policy",
+		"markdown-report"
 	],
 	"publishConfig": {
 		"access": "public",

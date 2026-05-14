@@ -14,8 +14,8 @@ A reference demo is available at
 [fstepho/anchormap-h3-demo](https://github.com/fstepho/anchormap-h3-demo).
 
 It applies AnchorMap to the `src/` tree of
-[h3](https://github.com/unjs/h3) and shows the full flow: `init`,
-`scaffold`, selective anchor promotion, `map`, and `scan --json`.
+[h3](https://github.com/unjs/h3) and shows the core mapping and scan flow:
+`init`, `scaffold`, selective anchor promotion, `map`, and `scan --json`.
 
 The demo includes a 308-anchor scaffold draft, 3 promoted active anchors, 3
 explicit mappings, clean analysis health, a pretty-printed full scan output,
@@ -291,22 +291,94 @@ or move the selected anchor to an active spec file, then run `anchormap map`.
 When `scaffold` is run again, anchors already present in current specs are
 skipped and only new draft sections are written.
 
+## Local CI And PR Artifacts
+
+`scan --json` is the source artifact for local CI and PR workflows:
+
+```sh
+anchormap scan --json > anchormap.scan.json
+```
+
+Use `check` to evaluate a local policy against either a live scan or an
+explicit scan artifact:
+
+```sh
+anchormap check --policy anchormap.policy.yaml --json
+anchormap check --scan anchormap.scan.json --policy anchormap.policy.yaml --json
+```
+
+The supported policy file is a closed YAML object with `version: 1` and
+optional `fail_on` and `thresholds` sections:
+
+```yaml
+version: 1
+fail_on:
+  analysis_health: degraded
+  finding_kinds:
+    - untraced_product_file
+thresholds:
+  min_covered_product_file_percent: 80
+  max_untraced_product_files: 0
+```
+
+Policy failures are not technical errors. With `--json`, `check` writes a
+stable `PolicyResult` JSON artifact to stdout and exits with code `5`.
+
+Compare two scan artifacts without Git:
+
+```sh
+anchormap diff --base base.scan.json --head head.scan.json --json > anchormap.diff.json
+```
+
+Explain one anchor or one file from a scan artifact alone:
+
+```sh
+anchormap explain --anchor DOC.README.PRESENT --scan anchormap.scan.json --json
+anchormap explain --file src/index.ts --scan anchormap.scan.json --json
+```
+
+Render a stable Markdown report from explicit artifacts:
+
+```sh
+anchormap report --scan anchormap.scan.json --format markdown > anchormap.report.md
+anchormap report --scan anchormap.scan.json --check anchormap.check.json --diff anchormap.diff.json --format markdown > anchormap.report.md
+```
+
+`diff`, `explain`, and `report` are artifact-only. They do not read Git,
+`anchormap.yaml`, repository source files, CI variables, network data, caches,
+clocks, or environment variables as product truth. `report` serializes the
+artifacts it is given; it does not prove that those artifacts came from the same
+run.
+
+The current artifact workflow is deliberately local. AnchorMap does not provide
+upload, dashboard, GitHub App, bundle, JUnit, SARIF, scan schema v5, source
+snippets, symbol observation, call graph, or CI metadata inference.
+
 ## Commands
 
-AnchorMap exposes exactly four commands:
+AnchorMap exposes these commands:
 
 - `anchormap init --root <path> --spec-root <path> [--spec-root <path> ...] [--ignore-root <path> ...]`
 - `anchormap map --anchor <anchor_id> --seed <path> [--seed <path> ...] [--replace]`
 - `anchormap scan [--json]`
 - `anchormap scaffold --output <path>`
+- `anchormap check --policy <path> [--scan <scan.json>] [--json]`
+- `anchormap diff --base <base.scan.json> --head <head.scan.json> [--json]`
+- `anchormap explain (--anchor <anchor_id> | --file <path>) --scan <scan.json> [--json]`
+- `anchormap report --scan <scan.json> [--check <check.json>] [--diff <diff.json>] --format markdown`
 
 `init` creates `./anchormap.yaml` once. `map` creates or replaces explicit human
 mappings in `./anchormap.yaml`. `scan` reads `./anchormap.yaml` and the
 configured repository inputs; it never writes to disk. `scaffold` creates one
-draft Markdown file and never mutates `./anchormap.yaml`.
+draft Markdown file and never mutates `./anchormap.yaml`. `check` applies a
+local policy to either a live scan or an explicit scan artifact. `diff`
+compares two explicit scan artifacts. `explain` reconstructs one anchor or file
+view from a scan artifact. `report` renders Markdown from explicit scan, check,
+and diff artifacts.
 
-Human-readable terminal output is not a stable contract. Use `scan --json` for
-the guaranteed machine interface.
+Human-readable terminal output is not a stable contract. Use `scan --json`,
+`check --json`, `diff --json`, `explain --json`, and `report --format markdown`
+for stable outputs.
 
 ## Exit Codes
 
@@ -318,11 +390,15 @@ Exit-code overview:
   rules;
 - `3`: repository inputs outside `anchormap.yaml` cannot be read, decoded,
   parsed, indexed, or otherwise inspected as required;
-- `4`: unsupported command, option, or option combination.
+- `4`: unsupported command, option, option combination, policy, artifact path,
+  artifact JSON, or artifact schema;
+- `5`: `check` policy failure after all technical preconditions succeeded.
 
-For `scan --json`, success writes JSON to stdout and leaves stderr empty, even
-when the JSON contains findings. On exit codes `1` through `4`, stdout is empty
-and no JSON is emitted.
+For `scan --json`, `check --json`, `diff --json`, and `explain --json`, success
+writes JSON to stdout and leaves stderr empty. For `report --format markdown`,
+success writes Markdown to stdout and leaves stderr empty. `check --json` with a
+policy failure also writes JSON to stdout and exits `5`. On technical exit codes
+`1` through `4`, stdout is empty and no machine result is emitted.
 
 For `scan` and `map`, an invalid present `./tsconfig.json` is a repository
 input failure and exits with code `3`. Argument errors still have priority over
