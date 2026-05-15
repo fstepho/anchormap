@@ -13,12 +13,12 @@
 		"metadata_error": null
 	},
 	"package": {
-		"id": "anchormap@1.2.1",
+		"id": "anchormap@1.2.2",
 		"name": "anchormap",
-		"version": "1.2.1",
-		"filename": "anchormap-1.2.1.tgz",
-		"integrity": "sha512-PF1M+0fz4Nk3OSzCcynYPPqDOpmhLkESYwvFOwO2yaaAwciV0iP9wYzFO2wSq03iEiU6dOQHBIteaSvOQD5dFQ==",
-		"shasum": "71d5984c251ae661d76ecb9cb4c74c9ea429a241",
+		"version": "1.2.2",
+		"filename": "anchormap-1.2.2.tgz",
+		"integrity": "sha512-j7wPZKG5s1qVJYcDw69rIbBel/+UD+QdvgNiO5z7GBcvrKnberMY90uVU6kYhChPSX2v6KauppxHt+8BTMXhfw==",
+		"shasum": "e2c60c01e3ecdd691d511a706c00c5a4529945c4",
 		"files": [
 			"LICENSE",
 			"README.md",
@@ -30,6 +30,7 @@
 			"dist/cli/command-result.js",
 			"dist/cli/commands.js",
 			"dist/domain/anchor-id.js",
+			"dist/domain/bundle-model.js",
 			"dist/domain/canonical-order.js",
 			"dist/domain/diff-engine.js",
 			"dist/domain/explain-engine.js",
@@ -46,6 +47,7 @@
 			"dist/infra/artifact-scan-source-validation.js",
 			"dist/infra/config-io.js",
 			"dist/infra/config-yaml-render.js",
+			"dist/infra/metadata-io.js",
 			"dist/infra/policy-io.js",
 			"dist/infra/product-files.js",
 			"dist/infra/repo-fs.js",
@@ -53,14 +55,17 @@
 			"dist/infra/spec-index.js",
 			"dist/infra/ts-graph.js",
 			"dist/infra/tsconfig-io.js",
+			"dist/package-version.js",
 			"dist/render/render-json.js",
+			"dist/render/render-junit-report.js",
 			"dist/render/render-markdown-report.js",
+			"dist/render/render-sarif-report.js",
 			"npm-shrinkwrap.json",
 			"package.json"
 		]
 	},
 	"consumer_install": {
-		"command": "npm install <local tarball:anchormap-1.2.1.tgz> --ignore-scripts --no-audit --no-fund",
+		"command": "npm install <local tarball:anchormap-1.2.2.tgz> --ignore-scripts --no-audit --no-fund",
 		"status": 0,
 		"signal": null,
 		"timed_out": false,

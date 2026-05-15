@@ -488,7 +488,7 @@ test("bundle artifact mode renders explicit artifacts, metadata, and canonical h
 		assert.equal(result.stderr, "");
 		assert.match(
 			result.stdout,
-			/^{"schema_version":1,"tool":{"name":"anchormap","version":"1\.2\.1"}/,
+			/^{"schema_version":1,"tool":{"name":"anchormap","version":"1\.2\.2"}/,
 		);
 		assert.match(result.stdout, /"metadata":{"provider":"github","repository":"owner\/repo"/);
 		assert.match(result.stdout, /"artifacts":{"scan":{"schema_version":4/);

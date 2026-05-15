@@ -1,27 +1,112 @@
 {
-	"total_count": 67,
-	"passed_count": 67,
+	"total_count": 92,
+	"passed_count": 92,
 	"failed_count": 0,
 	"exit_code": 0,
-	"total_duration_ms": 8551.330625,
-	"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/summary.txt",
+	"total_duration_ms": 10188.720125,
+	"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/summary.txt",
 	"records": [
+		{
+			"fixture_id": "fx141_bundle_full_json_v4",
+			"family": "B-bundle",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 50.415792,
+			"harness_duration_ms": 54.231334,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx141_bundle_full_json_v4",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx141_bundle_full_json_v4/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx141_bundle_full_json_v4/summary.txt"
+		},
+		{
+			"fixture_id": "fx142_bundle_full_json_v5",
+			"family": "B-bundle",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.814208,
+			"harness_duration_ms": 51.3195,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx142_bundle_full_json_v5",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx142_bundle_full_json_v5/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx142_bundle_full_json_v5/summary.txt"
+		},
+		{
+			"fixture_id": "fx145_bundle_no_implicit_ci_git",
+			"family": "B-bundle",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 46.855208,
+			"harness_duration_ms": 49.321417,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx145_bundle_no_implicit_ci_git",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx145_bundle_no_implicit_ci_git/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-bundle/fx145_bundle_no_implicit_ci_git/summary.txt"
+		},
+		{
+			"fixture_id": "fx117_check_policy_pass_json",
+			"family": "B-check",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 128.412083,
+			"harness_duration_ms": 131.124917,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx117_check_policy_pass_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx117_check_policy_pass_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx117_check_policy_pass_json/summary.txt"
+		},
+		{
+			"fixture_id": "fx118_check_policy_fail_json",
+			"family": "B-check",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 53.648875,
+			"harness_duration_ms": 55.699792,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx118_check_policy_fail_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx118_check_policy_fail_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-check/fx118_check_policy_fail_json/summary.txt"
+		},
 		{
 			"fixture_id": "fx71_cli_scan_option_order_invariant",
 			"family": "B-cli",
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 136.559542,
-			"harness_duration_ms": 140.885417,
+			"total_duration_ms": 125.999375,
+			"harness_duration_ms": 128.408125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-cli/fx71_cli_scan_option_order_invariant",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-cli/fx71_cli_scan_option_order_invariant/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-cli/fx71_cli_scan_option_order_invariant/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-cli/fx71_cli_scan_option_order_invariant",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-cli/fx71_cli_scan_option_order_invariant/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-cli/fx71_cli_scan_option_order_invariant/summary.txt"
 		},
 		{
 			"fixture_id": "fx49a_config_mapping_repo_native_anchor_keys",
@@ -29,16 +114,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.517625,
-			"harness_duration_ms": 131.32525,
+			"total_duration_ms": 129.609625,
+			"harness_duration_ms": 132.132334,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49a_config_mapping_repo_native_anchor_keys/summary.txt"
 		},
 		{
 			"fixture_id": "fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
@@ -46,16 +131,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.453583,
-			"harness_duration_ms": 129.92975,
+			"total_duration_ms": 128.081125,
+			"harness_duration_ms": 130.480708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-config/fx49b_config_mapping_screaming_snake_dotted_anchor_keys/summary.txt"
 		},
 		{
 			"fixture_id": "fx00p_profile_tsx_jsx_success",
@@ -63,16 +148,118 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 124.484625,
-			"harness_duration_ms": 126.892541,
+			"total_duration_ms": 125.359459,
+			"harness_duration_ms": 128.175458,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-decodage/fx00p_profile_tsx_jsx_success",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-decodage/fx00p_profile_tsx_jsx_success/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-decodage/fx00p_profile_tsx_jsx_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-decodage/fx00p_profile_tsx_jsx_success",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-decodage/fx00p_profile_tsx_jsx_success/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-decodage/fx00p_profile_tsx_jsx_success/summary.txt"
+		},
+		{
+			"fixture_id": "fx124_diff_same_scope_json",
+			"family": "B-diff",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.271041,
+			"harness_duration_ms": 50.283791,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx124_diff_same_scope_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx124_diff_same_scope_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx124_diff_same_scope_json/summary.txt"
+		},
+		{
+			"fixture_id": "fx125_diff_scope_changed_json",
+			"family": "B-diff",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.158,
+			"harness_duration_ms": 50.36825,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx125_diff_scope_changed_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx125_diff_scope_changed_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-diff/fx125_diff_scope_changed_json/summary.txt"
+		},
+		{
+			"fixture_id": "fx129_explain_anchor_json",
+			"family": "B-explain",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 47.345917,
+			"harness_duration_ms": 49.484084,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx129_explain_anchor_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx129_explain_anchor_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx129_explain_anchor_json/summary.txt"
+		},
+		{
+			"fixture_id": "fx130_explain_file_json",
+			"family": "B-explain",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.1345,
+			"harness_duration_ms": 49.928541,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx130_explain_file_json",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx130_explain_file_json/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx130_explain_file_json/summary.txt"
+		},
+		{
+			"fixture_id": "fx131_explain_missing_anchor",
+			"family": "B-explain",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 46.193292,
+			"harness_duration_ms": 47.93775,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx131_explain_missing_anchor",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx131_explain_missing_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx131_explain_missing_anchor/summary.txt"
+		},
+		{
+			"fixture_id": "fx132_explain_missing_file",
+			"family": "B-explain",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 46.698042,
+			"harness_duration_ms": 48.451166,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx132_explain_missing_file",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx132_explain_missing_file/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-explain/fx132_explain_missing_file/summary.txt"
 		},
 		{
 			"fixture_id": "fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root",
@@ -80,16 +267,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 137.911791,
-			"harness_duration_ms": 141.316208,
+			"total_duration_ms": 127.720625,
+			"harness_duration_ms": 130.433292,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx100_graph_tsconfig_resolution_alias_cannot_reenter_product_root/summary.txt"
 		},
 		{
 			"fixture_id": "fx38f_graph_js_specifier_to_ts_source",
@@ -97,16 +284,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.365583,
-			"harness_duration_ms": 131.980666,
+			"total_duration_ms": 131.501792,
+			"harness_duration_ms": 133.889375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38f_graph_js_specifier_to_ts_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38g_graph_js_specifier_reexport_to_ts_source",
@@ -114,16 +301,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.190125,
-			"harness_duration_ms": 131.951416,
+			"total_duration_ms": 129.158833,
+			"harness_duration_ms": 131.936083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38g_graph_js_specifier_reexport_to_ts_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38h_graph_js_specifier_explicit_index_source",
@@ -131,16 +318,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.330417,
-			"harness_duration_ms": 129.291916,
+			"total_duration_ms": 126.937541,
+			"harness_duration_ms": 129.82225,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38h_graph_js_specifier_explicit_index_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx38i_graph_js_specifier_ts_source_wins_over_js",
@@ -148,16 +335,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.111625,
-			"harness_duration_ms": 128.01525,
+			"total_duration_ms": 128.645167,
+			"harness_duration_ms": 131.239541,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38i_graph_js_specifier_ts_source_wins_over_js/summary.txt"
 		},
 		{
 			"fixture_id": "fx38j_graph_js_specifier_exact_js_without_ts",
@@ -165,16 +352,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 124.103542,
-			"harness_duration_ms": 126.850417,
+			"total_duration_ms": 124.717,
+			"harness_duration_ms": 127.1465,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38j_graph_js_specifier_exact_js_without_ts/summary.txt"
 		},
 		{
 			"fixture_id": "fx38k_graph_js_specifier_unresolved",
@@ -182,16 +369,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 123.468833,
-			"harness_duration_ms": 125.95425,
+			"total_duration_ms": 127.375917,
+			"harness_duration_ms": 129.492459,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38k_graph_js_specifier_unresolved",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38k_graph_js_specifier_unresolved",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38k_graph_js_specifier_unresolved/summary.txt"
 		},
 		{
 			"fixture_id": "fx38l_graph_js_specifier_source_out_of_scope",
@@ -199,16 +386,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.493292,
-			"harness_duration_ms": 128.388333,
+			"total_duration_ms": 128.205042,
+			"harness_duration_ms": 130.915125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38l_graph_js_specifier_source_out_of_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx38m_graph_tsconfig_missing_relative_only",
@@ -216,16 +403,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 132.264417,
-			"harness_duration_ms": 134.701291,
+			"total_duration_ms": 127.942167,
+			"harness_duration_ms": 130.36775,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38m_graph_tsconfig_missing_relative_only/summary.txt"
 		},
 		{
 			"fixture_id": "fx38n_graph_tsconfig_alias_import",
@@ -233,16 +420,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 130.027042,
-			"harness_duration_ms": 132.705,
+			"total_duration_ms": 132.15625,
+			"harness_duration_ms": 134.758208,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38n_graph_tsconfig_alias_import",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38n_graph_tsconfig_alias_import/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38n_graph_tsconfig_alias_import/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38n_graph_tsconfig_alias_import",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38n_graph_tsconfig_alias_import/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38n_graph_tsconfig_alias_import/summary.txt"
 		},
 		{
 			"fixture_id": "fx38o_graph_tsconfig_alias_reexport",
@@ -250,16 +437,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.09375,
-			"harness_duration_ms": 130.634875,
+			"total_duration_ms": 129.157125,
+			"harness_duration_ms": 131.788416,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38o_graph_tsconfig_alias_reexport/summary.txt"
 		},
 		{
 			"fixture_id": "fx38p_graph_tsconfig_alias_js_specifier_to_ts",
@@ -267,16 +454,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.825125,
-			"harness_duration_ms": 129.477333,
+			"total_duration_ms": 129.29225,
+			"harness_duration_ms": 132.480375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38p_graph_tsconfig_alias_js_specifier_to_ts/summary.txt"
 		},
 		{
 			"fixture_id": "fx38q_graph_tsconfig_unmatched_package_ignored",
@@ -284,16 +471,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.558958,
-			"harness_duration_ms": 129.933542,
+			"total_duration_ms": 126.655041,
+			"harness_duration_ms": 129.14675,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38q_graph_tsconfig_unmatched_package_ignored/summary.txt"
 		},
 		{
 			"fixture_id": "fx38t_graph_tsconfig_local_extends",
@@ -301,16 +488,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.090666,
-			"harness_duration_ms": 129.917125,
+			"total_duration_ms": 128.492334,
+			"harness_duration_ms": 131.43775,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38t_graph_tsconfig_local_extends",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38t_graph_tsconfig_local_extends/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38t_graph_tsconfig_local_extends/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38t_graph_tsconfig_local_extends",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38t_graph_tsconfig_local_extends/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38t_graph_tsconfig_local_extends/summary.txt"
 		},
 		{
 			"fixture_id": "fx38v_graph_tsconfig_alias_target_outside_product_root",
@@ -318,16 +505,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.744417,
-			"harness_duration_ms": 129.457917,
+			"total_duration_ms": 128.136541,
+			"harness_duration_ms": 131.170917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38v_graph_tsconfig_alias_target_outside_product_root/summary.txt"
 		},
 		{
 			"fixture_id": "fx38w_graph_tsconfig_without_paths_relative_only",
@@ -335,16 +522,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 136.496292,
-			"harness_duration_ms": 139.157375,
+			"total_duration_ms": 129.055333,
+			"harness_duration_ms": 131.624959,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38w_graph_tsconfig_without_paths_relative_only/summary.txt"
 		},
 		{
 			"fixture_id": "fx38x_graph_tsx_product_file_discovered",
@@ -352,16 +539,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 130.631209,
-			"harness_duration_ms": 133.050167,
+			"total_duration_ms": 137.433209,
+			"harness_duration_ms": 139.588333,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38x_graph_tsx_product_file_discovered/summary.txt"
 		},
 		{
 			"fixture_id": "fx38y_graph_exact_tsx_specifier",
@@ -369,16 +556,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 134.203583,
-			"harness_duration_ms": 136.765584,
+			"total_duration_ms": 127.702834,
+			"harness_duration_ms": 130.095958,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38y_graph_exact_tsx_specifier",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38y_graph_exact_tsx_specifier/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38y_graph_exact_tsx_specifier/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38y_graph_exact_tsx_specifier",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38y_graph_exact_tsx_specifier/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38y_graph_exact_tsx_specifier/summary.txt"
 		},
 		{
 			"fixture_id": "fx38z_graph_extensionless_tsx_resolution",
@@ -386,16 +573,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 133.8085,
-			"harness_duration_ms": 136.499666,
+			"total_duration_ms": 126.692208,
+			"harness_duration_ms": 129.144375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx38z_graph_extensionless_tsx_resolution/summary.txt"
 		},
 		{
 			"fixture_id": "fx89_graph_js_specifier_to_tsx_source",
@@ -403,16 +590,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 136.154041,
-			"harness_duration_ms": 139.081083,
+			"total_duration_ms": 128.707125,
+			"harness_duration_ms": 131.16675,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx89_graph_js_specifier_to_tsx_source/summary.txt"
 		},
 		{
 			"fixture_id": "fx90_graph_alias_to_tsx",
@@ -420,16 +607,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 141.6545,
-			"harness_duration_ms": 144.555,
+			"total_duration_ms": 131.328916,
+			"harness_duration_ms": 133.816625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx90_graph_alias_to_tsx",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx90_graph_alias_to_tsx/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx90_graph_alias_to_tsx/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx90_graph_alias_to_tsx",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx90_graph_alias_to_tsx/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx90_graph_alias_to_tsx/summary.txt"
 		},
 		{
 			"fixture_id": "fx91_graph_ts_before_tsx_precedence",
@@ -437,16 +624,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 139.481458,
-			"harness_duration_ms": 143.01575,
+			"total_duration_ms": 130.192708,
+			"harness_duration_ms": 133.644417,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx91_graph_ts_before_tsx_precedence/summary.txt"
 		},
 		{
 			"fixture_id": "fx92_graph_tsx_reexport",
@@ -454,16 +641,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.75,
-			"harness_duration_ms": 129.270167,
+			"total_duration_ms": 127.815458,
+			"harness_duration_ms": 130.187542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx92_graph_tsx_reexport",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx92_graph_tsx_reexport/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx92_graph_tsx_reexport/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx92_graph_tsx_reexport",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx92_graph_tsx_reexport/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx92_graph_tsx_reexport/summary.txt"
 		},
 		{
 			"fixture_id": "fx93_graph_extensionless_index_tsx_resolution",
@@ -471,16 +658,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 130.904083,
-			"harness_duration_ms": 133.997416,
+			"total_duration_ms": 136.956958,
+			"harness_duration_ms": 139.755167,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx93_graph_extensionless_index_tsx_resolution/summary.txt"
 		},
 		{
 			"fixture_id": "fx94_graph_tsconfig_mixed_slice_aliases",
@@ -488,16 +675,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 135.7535,
-			"harness_duration_ms": 138.834792,
+			"total_duration_ms": 142.850792,
+			"harness_duration_ms": 146.074458,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx94_graph_tsconfig_mixed_slice_aliases/summary.txt"
 		},
 		{
 			"fixture_id": "fx95_graph_tsconfig_unused_out_of_slice_alias_clean",
@@ -505,16 +692,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.332083,
-			"harness_duration_ms": 131.3395,
+			"total_duration_ms": 139.2915,
+			"harness_duration_ms": 142.187792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx95_graph_tsconfig_unused_out_of_slice_alias_clean/summary.txt"
 		},
 		{
 			"fixture_id": "fx96_graph_tsconfig_out_of_slice_alias_unresolved",
@@ -522,16 +709,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.040375,
-			"harness_duration_ms": 129.420833,
+			"total_duration_ms": 129.588709,
+			"harness_duration_ms": 132.05475,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx96_graph_tsconfig_out_of_slice_alias_unresolved/summary.txt"
 		},
 		{
 			"fixture_id": "fx97_graph_tsconfig_alias_matching_order_mixed_scope",
@@ -539,16 +726,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.052166,
-			"harness_duration_ms": 130.768833,
+			"total_duration_ms": 135.617,
+			"harness_duration_ms": 139.501041,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-graph/fx97_graph_tsconfig_alias_matching_order_mixed_scope/summary.txt"
 		},
 		{
 			"fixture_id": "fx41_repo_noise_outside_scope_ignored",
@@ -556,16 +743,186 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 47.851375,
-			"harness_duration_ms": 50.386084,
+			"total_duration_ms": 52.194333,
+			"harness_duration_ms": 55.037792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-repo/fx41_repo_noise_outside_scope_ignored/summary.txt"
+		},
+		{
+			"fixture_id": "fx135_report_scan_markdown",
+			"family": "B-report",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 47.240083,
+			"harness_duration_ms": 48.976792,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx135_report_scan_markdown",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx135_report_scan_markdown/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx135_report_scan_markdown/summary.txt"
+		},
+		{
+			"fixture_id": "fx136_report_scan_check_markdown",
+			"family": "B-report",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.300834,
+			"harness_duration_ms": 50.193708,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx136_report_scan_check_markdown",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx136_report_scan_check_markdown/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx136_report_scan_check_markdown/summary.txt"
+		},
+		{
+			"fixture_id": "fx137_report_scan_check_diff_markdown",
+			"family": "B-report",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 47.928417,
+			"harness_duration_ms": 50.059584,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx137_report_scan_check_diff_markdown",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx137_report_scan_check_diff_markdown/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx137_report_scan_check_diff_markdown/summary.txt"
+		},
+		{
+			"fixture_id": "fx138_report_scan_diff_markdown",
+			"family": "B-report",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.075958,
+			"harness_duration_ms": 49.987959,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx138_report_scan_diff_markdown",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx138_report_scan_diff_markdown/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report/fx138_report_scan_diff_markdown/summary.txt"
+		},
+		{
+			"fixture_id": "fx151_report_junit_policy_pass",
+			"family": "B-report-JUnit",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 46.759584,
+			"harness_duration_ms": 48.425125,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx151_report_junit_policy_pass",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx151_report_junit_policy_pass/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx151_report_junit_policy_pass/summary.txt"
+		},
+		{
+			"fixture_id": "fx152_report_junit_policy_fail",
+			"family": "B-report-JUnit",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.5555,
+			"harness_duration_ms": 50.182625,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx152_report_junit_policy_fail",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx152_report_junit_policy_fail/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-JUnit/fx152_report_junit_policy_fail/summary.txt"
+		},
+		{
+			"fixture_id": "fx155_report_sarif_scan_v4_file_level",
+			"family": "B-report-SARIF",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 47.743167,
+			"harness_duration_ms": 49.393917,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx155_report_sarif_scan_v4_file_level",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx155_report_sarif_scan_v4_file_level/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx155_report_sarif_scan_v4_file_level/summary.txt"
+		},
+		{
+			"fixture_id": "fx156_report_sarif_scan_v5_regions",
+			"family": "B-report-SARIF",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.66525,
+			"harness_duration_ms": 50.269875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx156_report_sarif_scan_v5_regions",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx156_report_sarif_scan_v5_regions/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx156_report_sarif_scan_v5_regions/summary.txt"
+		},
+		{
+			"fixture_id": "fx157_report_sarif_with_check_and_diff",
+			"family": "B-report-SARIF",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 47.986292,
+			"harness_duration_ms": 50.107625,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx157_report_sarif_with_check_and_diff",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx157_report_sarif_with_check_and_diff/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx157_report_sarif_with_check_and_diff/summary.txt"
+		},
+		{
+			"fixture_id": "fx159_report_sarif_no_source_snippets",
+			"family": "B-report-SARIF",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 48.261,
+			"harness_duration_ms": 50.211667,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx159_report_sarif_no_source_snippets",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx159_report_sarif_no_source_snippets/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-report-SARIF/fx159_report_sarif_no_source_snippets/summary.txt"
 		},
 		{
 			"fixture_id": "fx01_scan_min_clean",
@@ -573,16 +930,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.287875,
-			"harness_duration_ms": 129.790542,
+			"total_duration_ms": 126.852292,
+			"harness_duration_ms": 129.09875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx01_scan_min_clean",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx01_scan_min_clean/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx01_scan_min_clean/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx01_scan_min_clean",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx01_scan_min_clean/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx01_scan_min_clean/summary.txt"
 		},
 		{
 			"fixture_id": "fx02_scan_two_anchors_overlap",
@@ -590,16 +947,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.850292,
-			"harness_duration_ms": 132.485042,
+			"total_duration_ms": 132.287917,
+			"harness_duration_ms": 134.827709,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx02_scan_two_anchors_overlap",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx02_scan_two_anchors_overlap/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx02_scan_two_anchors_overlap/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx02_scan_two_anchors_overlap",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx02_scan_two_anchors_overlap/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx02_scan_two_anchors_overlap/summary.txt"
 		},
 		{
 			"fixture_id": "fx03_scan_unmapped_anchor",
@@ -607,16 +964,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.801334,
-			"harness_duration_ms": 129.031084,
+			"total_duration_ms": 124.156584,
+			"harness_duration_ms": 126.394125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx03_scan_unmapped_anchor",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx03_scan_unmapped_anchor/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx03_scan_unmapped_anchor/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx03_scan_unmapped_anchor",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx03_scan_unmapped_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx03_scan_unmapped_anchor/summary.txt"
 		},
 		{
 			"fixture_id": "fx04_scan_stale_mapping",
@@ -624,16 +981,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.223583,
-			"harness_duration_ms": 128.525125,
+			"total_duration_ms": 127.583709,
+			"harness_duration_ms": 130.056667,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx04_scan_stale_mapping",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx04_scan_stale_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx04_scan_stale_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx04_scan_stale_mapping",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx04_scan_stale_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx04_scan_stale_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx05_scan_broken_seed",
@@ -641,16 +998,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.663917,
-			"harness_duration_ms": 127.979667,
+			"total_duration_ms": 129.691,
+			"harness_duration_ms": 132.022083,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx05_scan_broken_seed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx05_scan_broken_seed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx05_scan_broken_seed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx05_scan_broken_seed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx05_scan_broken_seed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx05_scan_broken_seed/summary.txt"
 		},
 		{
 			"fixture_id": "fx06_scan_clean_untraced",
@@ -658,16 +1015,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 131.624917,
-			"harness_duration_ms": 133.987417,
+			"total_duration_ms": 131.1005,
+			"harness_duration_ms": 133.504541,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06_scan_clean_untraced",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06_scan_clean_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06_scan_clean_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06_scan_clean_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06_scan_clean_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06_scan_clean_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx06a_scan_unmapped_anchor_suppresses_untraced",
@@ -675,16 +1032,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 124.520791,
-			"harness_duration_ms": 126.784375,
+			"total_duration_ms": 128.745666,
+			"harness_duration_ms": 131.120375,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx06a_scan_unmapped_anchor_suppresses_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx07_scan_degraded_suppresses_untraced",
@@ -692,16 +1049,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.892875,
-			"harness_duration_ms": 130.089417,
+			"total_duration_ms": 127.185625,
+			"harness_duration_ms": 129.51125,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx07_scan_degraded_suppresses_untraced/summary.txt"
 		},
 		{
 			"fixture_id": "fx08_scan_no_untraced_without_usable_mapping",
@@ -709,16 +1066,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.688833,
-			"harness_duration_ms": 129.009125,
+			"total_duration_ms": 127.808459,
+			"harness_duration_ms": 130.127291,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx08_scan_no_untraced_without_usable_mapping/summary.txt"
 		},
 		{
 			"fixture_id": "fx09_scan_findings_canonical_order",
@@ -726,16 +1083,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.129792,
-			"harness_duration_ms": 132.452875,
+			"total_duration_ms": 129.675834,
+			"harness_duration_ms": 133.072333,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx09_scan_findings_canonical_order",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx09_scan_findings_canonical_order/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx09_scan_findings_canonical_order/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx09_scan_findings_canonical_order",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx09_scan_findings_canonical_order/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx09_scan_findings_canonical_order/summary.txt"
 		},
 		{
 			"fixture_id": "fx10_scan_closed_objects",
@@ -743,16 +1100,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.371125,
-			"harness_duration_ms": 128.94225,
+			"total_duration_ms": 129.126875,
+			"harness_duration_ms": 131.469458,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10_scan_closed_objects",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10_scan_closed_objects/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10_scan_closed_objects/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10_scan_closed_objects",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10_scan_closed_objects/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10_scan_closed_objects/summary.txt"
 		},
 		{
 			"fixture_id": "fx10a_scan_traceability_metrics_fanout",
@@ -760,16 +1117,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.116542,
-			"harness_duration_ms": 132.075084,
+			"total_duration_ms": 129.118875,
+			"harness_duration_ms": 132.049916,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10a_scan_traceability_metrics_fanout/summary.txt"
 		},
 		{
 			"fixture_id": "fx10b_scan_draft_anchor_visible_without_unmapped",
@@ -777,16 +1134,84 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 124.596875,
-			"harness_duration_ms": 126.94875,
+			"total_duration_ms": 128.08725,
+			"harness_duration_ms": 130.3885,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan/fx10b_scan_draft_anchor_visible_without_unmapped/summary.txt"
+		},
+		{
+			"fixture_id": "fx146_scan_v5_markdown_source_location",
+			"family": "B-scan-v5",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 130.953584,
+			"harness_duration_ms": 133.177667,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx146_scan_v5_markdown_source_location",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx146_scan_v5_markdown_source_location/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx146_scan_v5_markdown_source_location/summary.txt"
+		},
+		{
+			"fixture_id": "fx147_scan_v5_yaml_source_location",
+			"family": "B-scan-v5",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 128.038333,
+			"harness_duration_ms": 130.233458,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx147_scan_v5_yaml_source_location",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx147_scan_v5_yaml_source_location/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx147_scan_v5_yaml_source_location/summary.txt"
+		},
+		{
+			"fixture_id": "fx148_scan_v5_closed_observed_anchor",
+			"family": "B-scan-v5",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 126.813042,
+			"harness_duration_ms": 128.981459,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx148_scan_v5_closed_observed_anchor",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx148_scan_v5_closed_observed_anchor/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx148_scan_v5_closed_observed_anchor/summary.txt"
+		},
+		{
+			"fixture_id": "fx149_existing_artifact_commands_accept_scan_v4_v5",
+			"family": "B-scan-v5",
+			"status": "pass",
+			"failed_oracle": null,
+			"summary": "ok",
+			"total_duration_ms": 46.85275,
+			"harness_duration_ms": 49.095875,
+			"last_failed_phase": null,
+			"trace": {
+				"state": "not_emitted",
+				"detail": null
+			},
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx149_existing_artifact_commands_accept_scan_v4_v5",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx149_existing_artifact_commands_accept_scan_v4_v5/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-scan-v5/fx149_existing_artifact_commands_accept_scan_v4_v5/summary.txt"
 		},
 		{
 			"fixture_id": "fx22g_specs_repo_native_markdown_ids",
@@ -794,16 +1219,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.82625,
-			"harness_duration_ms": 128.051458,
+			"total_duration_ms": 127.4275,
+			"harness_duration_ms": 129.655625,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22g_specs_repo_native_markdown_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22h_specs_repo_native_yaml_root_ids",
@@ -811,16 +1236,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.715917,
-			"harness_duration_ms": 128.839958,
+			"total_duration_ms": 133.133375,
+			"harness_duration_ms": 136.068917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22h_specs_repo_native_yaml_root_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22i_specs_repo_native_rejected_near_misses",
@@ -828,16 +1253,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 130.562583,
-			"harness_duration_ms": 134.188625,
+			"total_duration_ms": 128.602,
+			"harness_duration_ms": 132.056833,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22i_specs_repo_native_rejected_near_misses/summary.txt"
 		},
 		{
 			"fixture_id": "fx22j_specs_screaming_snake_dotted_markdown_ids",
@@ -845,16 +1270,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 124.969416,
-			"harness_duration_ms": 127.345667,
+			"total_duration_ms": 134.079833,
+			"harness_duration_ms": 136.273875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22j_specs_screaming_snake_dotted_markdown_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22k_specs_screaming_snake_dotted_yaml_root_ids",
@@ -862,16 +1287,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.423041,
-			"harness_duration_ms": 128.008208,
+			"total_duration_ms": 128.068333,
+			"harness_duration_ms": 130.545584,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22k_specs_screaming_snake_dotted_yaml_root_ids/summary.txt"
 		},
 		{
 			"fixture_id": "fx22l_specs_screaming_snake_dotted_rejected_near_misses",
@@ -879,16 +1304,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.208208,
-			"harness_duration_ms": 131.379083,
+			"total_duration_ms": 127.55025,
+			"harness_duration_ms": 130.793916,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/B-specs/fx22l_specs_screaming_snake_dotted_rejected_near_misses/summary.txt"
 		},
 		{
 			"fixture_id": "c1_filesystem_order_baseline",
@@ -896,16 +1321,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 127.445959,
-			"harness_duration_ms": 130.259291,
+			"total_duration_ms": 129.465209,
+			"harness_duration_ms": 132.137667,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c1_filesystem_order_transformed",
@@ -913,16 +1338,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.437416,
-			"harness_duration_ms": 131.257958,
+			"total_duration_ms": 130.402917,
+			"harness_duration_ms": 133.383791,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c1_filesystem_order_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c1_filesystem_order_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_scan_baseline",
@@ -930,16 +1355,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.865083,
-			"harness_duration_ms": 129.185958,
+			"total_duration_ms": 137.75975,
+			"harness_duration_ms": 140.1895,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c2_yaml_reorder_scan_transformed",
@@ -947,16 +1372,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.506833,
-			"harness_duration_ms": 127.816333,
+			"total_duration_ms": 127.979875,
+			"harness_duration_ms": 130.573833,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c2_yaml_reorder_scan_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c3_spec_noise_baseline",
@@ -964,16 +1389,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.291791,
-			"harness_duration_ms": 127.468708,
+			"total_duration_ms": 127.173416,
+			"harness_duration_ms": 129.599792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c3_spec_noise_transformed",
@@ -981,16 +1406,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 129.457041,
-			"harness_duration_ms": 132.140416,
+			"total_duration_ms": 127.318917,
+			"harness_duration_ms": 129.769333,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c3_spec_noise_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c3_spec_noise_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c4_seed_movement_baseline",
@@ -998,16 +1423,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 128.573833,
-			"harness_duration_ms": 131.034333,
+			"total_duration_ms": 134.328667,
+			"harness_duration_ms": 136.69875,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c4_seed_movement_transformed",
@@ -1015,16 +1440,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.513959,
-			"harness_duration_ms": 127.73,
+			"total_duration_ms": 131.249917,
+			"harness_duration_ms": 133.508208,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c4_seed_movement_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c4_seed_movement_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c5_external_import_baseline",
@@ -1032,16 +1457,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 125.977084,
-			"harness_duration_ms": 128.494958,
+			"total_duration_ms": 128.653,
+			"harness_duration_ms": 130.980708,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c5_external_import_transformed",
@@ -1049,16 +1474,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 126.351,
-			"harness_duration_ms": 128.759667,
+			"total_duration_ms": 126.409417,
+			"harness_duration_ms": 128.64075,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c5_external_import_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c5_external_import_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c6_unsupported_extension_baseline",
@@ -1066,16 +1491,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 134.428292,
-			"harness_duration_ms": 136.980166,
+			"total_duration_ms": 132.505375,
+			"harness_duration_ms": 135.258917,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_baseline",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_baseline/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_baseline/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_baseline",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_baseline/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_baseline/summary.txt"
 		},
 		{
 			"fixture_id": "c6_unsupported_extension_transformed",
@@ -1083,16 +1508,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 134.814166,
-			"harness_duration_ms": 137.822042,
+			"total_duration_ms": 140.607833,
+			"harness_duration_ms": 143.446791,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_transformed",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_transformed/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c6_unsupported_extension_transformed/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_transformed",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_transformed/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c6_unsupported_extension_transformed/summary.txt"
 		},
 		{
 			"fixture_id": "c8_locale_collation_order",
@@ -1100,16 +1525,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 132.705958,
-			"harness_duration_ms": 135.299458,
+			"total_duration_ms": 130.683,
+			"harness_duration_ms": 133.089792,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "not_emitted",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c8_locale_collation_order",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c8_locale_collation_order/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/C-metamorphic/c8_locale_collation_order/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c8_locale_collation_order",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c8_locale_collation_order/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/C-metamorphic/c8_locale_collation_order/summary.txt"
 		},
 		{
 			"fixture_id": "harness_schema_success",
@@ -1117,16 +1542,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 24.481042,
-			"harness_duration_ms": 26.958584,
+			"total_duration_ms": 23.880083,
+			"harness_duration_ms": 26.315542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-schema/harness_schema_success",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-schema/harness_schema_success/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-schema/harness_schema_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-schema/harness_schema_success",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-schema/harness_schema_success/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-schema/harness_schema_success/summary.txt"
 		},
 		{
 			"fixture_id": "harness_smoke_scan_success",
@@ -1134,16 +1559,16 @@
 			"status": "pass",
 			"failed_oracle": null,
 			"summary": "ok",
-			"total_duration_ms": 24.512958,
-			"harness_duration_ms": 26.914042,
+			"total_duration_ms": 24.659875,
+			"harness_duration_ms": 26.990542,
 			"last_failed_phase": null,
 			"trace": {
 				"state": "captured",
 				"detail": null
 			},
-			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-smoke/harness_smoke_scan_success",
-			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-smoke/harness_smoke_scan_success/result.json",
-			"summary_path": ".tmp/fixture-runs/goldens-all/run-0030/fixtures/harness-smoke/harness_smoke_scan_success/summary.txt"
+			"artifact_dir": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-smoke/harness_smoke_scan_success",
+			"metadata_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-smoke/harness_smoke_scan_success/result.json",
+			"summary_path": ".tmp/fixture-runs/goldens-all/run-0041/fixtures/harness-smoke/harness_smoke_scan_success/summary.txt"
 		}
 	]
 }

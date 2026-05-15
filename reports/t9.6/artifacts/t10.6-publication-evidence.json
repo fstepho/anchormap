@@ -3,32 +3,32 @@
 	"task": "T10.6",
 	"status": "pass",
 	"package_name": "anchormap",
-	"package_version": "1.2.1",
-	"registry_coordinate": "anchormap@1.2.1",
-	"tarball_file": "anchormap-1.2.1.tgz",
-	"dist_integrity": "sha512-ps6yddV/BB7j5SprPi3Ocz/Irr8vI81mQ1eBNBI6ACVtWlhthtrmN4KVj9Y51n1PzIrhavPeRjBsNxBHooudeQ==",
-	"dist_shasum": "053f64c4da5f5e1db6e48ef4f8eaee4cb2d04c6b",
-	"sha256": "cf9557ec81e62892bf5d1f2423ded53ac9c3dda2628cc9cee802f9a0e515e768",
+	"package_version": "1.2.2",
+	"registry_coordinate": "anchormap@1.2.2",
+	"tarball_file": "anchormap-1.2.2.tgz",
+	"dist_integrity": "sha512-j7wPZKG5s1qVJYcDw69rIbBel/+UD+QdvgNiO5z7GBcvrKnberMY90uVU6kYhChPSX2v6KauppxHt+8BTMXhfw==",
+	"dist_shasum": "e2c60c01e3ecdd691d511a706c00c5a4529945c4",
+	"sha256": "b874b7b12659369b8157ecb07de02e4a6cfbcae7c869f634dbf1e7ee3ef6dff7",
 	"distribution_channel": {
 		"adr": "docs/adr/0009-packaging-and-distribution.md",
 		"type": "public npm registry",
 		"registry": "https://registry.npmjs.org/",
-		"package_coordinate": "anchormap@1.2.1",
+		"package_coordinate": "anchormap@1.2.2",
 		"dist_tag": "latest",
-		"repository_tag": "v1.2.1"
+		"repository_tag": "v1.2.2"
 	},
 	"artifact": {
 		"source": "T10.5 validated tarball",
-		"identifier": "anchormap@1.2.1",
-		"tarball_path": "reports/t10.5/anchormap-1.2.1.tgz",
+		"identifier": "anchormap@1.2.2",
+		"tarball_path": "reports/t10.5/anchormap-1.2.2.tgz",
 		"tarball_artifact_report": "reports/t10.5/t10.5-tarball-artifact.json",
 		"publication_dry_run_report": "reports/t10.5/t10.5-publication-dry-run.json",
 		"package_name": "anchormap",
-		"package_version": "1.2.1",
-		"npm_integrity": "sha512-ps6yddV/BB7j5SprPi3Ocz/Irr8vI81mQ1eBNBI6ACVtWlhthtrmN4KVj9Y51n1PzIrhavPeRjBsNxBHooudeQ==",
-		"npm_shasum": "053f64c4da5f5e1db6e48ef4f8eaee4cb2d04c6b",
-		"sha256": "cf9557ec81e62892bf5d1f2423ded53ac9c3dda2628cc9cee802f9a0e515e768",
-		"checksum_file": "reports/t10.5/anchormap-1.2.1.tgz.sha256"
+		"package_version": "1.2.2",
+		"npm_integrity": "sha512-j7wPZKG5s1qVJYcDw69rIbBel/+UD+QdvgNiO5z7GBcvrKnberMY90uVU6kYhChPSX2v6KauppxHt+8BTMXhfw==",
+		"npm_shasum": "e2c60c01e3ecdd691d511a706c00c5a4529945c4",
+		"sha256": "b874b7b12659369b8157ecb07de02e4a6cfbcae7c869f634dbf1e7ee3ef6dff7",
+		"checksum_file": "reports/t10.5/anchormap-1.2.2.tgz.sha256"
 	},
 	"release_evidence_links": {
 		"m9_release_gate_report": "reports/t9.6/release-report.json",
@@ -36,7 +36,7 @@
 		"t9_7_entropy_review": "reports/t9.7/entropy-review.json",
 		"t10_3_installed_artifact_report": "reports/t10.3/installed-artifact-report.json",
 		"t10_5_tarball_artifact_report": "reports/t10.5/t10.5-tarball-artifact.json",
-		"t10_5_checksum_record": "reports/t10.5/anchormap-1.2.1.tgz.sha256"
+		"t10_5_checksum_record": "reports/t10.5/anchormap-1.2.2.tgz.sha256"
 	},
 	"prepublish_checks": {
 		"token_file": {
@@ -50,15 +50,15 @@
 			"stdout": "fstepho"
 		},
 		"registry_version_lookup_before_publish": {
-			"command": "npm view anchormap@1.2.1 version --registry https://registry.npmjs.org/",
+			"command": "npm view anchormap@1.2.2 version --registry https://registry.npmjs.org/",
 			"status": 1,
 			"npm_error_code": "E404",
-			"interpretation": "anchormap@1.2.1 was not found before publication"
+			"interpretation": "anchormap@1.2.2 was not found before publication"
 		},
 		"checksum_recomputed": {
-			"command": "shasum -a 256 reports/t10.5/anchormap-1.2.1.tgz",
+			"command": "shasum -a 256 reports/t10.5/anchormap-1.2.2.tgz",
 			"status": 0,
-			"sha256": "cf9557ec81e62892bf5d1f2423ded53ac9c3dda2628cc9cee802f9a0e515e768",
+			"sha256": "b874b7b12659369b8157ecb07de02e4a6cfbcae7c869f634dbf1e7ee3ef6dff7",
 			"matches_checksum_file": true
 		},
 		"starting_evidence": {
@@ -82,44 +82,44 @@
 	},
 	"publication": {
 		"publish_attempted": true,
-		"publish_command": "npm publish reports/t10.5/anchormap-1.2.1.tgz --access public --tag latest --registry https://registry.npmjs.org/",
+		"publish_command": "npm publish reports/t10.5/anchormap-1.2.2.tgz --access public --tag latest --registry https://registry.npmjs.org/",
 		"exit_status": 0,
-		"registry_coordinate_published": "anchormap@1.2.1",
-		"package_version_url": "https://www.npmjs.com/package/anchormap/v/1.2.1",
-		"registry_tarball_url": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.1.tgz",
+		"registry_coordinate_published": "anchormap@1.2.2",
+		"package_version_url": "https://www.npmjs.com/package/anchormap/v/1.2.2",
+		"registry_tarball_url": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.2.tgz",
 		"npm_publish_result": {
-			"id": "anchormap@1.2.1",
+			"id": "anchormap@1.2.2",
 			"name": "anchormap",
-			"version": "1.2.1",
-			"shasum": "053f64c4da5f5e1db6e48ef4f8eaee4cb2d04c6b",
-			"integrity": "sha512-ps6yddV/BB7j5SprPi3Ocz/Irr8vI81mQ1eBNBI6ACVtWlhthtrmN4KVj9Y51n1PzIrhavPeRjBsNxBHooudeQ==",
-			"filename": "anchormap-1.2.1.tgz",
-			"entry_count": 23
+			"version": "1.2.2",
+			"shasum": "e2c60c01e3ecdd691d511a706c00c5a4529945c4",
+			"integrity": "sha512-j7wPZKG5s1qVJYcDw69rIbBel/+UD+QdvgNiO5z7GBcvrKnberMY90uVU6kYhChPSX2v6KauppxHt+8BTMXhfw==",
+			"filename": "anchormap-1.2.2.tgz",
+			"entry_count": 42
 		}
 	},
 	"post_publish_verification": {
 		"registry_metadata_lookup": {
-			"command": "npm view anchormap@1.2.1 version dist.integrity dist.shasum dist.tarball --registry https://registry.npmjs.org/",
+			"command": "npm view anchormap@1.2.2 version dist.integrity dist.shasum dist.tarball --registry https://registry.npmjs.org/",
 			"status": 0,
-			"version": "1.2.1",
-			"dist_integrity": "sha512-ps6yddV/BB7j5SprPi3Ocz/Irr8vI81mQ1eBNBI6ACVtWlhthtrmN4KVj9Y51n1PzIrhavPeRjBsNxBHooudeQ==",
-			"dist_shasum": "053f64c4da5f5e1db6e48ef4f8eaee4cb2d04c6b",
-			"dist_tarball": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.1.tgz",
+			"version": "1.2.2",
+			"dist_integrity": "sha512-j7wPZKG5s1qVJYcDw69rIbBel/+UD+QdvgNiO5z7GBcvrKnberMY90uVU6kYhChPSX2v6KauppxHt+8BTMXhfw==",
+			"dist_shasum": "e2c60c01e3ecdd691d511a706c00c5a4529945c4",
+			"dist_tarball": "https://registry.npmjs.org/anchormap/-/anchormap-1.2.2.tgz",
 			"matches_t10_5_artifact": true
 		},
 		"published_tarball_download_verification": {
-			"command": "npm pack anchormap@1.2.1 --pack-destination /tmp/anchormap-t10.6-published-package.Ws7Egr --json --registry https://registry.npmjs.org/",
+			"command": "npm pack anchormap@1.2.2 --pack-destination /private/tmp/anchormap-published-1.2.2.eWBla6 --json --registry https://registry.npmjs.org/",
 			"status": 0,
-			"sha256_command": "shasum -a 256 /tmp/anchormap-t10.6-published-package.Ws7Egr/anchormap-1.2.1.tgz",
-			"sha256": "cf9557ec81e62892bf5d1f2423ded53ac9c3dda2628cc9cee802f9a0e515e768",
+			"sha256_command": "shasum -a 256 /private/tmp/anchormap-published-1.2.2.eWBla6/anchormap-1.2.2.tgz",
+			"sha256": "b874b7b12659369b8157ecb07de02e4a6cfbcae7c869f634dbf1e7ee3ef6dff7",
 			"matches_t10_5_artifact": true
 		},
 		"documented_user_flow_install_smoke": {
-			"command_summary": "npm init -y; npm install anchormap@1.2.1 --no-audit --no-fund --registry https://registry.npmjs.org/; create minimal src/specs; anchormap init; anchormap map; anchormap scan --json",
+			"command_summary": "npm init -y; npm install anchormap@1.2.2 --no-audit --no-fund --registry https://registry.npmjs.org/; create minimal src/specs; anchormap init; anchormap map; anchormap scan --json",
 			"status": 0,
 			"check_dir": "/tmp/anchormap-post-publish-check.8UqhvI",
 			"registry": "https://registry.npmjs.org/",
-			"installed_coordinate": "anchormap@1.2.1",
+			"installed_coordinate": "anchormap@1.2.2",
 			"launcher": "./node_modules/.bin/anchormap",
 			"scan_result_summary": {
 				"schema_version": 4,
@@ -138,16 +138,5 @@
 		"token_source_file": "/Users/fstepho/.npmjs-token",
 		"temporary_npmrc_used": true,
 		"temporary_npmrc_removed_after_use": true
-	},
-	"repository_tag": {
-		"local_command": "git tag v1.2.1 3812cb8 && git tag --list v1.2.1",
-		"local_status": 0,
-		"tag": "v1.2.1",
-		"target_commit": "3812cb8265ccd98840378463069691e2f9883508",
-		"push_command": "git push origin v1.2.1",
-		"push_status": 0,
-		"remote": "origin",
-		"pushed": true,
-		"remote_ref": "refs/tags/v1.2.1"
 	}
 }

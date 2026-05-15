@@ -2,15 +2,15 @@
 	"schema_version": 1,
 	"task": "T10.5",
 	"package_name": "anchormap",
-	"package_version": "1.2.1",
+	"package_version": "1.2.2",
 	"mechanism": "npm-shrinkwrap.json",
 	"runtime_closure_matches_gate_g": true,
 	"shrinkwrap": {
 		"included_in_package": true,
 		"path": "npm-shrinkwrap.json",
-		"sha256": "cfba92ac5e535636aeb768c37084be44e4a854089b0229a8726216a4c342688c"
+		"sha256": "8f437241c5f63f33140c126521e9ad4cae956c089bfe34e7265fc15a8d76d173"
 	},
-	"package_lock_sha256": "cfba92ac5e535636aeb768c37084be44e4a854089b0229a8726216a4c342688c",
+	"package_lock_sha256": "8f437241c5f63f33140c126521e9ad4cae956c089bfe34e7265fc15a8d76d173",
 	"root_runtime_dependencies": {
 		"commonmark": "0.30.0",
 		"typescript": "6.0.3",

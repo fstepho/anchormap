@@ -26,7 +26,7 @@ test("builds bundle hashes from canonical artifact bytes including final newline
 			pull_request: null,
 			run_url: null,
 		},
-		toolVersion: "1.2.1",
+		toolVersion: "1.2.2",
 		canonicalArtifactBytes,
 	});
 
@@ -35,7 +35,7 @@ test("builds bundle hashes from canonical artifact bytes including final newline
 		check_sha256: sha256(canonicalArtifactBytes.check),
 		diff_sha256: sha256(canonicalArtifactBytes.diff),
 	});
-	assert.equal(bundle.tool.version, "1.2.1");
+	assert.equal(bundle.tool.version, "1.2.2");
 	assert.equal(bundle.artifacts.scan, scan);
 });
 

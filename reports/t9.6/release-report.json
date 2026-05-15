@@ -68,10 +68,10 @@
 					"id": "golden_report_matches_current_stdout_golden_manifests",
 					"status": "pass",
 					"missing_stdout_golden_fixtures": [],
-					"expected_count": 67,
-					"actual_count": 67,
-					"total_count": 67,
-					"passed_count": 67
+					"expected_count": 92,
+					"actual_count": 92,
+					"total_count": 92,
+					"passed_count": 92
 				},
 				{
 					"id": "golden_report_records_well_formed",
@@ -91,7 +91,7 @@
 				{
 					"id": "json_goldens_present",
 					"status": "pass",
-					"json_golden_count": 67
+					"json_golden_count": 70
 				},
 				{
 					"id": "yaml_goldens_present",
