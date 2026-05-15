@@ -1,11 +1,49 @@
-# AnchorMap Design Partner Preview
+# AnchorMap Preview
 
-Status: self-serve preview guide for teams trying the AnchorMap GitHub
-Action and PR report workflow.
+Status: self-serve preview guide for the no-install demo path and for teams
+trying the AnchorMap GitHub Action and PR report workflow.
 
-AnchorMap helps TypeScript teams detect spec-to-code traceability drift in PRs.
-The preview is self-serve, local-first, and does not require uploading source
+## Give a 5-minute first reaction
+
+AnchorMap detects spec-to-code traceability drift in TypeScript PRs.
+
+You do not need to install anything to react to the preview.
+
+Start here:
+
+- Feedback issue: https://github.com/fstepho/anchormap/issues/5
+- Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
+- New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
+- Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
+- Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
+
+Useful reaction:
+
+1. Did you understand the problem?
+2. Did the PR report make sense?
+3. Would you try this on a TypeScript repo?
+4. What confused you?
+
+## The problem
+
+In many TypeScript projects, product/API/spec documents change separately from
 code.
+
+During review, it is hard to see whether:
+
+- a new requirement-like statement was added without code mapping;
+- an old mapping points to something that no longer exists;
+- a PR reduced traceability coverage;
+- the report is still reliable enough to trust.
+
+AnchorMap makes those cases visible in CI as local artifacts and a PR-readable
+Markdown report.
+
+## Design Partner Preview
+
+For teams that want to try the Action after the no-install preview, AnchorMap
+helps TypeScript teams detect spec-to-code traceability drift in PRs. The
+preview is self-serve, local-first, and does not require uploading source code.
 
 This preview does not create a GitHub App, hosted dashboard, SaaS upload path,
 or manual onboarding program. The repository contains docs and feedback
@@ -103,8 +141,8 @@ source snippets. Preserve that boundary when sharing feedback.
 
 Use the issue template that best matches the feedback:
 
-- first reaction for a quick response after reading the demo PRs, before
-  installing anything;
+- 5-minute first reaction for a quick response after reading the demo PRs,
+  before installing anything;
 - design partner feedback for the overall preview experience;
 - Action installation problem for setup or workflow failures;
 - confusing report for unclear report sections;

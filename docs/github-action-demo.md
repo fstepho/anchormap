@@ -1,5 +1,33 @@
 # AnchorMap GitHub Action Demo
 
+## Give a 5-minute first reaction
+
+You do not need to install anything to react to the demo.
+
+- Give a 5-minute first reaction:
+  https://github.com/fstepho/anchormap/issues/5
+- Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
+- New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
+- Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
+- Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
+
+## The problem
+
+In many TypeScript projects, product/API/spec documents change separately from
+code.
+
+During review, it is hard to see whether:
+
+- a new requirement-like statement was added without code mapping;
+- an old mapping points to something that no longer exists;
+- a PR reduced traceability coverage;
+- the report is still reliable enough to trust.
+
+AnchorMap makes those cases visible in CI as local artifacts and a PR-readable
+Markdown report.
+
+## Demo Guide
+
 Status: repo-local demo workflow documentation for the AnchorMap GitHub Action
 preview and PR report path.
 
