@@ -1,0 +1,29 @@
+# Inert documentation example. Copy this file into your repository as
+# .github/workflows/anchormap.yml and replace the placeholder versions.
+
+name: AnchorMap
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  anchormap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run AnchorMap
+        uses: fstepho/anchormap-action@<action-version>
+        with:
+          anchormap-version: <anchormap-npm-version>
+          node-version: "22"
+          policy: anchormap.policy.yaml
+          upload-artifacts: "true"
+          fail-on-policy: "true"
