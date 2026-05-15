@@ -13,13 +13,17 @@
   deterministic TSX product-file extension, and M17 existing-codebase slice
   onboarding extension tracked below, plus the user-authorized M19 CLI
   SaaS-ready 1 local artifact workflow and the user-authorized M20 CLI
-  SaaS-ready 2 artifact bundle and report formats scope.
+  SaaS-ready 2 artifact bundle and report formats scope, plus the
+  user-authorized M21 GitHub Action / PR preview repo-local artifact scope.
 - `T18.0` is non-product, non-contractual TSX adoption evidence and remains
   outside release gates.
 - `T19.0` is process/spec planning for the user-authorized CLI SaaS-ready 1
   scope and must not touch runtime behavior.
 - `T20.0` is process/spec planning for the user-authorized CLI SaaS-ready 2
   scope and must not touch runtime behavior.
+- `T21.0` is process/ADR/task-plan maintenance for the user-authorized GitHub
+  Action / PR preview repo-local artifact scope and must not touch runtime
+  behavior.
 - Pre-M1 ADR register lives in `docs/adr/README.md`.
 - Pre-M1 stack baseline recorded in `docs/adr/0001-runtime-and-package-manager.md`.
 - Kickoff readiness evidence lives in `docs/kickoff-readiness.md`.
@@ -37,8 +41,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: None recorded.
-- Last completed task: `T20.5 — Close CLI SaaS-ready 2 compatibility and isolation`
+- Next executable product task: `T21.1 — Document minimal GitHub Action setup and inert workflow examples`
+- Last completed task: `T21.0 — Adopt GitHub Action / PR preview authority and task plan`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -163,6 +167,7 @@
   - `T20.3 — Implement JUnit report format`
   - `T20.4 — Implement SARIF report format`
   - `T20.5 — Close CLI SaaS-ready 2 compatibility and isolation`
+  - `T21.0 — Adopt GitHub Action / PR preview authority and task plan`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
@@ -213,6 +218,7 @@
 | M17 — Existing Codebase Slice Onboarding | Run AnchorMap on an unmodified existing TypeScript codebase slice while separating traced in-slice references from references that leave the selected scope | ADR-0018, slice-compatible `tsconfig_io`, alias-aware `ts_graph`, README and reference demo runbook updates | M17 B-graph slice alias fixtures; M17 B-map alias fixture; `fx38v` requalification; M15 alias and B-cli priority regressions; docs/ADR consistency | M16 done; user-approved M17 plan | A user can keep the repository's existing `tsconfig.json`, select one `product_root` such as `app`, `src`, or `server`, and get a deterministic schema v4 report that traces aliases inside the slice while reporting existing out-of-slice targets and unresolved targets without failing the first run |
 | M19 — CLI SaaS-ready 1 local artifact workflow | Make AnchorMap scan artifacts actionable in local CI/PR workflows without SaaS upload, Git refs, schema v5, bundle, JUnit, or SARIF | ADR-0019 through ADR-0023, `check`, `diff`, `explain`, Markdown `report`, artifact I/O, fixtures and goldens | B-check `fx117`–`fx123`; B-diff `fx124`–`fx128`; B-explain `fx129`–`fx134`; B-report `fx135`–`fx140`; B-cli priority regressions; C13 artifact-command isolation | M17 done; T18.0 done; user-authorized SaaS-ready 1 plan | `check --json` distinguishes policy fail code `5` from technical failures, `diff` compares scan artifacts only, `explain` works from a scan artifact alone, and Markdown `report` serializes existing artifacts without inventing facts |
 | M20 — CLI SaaS-ready 2 artifact bundle and report formats | Make local CLI artifacts SaaS-ingestion-ready without upload, implicit CI/Git metadata discovery, AnchorMap-derived snippets, or runtime SaaS dependencies | ADR-0024 through ADR-0026, `bundle`, scan schema v5 source locations, JUnit report, SARIF report, v4/v5 artifact compatibility | B-bundle `fx141`–`fx145`; B-scan-v5 `fx146`–`fx150`; B-report-JUnit `fx151`–`fx154`; B-report-SARIF `fx155`–`fx159`; C14 SaaS-ready 2 artifact isolation | M19 done; user-authorized SaaS-ready 2 plan | `bundle --json` assembles explicit artifacts and closed declarative metadata with hashes, scan v5 adds source locations without snippets, JUnit/SARIF render locally from artifacts, and v4/v5 compatibility stays closed and deterministic |
+| M21 — GitHub Action / PR preview repo-local artifacts | Materialize repo-local documentation, templates, and inert examples for the GitHub Action / PR preview path without implementing Action runtime behavior | ADR-0027, self-serve docs, issue templates, workflow examples, PR report docs, policy examples, troubleshooting, demo docs | `docs/tasks.md` structural lint; docs consistency checks; repo-local docs review | M20 done; user-authorized GitHub Action / PR preview plan | Repo-local artifacts explain the Action workflow, PR report, policies, troubleshooting, feedback templates, and demo path while off-repo runtime Action work and external GitHub state remain explicit hard stops or operational follow-up |
 
 ## Milestone dependency graph
 
@@ -240,6 +246,7 @@ M1 Fixture harness
                                            -> M17 Existing Codebase Slice Onboarding
                                              -> M19 CLI SaaS-ready 1 local artifact workflow
                                                -> M20 CLI SaaS-ready 2 artifact bundle and report formats
+                                                 -> M21 GitHub Action / PR preview repo-local artifacts
 ```
 
 ## M1 — Fixture harness
@@ -7735,6 +7742,308 @@ Suggested verification:
 - Run `npm run lint`.
 - Run `sh scripts/lint-tasks.sh`.
 
+## M21 — GitHub Action / PR preview repo-local artifacts
+
+### T21.0 — Adopt GitHub Action / PR preview authority and task plan
+
+Purpose:
+- Adopt only the repo-local authority and planning slice of
+  `docs/github-action-pr-preview-plan.md`.
+- Create executable, traceable tasks for documentation, issue templates,
+  workflow examples, PR report docs, policy examples, troubleshooting, and
+  demo docs without changing runtime behavior.
+
+Reading mode:
+- critical.
+
+Process refs:
+- `AGENTS.md` — process-doc and ADR maintenance intake.
+- `operating-model.md` — §10 Taxonomie des écarts.
+- `operating-model.md` — §14.2 Règles de review de diff.
+- `operating-model.md` — §18.1 Mode autopilot.
+- `operating-model.md` — §19.1 Tâche.
+- `operating-model.md` — §19.4 Maintenance process.
+- `agent-loop.md` — critical reading mode, review, checks, and autopilot
+  guidance.
+
+Scope refs:
+- `brief.md` — §6.10 Segment livré : artefacts CLI locaux pour CI/PR et SaaS
+  futur.
+- `brief.md` — §13 Décisions de cadrage.
+- `docs/github-action-pr-preview-plan.md` — prerequisites, GHA-1 through
+  GHA-5, PREVIEW-1 through PREVIEW-3, and repo-local artifact boundaries.
+
+ADR refs:
+- `ADR-0019` through `ADR-0026`.
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Implementation scope:
+- Add the accepted GHA-1 orchestration ADR.
+- Register the ADR in `docs/adr/README.md`.
+- Add this M21 milestone and tasks to `docs/tasks.md`.
+- Keep `docs/tasks.md` structurally valid and leave runtime work incomplete.
+
+Out of scope:
+- Runtime GitHub Action implementation.
+- `action.yml`, Action shell scripts, package changes, active `.github`
+  workflow behavior, CLI behavior, `docs/contract.md`, `docs/evals.md`, and
+  `docs/design.md`.
+- Creating demo PRs, configuring labels in GitHub, recruiting partners,
+  publishing an Action repository, or mutating external GitHub state.
+
+Done when:
+- `ADR-0027` is accepted and registered.
+- M21 contains only repo-local documentation/template/example tasks.
+- Off-repo operational phases are classified as out of repo-local artifact
+  scope, hard-stop, or operational follow-up.
+- `docs/tasks.md` validates with the repo-local structural lint.
+- Fresh critical process-maintenance review has a clean verdict or all findings
+  are resolved.
+
+Suggested verification:
+- Run `sh scripts/lint-tasks.sh`.
+- Run `npm run test:docs`.
+
+### T21.1 — Document minimal GitHub Action setup and inert workflow examples
+
+Purpose:
+- Create self-serve docs and inert examples for installing the future
+  AnchorMap Action in a GitHub Actions workflow.
+- Preserve `ADR-0027` boundaries around composite orchestration, explicit
+  inputs, job summary, workflow artifacts, and no PR comments by default.
+
+Reading mode:
+- critical.
+
+Scope refs:
+- `docs/github-action-pr-preview-plan.md` — GHA-1, GHA-2, GHA-3, GHA-5, and
+  Phase 7 documentation self-serve.
+- `brief.md` — §6.10 and §13.
+
+ADR refs:
+- `ADR-0020` — Policy check and exit code 5.
+- `ADR-0021` — Scan artifact diff.
+- `ADR-0023` — Markdown report from artifacts.
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Dependencies:
+- T21.0.
+
+Implementation scope:
+- Add `docs/github-action.md`.
+- Add inert workflow examples under documentation paths, not as active
+  repository workflow behavior.
+- Document inputs, outputs, permissions, produced artifacts, job summary,
+  simple scan/check/report mode, explicit `base-scan` mode, policy exit code
+  `5`, `fail-on-policy`, and upload-artifact boundaries.
+- State that PR comments are not enabled by default and that `pull_request_target`
+  is not recommended in the initial docs.
+
+Out of scope:
+- Adding `action.yml`, `scripts/run.sh`, package scripts, runtime Action code,
+  active `.github/workflows/*`, GitHub App behavior, SaaS upload, automatic
+  baseline artifact retrieval, or PR comment implementation.
+
+Done when:
+- A user can copy an inert documented workflow example into their own repo.
+- The docs do not imply Git, CI variables, caches, network, or GitHub metadata
+  are AnchorMap product truth.
+- The docs distinguish workflow artifact upload from SaaS upload.
+- Fresh process-maintenance review has a clean verdict or all findings are
+  resolved.
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T21.2 — Document PR report, policy examples, and Action troubleshooting
+
+Purpose:
+- Explain the PR-facing report and common policies without changing report
+  semantics.
+- Provide troubleshooting for common GitHub Action setup failures while keeping
+  the CLI contract unchanged.
+
+Reading mode:
+- critical.
+
+Scope refs:
+- `docs/github-action-pr-preview-plan.md` — GHA-2, Phase 3 PR report, Phase 7
+  docs, Phase 8 baseline strategy, and Phase 9 permissions.
+- `brief.md` — §6.10 and §13.
+
+ADR refs:
+- `ADR-0020` — Policy check and exit code 5.
+- `ADR-0023` — Markdown report from artifacts.
+- `ADR-0026` — JUnit and SARIF reports without upload.
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Dependencies:
+- T21.0.
+
+Implementation scope:
+- Add `docs/pr-report.md`.
+- Add `docs/policy-examples.md`.
+- Add `docs/troubleshooting-github-action.md`.
+- Document Summary, Policy violations, Change impact, Findings, Suggested
+  actions, policy pass/fail, exit code `5`, missing policy/config, missing diff,
+  absent artifacts, fork PR limitations, and what the report does not prove.
+
+Out of scope:
+- Changing Markdown report output, policy schema, CLI behavior, fixtures,
+  JUnit/SARIF output, SARIF upload, PR comments, or runtime Action behavior.
+
+Done when:
+- The docs explain report interpretation without overclaiming compliance,
+  ownership, deletion safety, or source-code proof.
+- Policy examples remain compatible with the accepted closed policy surface.
+- Troubleshooting routes failures to documented CLI/Action boundaries.
+- Fresh process-maintenance review has a clean verdict or all findings are
+  resolved.
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T21.3 — Add self-serve preview docs and issue templates
+
+Purpose:
+- Let preview users provide structured feedback without onboarding calls or
+  source-code access.
+- Materialize only repo-local templates and docs, not external GitHub state.
+
+Reading mode:
+- standard.
+
+Scope refs:
+- `docs/github-action-pr-preview-plan.md` — PREVIEW-2, Phase 5 design partners
+  self-serve, Phase 6 feedback autonome, and Phase 10 signal measurement.
+- `brief.md` — §6.10 and §13.
+
+ADR refs:
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Dependencies:
+- T21.1.
+- T21.2.
+
+Implementation scope:
+- Add `docs/design-partner-preview.md`.
+- Add issue templates for design partner feedback, Action installation
+  problems, confusing reports, and policy requests.
+- Include sanitized report guidance and no-source-upload expectations.
+- Document suggested labels as operational follow-up rather than requiring
+  repo-local label configuration.
+
+Out of scope:
+- Creating or configuring GitHub labels, recruiting partners, opening issues,
+  requesting private source access, collecting SaaS telemetry, or creating any
+  external GitHub state.
+
+Done when:
+- A user can understand the preview, install path, feedback request, and
+  no-call/no-source-access boundary.
+- Templates collect structured feedback without requiring labels to exist.
+- External operational steps are clearly separated from repo-local artifacts.
+- Fresh process-maintenance review has a clean verdict or all findings are
+  resolved.
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T21.4 — Add demo PR workflow documentation
+
+Purpose:
+- Document the demo workflow story for pass/fail PR reports without creating
+  external PRs or relying on external GitHub state.
+
+Reading mode:
+- standard.
+
+Scope refs:
+- `docs/github-action-pr-preview-plan.md` — PREVIEW-1 and Phase 4 repo de demo
+  autonome.
+- `brief.md` — §6.10 and §13.
+
+ADR refs:
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Dependencies:
+- T21.1.
+- T21.2.
+
+Implementation scope:
+- Add `docs/github-action-demo.md`.
+- Document the intended demo repository contents, four demo PR scenarios,
+  expected pass/fail interpretation, report-reading guide, baseline strategy,
+  and how to adapt the policy.
+- Mark actual demo PR creation, demo repository mutation, and attached workflow
+  runs as operational follow-up outside this repo-local artifact task.
+
+Out of scope:
+- Creating demo PRs, modifying `fstepho/anchormap-h3-demo`, creating screenshots
+  from live GitHub runs, publishing an Action, or adding active workflows to
+  this repository.
+
+Done when:
+- The demo docs explain the nominal, unmapped-anchor, stale-mapping, and
+  degraded-analysis scenarios from repo-local markdown alone.
+- The docs do not simulate external GitHub state as if it had occurred.
+- Fresh process-maintenance review has a clean verdict or all findings are
+  resolved.
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
+### T21.5 — Close GitHub Action / PR preview repo-local readiness
+
+Purpose:
+- Verify that M21 repo-local artifacts are coherent, bounded, and ready for
+  external Action/runtime or preview operations.
+
+Reading mode:
+- critical.
+
+Scope refs:
+- `docs/github-action-pr-preview-plan.md` — GHA-1 through GHA-5, PREVIEW-1
+  through PREVIEW-3, and repo-local artifact boundaries.
+- `brief.md` — §6.10 and §13.
+
+ADR refs:
+- `ADR-0027` — GitHub Action composite orchestration.
+
+Dependencies:
+- T21.1.
+- T21.2.
+- T21.3.
+- T21.4.
+
+Implementation scope:
+- Run applicable repo-local docs and task-plan checks.
+- Confirm M21 docs and templates do not modify runtime CLI behavior, contract,
+  evals, package surface, active workflows, or external GitHub state.
+- Confirm off-repo operational phases remain marked as hard stops or follow-up:
+  creating demo PRs, configuring labels, publishing Action runtime, recruiting
+  partners, and making SaaS-lite decisions.
+
+Out of scope:
+- Implementing or publishing the Action, creating external demo PRs, configuring
+  labels in GitHub, changing `docs/contract.md`, or changing product fixtures.
+
+Done when:
+- All M21 repo-local artifacts are present and mutually consistent.
+- Applicable docs checks and task structural lint pass.
+- No runtime GitHub Action, active workflow behavior, CLI behavior, contract
+  behavior, or eval behavior changed.
+- Fresh process-maintenance review has a clean verdict or all findings are
+  resolved.
+
+Suggested verification:
+- Run `npm run test:docs`.
+- Run `sh scripts/lint-tasks.sh`.
+
 ## Global verification matrix
 
 | Eval / fixture / gate | Covered by task | Milestone | Verification type | Notes |
@@ -7833,6 +8142,12 @@ Suggested verification:
 | Published v1.0 artifact | T10.6 | M10 | publication evidence | Published artifact links back to passing M9, T10 install, T10.5 tarball, and checksum evidence |
 | Existing codebase slice setup docs and Outline reference demo | T17.2 | M17 | documentation/demo | README and demo runbook present the bounded M17 promise, use an unmodified existing `tsconfig.json`, and avoid implying full TypeScript, framework, dead-code, or global monorepo support |
 | Non-blocking TSX adoption corpus evidence | T18.0 | non-release | adoption evidence | Repo-local mini corpus is blocking for `adoption:tsx`; pinned external corpus is non-blocking when network or repository access is unavailable; neither lane is a Level B fixture, contractual golden, or release gate |
+| GitHub Action / PR preview authority | T21.0 | M21 | process/ADR | `ADR-0027` and task-plan entries define Action orchestration authority without changing CLI contract, evals, runtime behavior, or external GitHub state |
+| GitHub Action self-serve docs and inert workflow examples | T21.1 | M21 | documentation | Setup docs and examples describe composite orchestration, explicit baseline scans, workflow artifacts, job summary, and default no PR comments without adding active workflow behavior |
+| PR report, policy examples, and troubleshooting docs | T21.2 | M21 | documentation | Report and policy docs explain accepted CLI artifact semantics without changing Markdown, policy, JUnit, SARIF, or runtime Action behavior |
+| Preview feedback templates and design partner docs | T21.3 | M21 | documentation/template | Issue templates and preview docs collect structured voluntary feedback while label creation, partner recruiting, and external GitHub state remain operational follow-up |
+| Demo PR workflow documentation | T21.4 | M21 | documentation/demo | Demo docs describe intended scenarios and report interpretation without creating demo PRs or simulating external GitHub runs |
+| GitHub Action / PR preview repo-local readiness | T21.5 | M21 | docs gate | Docs checks and structural task lint confirm M21 repo-local artifacts remain bounded and runtime-free |
 
 ## Agent execution protocol
 

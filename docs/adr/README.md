@@ -67,6 +67,7 @@ An ADR is usually not required for:
 | `ADR-0024` | Artifact bundle and CI metadata boundary | Accepted |
 | `ADR-0025` | Scan schema v5 source locations | Accepted |
 | `ADR-0026` | JUnit and SARIF reports without upload | Accepted |
+| `ADR-0027` | GitHub Action composite orchestration | Accepted |
 
 ## Template
 
