@@ -228,6 +228,7 @@ For harness and process work, the common command surface is:
 - `npm run test:product`
 - `npm run test:harness`
 - `npm run test:docs`
+- `npm run test:release`
 - `npm run test:fixtures:all`
 - `npm run test:fixtures -- --fixture <fixture-id>`
 - `npm run test:fixtures -- --family <family>`
@@ -245,13 +246,19 @@ For harness and process work, the common command surface is:
 - `git commit -m "<TASK_ID>: <summary>"`
 
 `npm run test:docs` is the targeted check for repo-local process-doc tooling,
-package-script surface changes, command-surface guidance, agent-skill guidance,
-and docs consistency fixtures. Routine `docs/tasks.md` cursor or state edits
-use `validate-tasks`; they do not require `npm run test:docs` unless the same
-patch changes process-doc tooling or command-surface guidance.
+command-surface guidance, agent-skill guidance, and docs consistency fixtures.
+`npm run test:release` is the targeted check for release-gate-aggregator and
+package-script changes. Routine `docs/tasks.md` cursor or state edits use
+`validate-tasks`; they do not require `npm run test:docs` unless the same patch
+changes process-doc tooling or command-surface guidance.
 
 Targeted commands speed up iteration but do not replace the full applicable
 handoff checks for the touched surface.
+
+After review rework, rerun the applicable targeted checks for the files changed
+by the rework. `npm run test:unit` is not the default post-rework check; use it
+only when the touched surface spans the full compiled test suite or when no
+narrower repo-local check covers the invariant.
 
 ## Non-Goals
 

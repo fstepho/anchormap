@@ -78,6 +78,10 @@ test("package.json exposes the stable repo-local check and harness command surfa
 		scripts["test:docs"],
 		'npm run check:docs && npm run build && node --test "dist/package-scripts*.test.js" "dist/harness/docs-consistency.test.js" "dist/harness/lint-tasks-fixture.test.js" "dist/harness/workflow-preflight-fixture.test.js"',
 	);
+	assert.equal(
+		scripts["test:release"],
+		'npm run build && node --test "dist/release-gate-aggregator*.test.js" "dist/package-scripts*.test.js"',
+	);
 	assert.equal(scripts["test:unit"], 'npm run build && node --test "dist/**/*.test.js"');
 	assert.equal(
 		scripts["test:product"],
