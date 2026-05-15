@@ -104,6 +104,8 @@ source snippets. Preserve that boundary when sharing feedback.
 
 Use the issue template that best matches the feedback:
 
+- first reaction for a quick response after reading the demo PRs, before
+  installing anything;
 - design partner feedback for the overall preview experience;
 - Action installation problem for setup or workflow failures;
 - confusing report for unclear report sections;

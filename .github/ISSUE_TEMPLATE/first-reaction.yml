@@ -1,0 +1,60 @@
+name: First reaction
+description: Share a quick reaction after reading the demo PRs, before installing anything.
+title: "[First reaction]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking a quick look. This template is for first reactions after reading the demo PRs. You do not need to install AnchorMap or share source code. Do not upload private source code, proprietary specs, secrets, tokens, customer data, internal URLs, or full logs containing secrets.
+  - type: dropdown
+    id: understood-problem
+    attributes:
+      label: Did you understand the problem AnchorMap is trying to solve?
+      options:
+        - "Yes"
+        - "Partly"
+        - "No"
+    validations:
+      required: true
+  - type: dropdown
+    id: demo-made-sense
+    attributes:
+      label: Did the demo PR or report make sense?
+      options:
+        - "Yes"
+        - "Partly"
+        - "No"
+    validations:
+      required: true
+  - type: dropdown
+    id: would-try
+    attributes:
+      label: Would you try this on a TypeScript repo?
+      options:
+        - "Yes"
+        - "Maybe"
+        - "No"
+    validations:
+      required: true
+  - type: dropdown
+    id: time-spent
+    attributes:
+      label: Time spent
+      options:
+        - "<5 min"
+        - "5-20 min"
+        - ">20 min"
+    validations:
+      required: true
+  - type: textarea
+    id: blocked-or-confused
+    attributes:
+      label: What blocked or confused you?
+      description: Mention the page, PR, report section, wording, or concept that was unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: quick-notes
+    attributes:
+      label: Anything else?
+      description: Optional short notes about usefulness, trust, no-source-upload, or what would make you try it.
