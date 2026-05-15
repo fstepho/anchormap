@@ -41,8 +41,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: `T21.5 — Close GitHub Action / PR preview repo-local readiness`
-- Last completed task: `T21.4 — Add demo PR workflow documentation`
+- Next executable product task: None recorded.
+- Last completed task: `T21.5 — Close GitHub Action / PR preview repo-local readiness`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -172,6 +172,7 @@
   - `T21.2 — Document PR report, policy examples, and Action troubleshooting`
   - `T21.3 — Add self-serve preview docs and issue templates`
   - `T21.4 — Add demo PR workflow documentation`
+  - `T21.5 — Close GitHub Action / PR preview repo-local readiness`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 
