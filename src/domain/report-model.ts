@@ -14,6 +14,12 @@ export interface JUnitReportModel {
 	readonly check: PolicyResult;
 }
 
+export interface SarifReportModel {
+	readonly scan: ScanResultView;
+	readonly check?: PolicyResult;
+	readonly diff?: TraceabilityDiff;
+}
+
 type ActionFindingKind = Exclude<Finding["kind"], "stale_mapping_anchor" | "untraced_product_file">;
 
 const ACTION_FINDING_ORDER: readonly ActionFindingKind[] = [
@@ -41,6 +47,18 @@ export function buildMarkdownReportModel(input: {
 
 export function buildJUnitReportModel(input: { readonly check: PolicyResult }): JUnitReportModel {
 	return { check: input.check };
+}
+
+export function buildSarifReportModel(input: {
+	readonly scan: ScanResultView;
+	readonly check?: PolicyResult;
+	readonly diff?: TraceabilityDiff;
+}): SarifReportModel {
+	return {
+		scan: input.scan,
+		...(input.check !== undefined ? { check: input.check } : {}),
+		...(input.diff !== undefined ? { diff: input.diff } : {}),
+	};
 }
 
 function buildSuggestedActions(

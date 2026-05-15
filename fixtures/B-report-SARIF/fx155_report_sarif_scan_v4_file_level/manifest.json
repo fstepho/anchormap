@@ -1,0 +1,27 @@
+{
+	"id": "fx155_report_sarif_scan_v4_file_level",
+	"family": "B-report-SARIF",
+	"purpose": "report renders stable SARIF JSON from a scan v4 artifact with file-level locations only.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--format",
+		"sarif"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "sarif", "golden", "artifact_io", "scan-v4"],
+	"groups": ["m20"]
+}

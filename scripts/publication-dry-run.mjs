@@ -69,6 +69,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/package-version.js",
 	"dist/render/render-junit-report.js",
 	"dist/render/render-markdown-report.js",
+	"dist/render/render-sarif-report.js",
 	"dist/render/render-json.js",
 ];
 const forbiddenPackagePrefixes = [

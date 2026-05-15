@@ -70,6 +70,22 @@ test("parses supported SaaS-ready artifact command forms before dispatch", () =>
 		},
 		{
 			argv: [
+				"report",
+				"--scan",
+				"scan.json",
+				"--check",
+				"check.json",
+				"--diff",
+				"diff.json",
+				"--format",
+				"sarif",
+			],
+			expectedCall:
+				"report:--scan scan.json --check check.json --diff diff.json --format sarif:scan=scan.json:check=check.json:diff=diff.json:format=sarif",
+			expectedStdout: "{}\n",
+		},
+		{
+			argv: [
 				"bundle",
 				"--scan",
 				"./artifacts/scan.json",
@@ -181,6 +197,7 @@ test("rejects unsupported artifact command options and combinations before dispa
 		["report", "--scan", "scan.json", "--check", "check.json", "--format", "junit"],
 		["report", "--check", "check.json", "--diff", "diff.json", "--format", "junit"],
 		["report", "--check", "", "--format", "junit"],
+		["report", "--check", "check.json", "--format", "sarif"],
 		["bundle", "--scan", "scan.json", "--check", "check.json", "--diff", "diff.json", "--json"],
 		[
 			"bundle",
@@ -339,6 +356,40 @@ test("report artifact mode renders junit from explicit check artifact", () => {
 	}
 });
 
+test("report artifact mode renders sarif from explicit artifacts", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), scanWithSarifFindingJson(5));
+		writeFileSync(join(cwd, "artifacts", "check.json"), sarifPolicyResultJson());
+		writeFileSync(join(cwd, "artifacts", "diff.json"), diffWithLostCoverageJson());
+
+		const result = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan.json",
+			"--check",
+			"artifacts/check.json",
+			"--diff",
+			"artifacts/diff.json",
+			"--format",
+			"sarif",
+		]);
+
+		assert.equal(result.exitCode, 0);
+		assert.equal(result.stderr, "");
+		assert.match(result.stdout, /^{"version":"2\.1\.0","runs":\[/);
+		assert.match(result.stdout, /"ruleId":"anchormap\.finding\.unmapped_anchor"/);
+		assert.match(result.stdout, /"region":{"startLine":2,"startColumn":4}/);
+		assert.match(result.stdout, /"ruleId":"anchormap\.policy\.finding_kind_present"/);
+		assert.match(result.stdout, /"ruleId":"anchormap\.diff\.lost_coverage"/);
+		assert.equal(result.stdout.endsWith("\n"), true);
+		assert.equal(result.stdout.indexOf("\n"), result.stdout.length - 1);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("report junit rejects invalid check artifacts with empty stdout", () => {
 	const cwd = createTempRepo();
 	try {
@@ -393,6 +444,19 @@ test("report rejects invalid optional check and diff artifacts with empty stdout
 		assert.equal(diff.exitCode, 4);
 		assert.equal(diff.stdout, "");
 		assert.notEqual(diff.stderr, "");
+
+		const sarifCheck = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan.json",
+			"--check",
+			"artifacts/invalid.json",
+			"--format",
+			"sarif",
+		]);
+		assert.equal(sarifCheck.exitCode, 4);
+		assert.equal(sarifCheck.stdout, "");
+		assert.notEqual(sarifCheck.stderr, "");
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });
 	}
@@ -767,6 +831,28 @@ function scanWithOneUncoveredFileJson(): string {
 	return `${JSON.stringify(scan)}\n`;
 }
 
+function scanWithSarifFindingJson(schemaVersion: 4 | 5): string {
+	const scan = JSON.parse(minimalScanArtifactJson(schemaVersion));
+	scan.observed_anchors = {
+		"QA-001": {
+			spec_path: "specs/requirements.md",
+			mapping_state: "absent",
+			...(schemaVersion === 5
+				? {
+						source: {
+							kind: "markdown_atx_heading",
+							line: 2,
+							column: 4,
+							heading_level: 2,
+						},
+					}
+				: {}),
+		},
+	};
+	scan.findings = [{ kind: "unmapped_anchor", anchor_id: "QA-001" }];
+	return `${JSON.stringify(scan)}\n`;
+}
+
 function explainScanArtifactJson(schemaVersion: 4 | 5 = 4): string {
 	const scan = JSON.parse(minimalScanArtifactJson(schemaVersion));
 	scan.observed_anchors = {
@@ -846,6 +932,23 @@ function minimalTraceabilityDiffJson(): string {
 		'"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,',
 		'"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,',
 		'"single_cover_product_file_count":0,"multi_cover_product_file_count":0}}\n',
+	].join("");
+}
+
+function diffWithLostCoverageJson(): string {
+	const diff = JSON.parse(minimalTraceabilityDiffJson());
+	diff.files.lost_coverage = ["src/lost.ts"];
+	return `${JSON.stringify(diff)}\n`;
+}
+
+function sarifPolicyResultJson(): string {
+	return [
+		'{"schema_version":1,"decision":"fail","source_scan_schema_version":5,',
+		'"analysis_health":"clean","violations":[{"kind":"finding_kind_present",',
+		'"finding_kind":"unmapped_anchor","count":1}],"summary":{"observed_anchor_count":1,',
+		'"usable_mapping_count":0,"product_file_count":0,"covered_product_file_count":0,',
+		'"uncovered_product_file_count":0,"covered_product_file_percent":100,',
+		'"untraced_product_file_count":0}}\n',
 	].join("");
 }
 

@@ -447,7 +447,10 @@ function getMachineOutputContract(
 		return { label: "explain --json", format: "json" };
 	}
 	if (context.reportArgs !== undefined) {
-		return { label: `report --format ${context.reportArgs.format}`, format: "text" };
+		return {
+			label: `report --format ${context.reportArgs.format}`,
+			format: context.reportArgs.format === "sarif" ? "json" : "text",
+		};
 	}
 	if (context.bundleArgs?.json) {
 		return { label: "bundle --json", format: "json" };

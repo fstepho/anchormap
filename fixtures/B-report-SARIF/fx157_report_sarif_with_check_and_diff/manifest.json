@@ -1,0 +1,31 @@
+{
+	"id": "fx157_report_sarif_with_check_and_diff",
+	"family": "B-report-SARIF",
+	"purpose": "report renders stable SARIF JSON from scan, optional check, and optional diff artifacts.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--diff",
+		"artifacts/diff.json",
+		"--format",
+		"sarif"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "sarif", "golden", "artifact_io", "check", "diff"],
+	"groups": ["m20"]
+}

@@ -3,7 +3,11 @@ import { buildArtifactBundle } from "../domain/bundle-model";
 import { diffScanResults } from "../domain/diff-engine";
 import { explainScanSubject } from "../domain/explain-engine";
 import type { RepoPath } from "../domain/repo-path";
-import { buildJUnitReportModel, buildMarkdownReportModel } from "../domain/report-model";
+import {
+	buildJUnitReportModel,
+	buildMarkdownReportModel,
+	buildSarifReportModel,
+} from "../domain/report-model";
 import {
 	loadPolicyResultArtifact,
 	loadScanArtifact,
@@ -23,6 +27,7 @@ import {
 } from "../render/render-json";
 import { renderJUnitReport } from "../render/render-junit-report";
 import { renderMarkdownReport } from "../render/render-markdown-report";
+import { renderSarifReport } from "../render/render-sarif-report";
 import type {
 	ParsedBundleArgs,
 	ParsedCheckArgs,
@@ -147,7 +152,7 @@ export function validateRawReportArgs(
 			scan: scan.path,
 			...(check ? { check: check.path } : {}),
 			...(diff ? { diff: diff.path } : {}),
-			format: "markdown",
+			format: args.format,
 		},
 	};
 }
@@ -270,6 +275,18 @@ export function runReportCommand(context: ArtifactCommandContext): AnchormapComm
 			: loadTraceabilityDiffArtifact(args.diff, { cwd: context.cwd, optionName: "--diff" });
 	if (diff?.kind === "error") {
 		return diff.error;
+	}
+
+	if (args.format === "sarif") {
+		const model = buildSarifReportModel({
+			scan: scan.scan,
+			...(check !== undefined ? { check: check.policyResult } : {}),
+			...(diff !== undefined ? { diff: diff.diff } : {}),
+		});
+		return {
+			kind: "success",
+			stdout: renderSarifReport(model),
+		};
 	}
 
 	const model = buildMarkdownReportModel({

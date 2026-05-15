@@ -511,7 +511,10 @@ function hasArtifactMachineOutput(
 	if (subcommand === "report") {
 		return args.some(
 			(arg, index) =>
-				arg === "--format" && (args[index + 1] === "markdown" || args[index + 1] === "junit"),
+				arg === "--format" &&
+				(args[index + 1] === "markdown" ||
+					args[index + 1] === "junit" ||
+					args[index + 1] === "sarif"),
 		);
 	}
 

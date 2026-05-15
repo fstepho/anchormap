@@ -53,9 +53,9 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 				? `:scan=${context.explainArgs.scan}:anchor=${context.explainArgs.anchor ?? ""}:file=${context.explainArgs.file ?? ""}:json=${context.explainArgs.json}`
 				: "";
 			const reportSuffix = context.reportArgs
-				? context.reportArgs.format === "markdown"
-					? `:scan=${context.reportArgs.scan}:check=${context.reportArgs.check ?? ""}:diff=${context.reportArgs.diff ?? ""}:format=${context.reportArgs.format}`
-					: `:scan=:check=${context.reportArgs.check}:diff=:format=${context.reportArgs.format}`
+				? context.reportArgs.format === "junit"
+					? `:scan=:check=${context.reportArgs.check}:diff=:format=${context.reportArgs.format}`
+					: `:scan=${context.reportArgs.scan}:check=${context.reportArgs.check ?? ""}:diff=${context.reportArgs.diff ?? ""}:format=${context.reportArgs.format}`
 				: "";
 			const bundleSuffix = context.bundleArgs
 				? `:scan=${context.bundleArgs.scan}:check=${context.bundleArgs.check}:diff=${context.bundleArgs.diff}:metadata=${context.bundleArgs.metadata}:json=${context.bundleArgs.json}`
@@ -67,7 +67,8 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 				context.checkArgs?.json ||
 				context.diffArgs?.json ||
 				context.explainArgs?.json ||
-				context.bundleArgs?.json
+				context.bundleArgs?.json ||
+				context.reportArgs?.format === "sarif"
 			) {
 				return commandSuccess({ stdout: "{}\n" });
 			}

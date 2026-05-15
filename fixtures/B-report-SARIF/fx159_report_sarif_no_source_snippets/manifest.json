@@ -1,0 +1,27 @@
+{
+	"id": "fx159_report_sarif_no_source_snippets",
+	"family": "B-report-SARIF",
+	"purpose": "report renders SARIF from scan v5 source locations without source snippets or source contents.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--format",
+		"sarif"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "sarif", "golden", "artifact_io", "no-snippet", "scan-v5"],
+	"groups": ["m20"]
+}

@@ -1,0 +1,27 @@
+{
+	"id": "fx156_report_sarif_scan_v5_regions",
+	"family": "B-report-SARIF",
+	"purpose": "report renders stable SARIF JSON from a scan v5 artifact with source regions.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--scan",
+		"artifacts/scan.json",
+		"--format",
+		"sarif"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "sarif", "golden", "artifact_io", "scan-v5"],
+	"groups": ["m20"]
+}

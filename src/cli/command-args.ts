@@ -45,6 +45,12 @@ export type ParsedReportArgs =
 	| {
 			check: string;
 			format: "junit";
+	  }
+	| {
+			scan: string;
+			check?: string;
+			diff?: string;
+			format: "sarif";
 	  };
 
 export interface ParsedBundleArgs {
@@ -573,11 +579,11 @@ export function parseReportArgs(args: readonly string[]): ParsedReportArgsResult
 	if (format === undefined) {
 		return { kind: "usage_error", message: "--format is required" };
 	}
-	if (format !== "markdown" && format !== "junit") {
-		return { kind: "usage_error", message: "--format must be markdown or junit" };
+	if (format !== "markdown" && format !== "junit" && format !== "sarif") {
+		return { kind: "usage_error", message: "--format must be markdown, junit, or sarif" };
 	}
 
-	if (format === "markdown") {
+	if (format === "markdown" || format === "sarif") {
 		if (scan === undefined) {
 			return { kind: "usage_error", message: "--scan is required" };
 		}
