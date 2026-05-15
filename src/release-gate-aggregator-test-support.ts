@@ -243,20 +243,75 @@ export function writeT10_6PublicationEvidence(evidenceDir: string): void {
 		"sha512-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
 	const npmShasum = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 	const sha256 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+	const tarballFile = `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`;
+	const repositoryTag = `v${EXPECTED_PACKAGE_VERSION}`;
 	writeJson(resolve(evidenceDir, "t10.6-publication-evidence.json"), {
 		schema_version: 1,
 		task: "T10.6",
+		status: "pass",
+		package_name: "anchormap",
+		package_version: EXPECTED_PACKAGE_VERSION,
 		registry_coordinate: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
-		tarball_file: `anchormap-${EXPECTED_PACKAGE_VERSION}.tgz`,
+		tarball_file: tarballFile,
 		dist_integrity: npmIntegrity,
 		dist_shasum: npmShasum,
 		sha256,
-		t10_5_tarball_artifact_report: "reports/t9.6/artifacts/t10.5-tarball-artifact.json",
-		post_publish_install_verification: {
-			status: "pass",
-			report: "reports/t10.6/post-publish-install.json",
+		distribution_channel: {
+			adr: "docs/adr/0009-packaging-and-distribution.md",
+			type: "public npm registry",
+			registry: "https://registry.npmjs.org/",
+			package_coordinate: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
+			dist_tag: "latest",
+			repository_tag: repositoryTag,
+		},
+		artifact: {
+			source: "T10.5 validated tarball",
+			identifier: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
+			tarball_path: `reports/t10.5/${tarballFile}`,
+			tarball_artifact_report: "reports/t10.5/t10.5-tarball-artifact.json",
+			publication_dry_run_report: "reports/t10.5/t10.5-publication-dry-run.json",
+			package_name: "anchormap",
+			package_version: EXPECTED_PACKAGE_VERSION,
+			npm_integrity: npmIntegrity,
+			npm_shasum: npmShasum,
+			sha256,
+		},
+		publication: {
+			publish_attempted: true,
+			registry_coordinate_published: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
+			npm_publish_result: {
+				id: `anchormap@${EXPECTED_PACKAGE_VERSION}`,
+				name: "anchormap",
+				version: EXPECTED_PACKAGE_VERSION,
+				shasum: npmShasum,
+				integrity: npmIntegrity,
+				filename: tarballFile,
+			},
+		},
+		post_publish_verification: {
+			registry_metadata_lookup: {
+				status: 0,
+				version: EXPECTED_PACKAGE_VERSION,
+				dist_integrity: npmIntegrity,
+				dist_shasum: npmShasum,
+				matches_t10_5_artifact: true,
+			},
+			published_tarball_download_verification: {
+				status: 0,
+				sha256,
+				matches_t10_5_artifact: true,
+			},
 		},
 		regenerated_tarball: false,
+		repository_tag: {
+			local_status: 0,
+			tag: repositoryTag,
+			target_commit: "0123456789abcdef0123456789abcdef01234567",
+			push_status: 0,
+			remote: "origin",
+			pushed: true,
+			remote_ref: `refs/tags/${repositoryTag}`,
+		},
 	});
 }
 

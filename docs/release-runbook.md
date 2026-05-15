@@ -159,6 +159,12 @@ tarball filename, package name, and package version in
 `reports/t10.5/t10.5-publication-dry-run.json` must describe the same named
 tarball.
 
+`npm run release:gates` reports publication evidence coherence under
+`publication_checklist.publication_evidence.version_coherence`. Blocking
+mismatches are limited to package identity, package version, tarball name, and
+versioned publication coordinates; checksum and post-publication proof
+mismatches are still reported there, but remain T10.5/T10.6 evidence work.
+
 ## Credential Assumptions
 
 The publish operator must have an npm account with permission to publish the
@@ -203,8 +209,15 @@ Record T10.6 evidence before closing the release:
 - final registry coordinate: `anchormap@1.0.0`
 - `dist.integrity` and `dist.shasum` from npm registry metadata
 - SHA-256 for the published tarball
+- repository tag and remote ref used for source correlation
 - link to `reports/t10.5/t10.5-tarball-artifact.json`
 - post-publish installation result
+
+For the normal path, T10.6 publishes the exact T10.5 tarball, so registry
+metadata, downloaded tarball SHA-256, and publication result checksums must
+match the T10.5 artifact report. If T10.6 regenerates a tarball, record the
+regenerated artifact checksums and rerun the package, install, checksum,
+consumer lockback, and publication dry-run checks for that regenerated tarball.
 
 Verify registry metadata:
 

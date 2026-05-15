@@ -1020,6 +1020,9 @@ La preuve complète de fermeture runtime, de contenu du tarball, de lockback
 consommateur, d'installation depuis l'artefact, de correspondance entre
 artefacts T10.5/T10.6 et de publication appartient aux tâches T10.2, T10.3,
 T10.5 et T10.6, pas au verdict M9.
+Lorsque `release:gates` expose des incohérences de preuve T10 non liées à
+l'identité ou à la version, elles doivent rester visibles comme preuve à
+réparer sans transformer le verdict M9 en échec.
 
 - preuve de lockback consommateur archivée pour le paquet publié, incluant
   `npm-shrinkwrap.json` ou le mécanisme équivalent sélectionné par `ADR-0009`

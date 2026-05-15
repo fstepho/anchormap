@@ -479,6 +479,33 @@
 		"publication_evidence": {
 			"status": "pass",
 			"validation_errors": [],
+			"version_coherence": {
+				"status": "pass",
+				"expected_package_name": "anchormap",
+				"expected_package_version": "1.2.2",
+				"expected_tarball_file": "anchormap-1.2.2.tgz",
+				"expected_repository_tag": "v1.2.2",
+				"checked_artifacts": [
+					{
+						"name": "consumer_lockback",
+						"path": "reports/t9.6/evidence/consumer-lockback.json"
+					},
+					{
+						"name": "t10_5_tarball_artifact",
+						"path": "reports/t9.6/evidence/t10.5-tarball-artifact.json"
+					},
+					{
+						"name": "t10_5_publication_dry_run",
+						"path": "reports/t9.6/evidence/t10.5-publication-dry-run.json"
+					},
+					{
+						"name": "t10_6_publication_evidence",
+						"path": "reports/t9.6/evidence/t10.6-publication-evidence.json"
+					}
+				],
+				"mismatches": [],
+				"blocking_mismatches": []
+			},
 			"consumer_lockback": {
 				"status": "pass"
 			},

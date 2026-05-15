@@ -999,11 +999,13 @@ function evaluateChecklist(
 	};
 }
 
-function validatePublicationEvidence(reports) {
+function validatePublicationEvidence(reports, options) {
 	const validationErrors = [];
+	const versionCoherence = createPublicationVersionCoherence();
 	const result = {
 		status: "pass",
 		validation_errors: validationErrors,
+		version_coherence: versionCoherence,
 		consumer_lockback: {
 			status: isOptionalEvidenceMissing(reports.consumerLockback) ? "pending" : "pass",
 		},
@@ -1047,6 +1049,7 @@ function validatePublicationEvidence(reports) {
 			validationErrors,
 		);
 	}
+	validatePublicationVersionCoherence(reports, result.version_coherence, validationErrors, options);
 
 	if (validationErrors.length > 0) {
 		result.status = "fail";
@@ -1056,6 +1059,424 @@ function validatePublicationEvidence(reports) {
 
 function isOptionalEvidenceMissing(value) {
 	return value === optionalEvidenceMissing;
+}
+
+const publicationVersionBlockingFields = new Set([
+	"package_name",
+	"package_version",
+	"registry_coordinate",
+	"tarball_file",
+	"distribution_channel.package_coordinate",
+	"distribution_channel.repository_tag",
+	"artifact.identifier",
+	"artifact.package_name",
+	"artifact.package_version",
+	"artifact.tarball_path",
+	"publication.registry_coordinate_published",
+	"publication.npm_publish_result.id",
+	"publication.npm_publish_result.name",
+	"publication.npm_publish_result.version",
+	"publication.npm_publish_result.filename",
+	"post_publish_verification.registry_metadata_lookup.version",
+	"repository_tag.tag",
+	"repository_tag.remote_ref",
+]);
+
+function createPublicationVersionCoherence() {
+	return {
+		status: "pending",
+		expected_package_name: expectedPackageName,
+		expected_package_version: expectedPackageVersion,
+		expected_tarball_file: `anchormap-${expectedPackageVersion}.tgz`,
+		expected_repository_tag: `v${expectedPackageVersion}`,
+		checked_artifacts: [],
+		mismatches: [],
+		blocking_mismatches: [],
+	};
+}
+
+function validatePublicationVersionCoherence(reports, result, validationErrors, options) {
+	const evidence = [
+		{
+			name: "consumer_lockback",
+			report: reports.consumerLockback,
+			path: relativePath(options.repoRoot, options.consumerLockback),
+			validate: (report, path) => validateConsumerLockbackVersionCoherence(report, path, result),
+		},
+		{
+			name: "t10_5_tarball_artifact",
+			report: reports.t10_5TarballArtifact,
+			path: relativePath(options.repoRoot, options.t10_5TarballArtifact),
+			validate: (report, path) => validateT10_5TarballVersionCoherence(report, path, result),
+		},
+		{
+			name: "t10_5_publication_dry_run",
+			report: reports.t10_5PublicationDryRun,
+			path: relativePath(options.repoRoot, options.t10_5PublicationDryRun),
+			validate: (report, path) => validateT10_5DryRunVersionCoherence(report, path, result),
+		},
+		{
+			name: "t10_6_publication_evidence",
+			report: reports.t10_6PublicationEvidence,
+			path: relativePath(options.repoRoot, options.t10_6PublicationEvidence),
+			validate: (report, path) =>
+				validateT10_6PublicationVersionCoherence(
+					report,
+					path,
+					reports.t10_5TarballArtifact,
+					result,
+				),
+		},
+	];
+
+	for (const entry of evidence) {
+		if (isOptionalEvidenceMissing(entry.report)) {
+			continue;
+		}
+		result.checked_artifacts.push({ name: entry.name, path: entry.path });
+		if (isJsonObject(entry.report)) {
+			entry.validate(entry.report, entry.path);
+		}
+	}
+
+	if (result.checked_artifacts.length === 0) {
+		result.status = "pending";
+		return;
+	}
+	result.blocking_mismatches = result.mismatches.filter((mismatch) => mismatch.blocking);
+	result.status = result.blocking_mismatches.length === 0 ? "pass" : "fail";
+	for (const mismatch of result.blocking_mismatches) {
+		validationErrors.push(mismatch.message);
+	}
+}
+
+function validateConsumerLockbackVersionCoherence(report, path, result) {
+	checkExpectedField(result, path, report, "package_name", expectedPackageName);
+	checkExpectedField(result, path, report, "package_version", expectedPackageVersion);
+}
+
+function validateT10_5TarballVersionCoherence(report, path, result) {
+	checkExpectedField(result, path, report, "package_name", expectedPackageName);
+	checkExpectedField(result, path, report, "package_version", expectedPackageVersion);
+	checkExpectedField(result, path, report, "tarball_file", result.expected_tarball_file);
+}
+
+function validateT10_5DryRunVersionCoherence(report, path, result) {
+	checkExpectedFieldIfPresent(result, path, report, "package_name", expectedPackageName);
+	checkExpectedFieldIfPresent(result, path, report, "package_version", expectedPackageVersion);
+	checkExpectedField(result, path, report, "tarball_file", result.expected_tarball_file);
+}
+
+function validateT10_6PublicationVersionCoherence(report, path, tarballReport, result) {
+	const reusesT10_5Tarball = report.regenerated_tarball !== true;
+	checkExpectedFieldIfPresent(result, path, report, "package_name", expectedPackageName);
+	checkExpectedFieldIfPresent(result, path, report, "package_version", expectedPackageVersion);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"registry_coordinate",
+		`${expectedPackageName}@${expectedPackageVersion}`,
+	);
+	checkExpectedField(result, path, report, "tarball_file", result.expected_tarball_file);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"distribution_channel.package_coordinate",
+		`${expectedPackageName}@${expectedPackageVersion}`,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"artifact.identifier",
+		`${expectedPackageName}@${expectedPackageVersion}`,
+	);
+	checkExpectedField(result, path, report, "artifact.package_name", expectedPackageName);
+	checkExpectedField(result, path, report, "artifact.package_version", expectedPackageVersion);
+	if (reusesT10_5Tarball) {
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"artifact.tarball_path",
+			`reports/t10.5/${result.expected_tarball_file}`,
+		);
+	} else {
+		checkExpectedTarballPathBasename(result, path, report, "artifact.tarball_path");
+	}
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"publication.registry_coordinate_published",
+		`${expectedPackageName}@${expectedPackageVersion}`,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"publication.npm_publish_result.id",
+		`${expectedPackageName}@${expectedPackageVersion}`,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"publication.npm_publish_result.name",
+		expectedPackageName,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"publication.npm_publish_result.version",
+		expectedPackageVersion,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"publication.npm_publish_result.filename",
+		result.expected_tarball_file,
+	);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"post_publish_verification.registry_metadata_lookup.version",
+		expectedPackageVersion,
+	);
+	if (reusesT10_5Tarball) {
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"post_publish_verification.registry_metadata_lookup.matches_t10_5_artifact",
+			true,
+		);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"post_publish_verification.published_tarball_download_verification.matches_t10_5_artifact",
+			true,
+		);
+	}
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"distribution_channel.repository_tag",
+		result.expected_repository_tag,
+	);
+	validateRepositoryTagVersionCoherence(report, path, result);
+
+	const checksumReference = publicationChecksumReference(report, tarballReport, result, path);
+	if (checksumReference !== null) {
+		checkExpectedField(result, path, report, "dist_integrity", checksumReference.npm_integrity);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"artifact.npm_integrity",
+			checksumReference.npm_integrity,
+		);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"publication.npm_publish_result.integrity",
+			checksumReference.npm_integrity,
+		);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"post_publish_verification.registry_metadata_lookup.dist_integrity",
+			checksumReference.npm_integrity,
+		);
+		checkExpectedField(result, path, report, "dist_shasum", checksumReference.npm_shasum);
+		checkExpectedField(result, path, report, "artifact.npm_shasum", checksumReference.npm_shasum);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"publication.npm_publish_result.shasum",
+			checksumReference.npm_shasum,
+		);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"post_publish_verification.registry_metadata_lookup.dist_shasum",
+			checksumReference.npm_shasum,
+		);
+		checkExpectedField(result, path, report, "sha256", checksumReference.sha256);
+		checkExpectedField(result, path, report, "artifact.sha256", checksumReference.sha256);
+		checkExpectedField(
+			result,
+			path,
+			report,
+			"post_publish_verification.published_tarball_download_verification.sha256",
+			checksumReference.sha256,
+		);
+	}
+}
+
+function publicationChecksumReference(report, tarballReport, result, path) {
+	if (report.regenerated_tarball === true) {
+		if (!isJsonObject(report.artifact)) {
+			addVersionMismatch(
+				result,
+				path,
+				"artifact",
+				"regenerated artifact evidence",
+				report.artifact,
+			);
+			return null;
+		}
+		if (!isNpmIntegrity(report.artifact.npm_integrity)) {
+			addVersionMismatch(
+				result,
+				path,
+				"artifact.npm_integrity",
+				"valid npm integrity",
+				report.artifact.npm_integrity,
+			);
+			return null;
+		}
+		if (!isSha1Hex(report.artifact.npm_shasum)) {
+			addVersionMismatch(
+				result,
+				path,
+				"artifact.npm_shasum",
+				"valid npm shasum",
+				report.artifact.npm_shasum,
+			);
+			return null;
+		}
+		if (!isSha256Hex(report.artifact.sha256)) {
+			addVersionMismatch(result, path, "artifact.sha256", "valid SHA-256", report.artifact.sha256);
+			return null;
+		}
+		return {
+			npm_integrity: report.artifact.npm_integrity,
+			npm_shasum: report.artifact.npm_shasum,
+			sha256: report.artifact.sha256,
+		};
+	}
+	if (!isJsonObject(tarballReport)) {
+		addVersionMismatch(result, path, "t10_5_tarball_artifact", "artifact checksum evidence", null);
+		return null;
+	}
+	return {
+		npm_integrity: tarballReport.npm_integrity,
+		npm_shasum: tarballReport.npm_shasum,
+		sha256: tarballReport.sha256,
+	};
+}
+
+function checkExpectedTarballPathBasename(result, path, report, field) {
+	const actual = readField(report, field);
+	if (!isNonEmptyString(actual)) {
+		addVersionMismatch(result, path, field, `*/${result.expected_tarball_file}`, actual);
+		return;
+	}
+	const filename = actual.split(/[\\/]/u).at(-1);
+	if (filename !== result.expected_tarball_file) {
+		addVersionMismatch(result, path, field, `*/${result.expected_tarball_file}`, actual);
+	}
+}
+
+function validateRepositoryTagVersionCoherence(report, path, result) {
+	if (!isJsonObject(report.repository_tag)) {
+		addVersionMismatch(result, path, "repository_tag", "object", report.repository_tag);
+		return;
+	}
+	checkExpectedField(result, path, report, "repository_tag.tag", result.expected_repository_tag);
+	checkExpectedField(
+		result,
+		path,
+		report,
+		"repository_tag.remote_ref",
+		`refs/tags/${result.expected_repository_tag}`,
+	);
+	checkExpectedField(result, path, report, "repository_tag.pushed", true);
+	checkExpectedField(result, path, report, "repository_tag.local_status", 0);
+	checkExpectedField(result, path, report, "repository_tag.push_status", 0);
+	const targetCommit = readField(report, "repository_tag.target_commit");
+	if (!isNonEmptyString(targetCommit) || !/^[a-f0-9]{7,40}$/iu.test(targetCommit)) {
+		addVersionMismatch(
+			result,
+			path,
+			"repository_tag.target_commit",
+			"hex Git commit SHA",
+			targetCommit,
+		);
+	}
+}
+
+function checkExpectedField(result, path, report, field, expected) {
+	const actual = readField(report, field);
+	if (actual !== expected) {
+		addVersionMismatch(result, path, field, expected, actual);
+	}
+}
+
+function checkExpectedFieldIfPresent(result, path, report, field, expected) {
+	if (!hasField(report, field)) {
+		return;
+	}
+	checkExpectedField(result, path, report, field, expected);
+}
+
+function hasField(report, field) {
+	const segments = field.split(".");
+	let value = report;
+	for (const segment of segments) {
+		if (!isJsonObject(value) || !Object.hasOwn(value, segment)) {
+			return false;
+		}
+		value = value[segment];
+	}
+	return true;
+}
+
+function readField(report, field) {
+	const segments = field.split(".");
+	let value = report;
+	for (const segment of segments) {
+		if (!isJsonObject(value) || !Object.hasOwn(value, segment)) {
+			return null;
+		}
+		value = value[segment];
+	}
+	return value;
+}
+
+function addVersionMismatch(result, path, field, expected, actual) {
+	const normalizedActual = actual === undefined ? null : actual;
+	result.mismatches.push({
+		path,
+		field,
+		expected,
+		actual: normalizedActual,
+		blocking: isBlockingPublicationVersionMismatch(field),
+		message: `publication evidence version mismatch: ${path} ${field} expected ${formatMismatchValue(expected)}, got ${formatMismatchValue(normalizedActual)}`,
+	});
+}
+
+function isBlockingPublicationVersionMismatch(field) {
+	return publicationVersionBlockingFields.has(field);
+}
+
+function formatMismatchValue(value) {
+	if (value === null || value === undefined) {
+		return "missing";
+	}
+	return String(value);
 }
 
 function validatePublicationPackageIdentity(report, label, result, validationErrors) {
@@ -1521,7 +1942,7 @@ function buildReport(options) {
 		errors.push("golden diffs report must be a JSON array");
 	}
 	const entropyReviewValidation = validateEntropyReview(reports.entropyReview);
-	const publicationEvidenceValidation = validatePublicationEvidence(reports);
+	const publicationEvidenceValidation = validatePublicationEvidence(reports, options);
 
 	const artifactResults = archiveInputs(options, errors);
 	const gates = [
@@ -1601,6 +2022,13 @@ function renderMarkdownReport(report) {
 		lines.push("", "## Input Errors", "");
 		for (const error of report.input_errors) {
 			lines.push(`- ${error}`);
+		}
+	}
+	const versionCoherence = report.publication_checklist.publication_evidence.version_coherence;
+	if (versionCoherence?.mismatches?.length > 0) {
+		lines.push("", "## Publication Version Coherence", "");
+		for (const mismatch of versionCoherence.mismatches) {
+			lines.push(`- ${mismatch.message}`);
 		}
 	}
 	lines.push("");
