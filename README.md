@@ -22,6 +22,13 @@ explicit mappings, clean analysis health, a pretty-printed full scan output,
 and a short scan brief with the same status, coverage, anchors, findings, and
 interpretation vocabulary used by the reference runbooks.
 
+The same demo repository also hosts the draft GitHub Action PR preview set:
+one workflow-base PR plus clean, unmapped-anchor, stale-mapping, and
+degraded-analysis scenario PRs. The preview uses
+`fstepho/anchormap-action@v0-preview.3` with `anchormap@1.2.2` and uploads
+GitHub workflow artifacts only. It does not create PR comments or upload source
+to an AnchorMap service.
+
 ## Install
 
 AnchorMap is distributed as the public npm package `anchormap`.

@@ -1,6 +1,6 @@
 # AnchorMap PR Report
 
-Status: self-serve interpretation guide for the future AnchorMap GitHub Action
+Status: self-serve interpretation guide for the AnchorMap GitHub Action preview
 job summary and `anchormap.report.md` workflow artifact.
 
 The PR report is the Markdown output of:
@@ -18,8 +18,8 @@ upload SARIF, or create PR comments by default.
 
 ## Where It Appears
 
-The future Action may show the generated Markdown in the GitHub job summary and
-may upload `anchormap.report.md` as a GitHub Actions workflow artifact.
+The preview Action may show the generated Markdown in the GitHub job summary
+and may upload `anchormap.report.md` as a GitHub Actions workflow artifact.
 
 The job summary is a display surface. The canonical Markdown artifact remains
 `anchormap.report.md`, and summary rendering must not add hidden analysis or
