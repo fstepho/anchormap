@@ -1,0 +1,103 @@
+name: Design partner feedback
+description: Share structured feedback from a self-serve AnchorMap preview run.
+title: "[Preview feedback]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying the self-serve preview. Do not upload private source code, proprietary specs, secrets, customer data, or full logs containing secrets. Sanitized report snippets and redacted workflow/policy examples are enough.
+  - type: textarea
+    id: repo-shape
+    attributes:
+      label: Repository shape
+      description: Describe the repo without naming private paths or code.
+      placeholder: |
+        product_root:
+        spec_roots:
+        TypeScript only:
+        framework:
+    validations:
+      required: true
+  - type: dropdown
+    id: setup-time
+    attributes:
+      label: Setup time
+      options:
+        - "<10 min"
+        - 10-30 min
+        - ">30 min"
+    validations:
+      required: true
+  - type: dropdown
+    id: first-useful-signal
+    attributes:
+      label: Did the first run produce a useful signal?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: report-usefulness
+    attributes:
+      label: Report usefulness
+      description: 1 means not useful; 5 means very useful.
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+    validations:
+      required: true
+  - type: dropdown
+    id: noise-level
+    attributes:
+      label: Noise level
+      description: 1 means low noise; 5 means too noisy.
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+    validations:
+      required: true
+  - type: textarea
+    id: policy-used
+    attributes:
+      label: Policy used
+      description: Paste a redacted policy if you can. Remove private paths or names.
+      render: yaml
+  - type: textarea
+    id: sanitized-artifacts
+    attributes:
+      label: Optional sanitized report or artifact details
+      description: Share redacted sections, finding kinds, counts, exit codes, and artifact paths. Do not include source files or secrets.
+      render: markdown
+  - type: dropdown
+    id: no-source-upload
+    attributes:
+      label: Is no-source-upload important for adoption?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+  - type: checkboxes
+    id: future-interest
+    attributes:
+      label: Future capability interest
+      options:
+        - label: Multi-PR history
+        - label: Multi-repo dashboard
+        - label: GitHub App instead of workflow artifact handling
+        - label: PR comment opt-in
+        - label: Self-hosted or enterprise controls
+  - type: textarea
+    id: additional-feedback
+    attributes:
+      label: Additional feedback
+      description: Include any onboarding friction, false positives, confusing report sections, or desired policy controls.

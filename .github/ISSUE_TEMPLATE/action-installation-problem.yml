@@ -1,0 +1,69 @@
+name: Action installation problem
+description: Report a setup or workflow problem with the self-serve Action preview.
+title: "[Action setup]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share enough detail to reproduce the setup problem, but keep it sanitized. Do not upload private source code, secrets, tokens, customer data, or complete logs containing secrets.
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      placeholder: "22.x"
+    validations:
+      required: true
+  - type: input
+    id: os-runner
+    attributes:
+      label: OS or GitHub runner
+      placeholder: ubuntu-latest, macos-latest, Windows, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: workflow-yaml
+    attributes:
+      label: Redacted workflow YAML
+      description: Remove secrets, private repository names, and internal URLs.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: command-output
+    attributes:
+      label: Sanitized command output
+      description: Include the failing AnchorMap command output or Action step output. Remove secrets and private source content.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: exit-code
+    attributes:
+      label: Exit code
+      description: Include the CLI or workflow step exit code if available.
+      placeholder: "0, 1, 5, etc."
+  - type: textarea
+    id: artifact-paths
+    attributes:
+      label: Artifact paths
+      description: List generated or missing artifact paths such as anchormap.scan.json, anchormap.check.json, anchormap.diff.json, or anchormap.report.md.
+      render: text
+  - type: dropdown
+    id: source-upload-expected
+    attributes:
+      label: Did any step ask you to upload source code or call an AnchorMap server?
+      options:
+        - "No"
+        - "Yes"
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected vs. actual result
+      placeholder: |
+        Expected:
+        Actual:
+    validations:
+      required: true

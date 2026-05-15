@@ -1,0 +1,61 @@
+name: Confusing PR report
+description: Report a PR report section that was hard to interpret.
+title: "[Report confusing]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share the smallest sanitized report snippet that explains the confusion. Do not upload private source code, proprietary specs, secrets, customer data, or complete workflow logs.
+  - type: dropdown
+    id: report-section
+    attributes:
+      label: Report section
+      options:
+        - Summary
+        - Policy violations
+        - Change impact
+        - Findings
+        - Suggested actions
+        - What it does not prove
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: command-used
+    attributes:
+      label: Command used
+      placeholder: anchormap report --scan anchormap.scan.json --check anchormap.check.json --format markdown
+    validations:
+      required: true
+  - type: textarea
+    id: expected-interpretation
+    attributes:
+      label: Expected interpretation
+      description: What did you expect this section to mean?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-interpretation
+    attributes:
+      label: Actual interpretation
+      description: What did you think it meant, or why was it ambiguous?
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized-snippet
+    attributes:
+      label: Sanitized report snippet
+      description: Redact source paths, anchor names, organization names, and any private content.
+      render: markdown
+    validations:
+      required: true
+  - type: dropdown
+    id: affected-review
+    attributes:
+      label: Did this affect a review or merge decision?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true

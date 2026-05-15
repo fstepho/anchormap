@@ -1,0 +1,56 @@
+name: Policy request
+description: Request a policy control or tuning option for AnchorMap checks.
+title: "[Policy request]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the policy need without uploading private source code or proprietary specs. Policy files are explicit read-only inputs; this template does not create labels or configure external repository state.
+  - type: input
+    id: finding-kind
+    attributes:
+      label: Finding kind or signal
+      placeholder: unmapped_anchor, stale_mapping_anchor, coverage threshold, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: desired-behavior
+    attributes:
+      label: Desired behavior
+      description: What should the policy be able to express?
+    validations:
+      required: true
+  - type: dropdown
+    id: fail-ci
+    attributes:
+      label: Should this fail CI?
+      options:
+        - "Yes"
+        - "No"
+        - Configurable
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: warning-only
+    attributes:
+      label: Should this be warning only?
+      options:
+        - "Yes"
+        - "No"
+        - Configurable
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: current-policy
+    attributes:
+      label: Current redacted policy
+      description: Paste a sanitized policy if it helps. Remove private names and paths.
+      render: yaml
+  - type: textarea
+    id: report-context
+    attributes:
+      label: Sanitized report context
+      description: Include finding kinds, counts, or section names. Do not include source code.
+      render: markdown
