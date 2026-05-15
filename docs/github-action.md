@@ -5,10 +5,10 @@ The workflow files in `docs/examples/github-actions/` are inert examples, not
 active workflow behavior in this repository.
 
 The current preview runtime lives in
-[`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) on
-draft branch `task/gha-1-composite-action`. The public h3 demo PR set lives in
+[`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) at
+preview tag `v0-preview.1`. The public h3 demo PR set lives in
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
-The preview uses `anchormap@1.2.2`. There is no stable Action tag, release,
+The preview uses `anchormap@1.2.2`. There is no stable Action release,
 Marketplace publication, or merge guarantee yet.
 
 The Action boundary is orchestration over accepted local CLI commands:
@@ -28,10 +28,10 @@ Copy the simple example from
 into your own repository as `.github/workflows/anchormap.yml`, then replace the
 placeholder Action and npm versions with pinned versions.
 
-For preview testing only, the current branch ref is:
+For preview testing only, the current tag ref is:
 
 ```yaml
-uses: fstepho/anchormap-action@task/gha-1-composite-action
+uses: fstepho/anchormap-action@v0-preview.1
 ```
 
 The simple mode runs:

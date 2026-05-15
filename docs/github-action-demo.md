@@ -5,11 +5,10 @@ preview and PR report path.
 
 The public demo repository is
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
-It uses the preview Action branch
-`fstepho/anchormap-action@task/gha-1-composite-action` and pins
-`anchormap@1.2.2`. The runtime Action remains draft-only: no tag, release,
-Marketplace publication, merge, PR comment automation, or SaaS upload is
-implied.
+It uses the preview Action tag
+`fstepho/anchormap-action@v0-preview.1` and pins `anchormap@1.2.2`. The
+runtime Action remains draft-only: no stable release, Marketplace publication,
+merge, PR comment automation, or SaaS upload is implied.
 
 ## Demo Repository Contents
 
