@@ -25,7 +25,7 @@ interpretation vocabulary used by the reference runbooks.
 The same demo repository also hosts the draft GitHub Action PR preview set:
 one workflow-base PR plus clean, unmapped-anchor, stale-mapping, and
 degraded-analysis scenario PRs. The preview uses
-`fstepho/anchormap-action@v0-preview.2` with `anchormap@1.2.2` and uploads
+`fstepho/anchormap-action@v0-preview.3` with `anchormap@1.2.2` and uploads
 GitHub workflow artifacts only. It does not create PR comments or upload source
 to an AnchorMap service.
 

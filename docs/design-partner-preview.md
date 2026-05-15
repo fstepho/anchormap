@@ -72,7 +72,7 @@ access is requested.
    replacing placeholder versions with pinned versions.
 5. Open a PR and inspect the job summary plus generated artifacts.
 
-For preview testing, use `fstepho/anchormap-action@v0-preview.2`
+For preview testing, use `fstepho/anchormap-action@v0-preview.3`
 with `anchormap-version: "1.2.2"`. The public demo scenario set is available
 in [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 
