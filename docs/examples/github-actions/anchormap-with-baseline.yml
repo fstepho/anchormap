@@ -1,5 +1,5 @@
 # Inert documentation example. Copy this file into your repository as
-# .github/workflows/anchormap.yml and replace the placeholder versions.
+# .github/workflows/anchormap.yml. Preview versions are pinned intentionally.
 # The baseline scan is an explicit local input, not a Git ref or fetched
 # workflow artifact.
 
@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run AnchorMap with explicit baseline
-        uses: fstepho/anchormap-action@<action-version>
+        uses: fstepho/anchormap-action@v0-preview.3
         with:
-          anchormap-version: <anchormap-npm-version>
+          anchormap-version: "1.2.2"
           node-version: "22"
           policy: anchormap.policy.yaml
           base-scan: .anchormap/baseline.scan.json

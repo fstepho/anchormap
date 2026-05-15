@@ -25,8 +25,8 @@ environment values, or GitHub workflow state as AnchorMap product truth.
 
 Copy the simple example from
 [`docs/examples/github-actions/anchormap-simple.yml`](examples/github-actions/anchormap-simple.yml)
-into your own repository as `.github/workflows/anchormap.yml`, then replace the
-placeholder Action and npm versions with pinned versions.
+into your own repository as `.github/workflows/anchormap.yml`. The preview
+example pins the current Action and npm versions.
 
 For preview testing only, the current tag ref is:
 

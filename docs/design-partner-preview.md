@@ -68,8 +68,7 @@ access is requested.
 1. Install AnchorMap locally for the repository under test.
 2. Add `anchormap.yaml` with explicit `product_root` and `spec_roots`.
 3. Add `anchormap.policy.yaml` using `docs/policy-examples.md`.
-4. Add a workflow derived from `docs/github-action.md` to your own repository,
-   replacing placeholder versions with pinned versions.
+4. Add a workflow derived from `docs/github-action.md` to your own repository.
 5. Open a PR and inspect the job summary plus generated artifacts.
 
 For preview testing, use `fstepho/anchormap-action@v0-preview.3`
