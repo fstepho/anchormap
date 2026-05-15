@@ -6,7 +6,7 @@ active workflow behavior in this repository.
 
 The current preview runtime lives in
 [`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) at
-preview tag `v0-preview.1`. The public h3 demo PR set lives in
+preview tag `v0-preview.2`. The public h3 demo PR set lives in
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 The preview uses `anchormap@1.2.2`. There is no stable Action release,
 Marketplace publication, or merge guarantee yet.
@@ -31,7 +31,7 @@ placeholder Action and npm versions with pinned versions.
 For preview testing only, the current tag ref is:
 
 ```yaml
-uses: fstepho/anchormap-action@v0-preview.1
+uses: fstepho/anchormap-action@v0-preview.2
 ```
 
 The simple mode runs:
@@ -72,7 +72,7 @@ GHA-1 defines these Action inputs:
 
 | Input | Required | Default | Meaning |
 | --- | --- | --- | --- |
-| `anchormap-version` | yes | none | Pinned npm version of AnchorMap to install; the current preview uses `1.2.2`. |
+| `anchormap-version` | no | `1.2.2` | Pinned npm version of AnchorMap to install. |
 | `node-version` | no | `22` | Node.js version used to run AnchorMap. |
 | `policy` | no | `anchormap.policy.yaml` | Explicit policy file path. |
 | `base-scan` | no | none | Explicit baseline scan artifact for diff mode. |
