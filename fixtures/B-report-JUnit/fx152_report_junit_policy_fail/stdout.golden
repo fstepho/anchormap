@@ -1,0 +1,6 @@
+<testsuite name="anchormap.policy" tests="4" failures="4">
+<testcase name="policy.violation.analysis_health_degraded" classname="anchormap.policy"><failure message="policy violation">{"kind":"analysis_health_degraded"}</failure></testcase>
+<testcase name="policy.violation.covered_product_file_percent_below_threshold.actual-50.threshold-75" classname="anchormap.policy"><failure message="policy violation">{"kind":"covered_product_file_percent_below_threshold","actual":50,"threshold":75}</failure></testcase>
+<testcase name="policy.violation.finding_kind_present.untraced_product_file" classname="anchormap.policy"><failure message="policy violation">{"kind":"finding_kind_present","finding_kind":"untraced_product_file","count":2}</failure></testcase>
+<testcase name="policy.violation.untraced_product_files_above_threshold.actual-3.threshold-1" classname="anchormap.policy"><failure message="policy violation">{"kind":"untraced_product_files_above_threshold","actual":3,"threshold":1}</failure></testcase>
+</testsuite>

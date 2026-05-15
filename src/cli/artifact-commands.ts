@@ -3,7 +3,7 @@ import { buildArtifactBundle } from "../domain/bundle-model";
 import { diffScanResults } from "../domain/diff-engine";
 import { explainScanSubject } from "../domain/explain-engine";
 import type { RepoPath } from "../domain/repo-path";
-import { buildMarkdownReportModel } from "../domain/report-model";
+import { buildJUnitReportModel, buildMarkdownReportModel } from "../domain/report-model";
 import {
 	loadPolicyResultArtifact,
 	loadScanArtifact,
@@ -21,6 +21,7 @@ import {
 	renderTraceabilityDiffHuman,
 	renderTraceabilityDiffJson,
 } from "../render/render-json";
+import { renderJUnitReport } from "../render/render-junit-report";
 import { renderMarkdownReport } from "../render/render-markdown-report";
 import type {
 	ParsedBundleArgs,
@@ -111,6 +112,21 @@ export function validateRawExplainArgs(
 export function validateRawReportArgs(
 	args: ParsedReportArgs,
 ): { kind: "ok"; args: ParsedReportArgs } | { kind: "usage_error"; message: string } {
+	if (args.format === "junit") {
+		const check = normalizeRequiredCliPath(args.check, "--check");
+		if (check.kind === "usage_error") {
+			return check;
+		}
+
+		return {
+			kind: "ok",
+			args: {
+				check: check.path,
+				format: "junit",
+			},
+		};
+	}
+
 	const scan = normalizeRequiredCliPath(args.scan, "--scan");
 	if (scan.kind === "usage_error") {
 		return scan;
@@ -218,6 +234,21 @@ export function runReportCommand(context: ArtifactCommandContext): AnchormapComm
 	const args = context.reportArgs;
 	if (args === undefined) {
 		return internalError("report arguments were not parsed");
+	}
+
+	if (args.format === "junit") {
+		const check = loadPolicyResultArtifact(args.check, {
+			cwd: context.cwd,
+			optionName: "--check",
+		});
+		if (check.kind === "error") {
+			return check.error;
+		}
+
+		return {
+			kind: "success",
+			stdout: renderJUnitReport(buildJUnitReportModel({ check: check.policyResult })),
+		};
 	}
 
 	const scan = loadScanArtifact(args.scan, { cwd: context.cwd, optionName: "--scan" });

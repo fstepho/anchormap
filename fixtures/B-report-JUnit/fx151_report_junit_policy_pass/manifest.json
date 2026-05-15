@@ -1,0 +1,27 @@
+{
+	"id": "fx151_report_junit_policy_pass",
+	"family": "B-report-JUnit",
+	"purpose": "report renders stable JUnit XML for a passing PolicyResult.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--check",
+		"artifacts/check.json",
+		"--format",
+		"junit"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "junit", "golden", "artifact_io"],
+	"groups": ["m20"]
+}

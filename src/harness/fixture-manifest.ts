@@ -509,7 +509,10 @@ function hasArtifactMachineOutput(
 	const firstOptionIndex = command[0] === "node" ? 3 : 2;
 	const args = command.slice(firstOptionIndex);
 	if (subcommand === "report") {
-		return args.some((arg, index) => arg === "--format" && args[index + 1] === "markdown");
+		return args.some(
+			(arg, index) =>
+				arg === "--format" && (args[index + 1] === "markdown" || args[index + 1] === "junit"),
+		);
 	}
 
 	return args.includes("--json");

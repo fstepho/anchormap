@@ -303,6 +303,25 @@ test("requires goldens for artifact command machine-output success fixtures", ()
 	assert.doesNotThrow(() =>
 		validateFixtureManifest({
 			...minimalFailureManifest(),
+			id: "harness_schema_valid_report_junit_success",
+			command: [
+				"node",
+				"dist/anchormap.js",
+				"report",
+				"--check",
+				"check.json",
+				"--format",
+				"junit",
+			],
+			exit_code: 0,
+			stdout: { kind: "golden" },
+			stderr: { kind: "empty" },
+		}),
+	);
+
+	assert.doesNotThrow(() =>
+		validateFixtureManifest({
+			...minimalFailureManifest(),
 			id: "harness_schema_valid_diff_human_success",
 			command: ["node", "dist/anchormap.js", "diff", "--base", "base.json", "--head", "head.json"],
 			exit_code: 0,

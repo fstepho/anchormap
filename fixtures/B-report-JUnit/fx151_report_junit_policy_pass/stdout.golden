@@ -1,0 +1,3 @@
+<testsuite name="anchormap.policy" tests="1" failures="0">
+<testcase name="policy pass" classname="anchormap.policy"/>
+</testsuite>

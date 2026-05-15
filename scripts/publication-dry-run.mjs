@@ -67,6 +67,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/infra/ts-graph.js",
 	"dist/infra/tsconfig-io.js",
 	"dist/package-version.js",
+	"dist/render/render-junit-report.js",
 	"dist/render/render-markdown-report.js",
 	"dist/render/render-json.js",
 ];

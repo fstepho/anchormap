@@ -1,0 +1,29 @@
+{
+	"id": "fx154_report_junit_rejects_extra_inputs",
+	"family": "B-report-JUnit",
+	"purpose": "report rejects scan or diff inputs with JUnit format before emitting stdout.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"report",
+		"--check",
+		"artifacts/check.json",
+		"--scan",
+		"artifacts/scan.json",
+		"--format",
+		"junit"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["report", "junit", "cli_boundary", "invalid"],
+	"groups": ["m20"]
+}

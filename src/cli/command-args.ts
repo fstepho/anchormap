@@ -35,12 +35,17 @@ export interface ParsedExplainArgs {
 	json: boolean;
 }
 
-export interface ParsedReportArgs {
-	scan: string;
-	check?: string;
-	diff?: string;
-	format: "markdown";
-}
+export type ParsedReportArgs =
+	| {
+			scan: string;
+			check?: string;
+			diff?: string;
+			format: "markdown";
+	  }
+	| {
+			check: string;
+			format: "junit";
+	  };
 
 export interface ParsedBundleArgs {
 	scan: string;
@@ -565,22 +570,38 @@ export function parseReportArgs(args: readonly string[]): ParsedReportArgsResult
 		}
 	}
 
-	if (scan === undefined) {
-		return { kind: "usage_error", message: "--scan is required" };
-	}
 	if (format === undefined) {
 		return { kind: "usage_error", message: "--format is required" };
 	}
-	if (format !== "markdown") {
-		return { kind: "usage_error", message: "--format must be markdown" };
+	if (format !== "markdown" && format !== "junit") {
+		return { kind: "usage_error", message: "--format must be markdown or junit" };
 	}
 
+	if (format === "markdown") {
+		if (scan === undefined) {
+			return { kind: "usage_error", message: "--scan is required" };
+		}
+		return {
+			kind: "ok",
+			args: {
+				scan,
+				...(check !== undefined ? { check } : {}),
+				...(diff !== undefined ? { diff } : {}),
+				format,
+			},
+		};
+	}
+
+	if (check === undefined) {
+		return { kind: "usage_error", message: "--check is required" };
+	}
+	if (scan !== undefined || diff !== undefined) {
+		return { kind: "usage_error", message: "--format junit supports only --check" };
+	}
 	return {
 		kind: "ok",
 		args: {
-			scan,
-			...(check !== undefined ? { check } : {}),
-			...(diff !== undefined ? { diff } : {}),
+			check,
 			format,
 		},
 	};

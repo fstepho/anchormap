@@ -10,6 +10,10 @@ export interface MarkdownReportModel {
 	readonly suggested_actions: readonly string[];
 }
 
+export interface JUnitReportModel {
+	readonly check: PolicyResult;
+}
+
 type ActionFindingKind = Exclude<Finding["kind"], "stale_mapping_anchor" | "untraced_product_file">;
 
 const ACTION_FINDING_ORDER: readonly ActionFindingKind[] = [
@@ -33,6 +37,10 @@ export function buildMarkdownReportModel(input: {
 		...(input.diff !== undefined ? { diff: input.diff } : {}),
 		suggested_actions: buildSuggestedActions(input.scan.findings, input.diff, input.renderString),
 	};
+}
+
+export function buildJUnitReportModel(input: { readonly check: PolicyResult }): JUnitReportModel {
+	return { check: input.check };
 }
 
 function buildSuggestedActions(

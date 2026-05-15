@@ -428,7 +428,7 @@ function dispatchCommand(
 
 type MachineOutputContract = {
 	readonly label: string;
-	readonly format: "json" | "markdown";
+	readonly format: "json" | "text";
 };
 
 function getMachineOutputContract(
@@ -447,7 +447,7 @@ function getMachineOutputContract(
 		return { label: "explain --json", format: "json" };
 	}
 	if (context.reportArgs !== undefined) {
-		return { label: "report --format markdown", format: "markdown" };
+		return { label: `report --format ${context.reportArgs.format}`, format: "text" };
 	}
 	if (context.bundleArgs?.json) {
 		return { label: "bundle --json", format: "json" };

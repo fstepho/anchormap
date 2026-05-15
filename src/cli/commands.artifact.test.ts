@@ -63,6 +63,12 @@ test("parses supported SaaS-ready artifact command forms before dispatch", () =>
 			expectedStdout: "report\n",
 		},
 		{
+			argv: ["report", "--check", "./artifacts/check.json", "--format", "junit"],
+			expectedCall:
+				"report:--check ./artifacts/check.json --format junit:scan=:check=artifacts/check.json:diff=:format=junit",
+			expectedStdout: "report\n",
+		},
+		{
 			argv: [
 				"bundle",
 				"--scan",
@@ -171,6 +177,10 @@ test("rejects unsupported artifact command options and combinations before dispa
 		["report", "--scan", "scan.json", "--format", "html"],
 		["report", "--format", "markdown"],
 		["report", "--scan", "scan.json", "--check", "", "--format", "markdown"],
+		["report", "--format", "junit"],
+		["report", "--scan", "scan.json", "--check", "check.json", "--format", "junit"],
+		["report", "--check", "check.json", "--diff", "diff.json", "--format", "junit"],
+		["report", "--check", "", "--format", "junit"],
 		["bundle", "--scan", "scan.json", "--check", "check.json", "--diff", "diff.json", "--json"],
 		[
 			"bundle",
@@ -294,6 +304,58 @@ test("report artifact mode renders markdown from explicit artifacts", () => {
 				"",
 			].join("\n"),
 		);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("report artifact mode renders junit from explicit check artifact", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "check.json"), minimalPolicyResultJson());
+
+		const result = runCommand(cwd, [
+			"report",
+			"--check",
+			"artifacts/check.json",
+			"--format",
+			"junit",
+		]);
+
+		assert.equal(result.exitCode, 0);
+		assert.equal(result.stderr, "");
+		assert.equal(
+			result.stdout,
+			[
+				'<testsuite name="anchormap.policy" tests="1" failures="0">',
+				'<testcase name="policy pass" classname="anchormap.policy"/>',
+				"</testsuite>",
+				"",
+			].join("\n"),
+		);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("report junit rejects invalid check artifacts with empty stdout", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "invalid.json"), '{"schema_version":1,"extra":true}\n');
+
+		const result = runCommand(cwd, [
+			"report",
+			"--check",
+			"artifacts/invalid.json",
+			"--format",
+			"junit",
+		]);
+
+		assert.equal(result.exitCode, 4);
+		assert.equal(result.stdout, "");
+		assert.notEqual(result.stderr, "");
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });
 	}

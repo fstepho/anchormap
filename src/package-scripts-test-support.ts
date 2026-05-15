@@ -86,6 +86,7 @@ export const EXPECTED_PACKAGE_FILES = [
 	"dist/infra/ts-graph.js",
 	"dist/infra/tsconfig-io.js",
 	"dist/package-version.js",
+	"dist/render/render-junit-report.js",
 	"dist/render/render-markdown-report.js",
 	"dist/render/render-json.js",
 ];
