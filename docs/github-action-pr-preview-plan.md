@@ -1,7 +1,7 @@
 # AnchorMap — GitHub Action, PR report, and self-serve design partner plan
 
 **Statut**: proposition exploratoire, non normative  
-**Portée** : ce document propose une trajectoire GitHub Action + rapport PR + programme design partners pour AnchorMap. Il couvre deux repos : le repo principal `anchormap` — docs, issue templates, workflow exemples — et un futur repo `anchormap-action` — `action.yml`, scripts, README. Les artefacts documentaires produisibles dans le repo actuel sont : ADR, entrées `docs/tasks.md`, docs self-serve, issue templates. Les phases opérationnelles — créer des PRs démo, configurer des labels GitHub, recruter des design partners — peuvent produire de l'état GitHub hors repo, mais ne produisent pas d'artefacts contractuels dans le repo principal.  
+**Portée** : ce document propose une trajectoire GitHub Action + rapport PR + programme design partners pour AnchorMap. Il couvre deux repos : le repo principal `anchormap` — docs, issue templates, workflow exemples — et le repo externe `anchormap-action` — `action.yml`, scripts, README. Les artefacts documentaires produisibles dans le repo actuel sont : ADR, entrées `docs/tasks.md`, docs self-serve, issue templates. Les phases opérationnelles — créer des PRs démo, configurer des labels GitHub, recruter des design partners — peuvent produire de l'état GitHub hors repo, mais ne produisent pas d'artefacts contractuels dans le repo principal.  
 **Prévalence** : ce document ne modifie pas le comportement runtime, ne crée aucune tâche active dans `docs/tasks.md`, ne remplace pas `docs/contract.md`, `docs/evals.md`, `docs/design.md`, `docs/brief.md` ni les ADR acceptées.
 
 Les labels `GHA-1` à `GHA-5` ci-dessous sont des labels de plan techniques proposés. Ils ne sont pas des milestones `docs/tasks.md` et ne deviennent exécutables qu'après modification explicite des documents d'autorité applicables, avec tâches traçables, contrat, evals et ADR si nécessaire.
@@ -10,14 +10,28 @@ Les labels `PREVIEW-1` à `PREVIEW-3` désignent des activités de validation pr
 
 ## État de traitement
 
-Ce plan est réconcilié avec l'état livré après M20 :
+Ce plan est réconcilié avec l'état livré après M20 et avec la preview GitHub
+finalisée le 2026-05-15 :
 
 - `docs/brief.md` §6.10 autorise déjà la surface locale CI/PR par artefacts CLI ;
 - `docs/brief.md` §13 distingue déjà `anchormap.yaml` comme seule persistance mutable possédée par AnchorMap des policies et artefacts explicites lus seulement ;
 - `ADR-0019` à `ADR-0026` couvrent déjà la surface CLI `check`, `diff`, `explain`, `report`, `bundle`, scan v5, JUnit et SARIF ;
 - `docs/contract.md`, `docs/design.md` et `docs/evals.md` définissent déjà les comportements CLI correspondants.
+- `ADR-0027` couvre l'orchestration composite de l'action GitHub ;
+- `fstepho/anchormap-action@v0-preview.3` est le tag preview audité ;
+- `fstepho/anchormap-action#1`, `fstepho/anchormap-h3-demo#1` et `fstepho/anchormap#3` sont mergées sur `main` ;
+- les PRs scénario `fstepho/anchormap-h3-demo#2` à `#5` restent ouvertes en draft sur `main` comme cas de démonstration vivants ;
+- l'issue ops `fstepho/anchormap#2` est close comme completed après audit réel des artifacts.
 
-Conséquence : ce document ne doit pas rouvrir le contrat CLI déjà accepté. Les décisions restantes portent sur la couche d'orchestration GitHub Action, la documentation self-serve, les templates d'issues, le repo démo et le programme preview. Toute tâche exécutable dans le repo principal devra être ajoutée explicitement à `docs/tasks.md`; toute décision structurante de l'action devra être portée par une ADR dédiée ou par une ADR existante explicitement vérifiée comme suffisante.
+Conséquence : ce document ne doit pas rouvrir le contrat CLI déjà accepté. GHA-1
+à GHA-3 ainsi que PREVIEW-1 et PREVIEW-2 sont traités pour la preview
+`v0-preview.3`. Les décisions restantes portent sur GHA-4, GHA-5 et PREVIEW-3 :
+commentaire PR opt-in, exposition Action de JUnit/SARIF, collecte de feedback
+réel et décision SaaS-lite/GitHub App/amélioration CLI-Action. Toute tâche
+exécutable dans le repo principal devra être ajoutée explicitement à
+`docs/tasks.md`; toute décision structurante future de l'action devra être
+portée par une ADR dédiée ou par une ADR existante explicitement vérifiée comme
+suffisante.
 
 Le principe : AnchorMap reste un CLI local-first ; l’action GitHub ne fait qu’orchestrer les commandes déjà prévues : `scan`, `check`, `diff`, `report`, `bundle`. Le README documente déjà ces commandes comme workflow local CI/PR : elles produisent les artefacts nécessaires, et `diff`, `explain`, `report` et `bundle` sont artifact-only, sans lecture de Git, CI, réseau, caches ou variables d’environnement comme vérité produit. Le package expose aussi déjà les modules `diff-engine`, `policy-engine`, `explain-engine`, `render-markdown-report`, `render-junit-report`, `render-sarif-report` et `bundle-model`, donc le terrain technique est bon.
 
@@ -111,13 +125,15 @@ Les décisions CLI ne doivent pas être dupliquées dans une ADR GitHub Action. 
 
 ### Ordre d’adoption recommandé
 
-1. Vérifier la conformité à `docs/brief.md` §6.10 et §13 et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée.
-2. ADR GHA-1 acceptée, ou vérification écrite qu'une ADR existante couvre toute la décision structurante, puis tâche de planification traçable → ouvre l'implémentation de l'action composite.
-3. Vérification de `ADR-0023` + décision d'affichage GitHub job summary → ouvre GHA-2.
-4. Vérification de `ADR-0021` + décision baseline explicite → ouvre GHA-3.
-5. ADR GHA-4 et GHA-5 après validation de GHA-1 et GHA-2.
+1. Vérifier la conformité à `docs/brief.md` §6.10 et §13 et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée. Fait pour la preview `v0-preview.3`.
+2. ADR GHA-1 acceptée, ou vérification écrite qu'une ADR existante couvre toute la décision structurante, puis tâche de planification traçable → ouvre l'implémentation de l'action composite. Fait via `ADR-0027`.
+3. Vérification de `ADR-0023` + décision d'affichage GitHub job summary → ouvre GHA-2. Fait pour job summary + artifact Markdown.
+4. Vérification de `ADR-0021` + décision baseline explicite → ouvre GHA-3. Fait pour le mode `base-scan` explicite.
+5. ADR GHA-4 et GHA-5 après validation de GHA-1 et GHA-2. Reste futur.
 
-Tant que les autorités applicables ne sont pas acceptées ou vérifiées, les phases GHA-1 à GHA-5 et PREVIEW-1 à PREVIEW-3 restent strictement exploratoires.
+GHA-1 à GHA-3 ainsi que PREVIEW-1 et PREVIEW-2 ne sont plus seulement
+exploratoires pour la preview auditée. GHA-4, GHA-5 et PREVIEW-3 restent des
+suites futures qui nécessitent des issues et décisions dédiées.
 
 ---
 
@@ -303,14 +319,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: fstepho/anchormap-action@<version>
+      - uses: fstepho/anchormap-action@v0-preview.3
         with:
-          anchormap-version: <pinned-version>
+          anchormap-version: "1.2.2"
           policy: anchormap.policy.yaml
           upload-artifacts: true
 ```
 
-Les labels `GHA-*` décrivent le plan. Les tags GitHub Action seront décidés au moment de publier l’action ; les exemples utilisent donc `@<version>` tant que cette décision n’est pas prise.
+Les labels `GHA-*` décrivent le plan. Pour la preview auditée, l'exemple
+utilise `fstepho/anchormap-action@v0-preview.3` avec `anchormap@1.2.2`. Une
+release stable ou Marketplace reste une décision séparée.
 
 Ce workflow doit être suffisant pour obtenir :
 
@@ -339,9 +357,9 @@ scan + check + report
 L’utilisateur fournit un scan baseline, par exemple via artifact téléchargé ou fichier committé :
 
 ```yaml
-- uses: fstepho/anchormap-action@<version>
+- uses: fstepho/anchormap-action@v0-preview.3
   with:
-    anchormap-version: <pinned-version>
+    anchormap-version: "1.2.2"
     policy: anchormap.policy.yaml
     base-scan: .anchormap/baseline.scan.json
 ```
@@ -467,7 +485,7 @@ Le commentaire PR est opt-in.
 
 # Phase 4 — Repo de démo autonome
 
-Le README mentionne déjà une démo publique `fstepho/anchormap-h3-demo` appliquant AnchorMap à `h3`, avec scaffold, anchors promues, mappings explicites, analyse clean et scan brief.  Il faut maintenant en faire un **repo de démo PR workflow**, pas seulement un repo de démonstration CLI.
+Le README mentionne déjà une démo publique `fstepho/anchormap-h3-demo` appliquant AnchorMap à `h3`, avec scaffold, anchors promues, mappings explicites, analyse clean et scan brief.  Ce repo est maintenant aussi un **repo de démo PR workflow**, pas seulement un repo de démonstration CLI.
 
 ## But du repo démo
 
@@ -485,9 +503,9 @@ Le repo doit contenir :
 - guide "break traceability intentionally".
 ```
 
-## PRs de démonstration à créer
+## PRs de démonstration
 
-Créer 4 PRs dans le repo démo.
+Les 4 PRs scénario existent et restent ouvertes en draft sur `main`.
 
 ### PR 1 — Clean
 
@@ -539,7 +557,7 @@ L’analyse n’est plus fiable à 100%.
 
 ## Document clé
 
-Créer :
+Créé :
 
 ```text
 docs/github-action-demo.md
@@ -603,7 +621,7 @@ No onboarding call is required.
 No source-code access is requested.
 ```
 
-## Page à créer
+## Page créée
 
 Dans le repo AnchorMap :
 

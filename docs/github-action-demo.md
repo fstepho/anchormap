@@ -7,15 +7,15 @@ The public demo repository is
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 It uses the preview Action tag
 `fstepho/anchormap-action@v0-preview.3` and pins `anchormap@1.2.2`. The
-runtime Action remains draft-only: no stable release, Marketplace publication,
-merge, PR comment automation, or SaaS upload is implied.
+runtime Action remains preview-only: no stable release, Marketplace
+publication, PR comment automation, or SaaS upload is implied.
 
 ## Demo Repository Contents
 
 The demo repository lets a reader understand AnchorMap PR pass/fail behavior
 without a call, private source access, or hidden GitHub state. Its preview
-workflow base is draft PR
-[#1](https://github.com/fstepho/anchormap-h3-demo/pull/1), containing:
+workflow base was merged through PR
+[#1](https://github.com/fstepho/anchormap-h3-demo/pull/1) and contains:
 
 ```text
 anchormap.yaml
@@ -98,7 +98,7 @@ artifact in the demo repository:
 anchormap scan --json > .anchormap/baseline.scan.json
 ```
 
-The future Action should receive that path through the `base-scan` input. With
+The preview Action receives that path through the `base-scan` input. With
 the baseline present, the flow is:
 
 ```text
@@ -149,8 +149,8 @@ waivers, branch names, labels, PR metadata, or expiry fields.
 The following work remains intentionally outside this repository-local
 artifact:
 
-- publish or tag the runtime GitHub Action;
-- create PR comments, labels, or other external GitHub state.
+- publish a stable Action release or Marketplace listing;
+- create PR comments or richer GitHub integration state.
 
 Keep the demo wording factual: link to real PRs and real artifacts, and avoid
 simulating external GitHub state as if a workflow had already run.

@@ -8,8 +8,8 @@ The current preview runtime lives in
 [`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) at
 preview tag `v0-preview.3`. The public h3 demo PR set lives in
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
-The preview uses `anchormap@1.2.2`. There is no stable Action release,
-Marketplace publication, or merge guarantee yet.
+The preview uses `anchormap@1.2.2`. There is no stable Action release or
+Marketplace publication yet.
 
 The Action boundary is orchestration over accepted local CLI commands:
 

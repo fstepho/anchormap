@@ -1,7 +1,7 @@
 # AnchorMap Policy Examples
 
 Status: self-serve examples for the closed `version: 1` policy surface used by
-`anchormap check` and the future AnchorMap GitHub Action.
+`anchormap check` and the AnchorMap GitHub Action preview.
 
 Policy files are explicit read-only inputs. AnchorMap does not create, migrate,
 rewrite, or infer them from GitHub metadata.
@@ -91,7 +91,7 @@ safety.
 Policy fail means at least one supported policy rule was violated. It is a
 successful policy evaluation with exit code `5`, not a CLI technical error.
 
-When the future Action is used, `fail-on-policy: true` should fail the workflow
+When the preview Action is used, `fail-on-policy: true` should fail the workflow
 after artifact and job-summary handling. `fail-on-policy: false` should expose
 `policy_exit = 5` without failing the workflow for policy alone.
 

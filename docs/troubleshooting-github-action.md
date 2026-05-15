@@ -1,8 +1,8 @@
 # Troubleshooting The AnchorMap GitHub Action
 
-Status: troubleshooting guide for the future AnchorMap GitHub Action described
-by `docs/github-action.md`. The runtime Action is not implemented in this
-repository by these docs.
+Status: troubleshooting guide for the AnchorMap GitHub Action preview described
+by `docs/github-action.md`. The runtime Action is implemented outside this
+repository in `fstepho/anchormap-action`.
 
 The Action boundary is orchestration over local CLI artifacts:
 
@@ -62,7 +62,7 @@ possible. `fail-on-policy` controls the final workflow result:
 
 ## Action Fails On Node
 
-The future Action has an explicit `node-version` input, defaulting to Node 22.
+The preview Action has an explicit `node-version` input, defaulting to Node 22.
 Use a supported Node version for the pinned AnchorMap package version.
 
 This is setup troubleshooting, not a product-truth signal. Do not infer

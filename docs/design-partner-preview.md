@@ -9,8 +9,8 @@ code.
 
 This preview does not create a GitHub App, hosted dashboard, SaaS upload path,
 or manual onboarding program. The repository contains docs and feedback
-templates only; it does not configure external GitHub labels, open issues, or
-collect telemetry.
+templates only; it does not collect telemetry or require external GitHub state
+for the Action to run.
 
 ## Who This Is For
 
