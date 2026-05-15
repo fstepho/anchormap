@@ -322,22 +322,28 @@ contraintes suivantes :
 - aucun support de framework, build tool, project references, monorepo global,
   détection de dead code ou résolution TypeScript complète n'est promis.
 
-## 6.10 Segment vNext prévu : artefacts CLI locaux pour CI/PR
+## 6.10 Segment livré : artefacts CLI locaux pour CI/PR et SaaS futur
 
-AnchorMap CLI SaaS-ready 1 cible l'exploitation locale des résultats
-AnchorMap par CI, commentaires PR et une future couche SaaS, sans déplacer la
-source de vérité hors de la CLI.
+AnchorMap CLI SaaS-ready cible l'exploitation locale des résultats AnchorMap
+par CI, commentaires PR et une future couche SaaS, sans déplacer la source de
+vérité hors de la CLI.
 
-Cette extension reste dans le périmètre produit seulement si elle conserve les
-contraintes suivantes :
+Cette surface comprend les commandes d'artefacts locales `check`, `diff`,
+`explain`, `report` et `bundle`, les formats de report Markdown, JUnit et
+SARIF, ainsi que le schéma de scan v5 avec locations source fermées. Elle reste
+dans le périmètre produit seulement si elle conserve les contraintes
+suivantes :
 
-- dans SaaS-ready 1, la surface CI/PR est livrée exclusivement par des
-  commandes CLI locales et des sorties `stdout` ; les fichiers fournis aux
-  commandes sont des entrées explicites lues seulement ;
+- la surface CI/PR est livrée exclusivement par des commandes CLI locales et
+  des sorties `stdout` ; les fichiers fournis aux commandes sont des entrées
+  explicites lues seulement ;
 - aucune commande ne lit Git, les variables CI, le réseau, un cache persistant
   ou l'horloge comme source de vérité produit ;
-- `report` est une sérialisation stable d'artefacts machine existants, pas une
-  nouvelle analyse ni une source d'information supplémentaire ;
+- `report` et `bundle` sérialisent ou assemblent des artefacts machine
+  existants, pas une nouvelle analyse ni une source d'information
+  supplémentaire ;
+- les locations source de scan v5 restent des coordonnées fermées et ne
+  transportent aucun contenu source ou snippet ;
 - une future couche SaaS pourra consommer les mêmes artefacts, mais aucun
   upload, dashboard, GitHub App, API serveur ou stockage SaaS n'est promis par
   cette extension ;
@@ -357,6 +363,13 @@ Le workflow nominal est volontairement court :
 6. répéter.
 
 Aucun autre workflow n'est promis par v1.0.
+
+Les extensions CLI livrées après v1.0 ajoutent un workflow local optionnel pour
+CI/PR : produire des artefacts machine avec `scan`, `check`, `diff` et
+`explain`, rendre des reports Markdown/JUnit/SARIF avec `report`, puis assembler
+un bundle local explicite avec `bundle`. Ce workflow ne remplace pas le flux
+nominal ci-dessus et ne promet toujours aucun upload SaaS, intégration serveur
+ou inférence implicite depuis Git/CI.
 
 ## 8. Valeur attendue
 
