@@ -45,6 +45,19 @@ const commonmark = require("commonmark") as CommonmarkModule;
 export type SpecSourceKind = "markdown" | "yaml";
 export type SpecAnchorStatus = "active" | "draft";
 
+export type AnchorSourceLocation =
+	| {
+			readonly kind: "markdown_atx_heading";
+			readonly line: number;
+			readonly column: number;
+			readonly heading_level: number;
+	  }
+	| {
+			readonly kind: "yaml_root_id";
+			readonly line: number;
+			readonly column: number;
+	  };
+
 export interface SpecFile {
 	readonly path: RepoPath;
 	readonly sourceKind: SpecSourceKind;
@@ -56,6 +69,7 @@ export interface SpecAnchorOccurrence {
 	readonly specPath: RepoPath;
 	readonly sourceKind: SpecSourceKind;
 	readonly status: SpecAnchorStatus;
+	readonly sourceLocation?: AnchorSourceLocation;
 }
 
 export interface SpecIndex {
@@ -226,9 +240,16 @@ function extractMarkdownAnchorOccurrences(file: SpecFile): readonly SpecAnchorOc
 			continue;
 		}
 
-		const headingText = normalizeMarkdownHeadingText(extractMarkdownInlineText(event.node));
+		const rawHeadingText = extractMarkdownInlineText(event.node);
+		const headingText = normalizeMarkdownHeadingText(rawHeadingText);
 		const anchorId = readAnchorPrefix(headingText);
 		if (anchorId === undefined) {
+			event = walker.next();
+			continue;
+		}
+		const sourcepos = event.node.sourcepos;
+		const headingLevel = event.node.level;
+		if (sourcepos === undefined || headingLevel === null) {
 			event = walker.next();
 			continue;
 		}
@@ -238,6 +259,17 @@ function extractMarkdownAnchorOccurrences(file: SpecFile): readonly SpecAnchorOc
 			specPath: file.path,
 			sourceKind: "markdown",
 			status,
+			sourceLocation: {
+				kind: "markdown_atx_heading",
+				line: sourcepos[0][0],
+				column: locateMarkdownAnchorColumn(
+					sourceLines[sourcepos[0][0] - 1],
+					anchorId,
+					event.node,
+					rawHeadingText,
+				),
+				heading_level: headingLevel,
+			},
 		});
 		event = walker.next();
 	}
@@ -258,6 +290,278 @@ function isDraftMarkdownSpecFile(sourceLines: readonly string[]): boolean {
 
 function splitMarkdownSourceLines(text: string): readonly string[] {
 	return text.split(/\r\n|\n|\r/);
+}
+
+interface MarkdownInlineSourceSegment {
+	readonly kind: "visible" | "ignored";
+	readonly text: string;
+}
+
+function locateMarkdownAnchorColumn(
+	sourceLine: string,
+	anchorId: AnchorId,
+	headingNode: CommonmarkNode,
+	rawHeadingText: string,
+): number {
+	const marker = /^( {0,3}#{1,6})(?:[ \t]+|$)/.exec(sourceLine);
+	const contentStart = marker === null ? 0 : marker[0].length;
+	const mappedOffset = locateMarkdownVisibleAnchorOffset(
+		sourceLine,
+		contentStart,
+		headingNode,
+		rawHeadingText,
+		anchorId,
+	);
+	if (mappedOffset !== undefined) {
+		return mappedOffset + 1;
+	}
+
+	const anchorIndex = sourceLine.indexOf(anchorId, contentStart);
+
+	return (anchorIndex === -1 ? contentStart : anchorIndex) + 1;
+}
+
+function locateMarkdownVisibleAnchorOffset(
+	sourceLine: string,
+	contentStart: number,
+	headingNode: CommonmarkNode,
+	rawHeadingText: string,
+	anchorId: AnchorId,
+): number | undefined {
+	const visibleAnchorIndex = rawHeadingText.indexOf(anchorId);
+	if (visibleAnchorIndex === -1) {
+		return undefined;
+	}
+
+	const rawOffsetsByVisibleOffset: number[] = [];
+	let rawSearchStart = contentStart;
+	for (const segment of markdownInlineSourceSegments(headingNode)) {
+		if (segment.text === "") {
+			continue;
+		}
+
+		if (segment.kind === "ignored") {
+			const mappedIgnoredSegment = locateMarkdownIgnoredInlineSourceSegment(
+				sourceLine,
+				rawSearchStart,
+				segment.text,
+			);
+			if (mappedIgnoredSegment !== undefined) {
+				rawSearchStart = mappedIgnoredSegment.rawEndOffset;
+			}
+			continue;
+		}
+
+		const mappedSegment = locateMarkdownInlineSourceSegment(
+			sourceLine,
+			rawSearchStart,
+			segment.text,
+		);
+		if (mappedSegment === undefined) {
+			continue;
+		}
+
+		rawOffsetsByVisibleOffset.push(...mappedSegment.rawOffsetsByVisibleOffset);
+		rawSearchStart = mappedSegment.rawEndOffset;
+	}
+
+	return rawOffsetsByVisibleOffset[visibleAnchorIndex];
+}
+
+function locateMarkdownIgnoredInlineSourceSegment(
+	sourceLine: string,
+	rawSearchStart: number,
+	rawText: string,
+): { readonly rawEndOffset: number } | undefined {
+	const exactRawOffset = sourceLine.indexOf(rawText, rawSearchStart);
+	if (exactRawOffset !== -1) {
+		return { rawEndOffset: exactRawOffset + rawText.length };
+	}
+
+	const htmlStartOffset = sourceLine.indexOf("<", rawSearchStart);
+	if (htmlStartOffset === -1) {
+		return undefined;
+	}
+
+	const rawEndOffset = locateMarkdownHtmlInlineEndOffset(sourceLine, htmlStartOffset, rawText);
+	return rawEndOffset === undefined ? undefined : { rawEndOffset };
+}
+
+function locateMarkdownHtmlInlineEndOffset(
+	sourceLine: string,
+	rawStartOffset: number,
+	rawText: string,
+): number | undefined {
+	if (rawText.startsWith("<!--") || sourceLine.startsWith("<!--", rawStartOffset)) {
+		const commentEndOffset = sourceLine.indexOf("-->", rawStartOffset + "<!--".length);
+		return commentEndOffset === -1 ? undefined : commentEndOffset + "-->".length;
+	}
+
+	if (rawText.startsWith("<![CDATA[") || sourceLine.startsWith("<![CDATA[", rawStartOffset)) {
+		const cdataEndOffset = sourceLine.indexOf("]]>", rawStartOffset + "<![CDATA[".length);
+		return cdataEndOffset === -1 ? undefined : cdataEndOffset + "]]>".length;
+	}
+
+	if (rawText.startsWith("<?") || sourceLine.startsWith("<?", rawStartOffset)) {
+		const processingInstructionEndOffset = sourceLine.indexOf("?>", rawStartOffset + "<?".length);
+		return processingInstructionEndOffset === -1
+			? undefined
+			: processingInstructionEndOffset + "?>".length;
+	}
+
+	const tagEndOffset = sourceLine.indexOf(">", rawStartOffset + 1);
+	return tagEndOffset === -1 ? undefined : tagEndOffset + 1;
+}
+
+function locateMarkdownInlineSourceSegment(
+	sourceLine: string,
+	rawSearchStart: number,
+	visibleText: string,
+):
+	| {
+			readonly rawOffsetsByVisibleOffset: readonly number[];
+			readonly rawEndOffset: number;
+	  }
+	| undefined {
+	for (let rawOffset = rawSearchStart; rawOffset < sourceLine.length; rawOffset += 1) {
+		const match = matchMarkdownVisibleTextAtRawOffset(sourceLine, rawOffset, visibleText);
+		if (match !== undefined) {
+			return match;
+		}
+	}
+
+	return undefined;
+}
+
+function matchMarkdownVisibleTextAtRawOffset(
+	sourceLine: string,
+	rawStartOffset: number,
+	visibleText: string,
+):
+	| {
+			readonly rawOffsetsByVisibleOffset: readonly number[];
+			readonly rawEndOffset: number;
+	  }
+	| undefined {
+	const rawOffsetsByVisibleOffset: number[] = [];
+	let rawOffset = rawStartOffset;
+	let visibleOffset = 0;
+
+	while (visibleOffset < visibleText.length) {
+		const characterReference = readCommonmarkCharacterReference(sourceLine, rawOffset);
+		if (
+			characterReference !== undefined &&
+			visibleText.startsWith(characterReference.decodedText, visibleOffset)
+		) {
+			for (let index = 0; index < characterReference.decodedText.length; index += 1) {
+				rawOffsetsByVisibleOffset.push(rawOffset);
+			}
+			rawOffset = characterReference.rawEndOffset;
+			visibleOffset += characterReference.decodedText.length;
+			continue;
+		}
+
+		if (sourceLine[rawOffset] !== visibleText[visibleOffset]) {
+			return undefined;
+		}
+
+		rawOffsetsByVisibleOffset.push(rawOffset);
+		rawOffset += 1;
+		visibleOffset += 1;
+	}
+
+	return { rawOffsetsByVisibleOffset, rawEndOffset: rawOffset };
+}
+
+const COMMONMARK_CHARACTER_REFERENCE_PATTERN =
+	/^&(?:#x[a-f0-9]{1,6}|#[0-9]{1,7}|[a-z][a-z0-9]{1,31});/i;
+
+const NAMED_COMMONMARK_CHARACTER_REFERENCES: ReadonlyMap<string, string> = new Map([
+	["amp", "&"],
+	["apos", "'"],
+	["gt", ">"],
+	["lt", "<"],
+	["period", "."],
+	["quot", '"'],
+	["UnderBar", "_"],
+]);
+
+function readCommonmarkCharacterReference(
+	sourceLine: string,
+	rawOffset: number,
+):
+	| {
+			readonly decodedText: string;
+			readonly rawEndOffset: number;
+	  }
+	| undefined {
+	const match = COMMONMARK_CHARACTER_REFERENCE_PATTERN.exec(sourceLine.slice(rawOffset));
+	if (match === null) {
+		return undefined;
+	}
+
+	const rawReference = match[0];
+	const decodedText = decodeCommonmarkCharacterReference(rawReference);
+	if (decodedText === undefined || decodedText === "") {
+		return undefined;
+	}
+
+	return {
+		decodedText,
+		rawEndOffset: rawOffset + rawReference.length,
+	};
+}
+
+function decodeCommonmarkCharacterReference(rawReference: string): string | undefined {
+	const body = rawReference.slice(1, -1);
+	if (body.startsWith("#x") || body.startsWith("#X")) {
+		return decodeCommonmarkNumericCharacterReference(body.slice(2), 16);
+	}
+	if (body.startsWith("#")) {
+		return decodeCommonmarkNumericCharacterReference(body.slice(1), 10);
+	}
+
+	return NAMED_COMMONMARK_CHARACTER_REFERENCES.get(body);
+}
+
+function decodeCommonmarkNumericCharacterReference(digits: string, radix: 10 | 16): string {
+	const codePoint = Number.parseInt(digits, radix);
+	if (codePoint === 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+		return "\uFFFD";
+	}
+
+	return String.fromCodePoint(codePoint);
+}
+
+function markdownInlineSourceSegments(
+	node: CommonmarkNode,
+): readonly MarkdownInlineSourceSegment[] {
+	const segments: MarkdownInlineSourceSegment[] = [];
+	appendMarkdownInlineSourceSegments(node, segments);
+	return segments;
+}
+
+function appendMarkdownInlineSourceSegments(
+	node: CommonmarkNode,
+	segments: MarkdownInlineSourceSegment[],
+): void {
+	switch (node.type) {
+		case "text":
+		case "code":
+			segments.push({ kind: "visible", text: node.literal ?? "" });
+			return;
+		case "softbreak":
+		case "linebreak":
+			segments.push({ kind: "visible", text: " " });
+			return;
+		case "html_inline":
+			segments.push({ kind: "ignored", text: node.literal ?? "" });
+			return;
+		default:
+			for (let child = node.firstChild; child !== null; child = child.next) {
+				appendMarkdownInlineSourceSegments(child, segments);
+			}
+	}
 }
 
 function isAtxHeading(node: CommonmarkNode, sourceLines: readonly string[]): boolean {
@@ -322,19 +626,25 @@ function extractYamlAnchorOccurrences(
 		return yaml;
 	}
 
-	const id = readYamlRootId(yaml.root);
+	const id = readYamlRootId(yaml.root, file.text);
 	if (id === undefined) {
 		return { kind: "ok", occurrences: [] };
 	}
+	const sourcePosition = lineAndColumnForOffset(file.text, id.valueOffset);
 
 	return {
 		kind: "ok",
 		occurrences: [
 			{
-				anchorId: id,
+				anchorId: id.anchorId,
 				specPath: file.path,
 				sourceKind: "yaml",
 				status: "active",
+				sourceLocation: {
+					kind: "yaml_root_id",
+					line: sourcePosition.line,
+					column: sourcePosition.column,
+				},
 			},
 		],
 	};
@@ -350,6 +660,7 @@ function parseSpecYamlText(
 		documents = parseAllDocuments(text, {
 			version: "1.2",
 			uniqueKeys: true,
+			keepSourceTokens: true,
 		});
 	} catch (error) {
 		return specUnsupportedError(`spec YAML ${path} is invalid YAML`, error);
@@ -375,7 +686,10 @@ function parseSpecYamlText(
 	};
 }
 
-function readYamlRootId(root: unknown): AnchorId | undefined {
+function readYamlRootId(
+	root: unknown,
+	sourceText: string,
+): { readonly anchorId: AnchorId; readonly valueOffset: number } | undefined {
 	if (!isMap(root)) {
 		return undefined;
 	}
@@ -390,7 +704,129 @@ function readYamlRootId(root: unknown): AnchorId | undefined {
 		return undefined;
 	}
 
-	return result.anchorId;
+	return {
+		anchorId: result.anchorId,
+		valueOffset: yamlScalarValueOffset(value, sourceText),
+	};
+}
+
+function yamlScalarValueOffset(
+	value: {
+		readonly value?: unknown;
+		readonly range?: readonly number[] | null;
+		readonly srcToken?: {
+			readonly type?: string;
+			readonly offset?: number;
+			readonly source?: string;
+		};
+	},
+	sourceText: string,
+): number {
+	const offset = value.range?.[0] ?? 0;
+	const tokenOffset = value.srcToken?.offset ?? offset;
+	const tokenSource = value.srcToken?.source;
+	if (typeof value.value === "string") {
+		const tokenSourceOffset = yamlScalarTokenSourceOffset(value, sourceText, tokenOffset);
+		if (tokenSource !== undefined) {
+			const relativeValueOffset = tokenSource.indexOf(value.value);
+			if (relativeValueOffset !== -1) {
+				return tokenSourceOffset + relativeValueOffset;
+			}
+
+			return yamlScalarFallbackValueOffset(
+				value.srcToken?.type,
+				sourceText,
+				tokenSourceOffset,
+				tokenSource,
+			);
+		}
+
+		const tokenEnd = value.range?.[1] ?? sourceText.length;
+		const relativeValueOffset = sourceText.slice(tokenOffset, tokenEnd).indexOf(value.value);
+		if (relativeValueOffset !== -1) {
+			return tokenOffset + relativeValueOffset;
+		}
+	}
+
+	return yamlScalarFallbackValueOffset(value.srcToken?.type, sourceText, tokenOffset, tokenSource);
+}
+
+function yamlScalarTokenSourceOffset(
+	value: {
+		readonly range?: readonly number[] | null;
+		readonly srcToken?: {
+			readonly source?: string;
+		};
+	},
+	sourceText: string,
+	tokenOffset: number,
+): number {
+	const tokenSource = value.srcToken?.source;
+	if (tokenSource === undefined || sourceText.startsWith(tokenSource, tokenOffset)) {
+		return tokenOffset;
+	}
+
+	const rangeEnd = value.range?.[1] ?? sourceText.length;
+	const relativeTokenSourceOffset = sourceText.slice(tokenOffset, rangeEnd).indexOf(tokenSource);
+	if (relativeTokenSourceOffset === -1) {
+		return tokenOffset;
+	}
+
+	return tokenOffset + relativeTokenSourceOffset;
+}
+
+function yamlScalarFallbackValueOffset(
+	tokenType: string | undefined,
+	sourceText: string,
+	tokenSourceOffset: number,
+	tokenSource: string | undefined,
+): number {
+	if (tokenType === "block-scalar" && tokenSource !== undefined) {
+		for (
+			let index = tokenSourceOffset;
+			index < tokenSourceOffset + tokenSource.length;
+			index += 1
+		) {
+			const character = sourceText[index];
+			if (character !== " " && character !== "\t" && character !== "\r" && character !== "\n") {
+				return index;
+			}
+		}
+	}
+
+	const firstCharacter = sourceText[tokenSourceOffset];
+	if (firstCharacter === "'" || firstCharacter === '"') {
+		return tokenSourceOffset + 1;
+	}
+
+	return tokenSourceOffset;
+}
+
+function lineAndColumnForOffset(
+	sourceText: string,
+	offset: number,
+): { readonly line: number; readonly column: number } {
+	let line = 1;
+	let lineStart = 0;
+
+	for (let index = 0; index < offset; index += 1) {
+		const char = sourceText[index];
+		if (char === "\n") {
+			line += 1;
+			lineStart = index + 1;
+			continue;
+		}
+		if (char === "\r") {
+			line += 1;
+			lineStart = index + 1;
+			if (sourceText[index + 1] === "\n") {
+				index += 1;
+				lineStart = index + 1;
+			}
+		}
+	}
+
+	return { line, column: offset - lineStart + 1 };
 }
 
 function readYamlMappingValue(root: YAMLMap, keyValue: string): unknown {

@@ -73,6 +73,7 @@ export const EXPECTED_PACKAGE_FILES = [
 	"dist/infra/artifact-json-validation.js",
 	"dist/infra/artifact-io.js",
 	"dist/infra/artifact-policy-validation.js",
+	"dist/infra/artifact-scan-source-validation.js",
 	"dist/infra/config-io.js",
 	"dist/infra/config-yaml-render.js",
 	"dist/infra/product-files.js",

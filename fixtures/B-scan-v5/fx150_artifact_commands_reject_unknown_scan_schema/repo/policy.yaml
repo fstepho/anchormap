@@ -1,0 +1,6 @@
+version: 1
+fail_on:
+  finding_kinds: []
+thresholds:
+  min_covered_product_file_percent: 100
+  max_untraced_product_files: 0

@@ -25,6 +25,7 @@ import {
 	createScanResultView,
 	createStoredMappingView,
 	createTraceabilityMetricsView,
+	type ScanResultView,
 } from "../domain/scan-result";
 import {
 	renderExplainResultJson,
@@ -51,7 +52,7 @@ test("renders minimal scan result as one-line canonical JSON with final newline"
 
 	assert.equal(
 		rendered,
-		'{"schema_version":4,"config":{"version":1,"product_root":"src","spec_roots":["specs"],"ignore_roots":[],"tsconfig_path":null,"local_aliases":[]},"analysis_health":"clean","observed_anchors":{},"stored_mappings":{},"files":{},"traceability_metrics":{"summary":{"product_file_count":0,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0},"anchors":{}},"findings":[]}\n',
+		'{"schema_version":5,"config":{"version":1,"product_root":"src","spec_roots":["specs"],"ignore_roots":[],"tsconfig_path":null,"local_aliases":[]},"analysis_health":"clean","observed_anchors":{},"stored_mappings":{},"files":{},"traceability_metrics":{"summary":{"product_file_count":0,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0},"anchors":{}},"findings":[]}\n',
 	);
 	assert.equal(rendered.endsWith("\n"), true);
 	assert.equal(rendered.endsWith("\n\n"), false);
@@ -71,10 +72,21 @@ test("renders representative scan result with contract root, nested, map, and fi
 				[anchorId("QA-002")]: createObservedAnchorView({
 					spec_path: repoPath("specs/z.md"),
 					mapping_state: "absent",
+					source: {
+						kind: "yaml_root_id",
+						line: 4,
+						column: 5,
+					},
 				}),
 				[anchorId("QA-001")]: createObservedAnchorView({
 					spec_path: repoPath("specs/a.md"),
 					mapping_state: "usable",
+					source: {
+						kind: "markdown_atx_heading",
+						line: 2,
+						column: 4,
+						heading_level: 3,
+					},
 				}),
 			},
 			stored_mappings: {
@@ -154,7 +166,64 @@ test("renders representative scan result with contract root, nested, map, and fi
 
 	assert.equal(
 		rendered,
-		'{"schema_version":4,"config":{"version":1,"product_root":"src","spec_roots":["specs/a","specs/z"],"ignore_roots":["src/vendor"],"tsconfig_path":"tsconfig.json","local_aliases":[{"prefix":"@/","target":"src/"}]},"analysis_health":"degraded","observed_anchors":{"QA-001":{"spec_path":"specs/a.md","mapping_state":"usable"},"QA-002":{"spec_path":"specs/z.md","mapping_state":"absent"}},"stored_mappings":{"QA-001":{"state":"usable","seed_files":["src/a.ts","src/z.ts"],"reached_files":["src/a.ts","src/z.ts"]},"QA.STALE":{"state":"stale","seed_files":["src/old.ts"],"reached_files":[]}},"files":{"src/a.ts":{"covering_anchor_ids":["QA-001","QA-002"],"supported_local_targets":["src/z.ts"]},"src/z.ts":{"covering_anchor_ids":["QA-001"],"supported_local_targets":[]}},"traceability_metrics":{"summary":{"product_file_count":2,"stored_mapping_count":2,"usable_mapping_count":1,"observed_anchor_count":2,"active_anchor_count":2,"draft_anchor_count":0,"covered_product_file_count":2,"uncovered_product_file_count":0,"directly_seeded_product_file_count":2,"single_cover_product_file_count":1,"multi_cover_product_file_count":1},"anchors":{"QA-001":{"seed_file_count":2,"direct_seed_file_count":2,"reached_file_count":2,"transitive_reached_file_count":0,"unique_reached_file_count":1,"shared_reached_file_count":1},"QA-002":{"seed_file_count":0,"direct_seed_file_count":0,"reached_file_count":0,"transitive_reached_file_count":0,"unique_reached_file_count":0,"shared_reached_file_count":0},"QA.STALE":{"seed_file_count":1,"direct_seed_file_count":0,"reached_file_count":0,"transitive_reached_file_count":0,"unique_reached_file_count":0,"shared_reached_file_count":0}}},"findings":[{"kind":"out_of_scope_static_edge","importer":"src/a.ts","target_path":"outside/x.ts"},{"kind":"stale_mapping_anchor","anchor_id":"QA.STALE"},{"kind":"unmapped_anchor","anchor_id":"QA-002"},{"kind":"untraced_product_file","path":"src/z.ts"}]}\n',
+		'{"schema_version":5,"config":{"version":1,"product_root":"src","spec_roots":["specs/a","specs/z"],"ignore_roots":["src/vendor"],"tsconfig_path":"tsconfig.json","local_aliases":[{"prefix":"@/","target":"src/"}]},"analysis_health":"degraded","observed_anchors":{"QA-001":{"spec_path":"specs/a.md","mapping_state":"usable","source":{"kind":"markdown_atx_heading","line":2,"column":4,"heading_level":3}},"QA-002":{"spec_path":"specs/z.md","mapping_state":"absent","source":{"kind":"yaml_root_id","line":4,"column":5}}},"stored_mappings":{"QA-001":{"state":"usable","seed_files":["src/a.ts","src/z.ts"],"reached_files":["src/a.ts","src/z.ts"]},"QA.STALE":{"state":"stale","seed_files":["src/old.ts"],"reached_files":[]}},"files":{"src/a.ts":{"covering_anchor_ids":["QA-001","QA-002"],"supported_local_targets":["src/z.ts"]},"src/z.ts":{"covering_anchor_ids":["QA-001"],"supported_local_targets":[]}},"traceability_metrics":{"summary":{"product_file_count":2,"stored_mapping_count":2,"usable_mapping_count":1,"observed_anchor_count":2,"active_anchor_count":2,"draft_anchor_count":0,"covered_product_file_count":2,"uncovered_product_file_count":0,"directly_seeded_product_file_count":2,"single_cover_product_file_count":1,"multi_cover_product_file_count":1},"anchors":{"QA-001":{"seed_file_count":2,"direct_seed_file_count":2,"reached_file_count":2,"transitive_reached_file_count":0,"unique_reached_file_count":1,"shared_reached_file_count":1},"QA-002":{"seed_file_count":0,"direct_seed_file_count":0,"reached_file_count":0,"transitive_reached_file_count":0,"unique_reached_file_count":0,"shared_reached_file_count":0},"QA.STALE":{"seed_file_count":1,"direct_seed_file_count":0,"reached_file_count":0,"transitive_reached_file_count":0,"unique_reached_file_count":0,"shared_reached_file_count":0}}},"findings":[{"kind":"out_of_scope_static_edge","importer":"src/a.ts","target_path":"outside/x.ts"},{"kind":"stale_mapping_anchor","anchor_id":"QA.STALE"},{"kind":"unmapped_anchor","anchor_id":"QA-002"},{"kind":"untraced_product_file","path":"src/z.ts"}]}\n',
+	);
+});
+
+test("rejects schema v5 rendering when an observed anchor has no source", () => {
+	const malformedScan = {
+		...createScanResultView({
+			config: createConfigView({
+				product_root: repoPath("src"),
+				spec_roots: [repoPath("specs")],
+				ignore_roots: [],
+			}),
+			observed_anchors: {},
+			stored_mappings: {},
+			files: {},
+			traceability_metrics: minimalTraceabilityMetrics(),
+			findings: [],
+		}),
+		observed_anchors: {
+			[anchorId("QA-001")]: {
+				spec_path: repoPath("specs/a.md"),
+				mapping_state: "usable",
+			},
+		},
+	} as unknown as ScanResultView;
+
+	assert.throws(
+		() => renderScanResultJson(malformedScan),
+		/Cannot render schema v5 observed anchor without source/,
+	);
+});
+
+test("renders schema v4 observed anchors without source", () => {
+	const scan = {
+		...createScanResultView({
+			config: createConfigView({
+				product_root: repoPath("src"),
+				spec_roots: [repoPath("specs")],
+				ignore_roots: [],
+			}),
+			observed_anchors: {},
+			stored_mappings: {},
+			files: {},
+			traceability_metrics: minimalTraceabilityMetrics(),
+			findings: [],
+		}),
+		schema_version: 4,
+		observed_anchors: {
+			[anchorId("QA-001")]: {
+				spec_path: repoPath("specs/a.md"),
+				mapping_state: "usable",
+			},
+		},
+	} as unknown as ScanResultView;
+
+	assert.equal(
+		renderScanResultJson(scan),
+		'{"schema_version":4,"config":{"version":1,"product_root":"src","spec_roots":["specs"],"ignore_roots":[],"tsconfig_path":null,"local_aliases":[]},"analysis_health":"clean","observed_anchors":{"QA-001":{"spec_path":"specs/a.md","mapping_state":"usable"}},"stored_mappings":{},"files":{},"traceability_metrics":{"summary":{"product_file_count":0,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0},"anchors":{}},"findings":[]}\n',
 	);
 });
 
@@ -195,7 +264,7 @@ test("renders finding variants and exact JSON string escaping profile", () => {
 
 	assert.equal(
 		rendered,
-		`{"schema_version":4,"config":{"version":1,"product_root":"src","spec_roots":["specs"],"ignore_roots":[],"tsconfig_path":null,"local_aliases":[]},"analysis_health":"degraded","observed_anchors":{},"stored_mappings":{},"files":{},"traceability_metrics":{"summary":{"product_file_count":0,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0},"anchors":{}},"findings":[{"kind":"broken_seed_path","anchor_id":"QA-001","seed_path":"src/missing.ts"},{"kind":"unresolved_static_edge","importer":"src/importer.ts","specifier":"./quote\\"slash/path\\\\controls${escapedControls()}surrogate-\\ud800-pair-😀"},{"kind":"unsupported_local_target","importer":"src/importer.ts","target_path":"src/view.tsx"},{"kind":"unsupported_static_edge","importer":"src/importer.ts","syntax_kind":"dynamic_import","specifier":"./late"}]}\n`,
+		`{"schema_version":5,"config":{"version":1,"product_root":"src","spec_roots":["specs"],"ignore_roots":[],"tsconfig_path":null,"local_aliases":[]},"analysis_health":"degraded","observed_anchors":{},"stored_mappings":{},"files":{},"traceability_metrics":{"summary":{"product_file_count":0,"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,"single_cover_product_file_count":0,"multi_cover_product_file_count":0},"anchors":{}},"findings":[{"kind":"broken_seed_path","anchor_id":"QA-001","seed_path":"src/missing.ts"},{"kind":"unresolved_static_edge","importer":"src/importer.ts","specifier":"./quote\\"slash/path\\\\controls${escapedControls()}surrogate-\\ud800-pair-😀"},{"kind":"unsupported_local_target","importer":"src/importer.ts","target_path":"src/view.tsx"},{"kind":"unsupported_static_edge","importer":"src/importer.ts","syntax_kind":"dynamic_import","specifier":"./late"}]}\n`,
 	);
 	assert.equal(rendered.includes("\\/"), false);
 });

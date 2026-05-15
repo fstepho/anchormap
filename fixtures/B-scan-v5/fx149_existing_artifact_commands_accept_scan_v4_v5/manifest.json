@@ -1,0 +1,28 @@
+{
+	"id": "fx149_existing_artifact_commands_accept_scan_v4_v5",
+	"family": "B-scan-v5",
+	"purpose": "diff accepts supported scan artifact schemas v4 and v5 together.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"diff",
+		"--base",
+		"artifacts/base-scan.json",
+		"--head",
+		"artifacts/head-scan.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["diff", "json", "golden", "artifact_io", "scan-v5"],
+	"groups": ["m20"]
+}

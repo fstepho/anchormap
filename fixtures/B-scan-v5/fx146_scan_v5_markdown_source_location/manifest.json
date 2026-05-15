@@ -1,0 +1,19 @@
+{
+	"id": "fx146_scan_v5_markdown_source_location",
+	"family": "B-scan-v5",
+	"purpose": "scan --json renders a Markdown ATX anchor source location without source snippets.",
+	"command": ["node", "dist/anchormap.js", "scan", "--json"],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["scan", "json", "golden", "scan-v5"],
+	"groups": ["m20"]
+}

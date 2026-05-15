@@ -195,9 +195,9 @@ export function assertNoAnchormapTemps(cwd: string): void {
 	);
 }
 
-export function minimalScanArtifactJson(): string {
+export function minimalScanArtifactJson(schemaVersion: 4 | 5 = 4): string {
 	return `${JSON.stringify({
-		schema_version: 4,
+		schema_version: schemaVersion,
 		config: {
 			version: 1,
 			product_root: "src",

@@ -24,6 +24,7 @@ import {
 	createScanResultView,
 	createStoredMappingView,
 	createTraceabilityMetricsView,
+	type ScanResultViewFields,
 } from "./scan-result";
 
 test("computes clean analysis health for no findings", () => {
@@ -57,6 +58,7 @@ test("constructs scan result with only contract root fields and computed health"
 			[anchorId("QA-001")]: createObservedAnchorView({
 				spec_path: repoPath("specs/a.md"),
 				mapping_state: "usable",
+				source: markdownSourceLocation(),
 			}),
 		},
 		stored_mappings: {
@@ -86,7 +88,7 @@ test("constructs scan result with only contract root fields and computed health"
 		"traceability_metrics",
 		"findings",
 	]);
-	assert.equal(result.schema_version, 4);
+	assert.equal(result.schema_version, 5);
 	assert.equal(result.analysis_health, "degraded");
 });
 
@@ -99,6 +101,7 @@ test("constructs closed nested output views with contract fields", () => {
 	const observedAnchor = createObservedAnchorView({
 		spec_path: repoPath("specs/a.md"),
 		mapping_state: "absent",
+		source: markdownSourceLocation(),
 	});
 	const storedMapping = createStoredMappingView({
 		state: "usable",
@@ -122,7 +125,7 @@ test("constructs closed nested output views with contract fields", () => {
 	assert.deepEqual(config.ignore_roots.map(repoPathToString), ["dist", "tmp"]);
 	assert.equal(config.tsconfig_path, null);
 	assert.deepEqual(config.local_aliases, []);
-	assert.deepEqual(Object.keys(observedAnchor), ["spec_path", "mapping_state"]);
+	assert.deepEqual(Object.keys(observedAnchor), ["spec_path", "mapping_state", "source"]);
 	assert.deepEqual(Object.keys(storedMapping), ["state", "seed_files", "reached_files"]);
 	assert.deepEqual(storedMapping.seed_files.map(repoPathToString), ["src/a.ts", "src/z.ts"]);
 	assert.deepEqual(storedMapping.reached_files.map(repoPathToString), ["src/a.ts", "src/b.ts"]);
@@ -166,7 +169,7 @@ test("constructs closed nested output views with contract fields", () => {
 	assert.deepEqual(Object.keys(metrics.anchors), [anchorId("QA-001"), anchorId("QA-002")]);
 });
 
-test("canonicalizes config local alias state for JSON v4", () => {
+test("canonicalizes config local alias state", () => {
 	const config = createConfigView({
 		product_root: repoPath("src"),
 		spec_roots: [repoPath("specs")],
@@ -213,10 +216,12 @@ test("canonicalizes scan result record key order", () => {
 			[anchorId("QA-002")]: createObservedAnchorView({
 				spec_path: repoPath("specs/b.md"),
 				mapping_state: "absent",
+				source: markdownSourceLocation(),
 			}),
 			[anchorId("QA-001")]: createObservedAnchorView({
 				spec_path: repoPath("specs/a.md"),
 				mapping_state: "usable",
+				source: markdownSourceLocation(),
 			}),
 		},
 		stored_mappings: {
@@ -264,11 +269,47 @@ test("typed view construction rejects extra fields", () => {
 	const fieldsWithExtraKey = {
 		spec_path: repoPath("specs/a.md"),
 		mapping_state: "usable" as const,
+		source: markdownSourceLocation(),
 		unexpected: "not_contract",
 	};
 
 	// @ts-expect-error view constructors are closed over their normative fields.
 	createObservedAnchorView(fieldsWithExtraKey);
+});
+
+test("typed observed anchor construction requires source for schema v5", () => {
+	const fieldsWithoutSource = {
+		spec_path: repoPath("specs/a.md"),
+		mapping_state: "usable" as const,
+	};
+
+	// @ts-expect-error scan v5 observed anchors require source.
+	createObservedAnchorView(fieldsWithoutSource);
+});
+
+test("rejects source-less observed anchors before stamping schema v5", () => {
+	const sourceLessFields = {
+		config: createConfigView({
+			product_root: repoPath("src"),
+			spec_roots: [repoPath("specs")],
+			ignore_roots: [],
+		}),
+		observed_anchors: {
+			[anchorId("QA-001")]: {
+				spec_path: repoPath("specs/a.md"),
+				mapping_state: "usable",
+			},
+		},
+		stored_mappings: {},
+		files: {},
+		traceability_metrics: minimalTraceabilityMetrics(),
+		findings: [],
+	} as unknown as ScanResultViewFields;
+
+	assert.throws(
+		() => createScanResultView(sourceLessFields),
+		/Cannot create schema v5 scan result without source for QA-001/,
+	);
 });
 
 function degradingFindings(): Finding[] {
@@ -325,6 +366,15 @@ function emptyAnchorTraceabilityMetrics() {
 		transitive_reached_file_count: 0,
 		unique_reached_file_count: 0,
 		shared_reached_file_count: 0,
+	};
+}
+
+function markdownSourceLocation() {
+	return {
+		kind: "markdown_atx_heading" as const,
+		line: 1,
+		column: 3,
+		heading_level: 1,
 	};
 }
 

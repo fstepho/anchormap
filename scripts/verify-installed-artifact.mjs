@@ -34,7 +34,7 @@ mappings:
       - 'src/index.ts'
 `;
 const expectedScanJson = `${JSON.stringify({
-	schema_version: 4,
+	schema_version: 5,
 	config: {
 		version: 1,
 		product_root: "src",
@@ -48,6 +48,12 @@ const expectedScanJson = `${JSON.stringify({
 		"AM-001": {
 			spec_path: "specs/requirements.md",
 			mapping_state: "usable",
+			source: {
+				kind: "markdown_atx_heading",
+				line: 1,
+				column: 3,
+				heading_level: 1,
+			},
 		},
 	},
 	stored_mappings: {

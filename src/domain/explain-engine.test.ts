@@ -33,6 +33,7 @@ test("explains an anchor with deterministic BFS paths from stored mapping seeds"
 			[anchorId("QA-001")]: createObservedAnchorView({
 				spec_path: repoPath("specs/requirements.md"),
 				mapping_state: "usable",
+				source: markdownSourceLocation(),
 			}),
 		},
 		stored_mappings: {
@@ -247,6 +248,15 @@ function traceabilitySummary() {
 		directly_seeded_product_file_count: 0,
 		single_cover_product_file_count: 0,
 		multi_cover_product_file_count: 0,
+	};
+}
+
+function markdownSourceLocation() {
+	return {
+		kind: "markdown_atx_heading" as const,
+		line: 1,
+		column: 3,
+		heading_level: 1,
 	};
 }
 

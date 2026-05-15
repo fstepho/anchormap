@@ -6,6 +6,7 @@
 		"local": {
 			"status": "pass",
 			"source": "demos/tsx-adoption/local-minimal",
+			"scan_schema_version": 5,
 			"analysis_health": "clean",
 			"product_file_count": 4,
 			"artifacts": {
@@ -14,12 +15,28 @@
 			}
 		},
 		"external": {
-			"status": "unavailable",
+			"status": "pass",
 			"repository": "https://github.com/dan5py/react-vite-ts.git",
 			"commit": "6c09ea115c02e28c3c66588d9617cbc132625478",
-			"command": "git fetch",
-			"exit_code": 128,
-			"reason": "fatal: unable to access 'https://github.com/dan5py/react-vite-ts.git/': Could not resolve host: github.com"
+			"scan_schema_version": 5,
+			"analysis_health": "degraded",
+			"product_file_count": 4,
+			"findings": [
+				{
+					"kind": "unresolved_static_edge",
+					"importer": "src/App.tsx",
+					"specifier": "@/assets/react.svg"
+				},
+				{
+					"kind": "unresolved_static_edge",
+					"importer": "src/main.tsx",
+					"specifier": "@/styles/globals.css"
+				}
+			],
+			"artifacts": {
+				"compact_json": "external-scan.compact.json",
+				"pretty_json": "external-scan.pretty.json"
+			}
 		}
 	}
 }

@@ -23,10 +23,62 @@ test("parses a supported scan schema v4 artifact", () => {
 	}
 });
 
+test("parses a supported closed scan schema v5 artifact with source locations", () => {
+	const scan = JSON.parse(minimalScanArtifactJson());
+	scan.schema_version = 5;
+	scan.observed_anchors = {
+		"QA-001": {
+			spec_path: "specs/requirements.md",
+			mapping_state: "absent",
+			source: {
+				kind: "markdown_atx_heading",
+				line: 2,
+				column: 5,
+				heading_level: 3,
+			},
+		},
+		"QA-002": {
+			spec_path: "specs/metadata.yaml",
+			mapping_state: "absent",
+			source: {
+				kind: "yaml_root_id",
+				line: 4,
+				column: 7,
+			},
+		},
+	};
+
+	const result = parseScanArtifactJson(JSON.stringify(scan));
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.equal(result.scan.schema_version, 5);
+		const markdownAnchor = Object.values(result.scan.observed_anchors).find(
+			(anchor) => anchor.spec_path === "specs/requirements.md",
+		);
+		const yamlAnchor = Object.values(result.scan.observed_anchors).find(
+			(anchor) => anchor.spec_path === "specs/metadata.yaml",
+		);
+		assert.deepEqual(markdownAnchor?.source, {
+			kind: "markdown_atx_heading",
+			line: 2,
+			column: 5,
+			heading_level: 3,
+		});
+		assert.deepEqual(yamlAnchor?.source, {
+			kind: "yaml_root_id",
+			line: 4,
+			column: 7,
+		});
+	}
+});
+
 test("rejects invalid JSON, unknown scan schema versions, and open scan objects", () => {
+	const unknownSchema = JSON.parse(minimalScanArtifactJson());
+	unknownSchema.schema_version = 6;
 	const cases = [
 		{ name: "invalid JSON", text: "{" },
-		{ name: "unknown schema", text: JSON.stringify({ schema_version: 5 }) },
+		{ name: "unknown schema", text: JSON.stringify(unknownSchema) },
 		{
 			name: "open root object",
 			text: JSON.stringify({ ...JSON.parse(minimalScanArtifactJson()), extra: true }),
@@ -36,6 +88,38 @@ test("rejects invalid JSON, unknown scan schema versions, and open scan objects"
 			text: JSON.stringify({
 				...JSON.parse(minimalScanArtifactJson()),
 				config: { ...JSON.parse(minimalScanArtifactJson()).config, extra: true },
+			}),
+		},
+		{
+			name: "v5 missing source",
+			text: JSON.stringify({
+				...JSON.parse(minimalScanArtifactJson()),
+				schema_version: 5,
+				observed_anchors: {
+					"QA-001": {
+						spec_path: "specs/requirements.md",
+						mapping_state: "absent",
+					},
+				},
+			}),
+		},
+		{
+			name: "v5 open source",
+			text: JSON.stringify({
+				...JSON.parse(minimalScanArtifactJson()),
+				schema_version: 5,
+				observed_anchors: {
+					"QA-001": {
+						spec_path: "specs/requirements.md",
+						mapping_state: "absent",
+						source: {
+							kind: "yaml_root_id",
+							line: 1,
+							column: 3,
+							snippet: "QA-001",
+						},
+					},
+				},
 			}),
 		},
 	];

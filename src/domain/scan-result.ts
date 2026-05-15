@@ -25,10 +25,30 @@ export interface LocalAliasView {
 
 export type ObservedAnchorMappingState = "absent" | "usable" | "invalid" | "draft";
 
+export type ScanSchemaVersion = 4 | 5;
+
+export type ObservedAnchorSourceView =
+	| {
+			readonly kind: "markdown_atx_heading";
+			readonly line: number;
+			readonly column: number;
+			readonly heading_level: number;
+	  }
+	| {
+			readonly kind: "yaml_root_id";
+			readonly line: number;
+			readonly column: number;
+	  };
+
 export interface ObservedAnchorView {
 	readonly spec_path: RepoPath;
 	readonly mapping_state: ObservedAnchorMappingState;
+	readonly source?: ObservedAnchorSourceView;
 }
+
+export type ObservedAnchorV5View = ObservedAnchorView & {
+	readonly source: ObservedAnchorSourceView;
+};
 
 export type StoredMappingState = "usable" | "invalid" | "stale";
 
@@ -72,12 +92,13 @@ export interface TraceabilityMetricsView {
 }
 
 export type ObservedAnchorsView = Readonly<Record<AnchorId, ObservedAnchorView>>;
+export type ObservedAnchorsV5View = Readonly<Record<AnchorId, ObservedAnchorV5View>>;
 export type StoredMappingsView = Readonly<Record<AnchorId, StoredMappingView>>;
 export type FilesView = Readonly<Record<RepoPath, FileView>>;
 export type FindingsView = readonly Finding[];
 
 export interface ScanResultView {
-	readonly schema_version: 4;
+	readonly schema_version: ScanSchemaVersion;
 	readonly config: ConfigView;
 	readonly analysis_health: AnalysisHealth;
 	readonly observed_anchors: ObservedAnchorsView;
@@ -89,14 +110,16 @@ export interface ScanResultView {
 
 export type ConfigViewFields = Pick<ConfigView, "product_root" | "spec_roots" | "ignore_roots"> &
 	Partial<Pick<ConfigView, "tsconfig_path" | "local_aliases">>;
-export type ObservedAnchorViewFields = ObservedAnchorView;
+export type ObservedAnchorViewFields = ObservedAnchorV5View;
 export type StoredMappingViewFields = StoredMappingView;
 export type FileViewFields = FileView;
 export type TraceabilityMetricsViewFields = TraceabilityMetricsView;
 export type ScanResultViewFields = Pick<
 	ScanResultView,
-	"config" | "observed_anchors" | "stored_mappings" | "files" | "traceability_metrics" | "findings"
->;
+	"config" | "stored_mappings" | "files" | "traceability_metrics" | "findings"
+> & {
+	readonly observed_anchors: ObservedAnchorsV5View;
+};
 
 type NoExtraFields<Input, Shape> = Input & Record<Exclude<keyof Input, keyof Shape>, never>;
 
@@ -130,10 +153,11 @@ export function createConfigView<const Input extends ConfigViewFields>(
 
 export function createObservedAnchorView<const Input extends ObservedAnchorViewFields>(
 	fields: NoExtraFields<Input, ObservedAnchorViewFields>,
-): ObservedAnchorView {
+): ObservedAnchorV5View {
 	return {
 		spec_path: fields.spec_path,
 		mapping_state: fields.mapping_state,
+		source: fields.source,
 	};
 }
 
@@ -168,8 +192,10 @@ export function createTraceabilityMetricsView<const Input extends TraceabilityMe
 export function createScanResultView<const Input extends ScanResultViewFields>(
 	fields: NoExtraFields<Input, ScanResultViewFields>,
 ): ScanResultView {
+	assertObservedAnchorsHaveSource(fields.observed_anchors);
+
 	return {
-		schema_version: 4,
+		schema_version: 5,
 		config: fields.config,
 		analysis_health: analysisHealth(fields.findings),
 		observed_anchors: sortRecordByUtf8Key(fields.observed_anchors),
@@ -178,6 +204,14 @@ export function createScanResultView<const Input extends ScanResultViewFields>(
 		traceability_metrics: createTraceabilityMetricsView(fields.traceability_metrics),
 		findings: fields.findings,
 	};
+}
+
+function assertObservedAnchorsHaveSource(observedAnchors: ObservedAnchorsView): void {
+	for (const [anchorId, observedAnchor] of Object.entries(observedAnchors)) {
+		if (observedAnchor.source === undefined) {
+			throw new Error(`Cannot create schema v5 scan result without source for ${anchorId}`);
+		}
+	}
 }
 
 function sortRecordByUtf8Key<Key extends string, Value>(

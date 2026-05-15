@@ -176,7 +176,7 @@ test("scan --json validates product files through UTF-8 decode and TypeScript pa
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -299,7 +299,7 @@ test("scan --json renders unsupported local require and dynamic import findings"
 			assert.equal(exitCode, 0, testCase.name);
 			assert.equal(stderr.read(), "", testCase.name);
 			assert.deepEqual(JSON.parse(stdout.read()), {
-				schema_version: 4,
+				schema_version: 5,
 				config: {
 					version: 1,
 					product_root: "src",
@@ -364,7 +364,7 @@ test("scan --json runs scan orchestration through supported local graph syntax",
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -429,7 +429,7 @@ test("scan --json renders tsconfig alias state and resolves alias imports", () =
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -530,7 +530,7 @@ test("scan --json renders usable mapping reachability through supported graph ed
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -544,6 +544,12 @@ test("scan --json renders usable mapping reachability through supported graph ed
 				"FR-014": {
 					spec_path: "specs/requirements.md",
 					mapping_state: "usable",
+					source: {
+						kind: "markdown_atx_heading",
+						line: 1,
+						column: 3,
+						heading_level: 1,
+					},
 				},
 			},
 			stored_mappings: {
@@ -611,7 +617,7 @@ test("scan --json renders observed anchors without stored mappings", () => {
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",
@@ -625,6 +631,12 @@ test("scan --json renders observed anchors without stored mappings", () => {
 				"FR-014": {
 					spec_path: "specs/requirements.md",
 					mapping_state: "absent",
+					source: {
+						kind: "markdown_atx_heading",
+						line: 1,
+						column: 3,
+						heading_level: 1,
+					},
 				},
 			},
 			stored_mappings: {},
@@ -686,7 +698,7 @@ test("scan --json renders stale stored mappings without evaluating seeds", () =>
 		assert.equal(exitCode, 0);
 		assert.equal(stderr.read(), "");
 		assert.deepEqual(JSON.parse(stdout.read()), {
-			schema_version: 4,
+			schema_version: 5,
 			config: {
 				version: 1,
 				product_root: "src",

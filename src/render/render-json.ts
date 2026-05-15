@@ -13,6 +13,7 @@ import type {
 	ConfigView,
 	FileView,
 	LocalAliasView,
+	ObservedAnchorSourceView,
 	ObservedAnchorView,
 	ScanResultView,
 	StoredMappingView,
@@ -61,7 +62,12 @@ function renderScanResultObject(result: ScanResultView): string {
 		["schema_version", renderNumber(result.schema_version)],
 		["config", renderConfig(result.config)],
 		["analysis_health", renderString(result.analysis_health)],
-		["observed_anchors", renderRecord(result.observed_anchors, renderObservedAnchor)],
+		[
+			"observed_anchors",
+			renderRecord(result.observed_anchors, (observedAnchor) =>
+				renderObservedAnchor(observedAnchor, result.schema_version),
+			),
+		],
 		["stored_mappings", renderRecord(result.stored_mappings, renderStoredMapping)],
 		["files", renderRecord(result.files, renderFile)],
 		["traceability_metrics", renderTraceabilityMetrics(result.traceability_metrics)],
@@ -305,10 +311,42 @@ function renderLocalAlias(localAlias: LocalAliasView): string {
 	]);
 }
 
-function renderObservedAnchor(observedAnchor: ObservedAnchorView): string {
+function renderObservedAnchor(
+	observedAnchor: ObservedAnchorView,
+	schemaVersion: ScanResultView["schema_version"],
+): string {
+	if (schemaVersion === 4) {
+		return renderObject([
+			["spec_path", renderString(observedAnchor.spec_path)],
+			["mapping_state", renderString(observedAnchor.mapping_state)],
+		]);
+	}
+
+	if (observedAnchor.source === undefined) {
+		throw new Error("Cannot render schema v5 observed anchor without source");
+	}
+
 	return renderObject([
 		["spec_path", renderString(observedAnchor.spec_path)],
 		["mapping_state", renderString(observedAnchor.mapping_state)],
+		["source", renderObservedAnchorSource(observedAnchor.source)],
+	]);
+}
+
+function renderObservedAnchorSource(source: ObservedAnchorSourceView): string {
+	if (source.kind === "markdown_atx_heading") {
+		return renderObject([
+			["kind", renderString(source.kind)],
+			["line", renderNumber(source.line)],
+			["column", renderNumber(source.column)],
+			["heading_level", renderNumber(source.heading_level)],
+		]);
+	}
+
+	return renderObject([
+		["kind", renderString(source.kind)],
+		["line", renderNumber(source.line)],
+		["column", renderNumber(source.column)],
 	]);
 }
 

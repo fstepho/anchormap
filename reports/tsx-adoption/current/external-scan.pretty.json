@@ -1,0 +1,212 @@
+{
+	"schema_version": 5,
+	"config": {
+		"version": 1,
+		"product_root": "src",
+		"spec_roots": [
+			".specify/specs"
+		],
+		"ignore_roots": [],
+		"tsconfig_path": "tsconfig.json",
+		"local_aliases": [
+			{
+				"prefix": "@/",
+				"target": "src/"
+			}
+		]
+	},
+	"analysis_health": "degraded",
+	"observed_anchors": {
+		"COMPONENTS.COUNT_BTN.DEFAULT": {
+			"spec_path": ".specify/specs/scaffold.generated.md",
+			"mapping_state": "draft",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 3,
+				"column": 3,
+				"heading_level": 1
+			}
+		},
+		"EXT.APP": {
+			"spec_path": ".specify/specs/tsx-adoption-active.md",
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 5,
+				"column": 3,
+				"heading_level": 1
+			}
+		},
+		"EXT.COUNT_BTN": {
+			"spec_path": ".specify/specs/tsx-adoption-active.md",
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 9,
+				"column": 3,
+				"heading_level": 1
+			}
+		},
+		"EXT.MAIN": {
+			"spec_path": ".specify/specs/tsx-adoption-active.md",
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 1,
+				"column": 3,
+				"heading_level": 1
+			}
+		},
+		"LIB.UTILS.CN": {
+			"spec_path": ".specify/specs/scaffold.generated.md",
+			"mapping_state": "draft",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 8,
+				"column": 3,
+				"heading_level": 1
+			}
+		}
+	},
+	"stored_mappings": {
+		"EXT.APP": {
+			"state": "usable",
+			"seed_files": [
+				"src/App.tsx"
+			],
+			"reached_files": [
+				"src/App.tsx",
+				"src/components/CountBtn.tsx",
+				"src/lib/utils.ts"
+			]
+		},
+		"EXT.COUNT_BTN": {
+			"state": "usable",
+			"seed_files": [
+				"src/components/CountBtn.tsx"
+			],
+			"reached_files": [
+				"src/components/CountBtn.tsx",
+				"src/lib/utils.ts"
+			]
+		},
+		"EXT.MAIN": {
+			"state": "usable",
+			"seed_files": [
+				"src/main.tsx"
+			],
+			"reached_files": [
+				"src/App.tsx",
+				"src/components/CountBtn.tsx",
+				"src/lib/utils.ts",
+				"src/main.tsx"
+			]
+		}
+	},
+	"files": {
+		"src/App.tsx": {
+			"covering_anchor_ids": [
+				"EXT.APP",
+				"EXT.MAIN"
+			],
+			"supported_local_targets": [
+				"src/components/CountBtn.tsx"
+			]
+		},
+		"src/components/CountBtn.tsx": {
+			"covering_anchor_ids": [
+				"EXT.APP",
+				"EXT.COUNT_BTN",
+				"EXT.MAIN"
+			],
+			"supported_local_targets": [
+				"src/lib/utils.ts"
+			]
+		},
+		"src/lib/utils.ts": {
+			"covering_anchor_ids": [
+				"EXT.APP",
+				"EXT.COUNT_BTN",
+				"EXT.MAIN"
+			],
+			"supported_local_targets": []
+		},
+		"src/main.tsx": {
+			"covering_anchor_ids": [
+				"EXT.MAIN"
+			],
+			"supported_local_targets": [
+				"src/App.tsx"
+			]
+		}
+	},
+	"traceability_metrics": {
+		"summary": {
+			"product_file_count": 4,
+			"stored_mapping_count": 3,
+			"usable_mapping_count": 3,
+			"observed_anchor_count": 5,
+			"active_anchor_count": 3,
+			"draft_anchor_count": 2,
+			"covered_product_file_count": 4,
+			"uncovered_product_file_count": 0,
+			"directly_seeded_product_file_count": 3,
+			"single_cover_product_file_count": 1,
+			"multi_cover_product_file_count": 3
+		},
+		"anchors": {
+			"COMPONENTS.COUNT_BTN.DEFAULT": {
+				"seed_file_count": 0,
+				"direct_seed_file_count": 0,
+				"reached_file_count": 0,
+				"transitive_reached_file_count": 0,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 0
+			},
+			"EXT.APP": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 3,
+				"transitive_reached_file_count": 2,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 3
+			},
+			"EXT.COUNT_BTN": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 2,
+				"transitive_reached_file_count": 1,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 2
+			},
+			"EXT.MAIN": {
+				"seed_file_count": 1,
+				"direct_seed_file_count": 1,
+				"reached_file_count": 4,
+				"transitive_reached_file_count": 3,
+				"unique_reached_file_count": 1,
+				"shared_reached_file_count": 3
+			},
+			"LIB.UTILS.CN": {
+				"seed_file_count": 0,
+				"direct_seed_file_count": 0,
+				"reached_file_count": 0,
+				"transitive_reached_file_count": 0,
+				"unique_reached_file_count": 0,
+				"shared_reached_file_count": 0
+			}
+		}
+	},
+	"findings": [
+		{
+			"kind": "unresolved_static_edge",
+			"importer": "src/App.tsx",
+			"specifier": "@/assets/react.svg"
+		},
+		{
+			"kind": "unresolved_static_edge",
+			"importer": "src/main.tsx",
+			"specifier": "@/styles/globals.css"
+		}
+	]
+}

@@ -1,5 +1,5 @@
 {
-	"schema_version": 4,
+	"schema_version": 5,
 	"config": {
 		"version": 1,
 		"product_root": "src",
@@ -19,15 +19,33 @@
 	"observed_anchors": {
 		"APP.BUTTON": {
 			"spec_path": "specs/requirements.md",
-			"mapping_state": "usable"
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 9,
+				"column": 3,
+				"heading_level": 1
+			}
 		},
 		"APP.MAIN": {
 			"spec_path": "specs/requirements.md",
-			"mapping_state": "usable"
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 1,
+				"column": 3,
+				"heading_level": 1
+			}
 		},
 		"APP.VIEW": {
 			"spec_path": "specs/requirements.md",
-			"mapping_state": "usable"
+			"mapping_state": "usable",
+			"source": {
+				"kind": "markdown_atx_heading",
+				"line": 5,
+				"column": 3,
+				"heading_level": 1
+			}
 		}
 	},
 	"stored_mappings": {

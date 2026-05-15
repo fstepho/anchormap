@@ -320,6 +320,89 @@ test("check artifact mode evaluates policy pass and fail with machine stdout", (
 	}
 });
 
+test("artifact commands accept supported scan schema v4 and v5 inputs", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan-v4.json"), minimalScanArtifactJson(4));
+		writeFileSync(join(cwd, "artifacts", "scan-v5.json"), minimalScanArtifactJson(5));
+		writeFileSync(join(cwd, "artifacts", "explain-v5.json"), explainScanArtifactJson(5));
+		writeFileSync(
+			join(cwd, "policy.yaml"),
+			[
+				"version: 1",
+				"fail_on:",
+				"  finding_kinds: []",
+				"thresholds:",
+				"  min_covered_product_file_percent: 100",
+				"  max_untraced_product_files: 0",
+				"",
+			].join("\n"),
+		);
+
+		const check = runCommand(cwd, [
+			"check",
+			"--scan",
+			"artifacts/scan-v5.json",
+			"--policy",
+			"policy.yaml",
+			"--json",
+		]);
+		assert.equal(check.exitCode, 0);
+		assert.equal(check.stderr, "");
+		assert.match(check.stdout, /"source_scan_schema_version":5/);
+
+		const diffV4V5 = runCommand(cwd, [
+			"diff",
+			"--base",
+			"artifacts/scan-v4.json",
+			"--head",
+			"artifacts/scan-v5.json",
+			"--json",
+		]);
+		assert.equal(diffV4V5.exitCode, 0);
+		assert.equal(diffV4V5.stderr, "");
+		assert.match(diffV4V5.stdout, /"base_scan_schema_version":4,"head_scan_schema_version":5/);
+
+		const diffV5V4 = runCommand(cwd, [
+			"diff",
+			"--base",
+			"artifacts/scan-v5.json",
+			"--head",
+			"artifacts/scan-v4.json",
+			"--json",
+		]);
+		assert.equal(diffV5V4.exitCode, 0);
+		assert.equal(diffV5V4.stderr, "");
+		assert.match(diffV5V4.stdout, /"base_scan_schema_version":5,"head_scan_schema_version":4/);
+
+		const explain = runCommand(cwd, [
+			"explain",
+			"--anchor",
+			"QA-001",
+			"--scan",
+			"artifacts/explain-v5.json",
+			"--json",
+		]);
+		assert.equal(explain.exitCode, 0);
+		assert.equal(explain.stderr, "");
+		assert.match(explain.stdout, /"anchor_id":"QA-001"/);
+
+		const report = runCommand(cwd, [
+			"report",
+			"--scan",
+			"artifacts/scan-v5.json",
+			"--format",
+			"markdown",
+		]);
+		assert.equal(report.exitCode, 0);
+		assert.equal(report.stderr, "");
+		assert.match(report.stdout, /^# AnchorMap traceability report\n/);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
 test("diff artifact mode compares two explicit scans with machine and human output", () => {
 	const cwd = createTempRepo();
 	try {
@@ -465,12 +548,22 @@ function scanWithOneUncoveredFileJson(): string {
 	return `${JSON.stringify(scan)}\n`;
 }
 
-function explainScanArtifactJson(): string {
-	const scan = JSON.parse(minimalScanArtifactJson());
+function explainScanArtifactJson(schemaVersion: 4 | 5 = 4): string {
+	const scan = JSON.parse(minimalScanArtifactJson(schemaVersion));
 	scan.observed_anchors = {
 		"QA-001": {
 			spec_path: "specs/requirements.md",
 			mapping_state: "usable",
+			...(schemaVersion === 5
+				? {
+						source: {
+							kind: "markdown_atx_heading",
+							line: 1,
+							column: 3,
+							heading_level: 1,
+						},
+					}
+				: {}),
 		},
 	};
 	scan.stored_mappings = {

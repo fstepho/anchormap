@@ -27,6 +27,7 @@ test("classifies usable stored mappings and observed anchors", () => {
 	assert.deepEqual(result.observed_anchors[anchorId("FR-014")], {
 		spec_path: repoPath("specs/requirements.md"),
 		mapping_state: "usable",
+		source: markdownSourceLocation(),
 	});
 	assert.deepEqual(result.stored_mappings[anchorId("FR-014")], {
 		state: "usable",
@@ -176,6 +177,7 @@ test("emits unmapped_anchor for observed anchors without stored mappings", () =>
 	assert.deepEqual(result.observed_anchors[anchorId("FR-014")], {
 		spec_path: repoPath("specs/requirements.md"),
 		mapping_state: "absent",
+		source: markdownSourceLocation(),
 	});
 	assert.deepEqual(result.stored_mappings, {});
 	assert.deepEqual(result.findings, [
@@ -344,6 +346,7 @@ test("renders draft-only observed anchors without unmapped findings", () => {
 	assert.deepEqual(result.observed_anchors[anchorId("DRAFT.ONLY.ANCHOR")], {
 		spec_path: repoPath("specs/scaffold.generated.md"),
 		mapping_state: "draft",
+		source: markdownSourceLocation(),
 	});
 	assert.deepEqual(result.findings, []);
 	assert.deepEqual(result.traceability_metrics.summary, {
@@ -376,6 +379,7 @@ test("treats mappings to draft-only anchors as stale", () => {
 	assert.deepEqual(result.observed_anchors[anchorId("DRAFT.ONLY.ANCHOR")], {
 		spec_path: repoPath("specs/scaffold.generated.md"),
 		mapping_state: "draft",
+		source: markdownSourceLocation(),
 	});
 	assert.deepEqual(result.stored_mappings[anchorId("DRAFT.ONLY.ANCHOR")], {
 		state: "stale",
@@ -506,12 +510,14 @@ function observedAnchor(value: string): {
 	readonly specPath: RepoPath;
 	readonly sourceKind: "markdown";
 	readonly status: "active";
+	readonly sourceLocation: ReturnType<typeof markdownSourceLocation>;
 } {
 	return {
 		anchorId: anchorId(value),
 		specPath: repoPath("specs/requirements.md"),
 		sourceKind: "markdown",
 		status: "active",
+		sourceLocation: markdownSourceLocation(),
 	};
 }
 
@@ -520,12 +526,23 @@ function draftAnchor(value: string): {
 	readonly specPath: RepoPath;
 	readonly sourceKind: "markdown";
 	readonly status: "draft";
+	readonly sourceLocation: ReturnType<typeof markdownSourceLocation>;
 } {
 	return {
 		anchorId: anchorId(value),
 		specPath: repoPath("specs/scaffold.generated.md"),
 		sourceKind: "markdown",
 		status: "draft",
+		sourceLocation: markdownSourceLocation(),
+	};
+}
+
+function markdownSourceLocation() {
+	return {
+		kind: "markdown_atx_heading" as const,
+		line: 1,
+		column: 3,
+		heading_level: 1,
 	};
 }
 

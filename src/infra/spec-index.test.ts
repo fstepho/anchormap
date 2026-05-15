@@ -138,6 +138,15 @@ function occurrenceStatusView(
 	]);
 }
 
+function occurrenceSourceView(
+	occurrences: readonly SpecAnchorOccurrence[],
+): ReadonlyArray<readonly [string, SpecAnchorOccurrence["sourceLocation"]]> {
+	return occurrences.map((occurrence) => [
+		anchorIdToString(occurrence.anchorId),
+		occurrence.sourceLocation,
+	]);
+}
+
 test("discovers supported spec files under configured roots in stable order", () => {
 	const result = buildSpecIndex(configWithSpecRoots(["specs", "docs"]), {
 		cwd: CWD,
@@ -341,6 +350,15 @@ test("extracts supported anchors from ATX Markdown headings", () => {
 			["CC-003", "specs/anchors.md", "markdown"],
 			["DOC.README.PRESENT", "specs/anchors.md", "markdown"],
 		]);
+		assert.deepEqual(occurrenceSourceView(result.specIndex.anchorOccurrences), [
+			["AA-001", { kind: "markdown_atx_heading", line: 1, column: 3, heading_level: 1 }],
+			["BB-002", { kind: "markdown_atx_heading", line: 3, column: 5, heading_level: 3 }],
+			["CC-003", { kind: "markdown_atx_heading", line: 4, column: 6, heading_level: 4 }],
+			[
+				"DOC.README.PRESENT",
+				{ kind: "markdown_atx_heading", line: 2, column: 4, heading_level: 2 },
+			],
+		]);
 	}
 });
 
@@ -481,6 +499,7 @@ test("normalizes Markdown heading inline text according to the contract", () => 
 						"## **FR-014**\tValidate",
 						"## `DOC.README.PRESENT`   - README present",
 						"## <!-- US-001 --> Hidden html does not count",
+						"# <!-- US-001 -->US-001 Visible anchor",
 						"",
 					].join("\n"),
 				),
@@ -493,6 +512,59 @@ test("normalizes Markdown heading inline text according to the contract", () => 
 		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
 			["DOC.README.PRESENT", "specs/inline.md", "markdown"],
 			["FR-014", "specs/inline.md", "markdown"],
+			["US-001", "specs/inline.md", "markdown"],
+		]);
+		assert.deepEqual(occurrenceSourceView(result.specIndex.anchorOccurrences), [
+			[
+				"DOC.README.PRESENT",
+				{ kind: "markdown_atx_heading", line: 2, column: 5, heading_level: 2 },
+			],
+			["FR-014", { kind: "markdown_atx_heading", line: 1, column: 6, heading_level: 2 }],
+			["US-001", { kind: "markdown_atx_heading", line: 4, column: 18, heading_level: 1 }],
+		]);
+	}
+});
+
+test("maps decoded Markdown character references to the source anchor column", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["entity.md"],
+			},
+			files: {
+				"specs/entity.md": Buffer.from("# &#70;R-014 Entity anchor\n"),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceSourceView(result.specIndex.anchorOccurrences), [
+			["FR-014", { kind: "markdown_atx_heading", line: 1, column: 3, heading_level: 1 }],
+		]);
+	}
+});
+
+test("does not map visible Markdown anchor columns inside ignored inline HTML", () => {
+	const result = buildSpecIndex(configWithSpecRoots(["specs"]), {
+		cwd: CWD,
+		fs: createVirtualFs({
+			directories: {
+				specs: ["ignored-html.md"],
+			},
+			files: {
+				"specs/ignored-html.md": Buffer.from(
+					"# <!-- FR-014 Visible &amp; hidden -->FR-014 Visible\n",
+				),
+			},
+		}),
+	});
+
+	assert.equal(result.kind, "ok");
+	if (result.kind === "ok") {
+		assert.deepEqual(occurrenceSourceView(result.specIndex.anchorOccurrences), [
+			["FR-014", { kind: "markdown_atx_heading", line: 1, column: 39, heading_level: 1 }],
 		]);
 	}
 });
@@ -553,7 +625,11 @@ test("extracts YAML anchors only from a valid root string id", () => {
 				specs: [
 					"root.yaml",
 					"dotted.yaml",
+					"escaped.yaml",
+					"folded.yaml",
+					"literal.yaml",
 					"profile.yaml",
+					"quoted.yaml",
 					"nested.yml",
 					"no-id.yaml",
 					"invalid-id.yaml",
@@ -563,7 +639,11 @@ test("extracts YAML anchors only from a valid root string id", () => {
 			files: {
 				"specs/root.yaml": Buffer.from("id: YAML.ROOT.ID\ntitle: Root id\n"),
 				"specs/dotted.yaml": Buffer.from("id: DOC.README.SECTIONS_MIN\ntitle: Dotted id\n"),
+				"specs/escaped.yaml": Buffer.from('id: "\\x46R-014" # FR-014\n'),
+				"specs/folded.yaml": Buffer.from("id: >-\n  YAML.FOLDED.ID\n"),
+				"specs/literal.yaml": Buffer.from("id: |-\n  YAML.LITERAL.ID\n"),
 				"specs/profile.yaml": Buffer.from("%YAML 1.2\n---\nid: YAML.PROFILE.OK\nflag: on\n"),
+				"specs/quoted.yaml": Buffer.from("id: 'YAML.QUOTED.ID'\n"),
 				"specs/nested.yml": Buffer.from("feature:\n  id: NEST-001\n"),
 				"specs/no-id.yaml": Buffer.from("title: No root id\n"),
 				"specs/invalid-id.yaml": Buffer.from("id: not-supported\n"),
@@ -576,8 +656,21 @@ test("extracts YAML anchors only from a valid root string id", () => {
 	if (result.kind === "ok") {
 		assert.deepEqual(occurrenceView(result.specIndex.anchorOccurrences), [
 			["DOC.README.SECTIONS_MIN", "specs/dotted.yaml", "yaml"],
+			["FR-014", "specs/escaped.yaml", "yaml"],
+			["YAML.FOLDED.ID", "specs/folded.yaml", "yaml"],
+			["YAML.LITERAL.ID", "specs/literal.yaml", "yaml"],
 			["YAML.PROFILE.OK", "specs/profile.yaml", "yaml"],
+			["YAML.QUOTED.ID", "specs/quoted.yaml", "yaml"],
 			["YAML.ROOT.ID", "specs/root.yaml", "yaml"],
+		]);
+		assert.deepEqual(occurrenceSourceView(result.specIndex.anchorOccurrences), [
+			["DOC.README.SECTIONS_MIN", { kind: "yaml_root_id", line: 1, column: 5 }],
+			["FR-014", { kind: "yaml_root_id", line: 1, column: 6 }],
+			["YAML.FOLDED.ID", { kind: "yaml_root_id", line: 2, column: 3 }],
+			["YAML.LITERAL.ID", { kind: "yaml_root_id", line: 2, column: 3 }],
+			["YAML.PROFILE.OK", { kind: "yaml_root_id", line: 3, column: 5 }],
+			["YAML.QUOTED.ID", { kind: "yaml_root_id", line: 1, column: 6 }],
+			["YAML.ROOT.ID", { kind: "yaml_root_id", line: 1, column: 5 }],
 		]);
 	}
 });

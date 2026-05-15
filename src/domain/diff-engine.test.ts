@@ -18,6 +18,7 @@ import {
 	createScanResultView,
 	createStoredMappingView,
 	createTraceabilityMetricsView,
+	type ObservedAnchorsV5View,
 	type ScanResultView,
 	type TraceabilitySummaryView,
 } from "./scan-result";
@@ -29,10 +30,12 @@ test("computes same-scope scan deltas in canonical order", () => {
 			[anchorId("QA-001")]: createObservedAnchorView({
 				spec_path: repoPath("specs/a.md"),
 				mapping_state: "absent",
+				source: markdownSourceLocation(1),
 			}),
 			[anchorId("QA-002")]: createObservedAnchorView({
 				spec_path: repoPath("specs/b.md"),
 				mapping_state: "usable",
+				source: markdownSourceLocation(2),
 			}),
 		},
 		stored_mappings: {
@@ -85,10 +88,12 @@ test("computes same-scope scan deltas in canonical order", () => {
 			[anchorId("QA-001")]: createObservedAnchorView({
 				spec_path: repoPath("specs/a.md"),
 				mapping_state: "usable",
+				source: markdownSourceLocation(1),
 			}),
 			[anchorId("QA-003")]: createObservedAnchorView({
 				spec_path: repoPath("specs/c.md"),
 				mapping_state: "draft",
+				source: markdownSourceLocation(3),
 			}),
 		},
 		stored_mappings: {
@@ -190,15 +195,15 @@ test("reports scope changes without suppressing the diff", () => {
 	const diff = diffScanResults(base, head);
 
 	assert.equal(diff.comparability, "scope_changed");
-	assert.equal(diff.base_scan_schema_version, 4);
-	assert.equal(diff.head_scan_schema_version, 4);
+	assert.equal(diff.base_scan_schema_version, 5);
+	assert.equal(diff.head_scan_schema_version, 5);
 });
 
 function scan(
 	input: {
 		readonly configProductRoot?: RepoPath;
 		readonly configSpecRoots?: readonly RepoPath[];
-		readonly observed_anchors?: ScanResultView["observed_anchors"];
+		readonly observed_anchors?: ObservedAnchorsV5View;
 		readonly stored_mappings?: ScanResultView["stored_mappings"];
 		readonly files?: ScanResultView["files"];
 		readonly summary?: TraceabilitySummaryView;
@@ -235,6 +240,15 @@ function emptySummary(): TraceabilitySummaryView {
 		directly_seeded_product_file_count: 0,
 		single_cover_product_file_count: 0,
 		multi_cover_product_file_count: 0,
+	};
+}
+
+function markdownSourceLocation(line: number) {
+	return {
+		kind: "markdown_atx_heading" as const,
+		line,
+		column: 3,
+		heading_level: 1,
 	};
 }
 

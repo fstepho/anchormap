@@ -21,6 +21,7 @@ const LOCAL_CORPUS = resolve(REPO_ROOT, "demos", "tsx-adoption", "local-minimal"
 const REPORT_DIR = resolve(REPO_ROOT, "reports", "tsx-adoption", "current");
 const EXTERNAL_REPO = "https://github.com/dan5py/react-vite-ts.git";
 const EXTERNAL_COMMIT = "6c09ea115c02e28c3c66588d9617cbc132625478";
+const EXPECTED_SCAN_SCHEMA_VERSION = 5;
 
 const cleanEnv = (() => {
 	const { NODE_OPTIONS: _nodeOptions, NODE_PATH: _nodePath, ...env } = process.env;
@@ -88,6 +89,7 @@ function runLocalLane(tempRoot) {
 	return {
 		status: "pass",
 		source: "demos/tsx-adoption/local-minimal",
+		scan_schema_version: scanJson.schema_version,
 		analysis_health: scanJson.analysis_health,
 		product_file_count: Object.keys(scanJson.files ?? {}).length,
 		artifacts: {
@@ -156,7 +158,7 @@ function runExternalLane(tempRoot) {
 	assertEqual(scan.stderr, "", "external scan stderr is empty");
 
 	const scanJson = parseJson(scan.stdout, "external scan JSON");
-	assertEqual(scanJson.schema_version, 4, "external schema_version is 4");
+	assertScanSchemaVersion(scanJson, "external");
 	assertExternalAnalysisHealth(scanJson);
 	assertHasTsxFiles(scanJson, "external");
 	assertHasAlias(scanJson, "external", "@/", "src/");
@@ -170,6 +172,7 @@ function runExternalLane(tempRoot) {
 		status: "pass",
 		repository: EXTERNAL_REPO,
 		commit: EXTERNAL_COMMIT,
+		scan_schema_version: scanJson.schema_version,
 		analysis_health: scanJson.analysis_health,
 		product_file_count: Object.keys(scanJson.files ?? {}).length,
 		findings: scanJson.findings,
@@ -218,8 +221,16 @@ function run(command, args, cwd) {
 }
 
 function assertScanBasics(scanJson, lane, expectedHealth) {
-	assertEqual(scanJson.schema_version, 4, `${lane} schema_version is 4`);
+	assertScanSchemaVersion(scanJson, lane);
 	assertEqual(scanJson.analysis_health, expectedHealth, `${lane} analysis_health is ${expectedHealth}`);
+}
+
+function assertScanSchemaVersion(scanJson, lane) {
+	assertEqual(
+		scanJson.schema_version,
+		EXPECTED_SCAN_SCHEMA_VERSION,
+		`${lane} schema_version is ${EXPECTED_SCAN_SCHEMA_VERSION}`,
+	);
 }
 
 function assertHasTsxFiles(scanJson, lane) {
@@ -328,6 +339,7 @@ function writeBrief(summary) {
 		"local lane:",
 		`- status: ${local.status}`,
 		`- source: ${local.source}`,
+		`- scan_schema_version: ${local.scan_schema_version}`,
 		`- analysis_health: ${local.analysis_health}`,
 		`- product_file_count: ${local.product_file_count}`,
 		"",
@@ -338,6 +350,7 @@ function writeBrief(summary) {
 	];
 	if (external.status === "pass") {
 		lines.push(
+			`- scan_schema_version: ${external.scan_schema_version}`,
 			`- analysis_health: ${external.analysis_health}`,
 			`- product_file_count: ${external.product_file_count}`,
 			`- finding_count: ${external.findings.length}`,

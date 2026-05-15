@@ -6,14 +6,18 @@ task: T18.0
 local lane:
 - status: pass
 - source: demos/tsx-adoption/local-minimal
+- scan_schema_version: 5
 - analysis_health: clean
 - product_file_count: 4
 
 external lane:
-- status: unavailable
+- status: pass
 - repository: https://github.com/dan5py/react-vite-ts.git
 - commit: 6c09ea115c02e28c3c66588d9617cbc132625478
-- unavailable_reason: fatal: unable to access 'https://github.com/dan5py/react-vite-ts.git/': Could not resolve host: github.com
+- scan_schema_version: 5
+- analysis_health: degraded
+- product_file_count: 4
+- finding_count: 2
 
 release gate: no
 contractual fixture: no

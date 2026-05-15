@@ -58,6 +58,7 @@ function specIndexWithAnchors(anchors: readonly AnchorId[]): SpecIndex {
 				specPath: repoPath("specs/existing.md"),
 				sourceKind: "markdown" as const,
 				status: "active" as const,
+				sourceLocation: markdownSourceLocation(),
 			},
 		]),
 	);
@@ -82,6 +83,7 @@ function specIndexWithActiveAndDraftAnchors(input: {
 				specPath: repoPath("specs/active.md"),
 				sourceKind: "markdown" as const,
 				status: "active" as const,
+				sourceLocation: markdownSourceLocation(),
 			},
 		]),
 	);
@@ -93,6 +95,7 @@ function specIndexWithActiveAndDraftAnchors(input: {
 				specPath: repoPath("specs/draft.md"),
 				sourceKind: "markdown" as const,
 				status: "draft" as const,
+				sourceLocation: markdownSourceLocation(),
 			},
 		]),
 	);
@@ -117,6 +120,15 @@ function parseSource(text: string) {
 		throw new Error(parsed.error.message);
 	}
 	return parsed.sourceFile;
+}
+
+function markdownSourceLocation(): SpecAnchorOccurrence["sourceLocation"] {
+	return {
+		kind: "markdown_atx_heading",
+		line: 1,
+		column: 3,
+		heading_level: 1,
+	};
 }
 
 function scaffoldFs(files: Readonly<Record<string, string>>): ScaffoldFs {

@@ -19,6 +19,7 @@ import type {
 import { loadJsonArtifactText } from "./artifact-file-io";
 import { parseTraceabilityDiffArtifactJson } from "./artifact-json-validation";
 import { parsePolicyResultArtifactJson } from "./artifact-policy-validation";
+import { validateObservedAnchorSource } from "./artifact-scan-source-validation";
 
 export { parsePolicyResultArtifactJson, parseTraceabilityDiffArtifactJson };
 
@@ -54,6 +55,7 @@ const CONFIG_KEYS = [
 ] as const;
 const LOCAL_ALIAS_KEYS = ["prefix", "target"] as const;
 const OBSERVED_ANCHOR_KEYS = ["spec_path", "mapping_state"] as const;
+const OBSERVED_ANCHOR_V5_KEYS = ["spec_path", "mapping_state", "source"] as const;
 const STORED_MAPPING_KEYS = ["state", "seed_files", "reached_files"] as const;
 const FILE_KEYS = ["covering_anchor_ids", "supported_local_targets"] as const;
 const METRICS_KEYS = ["summary", "anchors"] as const;
@@ -143,9 +145,10 @@ function validateScanArtifactValue(
 	if (root.kind === "error") {
 		return root;
 	}
-	if (root.object.schema_version !== 4) {
+	if (root.object.schema_version !== 4 && root.object.schema_version !== 5) {
 		return { kind: "error", error: usageError(`${label} schema_version is not supported`) };
 	}
+	const schemaVersion = root.object.schema_version;
 
 	const config = validateConfig(root.object.config, `${label}.config`);
 	if (config.kind === "error") {
@@ -162,6 +165,7 @@ function validateScanArtifactValue(
 	const observedAnchors = validateObservedAnchors(
 		root.object.observed_anchors,
 		`${label}.observed_anchors`,
+		schemaVersion,
 	);
 	if (observedAnchors.kind === "error") {
 		return observedAnchors;
@@ -192,7 +196,7 @@ function validateScanArtifactValue(
 	return {
 		kind: "ok",
 		scan: {
-			schema_version: 4,
+			schema_version: schemaVersion,
 			config: config.value,
 			analysis_health: analysisHealth.value,
 			observed_anchors: observedAnchors.value,
@@ -282,26 +286,54 @@ function validateLocalAliases(value: unknown, label: string): ValidationResult<L
 function validateObservedAnchors(
 	value: unknown,
 	label: string,
+	schemaVersion: ScanResultView["schema_version"],
 ): ValidationResult<Record<string, ObservedAnchorView>> {
-	return validateRecord(value, label, expectAnchorIdKey, (entry, entryLabel) => {
-		const object = expectObject(entry, entryLabel, OBSERVED_ANCHOR_KEYS);
-		if (object.kind === "error") {
-			return object;
-		}
-		const specPath = expectRepoPath(object.object.spec_path, `${entryLabel}.spec_path`);
-		if (specPath.kind === "error") {
-			return specPath;
-		}
-		const mappingState = expectEnum<ObservedAnchorView["mapping_state"]>(
-			object.object.mapping_state,
-			`${entryLabel}.mapping_state`,
-			["absent", "usable", "invalid", "draft"],
-		);
-		if (mappingState.kind === "error") {
-			return mappingState;
-		}
-		return { kind: "ok", value: { spec_path: specPath.value, mapping_state: mappingState.value } };
-	});
+	return validateRecord(
+		value,
+		label,
+		expectAnchorIdKey,
+		(entry, entryLabel): ValidationResult<ObservedAnchorView> => {
+			const object = expectObject(
+				entry,
+				entryLabel,
+				schemaVersion === 5 ? OBSERVED_ANCHOR_V5_KEYS : OBSERVED_ANCHOR_KEYS,
+			);
+			if (object.kind === "error") {
+				return object;
+			}
+			const specPath = expectRepoPath(object.object.spec_path, `${entryLabel}.spec_path`);
+			if (specPath.kind === "error") {
+				return specPath;
+			}
+			const mappingState = expectEnum<ObservedAnchorView["mapping_state"]>(
+				object.object.mapping_state,
+				`${entryLabel}.mapping_state`,
+				["absent", "usable", "invalid", "draft"],
+			);
+			if (mappingState.kind === "error") {
+				return mappingState;
+			}
+			if (schemaVersion === 4) {
+				return {
+					kind: "ok",
+					value: { spec_path: specPath.value, mapping_state: mappingState.value },
+				};
+			}
+
+			const source = validateObservedAnchorSource(object.object.source, `${entryLabel}.source`);
+			if (source.kind === "error") {
+				return source;
+			}
+			return {
+				kind: "ok",
+				value: {
+					spec_path: specPath.value,
+					mapping_state: mappingState.value,
+					source: source.value,
+				},
+			};
+		},
+	);
 }
 
 function validateStoredMappings(

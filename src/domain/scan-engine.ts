@@ -112,6 +112,7 @@ export function runScanEngine(input: ScanEngineInput): ScanResultView {
 				createObservedAnchorView({
 					spec_path: anchor.specPath,
 					mapping_state,
+					source: observedAnchorSourceLocation(anchor),
 				}),
 			];
 		}),
@@ -361,6 +362,15 @@ function sortedObservedAnchorEntries(
 
 		return [anchorId, observedAnchor];
 	});
+}
+
+function observedAnchorSourceLocation(
+	anchor: ObservedAnchor,
+): NonNullable<ObservedAnchor["sourceLocation"]> {
+	if (anchor.sourceLocation === undefined) {
+		throw new Error(`Observed anchor ${anchor.anchorId} is missing source location`);
+	}
+	return anchor.sourceLocation;
 }
 
 function buildCoveringAnchorIdsByFile(
