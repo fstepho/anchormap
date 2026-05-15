@@ -55,13 +55,17 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 			const reportSuffix = context.reportArgs
 				? `:scan=${context.reportArgs.scan}:check=${context.reportArgs.check ?? ""}:diff=${context.reportArgs.diff ?? ""}:format=${context.reportArgs.format}`
 				: "";
-			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}${scaffoldSuffix}${checkSuffix}${diffSuffix}${explainSuffix}${reportSuffix}`;
+			const bundleSuffix = context.bundleArgs
+				? `:scan=${context.bundleArgs.scan}:check=${context.bundleArgs.check}:diff=${context.bundleArgs.diff}:metadata=${context.bundleArgs.metadata}:json=${context.bundleArgs.json}`
+				: "";
+			const suffix = `${initSuffix}${mapSuffix}${scanSuffix}${scaffoldSuffix}${checkSuffix}${diffSuffix}${explainSuffix}${reportSuffix}${bundleSuffix}`;
 			calls.push(`${command}:${context.args.join(" ")}${suffix}`);
 			if (
 				context.scanMode === "json" ||
 				context.checkArgs?.json ||
 				context.diffArgs?.json ||
-				context.explainArgs?.json
+				context.explainArgs?.json ||
+				context.bundleArgs?.json
 			) {
 				return commandSuccess({ stdout: "{}\n" });
 			}
@@ -81,6 +85,7 @@ export function createRecordingHandlers(calls: string[]): AnchormapCommandHandle
 		diff: record("diff"),
 		explain: record("explain"),
 		report: record("report"),
+		bundle: record("bundle"),
 	};
 }
 
@@ -94,6 +99,7 @@ export function createHandlersReturning(result: AppError): AnchormapCommandHandl
 		diff: () => result,
 		explain: () => result,
 		report: () => result,
+		bundle: () => result,
 	};
 }
 

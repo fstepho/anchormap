@@ -62,6 +62,23 @@ test("parses supported SaaS-ready artifact command forms before dispatch", () =>
 				"report:--scan scan.json --check check.json --diff diff.json --format markdown:scan=scan.json:check=check.json:diff=diff.json:format=markdown",
 			expectedStdout: "report\n",
 		},
+		{
+			argv: [
+				"bundle",
+				"--scan",
+				"./artifacts/scan.json",
+				"--check",
+				"check.json",
+				"--diff",
+				"diff.json",
+				"--metadata",
+				"metadata.json",
+				"--json",
+			],
+			expectedCall:
+				"bundle:--scan ./artifacts/scan.json --check check.json --diff diff.json --metadata metadata.json --json:scan=artifacts/scan.json:check=check.json:diff=diff.json:metadata=metadata.json:json=true",
+			expectedStdout: "{}\n",
+		},
 	];
 
 	for (const { argv, expectedCall, expectedStdout } of cases) {
@@ -108,6 +125,22 @@ test("enforces stdout and stderr semantics for artifact machine-output successes
 			handler: { report: () => commandSuccess({ stdout: "# Report" }) },
 			expectedMessage: /report --format markdown success stdout missing final newline/,
 		},
+		{
+			argv: [
+				"bundle",
+				"--scan",
+				"scan.json",
+				"--check",
+				"check.json",
+				"--diff",
+				"diff.json",
+				"--metadata",
+				"metadata.json",
+				"--json",
+			],
+			handler: { bundle: () => commandSuccess({ stdout: "{}\nextra\n" }) },
+			expectedMessage: /bundle --json success stdout is not a single physical line/,
+		},
 	];
 
 	for (const { argv, handler, expectedMessage } of cases) {
@@ -138,6 +171,43 @@ test("rejects unsupported artifact command options and combinations before dispa
 		["report", "--scan", "scan.json", "--format", "html"],
 		["report", "--format", "markdown"],
 		["report", "--scan", "scan.json", "--check", "", "--format", "markdown"],
+		["bundle", "--scan", "scan.json", "--check", "check.json", "--diff", "diff.json", "--json"],
+		[
+			"bundle",
+			"--scan",
+			"scan.json",
+			"--check",
+			"check.json",
+			"--diff",
+			"diff.json",
+			"--metadata",
+			"metadata.json",
+		],
+		[
+			"bundle",
+			"--scan",
+			"scan.json",
+			"--check",
+			"check.json",
+			"--diff",
+			"diff.json",
+			"--metadata",
+			"metadata.json",
+			"--json",
+			"value",
+		],
+		[
+			"bundle",
+			"--scan",
+			"scan.json",
+			"--check",
+			"",
+			"--diff",
+			"diff.json",
+			"--metadata",
+			"metadata.json",
+			"--json",
+		],
 	];
 
 	for (const argv of cases) {
@@ -261,6 +331,93 @@ test("report rejects invalid optional check and diff artifacts with empty stdout
 		assert.equal(diff.exitCode, 4);
 		assert.equal(diff.stdout, "");
 		assert.notEqual(diff.stderr, "");
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("bundle artifact mode renders explicit artifacts, metadata, and canonical hashes", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), minimalScanArtifactJson());
+		writeFileSync(join(cwd, "artifacts", "check.json"), minimalPolicyResultJson());
+		writeFileSync(join(cwd, "artifacts", "diff.json"), minimalTraceabilityDiffJson());
+		writeFileSync(join(cwd, "artifacts", "metadata.json"), bundleMetadataJson());
+
+		const result = runCommand(cwd, [
+			"bundle",
+			"--scan",
+			"artifacts/scan.json",
+			"--check",
+			"artifacts/check.json",
+			"--diff",
+			"artifacts/diff.json",
+			"--metadata",
+			"artifacts/metadata.json",
+			"--json",
+		]);
+
+		assert.equal(result.exitCode, 0);
+		assert.equal(result.stderr, "");
+		assert.match(
+			result.stdout,
+			/^{"schema_version":1,"tool":{"name":"anchormap","version":"1\.2\.1"}/,
+		);
+		assert.match(result.stdout, /"metadata":{"provider":"github","repository":"owner\/repo"/);
+		assert.match(result.stdout, /"artifacts":{"scan":{"schema_version":4/);
+		assert.match(result.stdout, /"scan_sha256":"[0-9a-f]{64}"/);
+		assert.equal(result.stdout.endsWith("\n"), true);
+	} finally {
+		rmSync(cwd, { recursive: true, force: true });
+	}
+});
+
+test("bundle rejects invalid metadata or artifacts with empty stdout", () => {
+	const cwd = createTempRepo();
+	try {
+		mkdirSync(join(cwd, "artifacts"));
+		writeFileSync(join(cwd, "artifacts", "scan.json"), minimalScanArtifactJson());
+		writeFileSync(join(cwd, "artifacts", "check.json"), minimalPolicyResultJson());
+		writeFileSync(join(cwd, "artifacts", "diff.json"), minimalTraceabilityDiffJson());
+		writeFileSync(join(cwd, "artifacts", "metadata.json"), bundleMetadataJson());
+		writeFileSync(join(cwd, "artifacts", "invalid-metadata.json"), '{"provider":"github"}\n');
+		writeFileSync(
+			join(cwd, "artifacts", "invalid-check.json"),
+			'{"schema_version":1,"extra":true}\n',
+		);
+
+		for (const argv of [
+			[
+				"bundle",
+				"--scan",
+				"artifacts/scan.json",
+				"--check",
+				"artifacts/check.json",
+				"--diff",
+				"artifacts/diff.json",
+				"--metadata",
+				"artifacts/invalid-metadata.json",
+				"--json",
+			],
+			[
+				"bundle",
+				"--scan",
+				"artifacts/scan.json",
+				"--check",
+				"artifacts/invalid-check.json",
+				"--diff",
+				"artifacts/diff.json",
+				"--metadata",
+				"artifacts/metadata.json",
+				"--json",
+			],
+		] as const) {
+			const result = runCommand(cwd, argv);
+			assert.equal(result.exitCode, 4, argv.join(" "));
+			assert.equal(result.stdout, "", argv.join(" "));
+			assert.notEqual(result.stderr, "", argv.join(" "));
+		}
 	} finally {
 		rmSync(cwd, { recursive: true, force: true });
 	}
@@ -603,4 +760,42 @@ function explainScanArtifactJson(schemaVersion: 4 | 5 = 4): string {
 		},
 	};
 	return `${JSON.stringify(scan)}\n`;
+}
+
+function minimalPolicyResultJson(): string {
+	return [
+		'{"schema_version":1,"decision":"pass","source_scan_schema_version":4,"analysis_health":"clean",',
+		'"violations":[],"summary":{"observed_anchor_count":0,"usable_mapping_count":0,',
+		'"product_file_count":0,"covered_product_file_count":0,"uncovered_product_file_count":0,',
+		'"covered_product_file_percent":100,"untraced_product_file_count":0}}\n',
+	].join("");
+}
+
+function minimalTraceabilityDiffJson(): string {
+	return [
+		'{"schema_version":1,"base_scan_schema_version":4,"head_scan_schema_version":4,',
+		'"comparability":"same_scope","analysis_health_change":{"from":"clean","to":"clean"},',
+		'"anchors":{"added":[],"removed":[],"mapping_state_changed":[]},',
+		'"mappings":{"added":[],"removed":[],"state_changed":[]},',
+		'"files":{"added":[],"removed":[],"became_covered":[],"lost_coverage":[],',
+		'"covering_anchor_ids_changed":[],"supported_local_targets_changed":[]},',
+		'"findings":{"added":[],"removed":[]},"metrics_delta":{"product_file_count":0,',
+		'"stored_mapping_count":0,"usable_mapping_count":0,"observed_anchor_count":0,',
+		'"active_anchor_count":0,"draft_anchor_count":0,"covered_product_file_count":0,',
+		'"uncovered_product_file_count":0,"directly_seeded_product_file_count":0,',
+		'"single_cover_product_file_count":0,"multi_cover_product_file_count":0}}\n',
+	].join("");
+}
+
+function bundleMetadataJson(): string {
+	return [
+		"{",
+		'"provider":"github",',
+		'"repository":"owner/repo",',
+		'"commit":"abc123",',
+		'"branch":"main",',
+		'"pull_request":7,',
+		'"run_url":"https://ci.example/run/7"',
+		"}\n",
+	].join("");
 }

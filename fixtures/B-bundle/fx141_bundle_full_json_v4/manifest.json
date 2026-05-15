@@ -1,0 +1,32 @@
+{
+	"id": "fx141_bundle_full_json_v4",
+	"family": "B-bundle",
+	"purpose": "bundle renders an ArtifactBundle from explicit scan v4, check, diff, and metadata artifacts.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"bundle",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--diff",
+		"artifacts/diff.json",
+		"--metadata",
+		"artifacts/metadata.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["bundle", "json", "golden", "artifact_io", "metadata"],
+	"groups": ["m20"]
+}

@@ -50,6 +50,13 @@ const C13_ARTIFACT_COMMAND_FIXTURES = requireFixtureTargets([
 	"fx135_report_scan_markdown",
 	"fx140_report_invalid_artifact",
 ]);
+const C14_BUNDLE_FIXTURES = requireFixtureTargets([
+	"fx141_bundle_full_json_v4",
+	"fx142_bundle_full_json_v5",
+	"fx143_bundle_invalid_metadata",
+	"fx144_bundle_invalid_artifact",
+	"fx145_bundle_no_implicit_ci_git",
+]);
 
 interface RunResult {
 	readonly fixture: LoadedFixtureManifest;
@@ -528,6 +535,80 @@ test("C13 artifact-command isolation: artifact commands ignore implicit state an
 						assertNoFilesystemDiff(
 							diffFilesystemSnapshots(cachePreRunSnapshot, cachePostRunSnapshot),
 							`C13 ${target.fixtureId} must not create or modify persistent cache artifacts`,
+						);
+					} finally {
+						isolatedRun.sandbox.dispose();
+					}
+				} finally {
+					cacheSandbox.dispose();
+				}
+			} finally {
+				baselineRun.sandbox.dispose();
+			}
+		}
+	} finally {
+		isolationPreload.dispose();
+		networkBlockPreload.dispose();
+		datePreload.dispose();
+	}
+});
+
+test("C14 bundle isolation: bundle ignores implicit Git, CI, environment, network, cache, and clock state", async () => {
+	const datePreload = createFixedDatePreload("2041-02-03T04:05:06.070Z");
+	const networkBlockPreload = createNetworkBlockPreload();
+	const isolationPreload = createCompositePreload("bundle-isolation", [
+		datePreload.path,
+		networkBlockPreload.path,
+	]);
+	try {
+		await assertNetworkBlockPreloadCoversCommonNodeApis(networkBlockPreload);
+
+		for (const target of C14_BUNDLE_FIXTURES) {
+			const baselineRun = await runFixtureTarget(target);
+			try {
+				const cacheSandbox = createCacheSandbox();
+				try {
+					const cachePreRunSnapshot = captureFilesystemSnapshot(cacheSandbox.rootDir);
+					networkBlockPreload.clearAttempts();
+					const isolatedRun = await runFixtureTarget(target, {
+						env: {
+							...cacheSandbox.env,
+							ANCHORMAP_C11_NETWORK_ATTEMPT_LOG: networkBlockPreload.attemptLogPath,
+							ANCHORMAP_NON_CONTRACT_PROBE: "bundle-changed",
+							CI: "true",
+							GITHUB_ACTIONS: "true",
+							GITHUB_REF_NAME: "implicit-branch",
+							GITHUB_SHA: "implicit-sha",
+							GITHUB_RUN_ID: "999999",
+							LANG: "C",
+							LC_ALL: "C",
+							TZ: "Pacific/Kiritimati",
+						},
+						preload: isolationPreload,
+						setupSandbox: (sandbox) => {
+							writeValidGitMetadata(sandbox);
+							writeFileSync(
+								resolve(sandbox.sandboxDir, "unprovided-bundle-noise.log"),
+								"implicit CI log not supplied as an artifact\n",
+							);
+						},
+					});
+					try {
+						assertNoNetworkAttempts(
+							networkBlockPreload,
+							`C14 ${target.fixtureId} blocked network run must not attempt network APIs`,
+						);
+						assertC13TechnicalFailureStdoutContract(baselineRun);
+						assertC13TechnicalFailureStdoutContract(isolatedRun);
+						assertEquivalentFixtureRunBytes(
+							baselineRun,
+							isolatedRun,
+							`C14 ${target.fixtureId} implicit state must not change bundle output bytes`,
+						);
+						const cachePostRunSnapshot = captureFilesystemSnapshot(cacheSandbox.rootDir);
+						assertNoFilesystemDiff(
+							diffFilesystemSnapshots(cachePreRunSnapshot, cachePostRunSnapshot),
+							`C14 ${target.fixtureId} must not create or modify persistent cache artifacts`,
 						);
 					} finally {
 						isolatedRun.sandbox.dispose();

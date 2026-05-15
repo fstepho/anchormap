@@ -41,6 +41,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/cli/command-result.js",
 	"dist/cli/commands.js",
 	"dist/domain/anchor-id.js",
+	"dist/domain/bundle-model.js",
 	"dist/domain/canonical-order.js",
 	"dist/domain/diff-engine.js",
 	"dist/domain/explain-engine.js",
@@ -57,6 +58,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/infra/artifact-scan-source-validation.js",
 	"dist/infra/config-io.js",
 	"dist/infra/config-yaml-render.js",
+	"dist/infra/metadata-io.js",
 	"dist/infra/product-files.js",
 	"dist/infra/policy-io.js",
 	"dist/infra/repo-fs.js",
@@ -64,6 +66,7 @@ const adr0009RequiredPackageFiles = [
 	"dist/infra/spec-index.js",
 	"dist/infra/ts-graph.js",
 	"dist/infra/tsconfig-io.js",
+	"dist/package-version.js",
 	"dist/render/render-markdown-report.js",
 	"dist/render/render-json.js",
 ];

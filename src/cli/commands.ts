@@ -19,15 +19,18 @@ import {
 	renderScanResultJson,
 } from "../render/render-json";
 import {
+	runBundleCommand,
 	runDiffCommand,
 	runExplainCommand,
 	runReportCommand,
+	validateRawBundleArgs,
 	validateRawCheckArgs,
 	validateRawDiffArgs,
 	validateRawExplainArgs,
 	validateRawReportArgs,
 } from "./artifact-commands";
 import {
+	type ParsedBundleArgs,
 	type ParsedCheckArgs,
 	type ParsedDiffArgs,
 	type ParsedExplainArgs,
@@ -35,6 +38,7 @@ import {
 	type ParsedMapArgs,
 	type ParsedReportArgs,
 	type ParsedScaffoldArgs,
+	parseBundleArgs,
 	parseCheckArgs,
 	parseDiffArgs,
 	parseExplainArgs,
@@ -79,8 +83,10 @@ export type AnchormapCommandName =
 	| "check"
 	| "diff"
 	| "explain"
-	| "report";
+	| "report"
+	| "bundle";
 export type {
+	ParsedBundleArgs,
 	ParsedCheckArgs,
 	ParsedDiffArgs,
 	ParsedExplainArgs,
@@ -115,6 +121,7 @@ export interface AnchormapCommandContext {
 	diffArgs?: ParsedDiffArgs;
 	explainArgs?: ParsedExplainArgs;
 	reportArgs?: ParsedReportArgs;
+	bundleArgs?: ParsedBundleArgs;
 	scanMode?: ScanOutputMode;
 }
 
@@ -138,6 +145,7 @@ const SUPPORTED_COMMANDS = new Set<AnchormapCommandName>([
 	"diff",
 	"explain",
 	"report",
+	"bundle",
 ]);
 
 const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
@@ -149,6 +157,7 @@ const DEFAULT_HANDLERS: AnchormapCommandHandlers = {
 	diff: runDiffCommand,
 	explain: runExplainCommand,
 	report: runReportCommand,
+	bundle: runBundleCommand,
 };
 
 export function runAnchormap(argv: readonly string[], options: AnchormapRunOptions = {}): number {
@@ -346,6 +355,28 @@ export function runAnchormap(argv: readonly string[], options: AnchormapRunOptio
 		);
 	}
 
+	if (command === "bundle") {
+		const parsedBundle = parseBundleArgs(args);
+		if (parsedBundle.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: parsedBundle.message }, stderr);
+		}
+		const validatedBundle = validateRawBundleArgs(parsedBundle.args);
+		if (validatedBundle.kind === "usage_error") {
+			return writeErrorDiagnostic({ kind: "UsageError", message: validatedBundle.message }, stderr);
+		}
+
+		return dispatchCommand(
+			{
+				args,
+				cwd,
+				stdout,
+				stderr,
+				bundleArgs: validatedBundle.args,
+			},
+			handlers.bundle,
+		);
+	}
+
 	throw new Error(`unhandled command ${command}`);
 }
 
@@ -417,6 +448,9 @@ function getMachineOutputContract(
 	}
 	if (context.reportArgs !== undefined) {
 		return { label: "report --format markdown", format: "markdown" };
+	}
+	if (context.bundleArgs?.json) {
+		return { label: "bundle --json", format: "json" };
 	}
 	return undefined;
 }

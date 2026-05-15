@@ -42,6 +42,14 @@ export interface ParsedReportArgs {
 	format: "markdown";
 }
 
+export interface ParsedBundleArgs {
+	scan: string;
+	check: string;
+	diff: string;
+	metadata: string;
+	json: true;
+}
+
 export type ParsedScanArgs =
 	| { kind: "ok"; mode: ScanOutputMode }
 	| { kind: "usage_error"; message: string };
@@ -72,6 +80,10 @@ export type ParsedExplainArgsResult =
 
 export type ParsedReportArgsResult =
 	| { kind: "ok"; args: ParsedReportArgs }
+	| { kind: "usage_error"; message: string };
+
+export type ParsedBundleArgsResult =
+	| { kind: "ok"; args: ParsedBundleArgs }
 	| { kind: "usage_error"; message: string };
 
 type ParsedOptionValue = { kind: "ok"; value: string } | { kind: "usage_error"; message: string };
@@ -572,6 +584,101 @@ export function parseReportArgs(args: readonly string[]): ParsedReportArgsResult
 			format,
 		},
 	};
+}
+
+export function parseBundleArgs(args: readonly string[]): ParsedBundleArgsResult {
+	let scan: string | undefined;
+	let check: string | undefined;
+	let diff: string | undefined;
+	let metadata: string | undefined;
+	let json = false;
+
+	for (let index = 0; index < args.length; ) {
+		const option = args[index];
+
+		switch (option) {
+			case "--scan": {
+				if (scan !== undefined) {
+					return { kind: "usage_error", message: "--scan may be provided at most once" };
+				}
+				const parsedValue = parseOptionValue(args, index, "--scan");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+				scan = parsedValue.value;
+				index += 2;
+				break;
+			}
+			case "--check": {
+				if (check !== undefined) {
+					return { kind: "usage_error", message: "--check may be provided at most once" };
+				}
+				const parsedValue = parseOptionValue(args, index, "--check");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+				check = parsedValue.value;
+				index += 2;
+				break;
+			}
+			case "--diff": {
+				if (diff !== undefined) {
+					return { kind: "usage_error", message: "--diff may be provided at most once" };
+				}
+				const parsedValue = parseOptionValue(args, index, "--diff");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+				diff = parsedValue.value;
+				index += 2;
+				break;
+			}
+			case "--metadata": {
+				if (metadata !== undefined) {
+					return { kind: "usage_error", message: "--metadata may be provided at most once" };
+				}
+				const parsedValue = parseOptionValue(args, index, "--metadata");
+				if (parsedValue.kind === "usage_error") {
+					return parsedValue;
+				}
+				metadata = parsedValue.value;
+				index += 2;
+				break;
+			}
+			case "--json": {
+				if (json) {
+					return { kind: "usage_error", message: "--json may be provided at most once" };
+				}
+				const flagValue = rejectFlagValue(args, index, "--json");
+				if (flagValue.kind === "usage_error") {
+					return flagValue;
+				}
+				json = true;
+				index += 1;
+				break;
+			}
+			default:
+				return parseUnknownArgument(option);
+		}
+	}
+
+	if (scan === undefined) {
+		return { kind: "usage_error", message: "--scan is required" };
+	}
+	if (check === undefined) {
+		return { kind: "usage_error", message: "--check is required" };
+	}
+	if (diff === undefined) {
+		return { kind: "usage_error", message: "--diff is required" };
+	}
+	if (metadata === undefined) {
+		return { kind: "usage_error", message: "--metadata is required" };
+	}
+	if (!json) {
+		return { kind: "usage_error", message: "--json is required" };
+	}
+
+	return { kind: "ok", args: { scan, check, diff, metadata, json: true } };
 }
 
 function parseOptionValue(

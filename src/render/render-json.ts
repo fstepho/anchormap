@@ -1,3 +1,4 @@
+import type { ArtifactBundle, BundleMetadata } from "../domain/bundle-model";
 import type {
 	CoveringAnchorIdsChange,
 	MappingStateChange,
@@ -47,6 +48,10 @@ export function renderTraceabilityDiffHuman(result: TraceabilityDiff): string {
 
 export function renderExplainResultJson(result: ExplainResult): string {
 	return `${renderExplainResultObject(result)}\n`;
+}
+
+export function renderArtifactBundleJson(result: ArtifactBundle): string {
+	return `${renderArtifactBundleObject(result)}\n`;
 }
 
 export function renderExplainResultHuman(result: ExplainResult): string {
@@ -110,6 +115,50 @@ function renderExplainResultObject(result: ExplainResult): string {
 		["file", result.file === null ? "null" : renderExplainFile(result.file)],
 		["coverage", renderExplainCoverage(result.coverage)],
 		["findings", renderArray(result.findings, renderFinding)],
+	]);
+}
+
+function renderArtifactBundleObject(result: ArtifactBundle): string {
+	return renderObject([
+		["schema_version", renderNumber(result.schema_version)],
+		["tool", renderBundleTool(result.tool)],
+		["metadata", renderBundleMetadata(result.metadata)],
+		["artifacts", renderBundleArtifacts(result.artifacts)],
+		["hashes", renderBundleHashes(result.hashes)],
+	]);
+}
+
+function renderBundleTool(tool: ArtifactBundle["tool"]): string {
+	return renderObject([
+		["name", renderString(tool.name)],
+		["version", renderString(tool.version)],
+	]);
+}
+
+function renderBundleMetadata(metadata: BundleMetadata): string {
+	return renderObject([
+		["provider", renderString(metadata.provider)],
+		["repository", renderNullableString(metadata.repository)],
+		["commit", renderNullableString(metadata.commit)],
+		["branch", renderNullableString(metadata.branch)],
+		["pull_request", renderNullableNumber(metadata.pull_request)],
+		["run_url", renderNullableString(metadata.run_url)],
+	]);
+}
+
+function renderBundleArtifacts(artifacts: ArtifactBundle["artifacts"]): string {
+	return renderObject([
+		["scan", renderScanResultObject(artifacts.scan)],
+		["check", renderPolicyResultObject(artifacts.check)],
+		["diff", renderTraceabilityDiffObject(artifacts.diff)],
+	]);
+}
+
+function renderBundleHashes(hashes: ArtifactBundle["hashes"]): string {
+	return renderObject([
+		["scan_sha256", renderString(hashes.scan_sha256)],
+		["check_sha256", renderString(hashes.check_sha256)],
+		["diff_sha256", renderString(hashes.diff_sha256)],
 	]);
 }
 
@@ -478,6 +527,10 @@ function renderStringArray(values: readonly string[]): string {
 
 function renderNullableString(value: string | null): string {
 	return value === null ? "null" : renderString(value);
+}
+
+function renderNullableNumber(value: number | null): string {
+	return value === null ? "null" : renderNumber(value);
 }
 
 function renderArray<Value>(

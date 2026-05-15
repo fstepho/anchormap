@@ -35,6 +35,7 @@ const SUPPORTED_SUBCOMMANDS = new Set([
 	"diff",
 	"explain",
 	"report",
+	"bundle",
 ]);
 const MISSING_SUBCOMMAND = "<missing>";
 const UNSUPPORTED_WRAPPER_LAUNCHERS = new Set([
@@ -332,7 +333,8 @@ function validateManifestSemantics(manifest: FixtureManifest, context: Validatio
 		subcommand === "check" ||
 		subcommand === "diff" ||
 		subcommand === "explain" ||
-		subcommand === "report"
+		subcommand === "report" ||
+		subcommand === "bundle"
 	) {
 		validateArtifactCommandSemantics(manifest, subcommand, context);
 	}
@@ -453,7 +455,7 @@ function validateHumanWriteCommandSemantics(
 
 function validateArtifactCommandSemantics(
 	manifest: FixtureManifest,
-	subcommand: "check" | "diff" | "explain" | "report",
+	subcommand: "check" | "diff" | "explain" | "report" | "bundle",
 	context: ValidationContext,
 ): void {
 	if (manifest.filesystem.kind !== "no_mutation") {
@@ -502,7 +504,7 @@ function validateArtifactCommandSemantics(
 
 function hasArtifactMachineOutput(
 	command: string[],
-	subcommand: "check" | "diff" | "explain" | "report",
+	subcommand: "check" | "diff" | "explain" | "report" | "bundle",
 ): boolean {
 	const firstOptionIndex = command[0] === "node" ? 3 : 2;
 	const args = command.slice(firstOptionIndex);
@@ -584,6 +586,7 @@ function detectSubcommand(
 	| "diff"
 	| "explain"
 	| "report"
+	| "bundle"
 	| typeof MISSING_SUBCOMMAND
 	| undefined {
 	if (command[0] === "node") {
@@ -615,7 +618,8 @@ function detectSubcommand(
 			| "check"
 			| "diff"
 			| "explain"
-			| "report";
+			| "report"
+			| "bundle";
 	}
 
 	if (UNSUPPORTED_WRAPPER_LAUNCHERS.has(command[0])) {
@@ -639,7 +643,8 @@ function detectSubcommand(
 		| "check"
 		| "diff"
 		| "explain"
-		| "report";
+		| "report"
+		| "bundle";
 }
 
 function requireStdoutOracle(value: unknown, context: ValidationContext): StdoutOracle {

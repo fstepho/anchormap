@@ -1,0 +1,1 @@
+{"provider":"other","repository":"explicit/repo-from-metadata","commit":"explicit-not-git-head","branch":"explicit-metadata-branch","pull_request":145,"run_url":"https://ci.example/explicit-secret-token-value"}

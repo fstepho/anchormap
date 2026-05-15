@@ -1,0 +1,32 @@
+{
+	"id": "fx145_bundle_no_implicit_ci_git",
+	"family": "B-bundle",
+	"purpose": "bundle reflects only explicit metadata even when Git or CI state differs.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"bundle",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--diff",
+		"artifacts/diff.json",
+		"--metadata",
+		"artifacts/metadata.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 0,
+	"stdout": {
+		"kind": "golden"
+	},
+	"stderr": {
+		"kind": "empty"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["bundle", "json", "golden", "artifact_io", "metadata", "isolation"],
+	"groups": ["m20"]
+}

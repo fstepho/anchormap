@@ -1,0 +1,32 @@
+{
+	"id": "fx144_bundle_invalid_artifact",
+	"family": "B-bundle",
+	"purpose": "bundle rejects unsupported scan, check, or diff artifacts without partial JSON output.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"bundle",
+		"--scan",
+		"artifacts/invalid-scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--diff",
+		"artifacts/diff.json",
+		"--metadata",
+		"artifacts/metadata.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["bundle", "json", "artifact_io", "invalid"],
+	"groups": ["m20"]
+}

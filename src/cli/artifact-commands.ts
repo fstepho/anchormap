@@ -1,4 +1,5 @@
 import { type AnchorId, validateAnchorId } from "../domain/anchor-id";
+import { buildArtifactBundle } from "../domain/bundle-model";
 import { diffScanResults } from "../domain/diff-engine";
 import { explainScanSubject } from "../domain/explain-engine";
 import type { RepoPath } from "../domain/repo-path";
@@ -8,15 +9,21 @@ import {
 	loadScanArtifact,
 	loadTraceabilityDiffArtifact,
 } from "../infra/artifact-io";
+import { loadBundleMetadata } from "../infra/metadata-io";
+import { loadAnchormapPackageVersion } from "../package-version";
 import {
+	renderArtifactBundleJson,
 	renderCanonicalString,
 	renderExplainResultHuman,
 	renderExplainResultJson,
+	renderPolicyResultJson,
+	renderScanResultJson,
 	renderTraceabilityDiffHuman,
 	renderTraceabilityDiffJson,
 } from "../render/render-json";
 import { renderMarkdownReport } from "../render/render-markdown-report";
 import type {
+	ParsedBundleArgs,
 	ParsedCheckArgs,
 	ParsedDiffArgs,
 	ParsedExplainArgs,
@@ -30,6 +37,7 @@ interface ArtifactCommandContext {
 	readonly diffArgs?: ParsedDiffArgs;
 	readonly explainArgs?: ParsedExplainArgs;
 	readonly reportArgs?: ParsedReportArgs;
+	readonly bundleArgs?: ParsedBundleArgs;
 }
 
 export function validateRawCheckArgs(
@@ -128,6 +136,38 @@ export function validateRawReportArgs(
 	};
 }
 
+export function validateRawBundleArgs(
+	args: ParsedBundleArgs,
+): { kind: "ok"; args: ParsedBundleArgs } | { kind: "usage_error"; message: string } {
+	const scan = normalizeRequiredCliPath(args.scan, "--scan");
+	if (scan.kind === "usage_error") {
+		return scan;
+	}
+	const check = normalizeRequiredCliPath(args.check, "--check");
+	if (check.kind === "usage_error") {
+		return check;
+	}
+	const diff = normalizeRequiredCliPath(args.diff, "--diff");
+	if (diff.kind === "usage_error") {
+		return diff;
+	}
+	const metadata = normalizeRequiredCliPath(args.metadata, "--metadata");
+	if (metadata.kind === "usage_error") {
+		return metadata;
+	}
+
+	return {
+		kind: "ok",
+		args: {
+			scan: scan.path,
+			check: check.path,
+			diff: diff.path,
+			metadata: metadata.path,
+			json: true,
+		},
+	};
+}
+
 export function runDiffCommand(context: ArtifactCommandContext): AnchormapCommandResult {
 	const args = context.diffArgs;
 	if (args === undefined) {
@@ -210,6 +250,51 @@ export function runReportCommand(context: ArtifactCommandContext): AnchormapComm
 	return {
 		kind: "success",
 		stdout: renderMarkdownReport(model),
+	};
+}
+
+export function runBundleCommand(context: ArtifactCommandContext): AnchormapCommandResult {
+	const args = context.bundleArgs;
+	if (args === undefined) {
+		return internalError("bundle arguments were not parsed");
+	}
+
+	const scan = loadScanArtifact(args.scan, { cwd: context.cwd, optionName: "--scan" });
+	if (scan.kind === "error") {
+		return scan.error;
+	}
+	const check = loadPolicyResultArtifact(args.check, { cwd: context.cwd, optionName: "--check" });
+	if (check.kind === "error") {
+		return check.error;
+	}
+	const diff = loadTraceabilityDiffArtifact(args.diff, { cwd: context.cwd, optionName: "--diff" });
+	if (diff.kind === "error") {
+		return diff.error;
+	}
+	const metadata = loadBundleMetadata(args.metadata, {
+		cwd: context.cwd,
+		optionName: "--metadata",
+	});
+	if (metadata.kind === "error") {
+		return metadata.error;
+	}
+
+	const bundle = buildArtifactBundle({
+		scan: scan.scan,
+		check: check.policyResult,
+		diff: diff.diff,
+		metadata: metadata.metadata,
+		toolVersion: loadAnchormapPackageVersion(),
+		canonicalArtifactBytes: {
+			scan: renderScanResultJson(scan.scan),
+			check: renderPolicyResultJson(check.policyResult),
+			diff: renderTraceabilityDiffJson(diff.diff),
+		},
+	});
+
+	return {
+		kind: "success",
+		stdout: renderArtifactBundleJson(bundle),
 	};
 }
 

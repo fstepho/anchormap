@@ -1,0 +1,32 @@
+{
+	"id": "fx143_bundle_invalid_metadata",
+	"family": "B-bundle",
+	"purpose": "bundle rejects invalid closed metadata without partial JSON output.",
+	"command": [
+		"node",
+		"dist/anchormap.js",
+		"bundle",
+		"--scan",
+		"artifacts/scan.json",
+		"--check",
+		"artifacts/check.json",
+		"--diff",
+		"artifacts/diff.json",
+		"--metadata",
+		"artifacts/invalid-metadata.json",
+		"--json"
+	],
+	"cwd": ".",
+	"exit_code": 4,
+	"stdout": {
+		"kind": "empty"
+	},
+	"stderr": {
+		"kind": "ignored"
+	},
+	"filesystem": {
+		"kind": "no_mutation"
+	},
+	"tags": ["bundle", "json", "artifact_io", "metadata", "invalid"],
+	"groups": ["m20"]
+}
