@@ -8,6 +8,17 @@ Les labels `GHA-1` à `GHA-5` ci-dessous sont des labels de plan techniques prop
 
 Les labels `PREVIEW-1` à `PREVIEW-3` désignent des activités de validation produit et design partners. Ils peuvent produire de l'état GitHub hors repo — PRs démo, labels, feedback issues — mais ne deviennent des tâches `docs/tasks.md` que pour les artefacts documentaires explicitement ajoutés au repo principal.
 
+## État de traitement
+
+Ce plan est réconcilié avec l'état livré après M20 :
+
+- `docs/brief.md` §6.10 autorise déjà la surface locale CI/PR par artefacts CLI ;
+- `docs/brief.md` §13 distingue déjà `anchormap.yaml` comme seule persistance mutable possédée par AnchorMap des policies et artefacts explicites lus seulement ;
+- `ADR-0019` à `ADR-0026` couvrent déjà la surface CLI `check`, `diff`, `explain`, `report`, `bundle`, scan v5, JUnit et SARIF ;
+- `docs/contract.md`, `docs/design.md` et `docs/evals.md` définissent déjà les comportements CLI correspondants.
+
+Conséquence : ce document ne doit pas rouvrir le contrat CLI déjà accepté. Les décisions restantes portent sur la couche d'orchestration GitHub Action, la documentation self-serve, les templates d'issues, le repo démo et le programme preview. Toute tâche exécutable dans le repo principal devra être ajoutée explicitement à `docs/tasks.md`; toute décision structurante de l'action devra être portée par une ADR dédiée ou par une ADR existante explicitement vérifiée comme suffisante.
+
 Le principe : AnchorMap reste un CLI local-first ; l’action GitHub ne fait qu’orchestrer les commandes déjà prévues : `scan`, `check`, `diff`, `report`, `bundle`. Le README documente déjà ces commandes comme workflow local CI/PR : elles produisent les artefacts nécessaires, et `diff`, `explain`, `report` et `bundle` sont artifact-only, sans lecture de Git, CI, réseau, caches ou variables d’environnement comme vérité produit. Le package expose aussi déjà les modules `diff-engine`, `policy-engine`, `explain-engine`, `render-markdown-report`, `render-junit-report`, `render-sarif-report` et `bundle-model`, donc le terrain technique est bon.
 
 # Objectif
@@ -66,7 +77,7 @@ Phase 5 — décision SaaS-lite ou non
 
 ## Prérequis d’autorité
 
-Les labels `GHA-N` ne deviennent exécutables qu’après vérification de conformité et adoption des ADR applicables listées ci-dessous. Tant qu’ils ne sont pas adoptés, aucune ligne du backlog n’est imputable à `docs/tasks.md` et aucune gate de `docs/evals.md` ne peut être ouverte pour ces milestones.
+Les labels `GHA-N` ne deviennent exécutables qu’après vérification de conformité et adoption ou vérification explicite des autorités applicables listées ci-dessous. Tant qu’ils ne sont pas adoptés ou rattachés à une autorité acceptée, aucune ligne du backlog n’est imputable à `docs/tasks.md` et aucune gate de `docs/evals.md` ne peut être ouverte pour ces milestones.
 
 ### Conformité à `docs/brief.md`
 
@@ -86,25 +97,27 @@ La GitHub Action peut lire le contexte GitHub uniquement comme contexte d'exécu
 
 `docs/brief.md` §6.2 reste le garde-fou OUT : un amendement à `docs/brief.md` devient nécessaire seulement si le plan introduit une intégration serveur, un upload SaaS, une GitHub App complète, une inférence implicite depuis Git/CI comme vérité produit, ou un comportement write-by-default dans les PRs.
 
-### ADR à créer ou vérifier
+### Autorités à créer ou vérifier
 
-| Roadmap | ADR proposée | Portée principale |
+| Roadmap | Autorité CLI déjà disponible | Décision restante côté Action / preview |
 | --- | --- | --- |
-| GHA-1 | GitHub Action composite architecture and CLI delegation | `action.yml` composite, script shell, inputs/outputs, forwarding contrôlé de l’exit code `5` |
-| GHA-2 | PR report format and job summary strategy | Markdown report structure, job summary vs artifact, absence de commentaire PR par défaut |
-| GHA-3 | Baseline scan strategy without Git dependency | mode simple `scan+check+report` vs mode baseline explicite fourni |
-| GHA-4 | PR comment opt-in permissions model | read-only default, `pull-requests: write` opt-in, anti-spam update-not-create |
-| GHA-5 | SARIF/JUnit and workflow artifact integration | `actions/upload-artifact`, JUnit/SARIF artifacts, restrictions fork PR et permissions |
+| GHA-1 | `ADR-0019`, `ADR-0020`, `ADR-0021`, `ADR-0023`; `docs/contract.md` §§9.5, 9.6, 9.8 | ADR dédiée ou vérification ADR explicite pour `action.yml` composite, script shell, inputs/outputs, forwarding contrôlé de l’exit code `5`, upload d'artefacts workflow et job summary |
+| GHA-2 | `ADR-0023`; `docs/contract.md` §13.13 | ADR dédiée ou vérification ADR explicite pour affichage GitHub job summary + artifact sans altérer le Markdown canonique |
+| GHA-3 | `ADR-0021`; règle commune des commandes d'artefacts dans `docs/contract.md` §9 | ADR dédiée ou vérification ADR explicite pour mode baseline fourni par l'utilisateur et refus de récupération automatique d'un artifact `main` |
+| GHA-4 | aucune autorité CLI supplémentaire requise si le rapport reste l'artefact Markdown canonique | ADR dédiée recommandée pour modèle de permissions opt-in, `pull-requests: write`, update-not-create et restrictions fork PR |
+| GHA-5 | `ADR-0024`, `ADR-0025`, `ADR-0026`; `docs/contract.md` §§9.8, 9.9, 13.14, 13.15, 13.16 | ADR dédiée ou vérification ADR explicite pour intégration GitHub `actions/upload-artifact`, exposition optionnelle JUnit/SARIF et absence d'upload SARIF implicite |
+
+Les décisions CLI ne doivent pas être dupliquées dans une ADR GitHub Action. Une ADR Action doit seulement décider l'orchestration, les permissions, les artefacts GitHub Actions, les inputs/outputs et les garanties de non-inférence propres au workflow. `docs/tasks.md` peut ensuite planifier l'exécution de ces décisions, mais ne peut pas les porter comme autorité de remplacement.
 
 ### Ordre d’adoption recommandé
 
-1. Vérifier la conformité à `docs/brief.md` et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée.
-2. ADR GHA-1 acceptée → ouvre GHA-1.
-3. ADR GHA-2 acceptée → fixe le format du rapport PR et ouvre GHA-2.
-4. ADR GHA-3 acceptée → fixe la stratégie baseline et ouvre GHA-3.
+1. Vérifier la conformité à `docs/brief.md` §6.10 et §13 et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée.
+2. ADR GHA-1 acceptée, ou vérification écrite qu'une ADR existante couvre toute la décision structurante, puis tâche de planification traçable → ouvre l'implémentation de l'action composite.
+3. Vérification de `ADR-0023` + décision d'affichage GitHub job summary → ouvre GHA-2.
+4. Vérification de `ADR-0021` + décision baseline explicite → ouvre GHA-3.
 5. ADR GHA-4 et GHA-5 après validation de GHA-1 et GHA-2.
 
-Tant que les ADR applicables ne sont pas acceptées, les phases GHA-1 à GHA-5 et PREVIEW-1 à PREVIEW-3 restent strictement exploratoires.
+Tant que les autorités applicables ne sont pas acceptées ou vérifiées, les phases GHA-1 à GHA-5 et PREVIEW-1 à PREVIEW-3 restent strictement exploratoires.
 
 ---
 
@@ -225,7 +238,7 @@ Produire si possible :
 anchormap.diff.json
 ```
 
-Produire plus tard, dans GHA-5 ou dans une étape dédiée après stratégie metadata :
+Produire plus tard côté Action, dans GHA-5 ou dans une étape dédiée après stratégie metadata :
 
 ```text
 anchormap.junit.xml
@@ -233,13 +246,13 @@ anchormap.sarif.json
 anchormap.bundle.json
 ```
 
-Le README indique déjà les commandes de génération : `scan --json`, `check --json`, `diff --json`, `report --format markdown`, `report --format junit`, `report --format sarif`. `bundle` exige des artefacts `scan`, `check`, `diff` et un fichier `--metadata` explicite ; il n’est donc pas un artefact GHA-1 implicite.
+Le README et le contrat indiquent déjà les commandes de génération : `scan --json`, `check --json`, `diff --json`, `report --format markdown`, `report --format junit`, `report --format sarif` et `bundle --json`. `bundle` exige des artefacts `scan`, `check`, `diff` et un fichier `--metadata` explicite ; il n’est donc pas un artefact GHA-1 implicite.
 
 ## Bundle strategy
 
-`bundle` is not generated by GHA-1. The command requires explicit `--scan`, `--check`, `--diff`, and `--metadata` inputs. Because GHA-1 does not require a baseline diff and does not define a CI metadata boundary, generating a bundle in GHA-1 would be premature.
+`bundle` is not generated by GHA-1. The CLI command exists, but it requires explicit `--scan`, `--check`, `--diff`, and `--metadata` inputs. Because GHA-1 does not require a baseline diff and does not define an Action-level metadata input boundary, generating a bundle in GHA-1 would be premature.
 
-A future bundle capability may add:
+A future Action bundle capability may add:
 
 ```yaml
 with:
@@ -405,7 +418,7 @@ Decision: FAIL
 - Inspect lost coverage for "src/example.ts".
 ```
 
-GHA-2 doit utiliser le format produit par `anchormap report --format markdown`. Toute autre présentation est une évolution de contrat/evals ou un wrapper explicitement non contractuel, pas le rapport Markdown AnchorMap canonique.
+GHA-2 doit utiliser le format produit par `anchormap report --format markdown`. Le format canonique vit dans `docs/contract.md` §13.13 et les goldens associés. Toute autre présentation est une évolution de contrat/evals ou un wrapper explicitement non contractuel, pas le rapport Markdown AnchorMap canonique.
 
 ## Où afficher le rapport
 
@@ -1135,8 +1148,8 @@ Un repo trusted peut afficher AnchorMap directement dans la conversation PR.
 Livrables :
 
 ```text
-- génération SARIF ;
-- génération JUnit ;
+- génération SARIF via `anchormap report --format sarif` ;
+- génération JUnit via `anchormap report --format junit` ;
 - upload-artifact documenté ;
 - documentation CI ;
 - restrictions fork PR et permissions.
@@ -1145,7 +1158,7 @@ Livrables :
 Acceptation :
 
 ```text
-Les findings AnchorMap peuvent apparaître dans les surfaces CI natives.
+Les findings AnchorMap peuvent apparaître dans les surfaces CI natives sans upload implicite, sans lecture Git/CI comme vérité produit, et sans réouvrir les formats CLI déjà fixés par `ADR-0026`.
 ```
 
 ## PREVIEW-1 — Repo démo PR workflow
