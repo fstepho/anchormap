@@ -37,8 +37,8 @@
 - This section is the live execution cursor for the local task loop.
 - Update it on any explicit task-state transition in the local task loop, including task start (`implementing`), `needs_rework`, `blocked`, and task-level done (§19.1).
 - Current active task: None recorded.
-- Next executable product task: `T20.5 — Close CLI SaaS-ready 2 compatibility and isolation`
-- Last completed task: `T20.4 — Implement SARIF report format`
+- Next executable product task: None recorded.
+- Last completed task: `T20.5 — Close CLI SaaS-ready 2 compatibility and isolation`
 - Completed tasks recorded here:
   - `T0.0 — Bootstrap modern Node/npm/TypeScript CLI workspace and Git repo baseline for M1 harness`
   - `T0.0a — Install pinned Biome baseline for local formatting and linting`
@@ -162,6 +162,7 @@
   - `T20.1 — Implement `anchormap bundle``
   - `T20.3 — Implement JUnit report format`
   - `T20.4 — Implement SARIF report format`
+  - `T20.5 — Close CLI SaaS-ready 2 compatibility and isolation`
 - Blocked tasks: None recorded.
 - Open deviations: None recorded.
 

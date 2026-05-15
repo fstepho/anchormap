@@ -50,12 +50,23 @@ const C13_ARTIFACT_COMMAND_FIXTURES = requireFixtureTargets([
 	"fx135_report_scan_markdown",
 	"fx140_report_invalid_artifact",
 ]);
-const C14_BUNDLE_FIXTURES = requireFixtureTargets([
+const C14_SAAS_READY_2_ARTIFACT_FIXTURES = requireFixtureTargets([
 	"fx141_bundle_full_json_v4",
 	"fx142_bundle_full_json_v5",
 	"fx143_bundle_invalid_metadata",
 	"fx144_bundle_invalid_artifact",
 	"fx145_bundle_no_implicit_ci_git",
+	"fx149_existing_artifact_commands_accept_scan_v4_v5",
+	"fx150_artifact_commands_reject_unknown_scan_schema",
+	"fx151_report_junit_policy_pass",
+	"fx152_report_junit_policy_fail",
+	"fx153_report_junit_invalid_artifact",
+	"fx154_report_junit_rejects_extra_inputs",
+	"fx155_report_sarif_scan_v4_file_level",
+	"fx156_report_sarif_scan_v5_regions",
+	"fx157_report_sarif_with_check_and_diff",
+	"fx158_report_sarif_invalid_artifact",
+	"fx159_report_sarif_no_source_snippets",
 ]);
 
 interface RunResult {
@@ -553,7 +564,7 @@ test("C13 artifact-command isolation: artifact commands ignore implicit state an
 	}
 });
 
-test("C14 bundle isolation: bundle ignores implicit Git, CI, environment, network, cache, and clock state", async () => {
+test("C14 SaaS-ready 2 artifact isolation: commands ignore implicit Git, CI, environment, network, cache, and clock state", async () => {
 	const datePreload = createFixedDatePreload("2041-02-03T04:05:06.070Z");
 	const networkBlockPreload = createNetworkBlockPreload();
 	const isolationPreload = createCompositePreload("bundle-isolation", [
@@ -563,7 +574,7 @@ test("C14 bundle isolation: bundle ignores implicit Git, CI, environment, networ
 	try {
 		await assertNetworkBlockPreloadCoversCommonNodeApis(networkBlockPreload);
 
-		for (const target of C14_BUNDLE_FIXTURES) {
+		for (const target of C14_SAAS_READY_2_ARTIFACT_FIXTURES) {
 			const baselineRun = await runFixtureTarget(target);
 			try {
 				const cacheSandbox = createCacheSandbox();
@@ -603,7 +614,7 @@ test("C14 bundle isolation: bundle ignores implicit Git, CI, environment, networ
 						assertEquivalentFixtureRunBytes(
 							baselineRun,
 							isolatedRun,
-							`C14 ${target.fixtureId} implicit state must not change bundle output bytes`,
+							`C14 ${target.fixtureId} implicit state must not change artifact output bytes`,
 						);
 						const cachePostRunSnapshot = captureFilesystemSnapshot(cacheSandbox.rootDir);
 						assertNoFilesystemDiff(
