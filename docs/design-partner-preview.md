@@ -1,6 +1,6 @@
 # AnchorMap Design Partner Preview
 
-Status: self-serve preview guide for teams trying the future AnchorMap GitHub
+Status: self-serve preview guide for teams trying the AnchorMap GitHub
 Action and PR report workflow.
 
 AnchorMap helps TypeScript teams detect spec-to-code traceability drift in PRs.
@@ -34,7 +34,7 @@ The preview path is based on local AnchorMap CLI artifacts:
 - policy check output;
 - optional explicit scan-vs-scan diff output;
 - Markdown PR report output;
-- GitHub job summary and workflow artifacts when the future Action publishes
+- GitHub job summary and workflow artifacts when the preview Action publishes
   generated local files;
 - no AnchorMap SaaS upload and no source-code upload.
 
@@ -68,9 +68,13 @@ access is requested.
 1. Install AnchorMap locally for the repository under test.
 2. Add `anchormap.yaml` with explicit `product_root` and `spec_roots`.
 3. Add `anchormap.policy.yaml` using `docs/policy-examples.md`.
-4. Add an inert workflow derived from `docs/github-action.md` to your own
-   repository, replacing placeholder versions with pinned versions.
+4. Add a workflow derived from `docs/github-action.md` to your own repository,
+   replacing placeholder versions with pinned versions.
 5. Open a PR and inspect the job summary plus generated artifacts.
+
+For preview testing, use `fstepho/anchormap-action@task/gha-1-composite-action`
+with `anchormap-version: "1.2.2"`. The public demo scenario set is available
+in [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 
 Use `docs/troubleshooting-github-action.md` if setup fails before a report is
 produced. Use `docs/pr-report.md` when the report is produced but a section is
@@ -115,9 +119,9 @@ Useful feedback answers these questions:
 - Would multi-PR history or a dashboard be valuable?
 - Would a GitHub App be preferable to workflow artifacts?
 
-## Operational Follow-Up
+## Operational Labels
 
-Suggested labels for maintainers to create outside this repo-local patch:
+The preview tracker uses these labels in GitHub:
 
 ```text
 preview
@@ -132,6 +136,6 @@ blocked
 saas-signal
 ```
 
-The issue templates do not require those labels to exist. Label creation,
-partner recruiting, triage operations, and any external GitHub state remain
-manual operational follow-up.
+The issue templates do not require those labels to exist. Partner recruiting,
+triage operations, and any future SaaS decision remain manual operational
+follow-up.

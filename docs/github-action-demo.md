@@ -1,19 +1,22 @@
 # AnchorMap GitHub Action Demo
 
-Status: repo-local demo workflow documentation for the future AnchorMap GitHub
-Action and PR report path. This document describes the intended demo repository
-and demo PR story only.
+Status: repo-local demo workflow documentation for the AnchorMap GitHub Action
+preview and PR report path.
 
-The demo does not exist because of this repository-local task. Creating demo
-PRs, mutating `fstepho/anchormap-h3-demo`, attaching workflow runs, publishing
-screenshots, or publishing a runtime Action are operational follow-up outside
-this artifact.
+The public demo repository is
+[`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
+It uses the preview Action branch
+`fstepho/anchormap-action@task/gha-1-composite-action` and pins
+`anchormap@1.2.2`. The runtime Action remains draft-only: no tag, release,
+Marketplace publication, merge, PR comment automation, or SaaS upload is
+implied.
 
 ## Demo Repository Contents
 
-The intended demo repository should let a reader understand AnchorMap PR
-pass/fail behavior without a call, private source access, or hidden GitHub
-state. It should contain:
+The demo repository lets a reader understand AnchorMap PR pass/fail behavior
+without a call, private source access, or hidden GitHub state. Its preview
+workflow base is draft PR
+[#1](https://github.com/fstepho/anchormap-h3-demo/pull/1), containing:
 
 ```text
 anchormap.yaml
@@ -21,32 +24,32 @@ anchormap.policy.yaml
 .github/workflows/anchormap.yml
 .anchormap/baseline.scan.json
 README.md
-docs/demo-report-guide.md
+docs/anchormap-demo.md
 ```
 
-The workflow should be derived from the inert examples in
+The workflow is derived from the inert examples in
 [`docs/github-action.md`](github-action.md), pinned to explicit Action and
 AnchorMap versions, and installed in the demo repository rather than in this
-repository. The baseline scan must be an explicit local artifact, such as
+repository. The baseline scan is an explicit local artifact,
 `.anchormap/baseline.scan.json`; AnchorMap must not infer it from Git refs,
 GitHub PR metadata, workflow history, caches, network calls, or the clock.
 
-Optional demo assets such as captured report Markdown, PR links, or screenshots
-belong in the demo repository after real runs exist. Do not add synthetic
-screenshots or describe workflow runs as completed before they happen.
+Only real workflow runs and artifacts should be linked as evidence. Do not add
+synthetic screenshots or describe workflow runs as completed before they
+happen.
 
 ## Demo PR Scenarios
 
-The demo repository should have four small PRs. Each PR should include a short
-README note or PR description that points to the job summary and generated
-workflow artifacts.
+The demo repository has four small draft scenario PRs. Each PR description
+summarizes the expected signal and points readers to the job summary and
+generated workflow artifacts.
 
-| Scenario | Intended PR title | Expected result | What it demonstrates |
+| Scenario | PR | Expected result | What it demonstrates |
 | --- | --- | --- | --- |
-| Clean | `demo: clean traceability check` | pass | The supported analysis is clean and the supplied policy passes. |
-| New unmapped anchor | `demo: new active anchor without mapping` | fail | A new requirement-like anchor was observed without an explicit code mapping. |
-| Stale mapping | `demo: stale mapping after file move` | fail | A human mapping points at a seed path that no longer exists or no longer resolves. |
-| Degraded analysis | `demo: degraded analysis from unresolved edge` | fail or warning, depending on policy | The scan is still rendered, but the analysis is no longer fully reliable. |
+| Clean | [#2](https://github.com/fstepho/anchormap-h3-demo/pull/2) | pass | The supported analysis is clean and the supplied policy passes. |
+| New unmapped anchor | [#3](https://github.com/fstepho/anchormap-h3-demo/pull/3) | fail | A new requirement-like anchor was observed without an explicit code mapping. |
+| Stale mapping | [#4](https://github.com/fstepho/anchormap-h3-demo/pull/4) | fail | A human mapping exists for an anchor that is not observed in specs. |
+| Degraded analysis | [#5](https://github.com/fstepho/anchormap-h3-demo/pull/5) | fail | The scan is still rendered, but the analysis is no longer fully reliable. |
 
 The expected result is the policy interpretation for the demo policy, not a
 claim about source-code correctness. A policy failure is a successful policy
@@ -144,16 +147,11 @@ waivers, branch names, labels, PR metadata, or expiry fields.
 
 ## Operational Follow-Up
 
-The following work is intentionally outside this repository-local artifact:
+The following work remains intentionally outside this repository-local
+artifact:
 
-- create or update `fstepho/anchormap-h3-demo`;
-- add the demo workflow to that repository;
-- create the four demo PRs;
-- attach real workflow runs, job summaries, artifacts, screenshots, or report
-  Markdown from those runs;
 - publish or tag the runtime GitHub Action;
 - create PR comments, labels, or other external GitHub state.
 
-When those operations happen, keep the demo wording factual: link to real PRs
-and real artifacts, and avoid simulating external GitHub state as if a workflow
-had already run.
+Keep the demo wording factual: link to real PRs and real artifacts, and avoid
+simulating external GitHub state as if a workflow had already run.

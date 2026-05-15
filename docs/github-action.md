@@ -1,8 +1,15 @@
 # AnchorMap GitHub Action Setup
 
-Status: self-serve setup documentation for the future AnchorMap GitHub Action.
+Status: self-serve setup documentation for the AnchorMap GitHub Action preview.
 The workflow files in `docs/examples/github-actions/` are inert examples, not
 active workflow behavior in this repository.
+
+The current preview runtime lives in
+[`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) on
+draft branch `task/gha-1-composite-action`. The public h3 demo PR set lives in
+[`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
+The preview uses `anchormap@1.2.2`. There is no stable Action tag, release,
+Marketplace publication, or merge guarantee yet.
 
 The Action boundary is orchestration over accepted local CLI commands:
 
@@ -20,6 +27,12 @@ Copy the simple example from
 [`docs/examples/github-actions/anchormap-simple.yml`](examples/github-actions/anchormap-simple.yml)
 into your own repository as `.github/workflows/anchormap.yml`, then replace the
 placeholder Action and npm versions with pinned versions.
+
+For preview testing only, the current branch ref is:
+
+```yaml
+uses: fstepho/anchormap-action@task/gha-1-composite-action
+```
 
 The simple mode runs:
 
@@ -59,7 +72,7 @@ GHA-1 defines these Action inputs:
 
 | Input | Required | Default | Meaning |
 | --- | --- | --- | --- |
-| `anchormap-version` | yes | none | Pinned npm version of AnchorMap to install. |
+| `anchormap-version` | yes | none | Pinned npm version of AnchorMap to install; the current preview uses `1.2.2`. |
 | `node-version` | no | `22` | Node.js version used to run AnchorMap. |
 | `policy` | no | `anchormap.policy.yaml` | Explicit policy file path. |
 | `base-scan` | no | none | Explicit baseline scan artifact for diff mode. |
@@ -168,7 +181,7 @@ machine artifacts.
 
 ## Limits
 
-- The Action is not implemented in this repository by these docs.
+- The Action is implemented outside this repository in `fstepho/anchormap-action`.
 - `action.yml`, Action shell scripts, package scripts, and active
   `.github/workflows/*` files are out of scope here.
 - No GitHub App, SaaS upload, server analysis, automatic baseline retrieval,
