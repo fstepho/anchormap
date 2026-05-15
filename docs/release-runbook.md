@@ -27,8 +27,9 @@ task instead of continuing this runbook.
 For a release candidate that includes the M15 deterministic `tsconfig.json`
 alias extension, release readiness evidence must additionally record:
 
-- the machine output schema is JSON v4 and successful `scan --json` renders
-  `config.tsconfig_path` and `config.local_aliases`;
+- successful `scan --json` renders `config.tsconfig_path` and
+  `config.local_aliases`; for an M15-only release candidate, the machine output
+  schema is JSON v4;
 - B-graph M15 fixtures `fx38m` through `fx38w` pass, covering missing
   `tsconfig.json`, supported aliases, local relative `extends`, invalid JSONC,
   unsupported `paths`, and alias targets outside `product_root`;
@@ -85,11 +86,37 @@ readiness evidence must additionally record:
 - README, release notes, and package metadata describe only the local artifact
   workflow that is implemented.
 
-The M19 extension remains limited to explicit local artifacts. Release notes,
-README, and package metadata must not promise upload, hosted dashboards,
-GitHub App behavior, bundle output, JUnit, SARIF, scan schema v5, source
-snippets, symbol observation, call graph, CI metadata inference, Git ref diff
-syntax, or `anchormap.yaml` config v2 migration.
+The M19 extension remains limited to explicit local artifacts. For an M19-only
+release candidate, release notes, README, and package metadata must not promise
+upload, hosted dashboards, GitHub App behavior, bundle output, JUnit, SARIF,
+scan schema v5, source snippets, symbol observation, call graph, CI metadata
+inference, Git ref diff syntax, or `anchormap.yaml` config v2 migration.
+
+## M20 CLI SaaS-Ready 2 Addendum
+
+For a release candidate that includes the M20 CLI SaaS-ready 2 artifact
+extension, release readiness evidence must additionally record:
+
+- `scan --json` renders schema v5 with closed source-location metadata for
+  observed anchors, and artifact commands that declare scan compatibility accept
+  supported schema v4 and v5 inputs;
+- `bundle`, `report --format junit`, and `report --format sarif` command forms
+  match the contract and remain local artifact-only commands;
+- B-bundle, B-scan-v5, B-report-JUnit, and B-report-SARIF fixtures pass;
+- C14 SaaS-ready 2 artifact isolation passes for bundle, JUnit, SARIF, and
+  v4/v5 artifact-command compatibility;
+- JSON, JUnit XML, SARIF JSON, bundle, and Markdown goldens pass for the same
+  release candidate;
+- technical failures for bundle, JUnit, SARIF, and unsupported scan schemas
+  keep `stdout` empty and exit with the appropriate technical code;
+- README, release notes, and package metadata describe the local bundle, JUnit,
+  SARIF, scan schema v5, and v4/v5 compatibility behavior that is implemented.
+
+The M20 extension remains local-only. Release notes, README, and package
+metadata must not promise SaaS upload, hosted dashboards, GitHub App behavior,
+source snippets, source contents, symbol observation, call graph expansion,
+implicit Git or CI metadata inference, Git ref diff syntax, AI recommendations,
+or `anchormap.yaml` config v2 migration.
 
 ## Pre-Publish Checks
 

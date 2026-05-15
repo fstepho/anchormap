@@ -207,7 +207,7 @@ Formatted for readability, the example above reports:
 
 ```json
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "config": {
     "version": 1,
     "product_root": "src",
@@ -220,7 +220,13 @@ Formatted for readability, the example above reports:
   "observed_anchors": {
     "DOC.README.PRESENT": {
       "spec_path": ".specify/specs/requirements.md",
-      "mapping_state": "usable"
+      "mapping_state": "usable",
+      "source": {
+        "kind": "markdown_atx_heading",
+        "line": 1,
+        "column": 3,
+        "heading_level": 1
+      }
     }
   },
   "stored_mappings": {
@@ -299,6 +305,11 @@ skipped and only new draft sections are written.
 anchormap scan --json > anchormap.scan.json
 ```
 
+Current scans use schema v5, which adds closed source-location metadata for
+observed spec anchors. Source locations contain line and column numbers only;
+they do not include source text or snippets. Artifact commands that consume
+scan files accept supported schema v4 and v5 inputs.
+
 Use `check` to evaluate a local policy against either a live scan or an
 explicit scan artifact:
 
@@ -344,15 +355,26 @@ anchormap report --scan anchormap.scan.json --format markdown > anchormap.report
 anchormap report --scan anchormap.scan.json --check anchormap.check.json --diff anchormap.diff.json --format markdown > anchormap.report.md
 ```
 
-`diff`, `explain`, and `report` are artifact-only. They do not read Git,
-`anchormap.yaml`, repository source files, CI variables, network data, caches,
-clocks, or environment variables as product truth. `report` serializes the
-artifacts it is given; it does not prove that those artifacts came from the same
-run.
+Render CI-native reports from explicit artifacts:
+
+```sh
+anchormap report --check anchormap.check.json --format junit > anchormap.junit.xml
+anchormap report --scan anchormap.scan.json --format sarif > anchormap.sarif.json
+```
+
+For future SaaS ingestion, `bundle` can assemble explicit scan, check, diff,
+and metadata inputs into one local JSON artifact without uploading anything.
+
+`diff`, `explain`, `report`, and `bundle` are artifact-only. They do not read
+Git, `anchormap.yaml`, repository source files, CI variables, network data,
+caches, clocks, or environment variables as product truth. `report` serializes
+the artifacts it is given; `bundle` validates and embeds the artifacts and the
+explicit metadata it is given. Neither command proves that the inputs came from
+the same run.
 
 The current artifact workflow is deliberately local. AnchorMap does not provide
-upload, dashboard, GitHub App, bundle, JUnit, SARIF, scan schema v5, source
-snippets, symbol observation, call graph, or CI metadata inference.
+upload, dashboard, GitHub App, source snippets, symbol observation, call graph,
+or implicit CI metadata inference.
 
 ## Commands
 
@@ -366,6 +388,9 @@ AnchorMap exposes these commands:
 - `anchormap diff --base <base.scan.json> --head <head.scan.json> [--json]`
 - `anchormap explain (--anchor <anchor_id> | --file <path>) --scan <scan.json> [--json]`
 - `anchormap report --scan <scan.json> [--check <check.json>] [--diff <diff.json>] --format markdown`
+- `anchormap report --check <check.json> --format junit`
+- `anchormap report --scan <scan.json> [--check <check.json>] [--diff <diff.json>] --format sarif`
+- `anchormap bundle --scan <scan.json> --check <check.json> --diff <diff.json> --metadata <metadata.json> --json`
 
 `init` creates `./anchormap.yaml` once. `map` creates or replaces explicit human
 mappings in `./anchormap.yaml`. `scan` reads `./anchormap.yaml` and the
@@ -373,12 +398,14 @@ configured repository inputs; it never writes to disk. `scaffold` creates one
 draft Markdown file and never mutates `./anchormap.yaml`. `check` applies a
 local policy to either a live scan or an explicit scan artifact. `diff`
 compares two explicit scan artifacts. `explain` reconstructs one anchor or file
-view from a scan artifact. `report` renders Markdown from explicit scan, check,
-and diff artifacts.
+view from a scan artifact. `report` renders Markdown, JUnit XML, or SARIF JSON
+from explicit artifacts. `bundle` assembles explicit scan, check, diff, and
+metadata inputs into one local JSON artifact.
 
 Human-readable terminal output is not a stable contract. Use `scan --json`,
-`check --json`, `diff --json`, `explain --json`, and `report --format markdown`
-for stable outputs.
+`check --json`, `diff --json`, `explain --json`, `report --format markdown`,
+`report --format junit`, `report --format sarif`, and `bundle --json` for
+stable outputs.
 
 ## Exit Codes
 
@@ -394,11 +421,13 @@ Exit-code overview:
   artifact JSON, or artifact schema;
 - `5`: `check` policy failure after all technical preconditions succeeded.
 
-For `scan --json`, `check --json`, `diff --json`, and `explain --json`, success
-writes JSON to stdout and leaves stderr empty. For `report --format markdown`,
-success writes Markdown to stdout and leaves stderr empty. `check --json` with a
-policy failure also writes JSON to stdout and exits `5`. On technical exit codes
-`1` through `4`, stdout is empty and no machine result is emitted.
+For `scan --json`, `check --json`, `diff --json`, `explain --json`,
+`report --format sarif`, and `bundle --json`, success writes JSON to stdout and
+leaves stderr empty. For `report --format markdown`, success writes Markdown to
+stdout and leaves stderr empty. For `report --format junit`, success writes XML
+to stdout and leaves stderr empty. `check --json` with a policy failure also
+writes JSON to stdout and exits `5`. On technical exit codes `1` through `4`,
+stdout is empty and no machine result is emitted.
 
 For `scan` and `map`, an invalid present `./tsconfig.json` is a repository
 input failure and exits with code `3`. Argument errors still have priority over
