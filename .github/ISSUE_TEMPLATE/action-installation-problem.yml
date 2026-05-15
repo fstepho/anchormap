@@ -1,6 +1,6 @@
 name: Action installation problem
 description: Report a setup or workflow problem with the self-serve Action preview.
-title: "[Action setup]: "
+title: "[Action installation problem]: "
 body:
   - type: markdown
     attributes:

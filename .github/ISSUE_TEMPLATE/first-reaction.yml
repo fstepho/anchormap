@@ -49,10 +49,8 @@ body:
   - type: textarea
     id: blocked-or-confused
     attributes:
-      label: What blocked or confused you?
-      description: Mention the page, PR, report section, wording, or concept that was unclear.
-    validations:
-      required: true
+      label: What stood out or confused you?
+      description: Mention the page, PR, report section, wording, or concept that was useful or unclear.
   - type: textarea
     id: quick-notes
     attributes:

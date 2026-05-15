@@ -21,23 +21,12 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: fail-ci
+    id: enforcement-mode
     attributes:
-      label: Should this fail CI?
+      label: Expected enforcement mode
       options:
-        - "Yes"
-        - "No"
-        - Configurable
-        - Not sure
-    validations:
-      required: true
-  - type: dropdown
-    id: warning-only
-    attributes:
-      label: Should this be warning only?
-      options:
-        - "Yes"
-        - "No"
+        - Fail CI
+        - Warning only
         - Configurable
         - Not sure
     validations:
