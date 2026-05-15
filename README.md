@@ -45,6 +45,45 @@ The installed command is `anchormap`. The current support matrix is:
 
 Other platforms are outside the supported release contract.
 
+## Try Locally
+
+Start with one existing TypeScript slice that contains at least one supported
+public export. Replace `src` with the directory you want AnchorMap to inspect,
+such as `app` or `server`:
+
+```sh
+mkdir -p .specify/specs
+anchormap init --root src --spec-root .specify/specs
+anchormap scaffold --output .specify/specs/scaffold.generated.md
+anchormap scan --json > anchormap.scan.json
+```
+
+The first scan is a local traceability artifact. It does not read Git history,
+CI metadata, caches, network data, clocks, or environment variables as product
+truth.
+
+The generated scaffold is scanned as draft spec content; promote selected
+anchors into active specs before treating them as approved traceability.
+
+## GitHub Action Preview
+
+The npm package provides the `anchormap` CLI. The GitHub Action installs and
+orchestrates that CLI in a workflow.
+
+For preview testing, use the current pinned versions:
+
+```yaml
+uses: fstepho/anchormap-action@v0-preview.3
+with:
+  anchormap-version: "1.2.2"
+```
+
+The Action preview uploads GitHub workflow artifacts only. It does not upload
+source code to an AnchorMap service, require a SaaS account, or create PR
+comments by default. See the
+[GitHub Action setup guide](docs/github-action.md) and the copyable workflow
+examples in [docs/examples/github-actions](docs/examples/github-actions).
+
 ## Supported Repository Shape
 
 AnchorMap is intentionally narrow:
