@@ -8,13 +8,13 @@ You do not need to install anything to react to the preview.
 
 Start here:
 
-- Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
+- Passing demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
 - Feedback issue: https://github.com/fstepho/anchormap/issues/5
 
-If you only open one link, start with the clean demo PR. The other three PRs
+If you only open one link, start with the passing demo PR. The other three PRs
 show failure or warning-style cases:
 
 - New unmapped anchor: a spec-like statement appears without a mapping.
@@ -65,12 +65,12 @@ It applies AnchorMap to the `src/` tree of
 `init`, `scaffold`, selective anchor promotion, `map`, and `scan --json`.
 
 The demo includes a 308-anchor scaffold draft, 3 promoted active anchors, 3
-explicit mappings, clean analysis health, a pretty-printed full scan output,
-and a short scan brief with the same status, coverage, anchors, findings, and
-interpretation vocabulary used by the reference runbooks.
+explicit mappings, analysis health with no degrading findings, a pretty-printed
+full scan output, and a short scan brief with the same status, coverage,
+anchors, findings, and interpretation vocabulary used by the reference runbooks.
 
 The same demo repository also hosts the GitHub Action PR preview set: a merged
-workflow base plus draft clean, unmapped-anchor, stale-mapping, and
+workflow base plus draft passing-policy, unmapped-anchor, stale-mapping, and
 degraded-analysis scenario PRs. The preview uses
 `fstepho/anchormap-action@v0-preview.3` with `anchormap@1.2.2` and uploads
 GitHub workflow artifacts only. It does not create PR comments or upload source
@@ -225,7 +225,7 @@ try a different slice, run `init` in a fresh checkout or replace
 For a reference runbook against an existing codebase slice, see
 [`demos/outline-reference`](demos/outline-reference/README.md). It uses
 Outline's original `tsconfig.json` and presents the result as a degraded slice
-boundary report, not as the clean public demo.
+boundary report, not as the primary no-install demo.
 
 ## Minimal Example
 

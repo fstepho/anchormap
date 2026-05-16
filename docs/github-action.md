@@ -5,13 +5,13 @@
 The primary public entrypoint is the no-install preview, not this setup guide.
 AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 
-- Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
+- Passing demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
 - Feedback issue: https://github.com/fstepho/anchormap/issues/5
 
-If you only open one link, start with the clean demo PR. The other three PRs
+If you only open one link, start with the passing demo PR. The other three PRs
 show failure or warning-style cases:
 
 - New unmapped anchor: a spec-like statement appears without a mapping.

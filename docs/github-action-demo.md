@@ -6,13 +6,13 @@ AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 
 You do not need to install anything to react to the demo.
 
-- Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
+- Passing demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
 - Feedback issue: https://github.com/fstepho/anchormap/issues/5
 
-If you only open one link, start with the clean demo PR. The other three PRs
+If you only open one link, start with the passing demo PR. The other three PRs
 show failure or warning-style cases:
 
 - New unmapped anchor: a spec-like statement appears without a mapping.
@@ -83,7 +83,7 @@ generated workflow artifacts.
 
 | Scenario | PR | Expected result | What it demonstrates |
 | --- | --- | --- | --- |
-| Clean | [#2](https://github.com/fstepho/anchormap-h3-demo/pull/2) | pass | The supported analysis is clean and the supplied policy passes. |
+| Passing | [#2](https://github.com/fstepho/anchormap-h3-demo/pull/2) | pass | No degrading scan findings are present and the supplied policy passes. |
 | New unmapped anchor | [#3](https://github.com/fstepho/anchormap-h3-demo/pull/3) | fail | A new requirement-like anchor was observed without an explicit code mapping. |
 | Stale mapping | [#4](https://github.com/fstepho/anchormap-h3-demo/pull/4) | fail | A human mapping exists for an anchor that is not observed in specs. |
 | Degraded analysis | [#5](https://github.com/fstepho/anchormap-h3-demo/pull/5) | fail | The scan is still rendered, but the analysis is no longer fully reliable. |
