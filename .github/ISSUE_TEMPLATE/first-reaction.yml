@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking a quick look. This template is for first reactions after reading the demo PRs. You do not need to install AnchorMap or share source code. Do not upload private source code, proprietary specs, secrets, tokens, customer data, internal URLs, or full logs containing secrets.
+        Thanks for taking a quick look. This template is for first reactions after reading the public h3 demo PRs. If you only opened one link, the clean demo PR is enough. You do not need to install AnchorMap or share source code. Do not upload private source code, proprietary specs, secrets, tokens, customer data, internal URLs, or full logs containing secrets.
   - type: dropdown
     id: understood-problem
     attributes:

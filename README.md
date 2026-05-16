@@ -8,11 +8,18 @@ You do not need to install anything to react to the preview.
 
 Start here:
 
-- Feedback issue: https://github.com/fstepho/anchormap/issues/5
 - Clean demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
+- Feedback issue: https://github.com/fstepho/anchormap/issues/5
+
+If you only open one link, start with the clean demo PR. The other three PRs
+show failure or warning-style cases:
+
+- New unmapped anchor: a spec-like statement appears without a mapping.
+- Stale mapping: a human mapping points to an anchor that is no longer observed.
+- Degraded analysis: the report still renders, but analysis trust is reduced.
 
 Useful reaction:
 
@@ -20,6 +27,8 @@ Useful reaction:
 2. Did the PR report make sense?
 3. Would you try this on a TypeScript repo?
 4. What confused you?
+
+Negative feedback is useful when it names the blocker.
 
 ## The problem
 

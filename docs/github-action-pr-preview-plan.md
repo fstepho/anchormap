@@ -595,7 +595,7 @@ Promesse :
 
 ```text
 Use AnchorMap in your TypeScript PR workflow.
-Get spec-to-code traceability drift reports without uploading source code.
+Get docs-to-code drift reports without uploading source code.
 ```
 
 ## Parcours design partner
@@ -1434,7 +1434,7 @@ AnchorMap Design Partner Preview
 Message :
 
 ```text
-AnchorMap helps TypeScript teams detect spec-to-code traceability drift in PRs.
+AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 The preview is self-serve, local-first, and does not require uploading source code.
 ```
 
