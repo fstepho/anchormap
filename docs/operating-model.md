@@ -150,6 +150,35 @@ Une exécution de fixture doit rendre accessibles au minimum :
 
 Quand ce signal est insuffisant, la réponse attendue est d'ajouter le signal manquant au dépôt.
 
+### 2.4 Inventaire des surfaces documentaires répétées
+
+Quand une maintenance documentaire modifie une idée, un parcours, une promesse,
+un CTA, un statut de preview, une version, une limite, ou une formulation qui
+peut être répétée dans plusieurs fichiers, l'agent ne doit pas se limiter au
+fichier évident.
+
+Avant le patch, l'agent doit :
+
+- nommer le cluster documentaire visé en termes de concept, pas seulement de
+  fichiers ;
+- construire une requête d'inventaire avec les mots-clés, URLs, versions,
+  titres, synonymes ou anciennes formulations susceptibles d'identifier le
+  cluster ;
+- lancer cet inventaire sur le dépôt courant et sur les dépôts frères
+  explicitement dans la surface de travail ;
+- classer chaque occurrence trouvée comme `update`, `leave intentionally`, ou
+  `historical/reference only`.
+
+Après le patch, l'agent doit relancer le même inventaire et vérifier que les
+anciennes formulations, URLs, versions ou ordres de parcours ne survivent que
+dans des occurrences classées intentionnellement.
+
+Si l'inventaire découvre une surface qui élargit le changement au-delà de la
+maintenance bornée, l'agent doit stopper et reclassifier la portée au lieu de
+patcher implicitement. Une fresh review du diff ne remplace pas cet inventaire :
+la review inspecte le diff, elle ne garantit pas que toutes les surfaces liées
+ont été découvertes.
+
 ## 3. Hiérarchie des documents
 
 Le projet utilise les documents suivants :

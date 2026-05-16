@@ -47,6 +47,34 @@ expected checks, and patch boundary. Broaden reading only when new evidence
 requires it, such as a missing reference, failing check, review finding, or
 conflict between authorities.
 
+## Documentation Surface Inventory
+
+For process, marketing, onboarding, preview, release, or other documentation
+copy that may be duplicated, define the concept-level cluster before editing.
+Do not rely only on the obvious file.
+
+Operator checklist:
+
+1. Name the cluster, such as "preview first-reaction path", "Node version
+   support", "Action preview tag", or "no source upload boundary".
+2. Build an inventory query from current wording, old wording, URLs, versions,
+   headings, and related synonyms.
+3. Run the inventory across the current repository and any sibling repositories
+   explicitly in scope.
+4. Classify each hit as `update`, `leave intentionally`, or
+   `historical/reference only`.
+5. Patch only the bounded surface.
+6. Rerun the same inventory after the patch and record any intentional
+   leftovers.
+
+Use `scripts/doc-surface-inventory.sh` when available. Example:
+
+```sh
+scripts/doc-surface-inventory.sh \
+  "5-minute|first reaction|Feedback issue|Clean demo PR|old phrase" \
+  . ../anchormap-action ../anchormap-h3-demo
+```
+
 ## Skills
 
 Path-based skill invocation is the portable baseline. On agents that discover
