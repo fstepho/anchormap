@@ -72,7 +72,7 @@ anchors, findings, and interpretation vocabulary used by the reference runbooks.
 The same demo repository also hosts the GitHub Action PR preview set: a merged
 workflow base plus draft passing-policy, unmapped-anchor, stale-mapping, and
 degraded-analysis scenario PRs. The preview uses
-`fstepho/anchormap-action@v0-preview.3` with `anchormap@1.2.2` and uploads
+`fstepho/anchormap-action@v0-preview.4` with `anchormap@1.2.2` and uploads
 GitHub workflow artifacts only. It does not create PR comments or upload source
 to an AnchorMap service.
 
@@ -120,7 +120,7 @@ orchestrates that CLI in a workflow.
 For preview testing, use the current pinned versions:
 
 ```yaml
-uses: fstepho/anchormap-action@v0-preview.3
+uses: fstepho/anchormap-action@v0-preview.4
 with:
   anchormap-version: "1.2.2"
 ```

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking a quick look. This template is for first reactions after reading the public h3 demo PRs. If you only opened one link, the passing demo PR is enough. You do not need to install AnchorMap or share source code. Do not upload private source code, proprietary specs, secrets, tokens, customer data, internal URLs, or full logs containing secrets.
+        Thanks for taking a quick look. This template is for first reactions after reading the public h3 demo PRs. If you only opened one link, the passing demo PR is enough. You do not need to install AnchorMap or share repository files. Do not upload private files, proprietary specs, secrets, tokens, personal data, internal URLs, or full logs containing secrets.
   - type: dropdown
     id: understood-problem
     attributes:
@@ -19,7 +19,7 @@ body:
   - type: dropdown
     id: demo-made-sense
     attributes:
-      label: Did the demo PR or report make sense?
+      label: Did the PR body report summary make sense?
       options:
         - "Yes"
         - "Partly"

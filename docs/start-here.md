@@ -48,7 +48,7 @@ worth trying because of a concrete blocker.
 Use:
 
 ```yaml
-uses: fstepho/anchormap-action@v0-preview.3
+uses: fstepho/anchormap-action@v0-preview.4
 with:
   anchormap-version: "1.2.2"
 ```

@@ -120,7 +120,7 @@ access is requested.
 4. Add a workflow derived from `docs/github-action.md` to your own repository.
 5. Open a PR and inspect the job summary plus generated artifacts.
 
-For preview testing, use `fstepho/anchormap-action@v0-preview.3`
+For preview testing, use `fstepho/anchormap-action@v0-preview.4`
 with `anchormap-version: "1.2.2"`. The public demo scenario set is available
 in [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 
@@ -143,7 +143,7 @@ Feedback should avoid private source content. Prefer sharing:
   replaced by placeholders.
 
 Do not attach private repository source files, proprietary specs, secrets,
-tokens, customer data, internal URLs, or full workflow logs containing secrets.
+tokens, personal data, internal URLs, or full workflow logs containing secrets.
 
 AnchorMap scan v5 source locations are closed coordinates and do not include
 source snippets. Preserve that boundary when sharing feedback.
@@ -171,7 +171,7 @@ Useful feedback answers these questions:
 
 ## Operational Labels
 
-The preview tracker uses these labels in GitHub:
+The preview feedback flow uses these labels in GitHub:
 
 ```text
 preview

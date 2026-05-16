@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run AnchorMap
-        uses: fstepho/anchormap-action@v0-preview.3
+        uses: fstepho/anchormap-action@v0-preview.4
         with:
           anchormap-version: "1.2.2"
           node-version: "22"

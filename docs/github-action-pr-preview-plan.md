@@ -10,22 +10,23 @@ Les labels `PREVIEW-1` à `PREVIEW-3` désignent des activités de validation pr
 
 ## État de traitement
 
-Ce plan est réconcilié avec l'état livré après M20 et avec la preview GitHub
-finalisée le 2026-05-15 :
+Ce plan est réconcilié avec l'état livré après M20, avec la preview GitHub
+finalisée le 2026-05-15, puis avec le rafraîchissement Node 24 du
+2026-05-17 :
 
 - `docs/brief.md` §6.10 autorise déjà la surface locale CI/PR par artefacts CLI ;
 - `docs/brief.md` §13 distingue déjà `anchormap.yaml` comme seule persistance mutable possédée par AnchorMap des policies et artefacts explicites lus seulement ;
 - `ADR-0019` à `ADR-0026` couvrent déjà la surface CLI `check`, `diff`, `explain`, `report`, `bundle`, scan v5, JUnit et SARIF ;
 - `docs/contract.md`, `docs/design.md` et `docs/evals.md` définissent déjà les comportements CLI correspondants.
 - `ADR-0027` couvre l'orchestration composite de l'action GitHub ;
-- `fstepho/anchormap-action@v0-preview.3` est le tag preview audité ;
+- `fstepho/anchormap-action@v0-preview.4` est le tag preview audité ;
 - `fstepho/anchormap-action#1`, `fstepho/anchormap-h3-demo#1` et `fstepho/anchormap#3` sont mergées sur `main` ;
 - les PRs scénario `fstepho/anchormap-h3-demo#2` à `#5` restent ouvertes en draft sur `main` comme cas de démonstration vivants ;
 - l'issue ops `fstepho/anchormap#2` est close comme completed après audit réel des artifacts.
 
 Conséquence : ce document ne doit pas rouvrir le contrat CLI déjà accepté. GHA-1
 à GHA-3 ainsi que PREVIEW-1 et PREVIEW-2 sont traités pour la preview
-`v0-preview.3`. Les décisions restantes portent sur GHA-4, GHA-5 et PREVIEW-3 :
+`v0-preview.4`. Les décisions restantes portent sur GHA-4, GHA-5 et PREVIEW-3 :
 commentaire PR opt-in, exposition Action de JUnit/SARIF, collecte de feedback
 réel et décision SaaS-lite/GitHub App/amélioration CLI-Action. Toute tâche
 exécutable dans le repo principal devra être ajoutée explicitement à
@@ -125,7 +126,7 @@ Les décisions CLI ne doivent pas être dupliquées dans une ADR GitHub Action. 
 
 ### Ordre d’adoption recommandé
 
-1. Vérifier la conformité à `docs/brief.md` §6.10 et §13 et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée. Fait pour la preview `v0-preview.3`.
+1. Vérifier la conformité à `docs/brief.md` §6.10 et §13 et documenter explicitement que GHA-1 à GHA-3 restent dans la surface CLI locale CI/PR déjà autorisée. Fait pour la preview `v0-preview.4`.
 2. ADR GHA-1 acceptée, ou vérification écrite qu'une ADR existante couvre toute la décision structurante, puis tâche de planification traçable → ouvre l'implémentation de l'action composite. Fait via `ADR-0027`.
 3. Vérification de `ADR-0023` + décision d'affichage GitHub job summary → ouvre GHA-2. Fait pour job summary + artifact Markdown.
 4. Vérification de `ADR-0021` + décision baseline explicite → ouvre GHA-3. Fait pour le mode `base-scan` explicite.
@@ -317,9 +318,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: fstepho/anchormap-action@v0-preview.3
+      - uses: fstepho/anchormap-action@v0-preview.4
         with:
           anchormap-version: "1.2.2"
           policy: anchormap.policy.yaml
@@ -327,7 +328,7 @@ jobs:
 ```
 
 Les labels `GHA-*` décrivent le plan. Pour la preview auditée, l'exemple
-utilise `fstepho/anchormap-action@v0-preview.3` avec `anchormap@1.2.2`. Une
+utilise `fstepho/anchormap-action@v0-preview.4` avec `anchormap@1.2.2`. Une
 release stable ou Marketplace reste une décision séparée.
 
 Ce workflow doit être suffisant pour obtenir :
@@ -357,7 +358,7 @@ scan + check + report
 L’utilisateur fournit un scan baseline, par exemple via artifact téléchargé ou fichier committé :
 
 ```yaml
-- uses: fstepho/anchormap-action@v0-preview.3
+- uses: fstepho/anchormap-action@v0-preview.4
   with:
     anchormap-version: "1.2.2"
     policy: anchormap.policy.yaml

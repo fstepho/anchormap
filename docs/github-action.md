@@ -43,7 +43,7 @@ active workflow behavior in this repository.
 
 The current preview runtime lives in
 [`fstepho/anchormap-action`](https://github.com/fstepho/anchormap-action) at
-preview tag `v0-preview.3`. The public h3 demo PR set lives in
+preview tag `v0-preview.4`. The public h3 demo PR set lives in
 [`fstepho/anchormap-h3-demo`](https://github.com/fstepho/anchormap-h3-demo).
 The preview uses `anchormap@1.2.2`. There is no stable Action release or
 Marketplace publication yet.
@@ -68,7 +68,7 @@ example pins the current Action and npm versions.
 For preview testing only, the current tag ref is:
 
 ```yaml
-uses: fstepho/anchormap-action@v0-preview.3
+uses: fstepho/anchormap-action@v0-preview.4
 ```
 
 The simple mode runs:

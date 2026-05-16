@@ -63,8 +63,8 @@ For first-reaction launch posts, lead with the validation question, not the
 product tagline.
 
 Use Dev.to as the durable explainer, but make LinkedIn/X point to the passing h3
-demo PR first. The requested reader action is to inspect the report and name one
-concrete blocker or objection.
+demo PR first. The requested reader action is to read the report summary and
+name one concrete blocker or objection.
 
 The `social` skill may improve readability, post shape, and character fit. It
 must not override this dossier's validation posture.
