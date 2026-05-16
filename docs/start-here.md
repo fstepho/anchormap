@@ -22,17 +22,18 @@ Markdown report.
 
 ## No install path
 
-Read one demo PR. If you only open one link, start with the passing demo PR.
+Read one demo PR. If you only open one link, start with the new unmapped anchor
+PR.
 
-- Passing: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
+- Passing baseline: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
 
 The four PRs show the report shape:
 
-- Passing: the mapped docs/code slice passes policy.
 - New unmapped anchor: a spec-like statement appears without a mapping.
+- Passing baseline: the mapped docs/code slice passes policy.
 - Stale mapping: a human mapping points to an anchor that is no longer observed.
 - Degraded analysis: the report still renders, but analysis trust is reduced.
 

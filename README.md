@@ -8,16 +8,19 @@ You do not need to install anything to react to the preview.
 
 Start here:
 
-- Passing demo PR: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - New unmapped anchor: https://github.com/fstepho/anchormap-h3-demo/pull/3
+- Passing baseline: https://github.com/fstepho/anchormap-h3-demo/pull/2
 - Stale mapping: https://github.com/fstepho/anchormap-h3-demo/pull/4
 - Degraded analysis: https://github.com/fstepho/anchormap-h3-demo/pull/5
 - Feedback issue: https://github.com/fstepho/anchormap/issues/5
 
-If you only open one link, start with the passing demo PR. The other three PRs
-show failure or warning-style cases:
+If you only open one link, start with the new unmapped anchor PR. It is the
+shortest example of the review question: a spec-like statement appears, but no
+mapping exists for it yet. Use the passing baseline to compare that report with
+a clean policy pass.
 
 - New unmapped anchor: a spec-like statement appears without a mapping.
+- Passing baseline: the mapped docs/code slice passes policy.
 - Stale mapping: a human mapping points to an anchor that is no longer observed.
 - Degraded analysis: the report still renders, but analysis trust is reduced.
 

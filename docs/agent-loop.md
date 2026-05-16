@@ -71,7 +71,7 @@ Use `scripts/doc-surface-inventory.sh` when available. Example:
 
 ```sh
 scripts/doc-surface-inventory.sh \
-  "5-minute|first reaction|Feedback issue|Passing demo PR|old phrase" \
+  "5-minute|first reaction|Feedback issue|Unmapped anchor|old phrase" \
   . ../anchormap-action ../anchormap-h3-demo
 ```
 

@@ -62,9 +62,10 @@ Not allowed:
 For first-reaction launch posts, lead with the validation question, not the
 product tagline.
 
-Use Dev.to as the durable explainer, but make LinkedIn/X point to the passing h3
-demo PR first. The requested reader action is to read the report summary and
-name one concrete blocker or objection.
+Use Dev.to as the durable explainer, but make LinkedIn/X point to the
+unmapped-anchor h3 demo PR first. The requested reader action is to read the
+summary at the top of the PR body, then name one concrete blocker or objection
+in a reply or in the feedback issue.
 
 The `social` skill may improve readability, post shape, and character fit. It
 must not override this dossier's validation posture.
@@ -158,7 +159,7 @@ scripts/doc-surface-inventory.sh "<regex for this cluster>" \
 For the current week-1 first-reaction cluster, the useful query is:
 
 ```sh
-scripts/doc-surface-inventory.sh "5-minute|first reaction|Feedback issue|Passing demo PR|anchormap/issues/5|anchormap-h3-demo|docs-to-code drift|spec-to-code traceability drift|Start here|No install" \
+scripts/doc-surface-inventory.sh "5-minute|first reaction|Feedback issue|Unmapped anchor|Passing baseline|anchormap/issues/5|anchormap-h3-demo|docs-to-code drift|spec-to-code traceability drift|Start here|No install" \
   /Users/fstepho/dev/anchormap \
   /Users/fstepho/dev/anchormap-action \
   /Users/fstepho/dev/anchormap-h3-demo
