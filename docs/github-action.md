@@ -180,8 +180,9 @@ runtime work, not implicit outputs of the minimal Action setup.
 
 ## Job Summary
 
-The job summary may display the generated Markdown report for convenient PR
-reading. The canonical report remains `anchormap.report.md`, produced by:
+The job summary starts with a concise Action summary for quick PR reading, then
+includes the generated Markdown report. The canonical report remains
+`anchormap.report.md`, produced by:
 
 ```sh
 anchormap report --scan anchormap.scan.json --check anchormap.check.json --format markdown > anchormap.report.md

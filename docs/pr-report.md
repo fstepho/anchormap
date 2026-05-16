@@ -18,8 +18,9 @@ upload SARIF, or create PR comments by default.
 
 ## Where It Appears
 
-The preview Action may show the generated Markdown in the GitHub job summary
-and may upload `anchormap.report.md` as a GitHub Actions workflow artifact.
+The preview Action may show a concise Action summary first, then the generated
+Markdown in the GitHub job summary. It may also upload `anchormap.report.md` as
+a GitHub Actions workflow artifact.
 
 The job summary is a display surface. The canonical Markdown artifact remains
 `anchormap.report.md`, and summary rendering must not add hidden analysis or

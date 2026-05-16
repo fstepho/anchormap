@@ -1313,7 +1313,7 @@ runs:
   using: composite
   steps:
     - name: Set up Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
 
@@ -1328,7 +1328,7 @@ runs:
 
     - name: Upload AnchorMap artifacts
       if: ${{ always() && inputs.upload-artifacts == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: anchormap-artifacts
         if-no-files-found: ignore
