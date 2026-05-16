@@ -81,20 +81,27 @@ happen.
 ## Demo PR Scenarios
 
 The demo repository has four small draft scenario PRs. Each PR description
-summarizes the expected signal and points readers to the job summary and
-generated workflow artifacts.
+summarizes the expected signal and gives readers the first report summary
+directly in the PR body. The job summary repeats the report in the workflow
+run. Logs and generated workflow artifacts are optional verification context.
 
 | Scenario | PR | Expected result | What it demonstrates |
 | --- | --- | --- | --- |
-| Passing | [#2](https://github.com/fstepho/anchormap-h3-demo/pull/2) | pass | No degrading scan findings are present and the supplied policy passes. |
-| New unmapped anchor | [#3](https://github.com/fstepho/anchormap-h3-demo/pull/3) | fail | A new requirement-like anchor was observed without an explicit code mapping. |
-| Stale mapping | [#4](https://github.com/fstepho/anchormap-h3-demo/pull/4) | fail | A human mapping exists for an anchor that is not observed in specs. |
-| Degraded analysis | [#5](https://github.com/fstepho/anchormap-h3-demo/pull/5) | fail | The scan is still rendered, but the analysis is no longer fully reliable. |
+| Passing | [#2](https://github.com/fstepho/anchormap-h3-demo/pull/2) | GitHub check success; policy pass | No degrading scan findings are present and the supplied policy passes. |
+| New unmapped anchor | [#3](https://github.com/fstepho/anchormap-h3-demo/pull/3) | GitHub check failure; policy fail | A new requirement-like anchor was observed without an explicit code mapping. |
+| Stale mapping | [#4](https://github.com/fstepho/anchormap-h3-demo/pull/4) | GitHub check failure; policy fail | A human mapping exists for an anchor that is not observed in specs. |
+| Degraded analysis | [#5](https://github.com/fstepho/anchormap-h3-demo/pull/5) | GitHub check failure; policy fail | The scan is still rendered, but the analysis is no longer fully reliable. |
 
 The expected result is the policy interpretation for the demo policy, not a
 claim about source-code correctness. A policy failure is a successful policy
 evaluation with exit code `5`; it is distinct from a setup failure, invalid
 policy, invalid config, missing artifact, or other technical failure.
+
+The scenario workflow uses the recommended CI gate mode:
+`fail-on-policy: "true"`. The Action still writes artifacts and the job summary
+before the final gate step fails the GitHub check for policy exit code `5`.
+Use `fail-on-policy: "false"` only for advisory exploration when you want the
+workflow to stay green while exposing `policy_exit = 5`.
 
 ## Reading The Report
 

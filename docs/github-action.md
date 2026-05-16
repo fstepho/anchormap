@@ -217,6 +217,15 @@ controls workflow failure:
 | `5` | `true` | Fails after artifact and summary handling. |
 | `5` | `false` | Exposes `policy_exit = 5` without failing for policy alone. |
 
+Recommended CI gate mode is the default: leave `fail-on-policy` unset or set it
+to `"true"`. A policy `FAIL` then becomes a failed GitHub check after artifacts
+and the job summary have been handled.
+
+Advisory mode is explicit: set `fail-on-policy: "false"` only when you want to
+explore the report without blocking the workflow. In that mode, read
+`policy_exit` and the job summary for the AnchorMap decision; the GitHub check
+can remain green even when the policy decision is `FAIL`.
+
 Technical failures keep their normal non-zero behavior and must not emit fake
 machine artifacts.
 

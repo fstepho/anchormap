@@ -79,6 +79,13 @@ degraded-analysis scenario PRs. The preview uses
 GitHub workflow artifacts only. It does not create PR comments or upload source
 to an AnchorMap service.
 
+The public scenario workflows use the recommended CI gate mode:
+`fail-on-policy: "true"`. PR #2 should produce a successful GitHub check with
+`Policy decision: pass`; PRs #3, #4, and #5 should produce failed GitHub checks
+after the PR body summary, job summary, and workflow artifacts are available.
+The PR body summary and job summary are the primary reading path. Logs and
+artifacts are optional verification context.
+
 ## Install
 
 AnchorMap is distributed as the public npm package `anchormap`.
