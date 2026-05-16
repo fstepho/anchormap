@@ -3,6 +3,7 @@
 ## Give a 5-minute first reaction
 
 The primary public entrypoint is the no-install preview, not this setup guide.
+AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 
 - Give a 5-minute first reaction:
   https://github.com/fstepho/anchormap/issues/5
@@ -13,8 +14,8 @@ The primary public entrypoint is the no-install preview, not this setup guide.
 
 ## The problem
 
-In many TypeScript projects, product/API/spec documents change separately from
-code.
+In many TypeScript projects, product docs, API docs, specs, and code change
+separately.
 
 During review, it is hard to see whether:
 

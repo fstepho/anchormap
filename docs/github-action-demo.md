@@ -2,6 +2,8 @@
 
 ## Give a 5-minute first reaction
 
+AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
+
 You do not need to install anything to react to the demo.
 
 - Give a 5-minute first reaction:
@@ -13,8 +15,8 @@ You do not need to install anything to react to the demo.
 
 ## The problem
 
-In many TypeScript projects, product/API/spec documents change separately from
-code.
+In many TypeScript projects, product docs, API docs, specs, and code change
+separately.
 
 During review, it is hard to see whether:
 

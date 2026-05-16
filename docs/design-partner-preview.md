@@ -5,7 +5,7 @@ trying the AnchorMap GitHub Action and PR report workflow.
 
 ## Give a 5-minute first reaction
 
-AnchorMap detects spec-to-code traceability drift in TypeScript PRs.
+AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 
 You do not need to install anything to react to the preview.
 
@@ -26,8 +26,8 @@ Useful reaction:
 
 ## The problem
 
-In many TypeScript projects, product/API/spec documents change separately from
-code.
+In many TypeScript projects, product docs, API docs, specs, and code change
+separately.
 
 During review, it is hard to see whether:
 
@@ -39,11 +39,12 @@ During review, it is hard to see whether:
 AnchorMap makes those cases visible in CI as local artifacts and a PR-readable
 Markdown report.
 
-## Design Partner Preview
+## Self-Serve Preview
 
-For teams that want to try the Action after the no-install preview, AnchorMap
-helps TypeScript teams detect spec-to-code traceability drift in PRs. The
-preview is self-serve, local-first, and does not require uploading source code.
+For readers who understand the no-install demo and want to evaluate further,
+AnchorMap provides a self-serve local CLI and GitHub Action preview. It flags
+docs-to-code drift in TypeScript PRs before merge and does not require uploading
+source code.
 
 This preview does not create a GitHub App, hosted dashboard, SaaS upload path,
 or manual onboarding program. The repository contains docs and feedback
@@ -57,7 +58,7 @@ This preview is for teams with:
 - TypeScript repositories;
 - Markdown or YAML specs, or a willingness to create them;
 - GitHub Actions workflows;
-- interest in PR-level traceability checks;
+- interest in PR-readable docs-to-code drift reports;
 - willingness to share structured feedback without sharing private source code.
 
 It is not a fit when the expected outcome is source-code upload, AI mapping,
@@ -87,7 +88,8 @@ environment values, or workflow state as AnchorMap product truth.
 
 ## What We Ask
 
-If you try the preview:
+For no-install feedback, read one public demo PR and leave a 5-minute first
+reaction. If you try the preview on a real repository:
 
 1. Run it on at least one active TypeScript repository.
 2. Inspect at least three PR reports, or as many as your repo naturally

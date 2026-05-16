@@ -2,7 +2,7 @@
 
 ## 5-minute preview — no install required
 
-AnchorMap detects spec-to-code traceability drift in TypeScript PRs.
+AnchorMap flags docs-to-code drift in TypeScript PRs before merge.
 
 You do not need to install anything to react to the preview.
 
@@ -23,8 +23,8 @@ Useful reaction:
 
 ## The problem
 
-In many TypeScript projects, product/API/spec documents change separately from
-code.
+In many TypeScript projects, product docs, API docs, specs, and code change
+separately.
 
 During review, it is hard to see whether:
 
@@ -38,8 +38,8 @@ Markdown report.
 
 ## What AnchorMap Is
 
-AnchorMap is a local deterministic CLI for auditing structural traceability
-between formal spec anchors and supported TypeScript repositories.
+AnchorMap is a local deterministic CLI for surfacing docs-to-code drift between
+Markdown/YAML spec anchors and supported TypeScript repositories.
 
 It shows what is observed in specs, what has been mapped explicitly by a human,
 what is structurally covered by supported local TypeScript edges, and whether
