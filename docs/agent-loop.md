@@ -75,6 +75,44 @@ scripts/doc-surface-inventory.sh \
   . ../anchormap-action ../anchormap-h3-demo
 ```
 
+## User-Facing Marketing Copy
+
+For marketing or distribution work that creates or changes reader-facing copy,
+separate strategy, copy, and internal operating notes before handoff.
+
+Mandatory sequence:
+
+1. Use content strategy only for the brief, angle, audience, structure, channel,
+   and proof plan.
+2. Use copywriting for any new article, README pitch, landing-style section, or
+   social post body intended for public readers.
+3. Use copy-editing after the draft exists and before handoff. The editing pass
+   must check for internal planning vocabulary, unsupported claims, tone drift,
+   and whether the reader-facing ask is expressed in plain language.
+4. Use the social skill for LinkedIn/X copy when a social post is written rather
+   than merely listed as a future channel.
+
+Hard stops:
+
+- Do not paste or publish from a file that mixes public copy with internal
+  briefs, checklists, tracker notes, distribution notes, or skill-routing notes.
+- Keep publishable files and operating notes separate. A publishable article
+  file must contain only front matter and reader-facing article body.
+- Do not use internal marketing terms such as `CTA`, `funnel`, `conversion`,
+  `campaign`, `qualified signal`, `tracker`, or `distribution plan` in
+  reader-facing copy. Express the reader action directly.
+- Do not introduce traction, customers, users, testimonials, metrics,
+  enterprise claims, compliance claims, proof-of-correctness claims, or other
+  claims beyond the public product proof already recorded in the marketing
+  context.
+
+Before handoff, run the repo-local marketing copy check when the touched surface
+contains a publishable public copy file:
+
+```sh
+scripts/check-marketing-copy.sh <publishable-copy-file>
+```
+
 ## Skills
 
 Path-based skill invocation is the portable baseline. On agents that discover

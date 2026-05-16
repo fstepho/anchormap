@@ -64,6 +64,11 @@ accepted ADRs.
 If a scope question remains open after the required reading, consult
 `docs/brief.md` only to arbitrate product scope.
 
+For marketing, launch, distribution, public-facing copy, or edits under
+`.agents/marketing/`, read `.agents/marketing/README.md` before drafting or
+changing files. Treat it as the repo-local entrypoint for marketing gates,
+tracker updates, copy checks, and drift-control inventory.
+
 ## Authority Map
 
 - `docs/contract.md`: observable runtime behavior.
